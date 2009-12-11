@@ -8,7 +8,7 @@ import org.jjoost.util.Function;
  * 
  * A ListMap supports multiple instances of the same (key,value) pairs; i.e., {1->2, 1->2} is a valid ListMap
  * 
- * @author Benedict Elliott Smith
+ * @author b.elliottsmith
  *
  * @param <K>
  * @param <V>

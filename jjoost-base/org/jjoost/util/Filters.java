@@ -65,8 +65,19 @@ public class Filters {
      * @param filters
      * @return
      */
+    public static <E> Filter<E> and(Filter<? super E> a, Filter<? super E> b) {
+    	return FilterAnd.get(a, b) ;
+    }
+    
+    /**
+     * Returns the conjunction of the supplied filters; filters are evaluated in the order they are provided (left-to-right) and are evaluated iff previous filters passed
+     * 
+     * @param <E>
+     * @param filters
+     * @return
+     */
     public static <E> Filter<E> and(Filter<? super E> ... filters) {
-        return FilterAnd.get(filters) ;
+        return FilterMultiAnd.get(filters) ;
     }
     
     /**
@@ -77,7 +88,7 @@ public class Filters {
      * @return
      */
     public static <E> Filter<E> and(Iterable<Filter<? super E>> filters) {
-        return FilterAnd.get(filters) ;
+        return FilterMultiAnd.get(filters) ;
     }
 
     /**
@@ -87,8 +98,8 @@ public class Filters {
      * @param filters
      * @return
      */
-    public static <E> FilterPartialOrder<E> and(FilterPartialOrder<E> filter1, FilterPartialOrder<E> filter2) {
-        return PartialOrderAnd.get(filter1, filter2) ;
+    public static <E> FilterPartialOrder<E> and(FilterPartialOrder<E> a, FilterPartialOrder<E> b) {
+        return PartialOrderAnd.get(a, b) ;
     }
     
     /**
@@ -99,7 +110,7 @@ public class Filters {
      * @return
      */
     public static <E> FilterPartialOrder<E> and(FilterPartialOrder<E> ... filters) {
-    	return PartialOrderAnd.get(filters) ;
+    	return PartialOrderMultiAnd.get(filters) ;
     }
     
     /**
@@ -109,8 +120,8 @@ public class Filters {
      * @param filters
      * @return
      */
-    public static <E> FilterPartialOrder<E> and(List<? extends FilterPartialOrder<E>> filters) {
-        return PartialOrderAnd.get(filters) ;
+    public static <E> FilterPartialOrder<E> and(Iterable<? extends FilterPartialOrder<E>> filters) {
+        return PartialOrderMultiAnd.get(filters) ;
     }
 
     /**
@@ -120,8 +131,19 @@ public class Filters {
      * @param filters
      * @return
      */
+    public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> and(F a, F b) {
+    	return BothFilterAnd.get(a, b) ;
+    }
+    
+    /**
+     * Returns the conjunction of the supplied filters; filters are evaluated in the order they are provided (left-to-right) and are evaluated iff previous filters passed
+     * 
+     * @param <E>
+     * @param filters
+     * @return
+     */
     public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> and(F ... filters) {
-        return BothFilterAnd.get(filters) ;
+        return BothFilterMultiAnd.get(filters) ;
     }
     
     /**
@@ -132,7 +154,7 @@ public class Filters {
      * @return
      */
     public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> and(Iterable<? extends F> filters) {
-        return BothFilterAnd.get(filters) ;
+        return BothFilterMultiAnd.get(filters) ;
     }
 
     /**
@@ -142,8 +164,19 @@ public class Filters {
      * @param filters
      * @return
      */
+    public static <E> Filter<E> or(Filter<? super E> a, Filter<? super E> b) {
+    	return FilterOr.get(a, b) ;
+    }
+    
+    /**
+     * Returns the disjunction of the supplied filters
+     * 
+     * @param <E>
+     * @param filters
+     * @return
+     */
     public static <E> Filter<E> or(Filter<? super E> ... filters) {
-        return FilterOr.get(filters) ;
+        return FilterMultiOr.get(filters) ;
     }
     
     /**
@@ -154,7 +187,7 @@ public class Filters {
      * @return
      */
     public static <E> Filter<E> or(Iterable<? extends Filter<? super E>> filters) {
-        return FilterOr.get(filters) ;
+        return FilterMultiOr.get(filters) ;
     }
 
     /**
@@ -164,8 +197,19 @@ public class Filters {
      * @param filters
      * @return
      */
+    public static <E> FilterPartialOrder<E> or(FilterPartialOrder<E> a, FilterPartialOrder<E> b) {
+    	return PartialOrderOr.get(a, b) ;
+    }
+    
+    /**
+     * Returns the disjunction of the supplied filters
+     * 
+     * @param <E>
+     * @param filters
+     * @return
+     */
     public static <E> FilterPartialOrder<E> or(FilterPartialOrder<E> ... filters) {
-        return PartialOrderOr.get(filters) ;
+        return PartialOrderMultiOr.get(filters) ;
     }
     
     /**
@@ -176,7 +220,7 @@ public class Filters {
      * @return
      */
     public static <E> FilterPartialOrder<E> or(Iterable<? extends FilterPartialOrder<E>> filters) {
-        return PartialOrderOr.get(filters) ;
+        return PartialOrderMultiOr.get(filters) ;
     }
 
 
@@ -187,8 +231,19 @@ public class Filters {
      * @param filters
      * @return
      */
+    public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> or(F a, F b) {
+    	return BothFilterOr.get(a, b) ;
+    }
+    
+    /**
+     * Returns the disjunction of the supplied filters; filters are evaluated in the order they are provided (left-to-right) and are evaluated iff previous filters passed
+     * 
+     * @param <E>
+     * @param filters
+     * @return
+     */
     public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> or(F ... filters) {
-        return BothFilterOr.get(filters) ;
+        return BothFilterMultiOr.get(filters) ;
     }
     
     /**
@@ -199,7 +254,7 @@ public class Filters {
      * @return
      */
     public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> or(Iterable<? extends F> filters) {
-        return BothFilterOr.get(filters) ;
+        return BothFilterMultiOr.get(filters) ;
     }
 
     /**

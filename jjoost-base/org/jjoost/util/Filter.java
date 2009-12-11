@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * Defines a simple filter over objects
  * 
- * @author Benedict Elliott Smith
+ * @author b.elliottsmith
  * @param <E>
  */
 public interface Filter<E> extends Serializable {

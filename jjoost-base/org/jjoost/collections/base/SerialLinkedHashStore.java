@@ -74,7 +74,7 @@ public class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedH
 		N listTail = newHead() ;
 		while (ns.hasNext()) {
 			final N n = ns.next().copy() ;
-			final int hash = n.hash & mask ;
+			final int hash = n.hash & (table.length - 1) ;
 			final N tail = tails[hash] ;
 			if (tail == null) {
 				table[hash] = tails[hash] = n ;
@@ -141,7 +141,7 @@ public class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedH
 		public void remove() {
 			if (prev == null)
 				throw new NoSuchElementException() ;
-			removeExistingNode(nodePrefixEqFunc, nodePrefixEq, prev) ;
+			removeNode(nodePrefixEqFunc, nodePrefixEq, prev) ;
 			prev = null ;
 		}
 		

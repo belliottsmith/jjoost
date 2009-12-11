@@ -9,7 +9,6 @@ public interface Counter {
 
 	public boolean add(int i) ;
 	public int get() ;
-	public int getUnsafe() ;
 	public Counter newInstance() ;
 	
 }

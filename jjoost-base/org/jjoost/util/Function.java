@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * A function from domain to range 
  * 
- * @author Benedict Elliott Smith
+ * @author b.elliottsmith
  * @param <X>
  * @param <Y>
  */

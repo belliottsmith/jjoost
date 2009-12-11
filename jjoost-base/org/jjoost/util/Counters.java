@@ -43,11 +43,6 @@ public class Counters {
 			return new ThreadSafeCounter() ;
 		}
 
-		@Override
-		public int getUnsafe() {
-			return count ;
-		}
-		
 	}
 	
 	public static class SerialCounter implements Counter {
@@ -74,11 +69,6 @@ public class Counters {
 			return new SerialCounter() ;
 		}
 		
-		@Override
-		public int getUnsafe() {
-			return count ;
-		}
-		
 	}
 	
 	public static class DontCounter implements Counter {
@@ -93,10 +83,6 @@ public class Counters {
 		@Override
 		public Counter newInstance() {
 			return new DontCounter() ;
-		}
-		@Override
-		public int getUnsafe() {
-			return Integer.MIN_VALUE ;
 		}
 	}
 	

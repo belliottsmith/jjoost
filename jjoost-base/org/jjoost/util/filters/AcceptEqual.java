@@ -8,7 +8,7 @@ import org.jjoost.util.Objects ;
  * a simple filter that accepts only objects that equal that provided in its
  * constructor
  * 
- * @author Benedict Elliott Smith
+ * @author b.elliottsmith
  * @param <E>
  */
 

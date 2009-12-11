@@ -1,39 +1,27 @@
 package org.jjoost.util.filters ;
 
 import org.jjoost.util.Filter ;
-import org.jjoost.util.Iters ;
 
 public class FilterOr<E> implements Filter<E> {
 
-	private static final long serialVersionUID = 6311808530912921895L ;
-	private final Filter<? super E>[] disjoin ;
+	private static final long serialVersionUID = 7419162471960836459L ;
+	private final Filter<? super E> a, b;
 
-	public FilterOr(Filter<? super E>... disjoin) {
-		this.disjoin = disjoin ;
-	}
-
-	@SuppressWarnings("unchecked")
-	public FilterOr(Iterable<? extends Filter<? super E>> disjoin) {
-		this.disjoin = Iters.toArray(disjoin, Filter.class) ;
+	public FilterOr(Filter<? super E> a, Filter<? super E> b) {
+		this.a = a ;
+		this.b = b ;
 	}
 
 	public boolean accept(E test) {
-		boolean r = false ;
-		for (int i = 0 ; !r & i != disjoin.length ; i++)
-			r = disjoin[i].accept(test) ;
-		return r ;
+		return a.accept(test) || b.accept(test) ;
 	}
 
 	public String toString() {
-		return "any hold: " + disjoin.toString() ;
+		return a + " and " + b ;
 	}
 
-	public static <E> FilterOr<E> get(Filter<? super E>... disjoin) {
-		return new FilterOr<E>(disjoin) ;
-	}
-
-	public static <E> FilterOr<E> get(Iterable<? extends Filter<? super E>> disjoin) {
-		return new FilterOr<E>(disjoin) ;
+	public static <E> FilterOr<E> get(Filter<? super E> a, Filter<? super E> b) {
+		return new FilterOr<E>(a, b) ;
 	}
 
 }

@@ -3,7 +3,7 @@ package org.jjoost.util;
 /**
  * A simple interface defining custom hash functions over objects
  * 
- * @author Benedict Elliott Smith
+ * @author b.elliottsmith
  *
  * @param <E>
  */

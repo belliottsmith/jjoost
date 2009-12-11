@@ -1,6 +1,5 @@
 package org.jjoost.collections;
 
-import org.jjoost.collections.base.HashStoreCounting ;
 import org.jjoost.collections.base.HashStoreType ;
 import org.jjoost.collections.sets.serial.SerialCountingListHashSet ;
 import org.jjoost.collections.sets.serial.SerialInlineListHashSet ;
@@ -46,12 +45,10 @@ public class SetMaker {
 		private HashStoreType type = HashStoreType.serial() ;
 		private int initialCapacity = 16 ;
 		private float loadFactor = 0.75f ;
-		private HashStoreCounting counting ;
 		public HashSetMaker() { }
 		private HashSetMaker(Hasher<? super V> hasher, Rehasher rehasher,
 				Equality<? super V> eq, HashStoreType type,
-				int initialCapacity, float loadFactor,
-				HashStoreCounting counting) {
+				int initialCapacity, float loadFactor) {
 			super();
 			this.hasher = hasher ;
 			this.rehasher = rehasher;
@@ -59,7 +56,6 @@ public class SetMaker {
 			this.type = type;
 			this.initialCapacity = initialCapacity;
 			this.loadFactor = loadFactor;
-			this.counting = counting;
 		}
 		public HashSetMaker<V> hasher(Hasher<? super V> hasher) { this.hasher = hasher ; return this ; }
 		public HashSetMaker<V> rehasher(Rehasher rehasher) { this.rehasher = rehasher ; return this ; }
@@ -67,7 +63,6 @@ public class SetMaker {
 		public HashSetMaker<V> type(HashStoreType type) { this.type = type ; return this ; }
 		public HashSetMaker<V> initialCapacity(int initialCapacity) { this.initialCapacity = initialCapacity ; return this ; }
 		public HashSetMaker<V> loadFactor(float loadFactor) { this.loadFactor = loadFactor ; return this ; }
-		public HashSetMaker<V> counting(HashStoreCounting counting) { this.counting = counting ; return this ; }
 		public ScalarSet<V> newScalarSet() {
 			switch(type.type()) {
 			case SERIAL:
@@ -162,7 +157,7 @@ public class SetMaker {
 		}
 		public HashSetMaker<V> copy() {
 			return new HashSetMaker<V>(hasher, rehasher, eq,
-					type, initialCapacity, loadFactor, counting) ;
+					type, initialCapacity, loadFactor) ;
 		}
 	}
 

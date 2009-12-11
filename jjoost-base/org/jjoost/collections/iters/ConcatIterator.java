@@ -7,7 +7,7 @@ import java.util.NoSuchElementException;
 /**
  * This class can be used to lazily concatenate together zero or more <code>Iterator</code> classes whose elements share a common super type
  * 
- * @author Benedict Elliott Smith
+ * @author b.elliottsmith
  *
  * @param <E>
  */
@@ -42,15 +42,16 @@ public class ConcatIterator<E> implements Iterator<E> {
     }
 
     public boolean hasNext() {
+    	moveNext() ;
         return next.hasNext() ;
     }
 
     public E next() {
-    	if (next == null)
+    	moveNext() ;
+    	if (!next.hasNext())
     		throw new NoSuchElementException() ;
     	final E r = next.next() ;
     	prev = next ;
-    	moveNext() ;
         return r ;
     }
 

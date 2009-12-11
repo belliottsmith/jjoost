@@ -6,7 +6,7 @@ import java.util.NoSuchElementException;
 /**
  * This class creates an <code>Iterator</code> from the supplied array
  * 
- * @author Benedict Elliott Smith
+ * @author b.elliottsmith
  *
  * @param <E>
  */

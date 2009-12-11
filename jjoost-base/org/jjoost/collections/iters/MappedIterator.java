@@ -8,7 +8,7 @@ import org.jjoost.util.Function;
  * Given an <code>Iterator</code> object and a function, yields an <code>Iterator</code> 
  * representing the result of applying that function to every element of the supplied <code>Iterator</code> 
  * 
- * @author Benedict Elliott Smith
+ * @author b.elliottsmith
  *
  * @param <X>
  * @param <Y>

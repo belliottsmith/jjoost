@@ -35,7 +35,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	protected N[] table ;
 	protected int totalNodeCount ;
 	protected int uniquePrefixCount ;
-	protected int mask ;
+//	protected int mask ;
 	protected int loadLimit ;
 	protected final float loadFactor ;
 	protected transient int modCount = 0 ;	
@@ -52,7 +52,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
         	capacity <<= 1 ;
         this.totalNodeCount = 0 ;
         this.table = (N[]) new SerialHashNode[capacity] ;
-        this.mask = capacity - 1 ;
+//        this.mask = capacity - 1 ;
         this.loadLimit = (int) (capacity * loadFactor) ;
 		this.loadFactor = loadFactor ;
 	}
@@ -60,7 +60,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	protected SerialHashStore(float loadFactor, N[] table, int size) {
 		this.totalNodeCount = 0 ;
 		this.table = table ;
-		this.mask = table.length - 1 ;
+//		this.mask = table.length - 1 ;
 		this.loadLimit = (int) (table.length * loadFactor) ;
 		this.loadFactor = loadFactor ;
 	}
@@ -113,19 +113,12 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	// public PUT METHODS
 	// **************************************************
 	
-	/**
-	 * internal method which will insert the provided node into the hash map, returning the node it replaced (if any)
-	 * 
-	 * @param put
-	 * @return
-	 */
-	
 	@Override
 	public <NCmp, V> V put(NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
 		grow() ;
 		
 		final boolean replace = !eq.isUnique() ;
-		final int hash = put.hash & mask ;
+		final int hash = put.hash & (table.length - 1) ;
     	N n = table[hash] ;
     	if (n == null) {
     		table[hash] = put ;
@@ -168,19 +161,11 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		return null ;
 	}
 
-	/**
-	 * internal method which will insert the provided node into the hash map if no equivalent node already exists, 
-	 * returning null if the node was inserted and the pre-existing node otherwise.
-	 * 
-	 * @param put
-	 * @return
-	 */
-	
 	@Override
 	public <NCmp, V> V putIfAbsent(NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
 		grow() ;
 
-		final int hash = put.hash & mask ;
+		final int hash = put.hash & (table.length - 1) ;
     	N n = table[hash] ;
     	if (n == null) {
     		table[hash] = put ;
@@ -215,19 +200,11 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		return null ;
 	}
 
-	/**
-	 * internal method which will look for a node matching the input and return it if found, 
-	 * otherwise will insert the node returned by the factory method, returning null in this case
-	 * 
-	 * @param put
-	 * @return
-	 */
-	
 	@Override
 	public <NCmp, V> V putIfAbsent(int hash, NCmp put, HashNodeEquality<? super NCmp, ? super N> eq, HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret) {
 		grow() ;
 		
-		hash = hash & mask ;
+		hash = hash & (table.length - 1) ;
     	N n = table[hash] ;
     	if (n == null) {
     		table[hash] = factory.makeNode(hash, put) ;
@@ -260,20 +237,11 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		return null ;
 	}
 	
-	/**
-	 * internal method which will look for a node matching the input and return it if found, 
-	 * otherwise will insert the node returned by the factory method; will always return the node
-	 * whether it had to be inserted or not
-	 * 
-	 * @param put
-	 * @return
-	 */
-	
 	@Override
 	public <NCmp, V> V ensureAndGet(int hash, NCmp put, HashNodeEquality<? super NCmp, ? super N> eq, HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret) {
 		grow() ;
 		
-		hash = hash & mask ;
+		hash = hash & (table.length - 1) ;
     	N n = table[hash] ;
     	if (n == null) {
     		n = table[hash] = factory.makeNode(hash, put) ;
@@ -315,7 +283,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 
 		final boolean eqIsUniq = eq.isUnique() ;
 		boolean partial = false ;
-    	hash = hash & mask ;
+    	hash = hash & (table.length - 1) ;
     	N p = null ;
     	N n = table[hash] ; 
     	int r = 0 ;
@@ -356,8 +324,8 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	}
 
 	@Override
-	public <NCmp> boolean removeExistingNode(Function<? super N, ? extends NCmp> nodePrefixEqFunc, HashNodeEquality<? super NCmp, ? super N> nodePrefixEq, N n) {
-		final int hash = n.hash & mask ;
+	public <NCmp> boolean removeNode(Function<? super N, ? extends NCmp> nodePrefixEqFunc, HashNodeEquality<? super NCmp, ? super N> nodePrefixEq, N n) {
+		final int hash = n.hash & (table.length - 1) ;
 		N p = table[hash] ;
 		if (p == n) {
 			table[hash] = p.next ;
@@ -390,7 +358,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		
 		final boolean eqIsUniq = eq.isUnique() ;
 		boolean partial = false ;
-		hash = hash & mask ;
+		hash = hash & (table.length - 1) ;
 		N p = null ;
 		N n = table[hash] ; 
 		boolean keptNeighbours = false ;
@@ -442,7 +410,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	@Override
 	public <NCmp> boolean contains(int hash, NCmp c, HashNodeEquality<? super NCmp, ? super N> eq) {
 		boolean partial = false ;
-    	N n = table[hash & mask] ;
+    	N n = table[hash & (table.length - 1)] ;
     	while (n != null) {
 			if (partial != (n.hash == hash && eq.prefixMatch(c, n))) {
 				if (partial) return false ;
@@ -460,7 +428,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		final boolean eqIsUniq = eq.isUnique() ;
 		boolean partial = false ;
 		int count = 0 ;
-		N n = table[hash & mask] ;
+		N n = table[hash & (table.length - 1)] ;
 		while (n != null) {
 			if (partial != (n.hash == hash && eq.prefixMatch(c, n))) {
 				if (partial) return count ;
@@ -483,7 +451,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	@Override
 	public <NCmp, V> V first(int hash, NCmp c, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
 		boolean partial = false ;
-		N n = table[hash & mask] ;
+		N n = table[hash & (table.length - 1)] ;
 		while (n != null) {
 			if (partial != (n.hash == hash && eq.prefixMatch(c, n))) {
 				if (partial) return null ;
@@ -672,7 +640,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		Search(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> findEq, Function<? super N, ? extends NCmp> nodeEqFunc, Function<? super N, ? extends V> f) {
 			super(findEq, nodeEqFunc) ;
 			this.find = find ;
-			this.curHash = hash & mask ;
+			this.curHash = hash & (table.length - 1) ;
 			this.f = f ;
 			nextNode = table[curHash] ;
 			boolean partial = false ;
@@ -721,7 +689,6 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 			N[] oldtable = table ;
 			table = (N[]) new SerialHashNode[table.length << 1] ;
 			loadLimit = (int) (table.length * loadFactor) ;
-			mask = table.length - 1 ;
 			rehash(oldtable) ;			
 		}
 	}
@@ -746,7 +713,6 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
     		N[] oldtable = table ;
     		table = (N[]) new SerialHashNode[capacity] ;
     		loadLimit = (int) (table.length * loadFactor) ;
-    		mask = table.length - 1 ;
     		rehash(oldtable) ;
         }
 	}

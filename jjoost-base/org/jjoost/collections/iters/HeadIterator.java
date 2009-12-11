@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
- * @author Benedict Elliott Smith
+ * @author b.elliottsmith
  *
  * @param <E>
  */

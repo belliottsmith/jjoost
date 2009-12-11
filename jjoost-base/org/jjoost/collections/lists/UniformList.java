@@ -6,7 +6,7 @@ import java.util.* ;
 /**
  * A cheap (memory-wise) way of representing a list with precisely one distinct kind of element in it (which may be null).
  * 
- * @author Benedict Elliott Smith
+ * @author b.elliottsmith
  * 
  * @param <E>
  */

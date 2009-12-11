@@ -4,54 +4,37 @@ import java.util.Comparator ;
 
 import org.jjoost.util.Filter ;
 import org.jjoost.util.FilterPartialOrder ;
-import org.jjoost.util.Iters ;
 
 public class BothFilterOr<E, F extends Filter<? super E> & FilterPartialOrder<E>> implements BothFilter<E> {
 
 	private static final long serialVersionUID = 7419162471960836459L ;
-	private final F[] disjoin ;
+	private final F a, b;
 
-	public BothFilterOr(F... conjoin) {
-		this.disjoin = conjoin ;
-	}
-
-	@SuppressWarnings("unchecked")
-	public BothFilterOr(Iterable<? extends F> conjoin) {
-		this.disjoin = (F[]) Iters.toArray(conjoin, Filter.class) ;
+	public BothFilterOr(F a, F b) {
+		this.a = a ;
+		this.b = b ;
 	}
 
 	public boolean accept(E test) {
-		boolean r = false ;
-		for (int i = 0 ; !r & i != disjoin.length ; i++)
-			r = disjoin[i].accept(test) ;
-		return r ;
+		return a.accept(test) || b.accept(test) ;
 	}
 
 	public boolean accept(E test, Comparator<? super E> cmp) {
-		boolean r = false ;
-		for (int i = 0 ; !r & i != disjoin.length ; i++)
-			r = disjoin[i].accept(test, cmp) ;
-		return r ;
+		return a.accept(test, cmp) || b.accept(test, cmp) ;
 	}
 
 	@Override
 	public boolean mayAcceptBetween(E lb, boolean lbInclusive, E ub, boolean ubInclusive, Comparator<? super E> cmp) {
-		boolean r = false ;
-		for (int i = 0 ; !r & i != disjoin.length ; i++)
-			r = disjoin[i].mayAcceptBetween(lb, lbInclusive, ub, ubInclusive, cmp) ;
-		return r ;
+		return a.mayAcceptBetween(lb, lbInclusive, ub, ubInclusive, cmp) 
+			|| b.mayAcceptBetween(lb, lbInclusive, ub, ubInclusive, cmp) ;
 	}
 
 	public String toString() {
-		return "any hold: " + disjoin ;
+		return a + " and " + b ; 
 	}
 
-	public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilterOr<E, F> get(F ... conjoin) {
-		return new BothFilterOr<E, F>(conjoin) ;
-	}
-
-	public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilterOr<E, F> get(Iterable<? extends F> conjoin) {
-		return new BothFilterOr<E, F>(conjoin) ;
+	public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilterOr<E, F> get(F a, F b) {
+		return new BothFilterOr<E, F>(a, b) ;
 	}
 
 }

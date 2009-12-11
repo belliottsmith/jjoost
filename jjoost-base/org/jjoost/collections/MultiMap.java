@@ -8,7 +8,7 @@ import org.jjoost.util.Function;
  * 
  * A MultiMap supports a single key mapping to multiple values, i.e. {1->2, 1->3} is a valid MultiMap
  * 
- * @author Benedict Elliott Smith
+ * @author b.elliottsmith
  *
  * @param <K>
  * @param <V>

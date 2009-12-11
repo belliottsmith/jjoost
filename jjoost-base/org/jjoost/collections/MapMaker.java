@@ -1,6 +1,5 @@
 package org.jjoost.collections;
 
-import org.jjoost.collections.base.HashStoreCounting ;
 import org.jjoost.collections.base.HashStoreType ;
 import org.jjoost.collections.maps.nested.ThreadSafeNestedSetListMap ;
 import org.jjoost.collections.maps.nested.ThreadSafeNestedSetMultiMap ;
@@ -57,7 +56,6 @@ public class MapMaker {
 		private HashStoreType type = HashStoreType.serial() ;
 		private int initialCapacity = 16 ;
 		private float loadFactor = 0.75f ;
-		private HashStoreCounting counting ;
 		private Function<K, V> factoryFunction ;
 		private Factory<V> factory ;
 		public HashMapMaker() { }
@@ -65,7 +63,7 @@ public class MapMaker {
 				Equality<? super K> keyEquality,
 				Equality<? super V> valEquality, HashStoreType type,
 				int initialCapacity, float loadFactor,
-				HashStoreCounting counting, Function<K, V> factoryFunction,
+				Function<K, V> factoryFunction,
 				Factory<V> factory) {
 			super();
 			this.keyHasher = keyHasher;
@@ -75,7 +73,6 @@ public class MapMaker {
 			this.type = type;
 			this.initialCapacity = initialCapacity;
 			this.loadFactor = loadFactor;
-			this.counting = counting;
 			this.factoryFunction = factoryFunction;
 			this.factory = factory;
 		}
@@ -86,7 +83,6 @@ public class MapMaker {
 		public HashMapMaker<K, V> type(HashStoreType type) { this.type = type ; return this ; }
 		public HashMapMaker<K, V> initialCapacity(int initialCapacity) { this.initialCapacity = initialCapacity ; return this ; }
 		public HashMapMaker<K, V> loadFactor(float loadFactor) { this.loadFactor = loadFactor ; return this ; }
-		public HashMapMaker<K, V> counting(HashStoreCounting counting) { this.counting = counting ; return this ; }
 		public HashMapMaker<K, V> defaultsTo(Factory<V> factory) { this.factory = factory ; this.factoryFunction = null ; return this ; }
 		public HashMapMaker<K, V> defaultsTo(Function<K, V> function) { this.factoryFunction = function ; this.factory = null ; return this ; }
 		public ScalarMap<K, V> newScalarMap() {
@@ -219,7 +215,7 @@ public class MapMaker {
 		public HashMapMaker<K, V> copy() {
 			return new HashMapMaker<K, V>(keyHasher, rehasher, keyEquality,
 					valEquality, type, initialCapacity, loadFactor,
-					counting, factoryFunction, factory) ;
+					factoryFunction, factory) ;
 		}		
 	}
 

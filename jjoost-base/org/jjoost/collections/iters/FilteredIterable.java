@@ -7,7 +7,7 @@ import org.jjoost.util.Filter;
 /**
  * Lazily filters the underlying iterator by the supplied filter.
  * 
- * @author Benedict Elliott Smith
+ * @author b.elliottsmith
  *
  * @param <E>
  */

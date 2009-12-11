@@ -6,7 +6,7 @@ import java.util.NoSuchElementException;
 /**
  * This class creates an <code>Iterable</code> (i.e. a class with an <code>iterator()</code> method) from the supplied array 
  * 
- * @author Benedict Elliott Smith
+ * @author b.elliottsmith
  *
  * @param <E> the element type
  */

@@ -4,7 +4,7 @@ import java.util.Iterator;
 
 /**
  * Given an <code>Iterator</code>, yields a one use <code>Iterable</code>
- * @author Benedict Elliott Smith
+ * @author b.elliottsmith
  *
  * @param <E>
  */

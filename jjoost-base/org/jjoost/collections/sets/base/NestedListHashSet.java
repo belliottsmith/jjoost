@@ -50,8 +50,8 @@ public class NestedListHashSet<V, N extends NestedListHashSet.INode<V, N>> imple
 		return rehasher.hash(valHasher.hash(key)) ;
 	}
 	
-	protected static <V, N extends NestedListHashSet.INode<V, N>> boolean removeExistingNode(NestedListHashSet<V, N> set, N node) {
-		return set.table.removeExistingNode(set.valProj(), set.valEq, node) ;
+	protected static <V, N extends NestedListHashSet.INode<V, N>> boolean removeNode(NestedListHashSet<V, N> set, N node) {
+		return set.table.removeNode(set.valProj(), set.valEq, node) ;
 	}
 	
 	@Override
@@ -226,7 +226,10 @@ public class NestedListHashSet<V, N extends NestedListHashSet.INode<V, N>> imple
 		return new Iterable<V>() {
 			@Override
 			public Iterator<V> iterator() {
-				return Iters.concat(table.unique(valProj(), valEq, valEq.getEquality(), iteratorMaker(NestedListHashSet.this))) ;
+				final NodeContentsIterator<V, N> f = new NodeContentsIterator<V, N>() ;
+				final Iterator<Iterator<V>> iters = table.unique(valProj(), valEq, valEq.getEquality(), f) ;
+				f.superIter = iters ;
+				return Iters.concat(iters) ;
 			}
 		} ;
 	}
@@ -243,7 +246,10 @@ public class NestedListHashSet<V, N extends NestedListHashSet.INode<V, N>> imple
 
 	@Override
 	public Iterator<V> iterator() {
-		return Iters.concat(table.all(valProj(), valEq, iteratorMaker(this))) ;
+		final NodeContentsIterator<V, N> f = new NodeContentsIterator<V, N>() ;
+		final Iterator<Iterator<V>> iters = table.all(valProj(), valEq, f) ;
+		f.superIter = iters ;
+		return Iters.concat(iters) ;
 	}
 
 	@Override
@@ -261,7 +267,8 @@ public class NestedListHashSet<V, N extends NestedListHashSet.INode<V, N>> imple
 		public int count() ;
 		public int destroy() ;
 		public List<V> destroyAndReturn() ;
-		public Iterator<V> iterator(NestedListHashSet<V, N> me) ;		
+		public Iterator<V> iterator(Iterator<Iterator<V>> superIter) ;		
+		public Iterator<V> iterator(NestedListHashSet<V, N> set) ;		
 	}
 
 	protected static final class ValueEquality<V, N extends INode<V, N>> implements HashNodeEquality<V, N> {
@@ -323,18 +330,12 @@ public class NestedListHashSet<V, N extends NestedListHashSet.INode<V, N>> imple
 		}
 	}
 
-	private final IteratorMaker<V, N> iteratorMaker(NestedListHashSet<V, N> set) {
-		return new IteratorMaker<V, N>(set) ;
-	}
-	private static final class IteratorMaker<V, N extends INode<V, N>> implements Function<N, Iterator<V>> {
+	private static final class NodeContentsIterator<V, N extends INode<V, N>> implements Function<N, Iterator<V>> {
 		private static final long serialVersionUID = -965724235732791909L;
-		private final NestedListHashSet<V, N> set ;
-		public IteratorMaker(NestedListHashSet<V, N> set) {
-			this.set = set;
-		}
+		Iterator<Iterator<V>> superIter ;
 		@Override
 		public Iterator<V> apply(N n) {
-			return n.iterator(set) ;
+			return n.iterator(superIter) ;
 		}
 	}
 

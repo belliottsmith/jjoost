@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * This class can be used to lazily concatenate together zero or more <code>Iterable</code> classes whose elements share a common super type
  * 
- * @author Benedict Elliott Smith
+ * @author b.elliottsmith
  *
  * @param <E>
  */

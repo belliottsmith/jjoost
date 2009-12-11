@@ -6,7 +6,7 @@ import java.io.Serializable;
  * A simple class that can be used to define equality over objects, and hence can be used to define
  * custom equalities for sets, maps and the like
  * 
- * @author Benedict Elliott Smith
+ * @author b.elliottsmith
  *
  * @param <E>
  */

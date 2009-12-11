@@ -77,6 +77,40 @@ public class SerialNestedListHashSet<V> extends NestedListHashSet<V, SerialNeste
 			return values[0] ;
 		}
 		@Override
+		public Iterator<V> iterator(final Iterator<Iterator<V>> superIter) {
+			return new Iterator<V>() {
+				int last = -1 ;
+				int next = 0 ;
+				@Override
+				public boolean hasNext() {
+					return next < count ;
+				}
+				@Override
+				public V next() {
+					if (next >= count)
+						throw new NoSuchElementException() ;
+					last = next ;
+					next += 1 ;
+					return values[last] ;
+				}
+				@Override
+				public void remove() {
+					if (last == -1)
+						throw new NoSuchElementException() ;
+					if (count < 2) {
+						count = -1 ;
+						superIter.remove() ;
+					} else {
+						final int mi = count - 1 ;
+						for (int i = last ; i < mi ; i++)
+							values[i] = values[i+1] ;
+						last = -1 ;
+						count-- ;
+					}
+				}				
+			};
+		}
+		@Override
 		public Iterator<V> iterator(final NestedListHashSet<V, Node<V>> set) {
 			return new Iterator<V>() {
 				int last = -1 ;
@@ -99,7 +133,7 @@ public class SerialNestedListHashSet<V> extends NestedListHashSet<V, SerialNeste
 						throw new NoSuchElementException() ;
 					if (count < 2) {
 						count = -1 ;
-						removeExistingNode(set, Node.this) ;
+						removeNode(set, Node.this) ;
 					} else {
 						final int mi = count - 1 ;
 						for (int i = last ; i < mi ; i++)

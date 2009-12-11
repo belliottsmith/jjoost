@@ -5,7 +5,7 @@ import java.util.Comparator ;
 /**
  * A simple filter that accepts everything
  * 
- * @author Benedict Elliott Smith
+ * @author b.elliottsmith
  * @param <E>
  */
 public class AcceptAll<E> implements BothFilter<E> {

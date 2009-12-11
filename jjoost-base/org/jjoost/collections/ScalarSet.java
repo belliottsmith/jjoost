@@ -5,7 +5,7 @@ import org.jjoost.util.Function;
 /**
  * A ScalarMap permits at most one value for each possible key, much like the java.util.HashMap
  * 
- * @author Benedict Elliott Smith
+ * @author b.elliottsmith
  *
  * @param <K>
  * @param <V>

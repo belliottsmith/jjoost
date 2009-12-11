@@ -74,7 +74,7 @@ public class SerialCountingListHashSet<V> extends CountingListHashSet<V, SerialC
 			throw new UnsupportedOperationException() ;
 		}
 		@Override
-		public Iterator<V> iter(final CountingListHashSet<V, SerialCountingListHashSetNode<V>> set) {
+		public Iterator<V> iter(final Iterator<Iterator<V>> superIter) {
 			return new Iterator<V>() {
 				int c = 0 ;
 				boolean last = false ;
@@ -98,15 +98,11 @@ public class SerialCountingListHashSet<V> extends CountingListHashSet<V, SerialC
 					count -= 1 ;
 					if (count <= 0) {
 						count = -1 ;
-						removeExistingNode(SerialCountingListHashSetNode.this, set) ;
+						superIter.remove() ;
 					}
 				}
 			} ;
 		}
-		@Override
-		public int getUnsafe() {
-			return count ;
-		}		
 	}
 	
 	@SuppressWarnings("unchecked")

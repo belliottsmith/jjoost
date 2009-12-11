@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * A simple interface defining custom hash functions over objects
  * 
- * @author Benedict Elliott Smith
+ * @author b.elliottsmith
  */
 public interface Rehasher extends Serializable {
 	

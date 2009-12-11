@@ -8,7 +8,7 @@ import java.lang.reflect.UndeclaredThrowableException ;
 /**
  * A simple Factory interface that defines a create() method for instantiating some object
  * 
- * @author Benedict Elliott Smith
+ * @author b.elliottsmith
  * @param <E>
  */
 public interface Factory<E> extends Serializable {
@@ -23,7 +23,7 @@ public interface Factory<E> extends Serializable {
 	/**
 	 * A simple factory that creates objects of the type of the class provided, providing it has an empty constructor
 	 * 
-	 * @author Benedict Elliott Smith
+	 * @author b.elliottsmith
 	 * @param <E>
 	 */
 	public static final class SimpleObjectFactory<E> implements Factory<E> {

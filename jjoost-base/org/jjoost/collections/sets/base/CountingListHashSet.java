@@ -31,10 +31,10 @@ public class CountingListHashSet<V, N extends CountingListHashSet.INode<V, N>> i
 	protected final ValueEquality<V, N> valEq ;
 	protected final Counter totalCount ;
 	
-	protected static final <V, N extends INode<V, N>> boolean removeExistingNode(N node, CountingListHashSet<V, N> set) {
-		return set.table.removeExistingNode(set.valProj(), set.valEq, node) ;
-	}
-	
+//	protected static final <V, N extends INode<V, N>> boolean removeExistingNode(N node, CountingListHashSet<V, N> set) {
+//		return set.table.removeExistingNode(set.valProj(), set.valEq, node) ;
+//	}
+//	
 	protected Function<N, N> identity() {
 		return Functions.<N>identity() ;
 	}
@@ -255,7 +255,10 @@ public class CountingListHashSet<V, N extends CountingListHashSet.INode<V, N>> i
 
 	@Override
 	public Iterator<V> iterator() {
-		return Iters.concat(table.all(valProj(), valEq, new KeyRepeater<V, N>(this))) ;
+		final KeyRepeater<V, N> repeater = new KeyRepeater<V, N>() ;
+		final Iterator<Iterator<V>> iters = table.all(valProj(), valEq, repeater) ;
+		repeater.superIter = iters ;
+		return Iters.concat(iters) ;
 	}
 
 	@Override
@@ -274,7 +277,7 @@ public class CountingListHashSet<V, N extends CountingListHashSet.INode<V, N>> i
 		 * @return
 		 */		
 		public int destroy() ;
-		public Iterator<V> iter(CountingListHashSet<V, N> set) ;
+		public Iterator<V> iter(Iterator<Iterator<V>> nodeIter) ;
 	}
 	
 	protected static abstract class ValueEquality<V, N extends INode<V, N>> implements HashNodeEquality<V, N> {
@@ -296,13 +299,10 @@ public class CountingListHashSet<V, N extends CountingListHashSet.INode<V, N>> i
 	
 	private static final class KeyRepeater<V, N extends INode<V, N>> implements Function<N, Iterator<V>> {
 		private static final long serialVersionUID = -965724235732791909L;
-		private final CountingListHashSet<V, N> table ;
-		public KeyRepeater(CountingListHashSet<V, N> table) {
-			this.table = table ;
-		}
+		private Iterator<Iterator<V>> superIter ;
 		@Override
 		public Iterator<V> apply(N n) {
-			return n.iter(table) ;
+			return n.iter(superIter) ;
 		}
 	}
 
