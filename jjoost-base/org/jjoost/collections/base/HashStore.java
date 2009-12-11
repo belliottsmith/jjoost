@@ -6,14 +6,14 @@ import java.util.Iterator;
 import org.jjoost.util.Equality ;
 import org.jjoost.util.Function;
 
-public interface HashTable<N> extends Serializable {
+public interface HashStore<N> extends Serializable {
 
     public int totalCount() ;
     public int uniquePrefixCount() ;
 	public boolean isEmpty() ;
 	public int clear() ;
 	public <V> Iterator<V> clearAndReturn(Function<? super N, ? extends V> f) ;
-	public HashTable<N> copy() ;
+	public HashStore<N> copy() ;
 	public void shrink() ;
 	public void resize(int size) ;
 	

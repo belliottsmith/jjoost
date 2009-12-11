@@ -8,7 +8,7 @@ import org.jjoost.util.Function;
 import org.jjoost.util.Functions;
 
 @SuppressWarnings("unchecked")
-public class SerialLinkedHashTable<N extends SerialLinkedHashTable.SerialLinkedHashNode<N>> extends SerialHashTable<N> {
+public class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedHashNode<N>> extends SerialHashStore<N> {
 
 	private static final long serialVersionUID = -6706178526455624676L;
 
@@ -37,11 +37,11 @@ public class SerialLinkedHashTable<N extends SerialLinkedHashTable.SerialLinkedH
 		}
 	}
 	
-	public SerialLinkedHashTable(int size, float loadFactor) {
+	public SerialLinkedHashStore(int size, float loadFactor) {
 		super(size, loadFactor);
 	}
 
-	public SerialLinkedHashTable(float loadFactor, N[] table, int size) {
+	public SerialLinkedHashStore(float loadFactor, N[] table, int size) {
 		super(loadFactor, table, size);
 	}
 
@@ -67,7 +67,7 @@ public class SerialLinkedHashTable<N extends SerialLinkedHashTable.SerialLinkedH
 	// TODO : is there an efficient way to copy this without temporarily doubling table memory utilisation? 
 	// we could instead iterate over the array twice, first time inserting in opposite order into buckets and on second pass reversing this...
 	@Override
-	public HashTable<N> copy() {
+	public HashStore<N> copy() {
 		final N[] table = (N[]) new SerialLinkedHashNode[this.table.length] ;
 		final N[] tails = (N[]) new SerialLinkedHashNode[this.table.length] ;
 		final Iterator<N> ns = all(null, null, Functions.<N>identity()) ;
@@ -96,7 +96,7 @@ public class SerialLinkedHashTable<N extends SerialLinkedHashTable.SerialLinkedH
 				}
 			}
 		}
-		return new SerialHashTable<N>(loadFactor, table, totalNodeCount) ;
+		return new SerialHashStore<N>(loadFactor, table, totalNodeCount) ;
 	}
 
 	@Override

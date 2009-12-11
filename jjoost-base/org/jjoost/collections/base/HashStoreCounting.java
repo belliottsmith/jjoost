@@ -1,6 +1,6 @@
 package org.jjoost.collections.base;
 
-public enum HashTableCounting {
+public enum HashStoreCounting {
 
 	OFF, SAMPLED, PRECISE
 	

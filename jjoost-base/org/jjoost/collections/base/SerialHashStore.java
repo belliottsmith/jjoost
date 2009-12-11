@@ -17,7 +17,7 @@ import org.jjoost.util.Iters ;
 import org.jjoost.util.Rehasher;
 import org.jjoost.util.Rehashers;
 
-public class SerialHashTable<N extends SerialHashTable.SerialHashNode<N>> implements HashTable<N> {
+public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implements HashStore<N> {
 
 	private static final long serialVersionUID = 5818748848600569496L ;
 
@@ -46,7 +46,7 @@ public class SerialHashTable<N extends SerialHashTable.SerialHashNode<N>> implem
 	}
 	
 	@SuppressWarnings("unchecked")
-	public SerialHashTable(int size, float loadFactor) {
+	public SerialHashStore(int size, float loadFactor) {
         int capacity = 1 ;
         while (capacity < size)
         	capacity <<= 1 ;
@@ -57,7 +57,7 @@ public class SerialHashTable<N extends SerialHashTable.SerialHashNode<N>> implem
 		this.loadFactor = loadFactor ;
 	}
 	
-	protected SerialHashTable(float loadFactor, N[] table, int size) {
+	protected SerialHashStore(float loadFactor, N[] table, int size) {
 		this.totalNodeCount = 0 ;
 		this.table = table ;
 		this.mask = table.length - 1 ;
@@ -633,7 +633,7 @@ public class SerialHashTable<N extends SerialHashTable.SerialHashNode<N>> implem
 		UniqueIterator(Function<? super N, ? extends NCmp> eqF, Equality<? super NCmp> uniqEq, HashNodeEquality<? super NCmp, ? super N> nodeEq, Function<? super N, ? extends V> ret) {
 			super(nodeEq, eqF) ;
 			this.ret = ret ;
-			this.seen = new SerialScalarHashSet<N>(8, 2f, Hashers.object(), Rehashers.flipEveryHalfByte(), SerialHashTable.<NCmp, N>nodeEquality(eqF, uniqEq)) ;
+			this.seen = new SerialScalarHashSet<N>(8, 2f, Hashers.object(), Rehashers.flipEveryHalfByte(), SerialHashStore.<NCmp, N>nodeEquality(eqF, uniqEq)) ;
 			while (nextNode == null & nextHash != table.length - 1) {
 				nextNode = table[++nextHash] ;
 			}
@@ -835,7 +835,7 @@ public class SerialHashTable<N extends SerialHashTable.SerialHashNode<N>> implem
     }
 
 	@Override
-	public HashTable<N> copy() {
+	public HashStore<N> copy() {
 		final N[] table = this.table.clone() ;
 		for (int i = 0 ; i != table.length ; i++) {
 			N orig = table[i] ;
@@ -849,7 +849,7 @@ public class SerialHashTable<N extends SerialHashTable.SerialHashNode<N>> implem
 				}
 			}
 		}
-		return new SerialHashTable<N>(loadFactor, table, totalNodeCount) ;
+		return new SerialHashStore<N>(loadFactor, table, totalNodeCount) ;
 	}
 
 	private static <N extends SerialHashNode<N>, V> Iterable<V> removedNodeIterable(N head, Function<? super N, ? extends V> f) {
