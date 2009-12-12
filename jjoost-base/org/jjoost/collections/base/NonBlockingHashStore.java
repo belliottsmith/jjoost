@@ -1,17 +1,21 @@
 package org.jjoost.collections.base;
 
 
+import java.io.Serializable ;
 import java.lang.reflect.Field;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList ;
 import java.util.Iterator ;
 import java.util.List ;
+import java.util.NoSuchElementException ;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.locks.LockSupport;
 
 import org.jjoost.collections.lists.UniformList ;
 import org.jjoost.util.Equality ;
 import org.jjoost.util.Function ;
+import org.jjoost.util.Functions ;
+import org.jjoost.util.Iters ;
 import org.jjoost.util.concurrent.ThreadQueue ;
 
 import sun.misc.Unsafe;
@@ -22,7 +26,7 @@ public class NonBlockingHashStore<N extends NonBlockingHashStore.Node<N>> implem
 	private static final long serialVersionUID = -1578733824843315344L ;
 	
 	public enum Counting {
-		OFF, SAMPLED, PRECISE
+		OFF, ON_DEMAND, SAMPLED, PRECISE
 	}
 
 	private static final Unsafe unsafe = getUnsafe();
@@ -747,46 +751,50 @@ public class NonBlockingHashStore<N extends NonBlockingHashStore.Node<N>> implem
 							break ;
 						}
 
-						if (!node.startDelete(next)) {
+						if (node.startDelete(next)) {
+							
+							boolean success ;
+							if (prev == null) {
+								success = getTableUnsafe().compareAndSet(hash, node, next) ;
+								if (!success) {
+									// failed to set head, so regrab head, undo what we've done, and return to outer loop
+									partial = false ;
+									node.volatileSetNext(next) ;
+									waitingOnDelete.wake(node) ;
+									node = getTableUnsafe().writerGetSafe(hash) ;
+								}
+							} else {
+								success = prev.casNext(node, next) ;
+								if (!success) {
+									// failed to set prev's next to node, so step back to prev.next and break to outer loop
+									partial = prevPartial ;
+									node.volatileSetNext(next) ;
+									waitingOnDelete.wake(node) ;
+									node = prev.getNextSafe() ;
+								}
+							}
+							
+							if (success) {
+								node.finishDelete() ;
+								waitingOnDelete.wake(node) ;
+								removed(node) ;
+								totalCounter.decrement(hash) ;
+								if (c == -1) {
+									if (!keptNeighbours && (next == null || hash != next.hash || !eq.prefixMatch(find, next)))
+										uniquePrefixCounter.decrement(hash) ;
+									return 1 ;
+								}
+								c++ ;
+								node = next ;
+							}
+
+							break ;
+							
+						} else {
+
 							// failed to start delete so grab latest value of next and loop 
 							next = node.getNextSafe() ;
-							continue ;
 						}
-
-						boolean success ;
-						if (prev == null) {
-							success = getTableUnsafe().compareAndSet(hash, node, next) ;
-							if (!success) {
-								// failed to set head, so regrab head, undo what we've done, and return to outer loop
-								partial = false ;
-								node = getTableUnsafe().writerGetSafe(hash) ;
-							}
-						} else {
-							success = prev.casNext(node, next) ;
-							if (!success) {
-								// failed to set prev's next to node, so step back to prev.next and break to outer loop
-								partial = prevPartial ;
-								node = prev.getNextSafe() ;
-							}
-						}
-						
-						if (success) {
-							node.finishDelete() ;
-							removed(node) ;
-							totalCounter.decrement(hash) ;
-							if (c == -1) {
-								if (!keptNeighbours && (next == null || hash != next.hash || !eq.prefixMatch(find, next)))
-									uniquePrefixCounter.decrement(hash) ;
-								return 1 ;
-							}
-							c++ ;
-							node = next ;
-						} else {
-							node.volatileSetDown(next) ;
-						}
-						waitingOnDelete.wake(node) ;
-
-						break ;
 					}
 
 				} else {
@@ -884,49 +892,53 @@ public class NonBlockingHashStore<N extends NonBlockingHashStore.Node<N>> implem
 							break ;
 						}
 						
-						if (!node.startDelete(next)) {
+						if (node.startDelete(next)) {
+							
+							boolean success ;
+							if (prev == null) {
+								success = getTableUnsafe().compareAndSet(hash, node, next) ;
+								if (!success) {
+									// failed to set head, so regrab head, undo what we've done, and return to outer loop
+									partial = false ;
+									node.volatileSetNext(next) ;
+									waitingOnDelete.wake(node) ;
+									node = getTableUnsafe().writerGetSafe(hash) ;
+								}
+							} else {
+								success = prev.casNext(node, next) ;
+								if (!success) {
+									// failed to set prev's next to node, so step back to prev.next and break to outer loop
+									partial = prevPartial ;
+									node.volatileSetNext(next) ;
+									waitingOnDelete.wake(node) ;
+									node = prev.getNextSafe() ;
+								}
+							}
+							
+							if (success) {
+								node.finishDelete() ;
+								waitingOnDelete.wake(node) ;
+								removed(node) ;
+								totalCounter.decrement(hash) ;
+								if (expectOnlyOne) {
+									if (!keptNeighbours && (next == null || hash != next.hash || !eq.prefixMatch(find, next)))
+										uniquePrefixCounter.decrement(hash) ;
+									return ret.apply(node) ;
+								}
+								if (!doneFirst) {
+									r = ret.apply(node) ;
+									doneFirst = true ;
+								}
+								node = next ;
+							}
+							
+							break ;
+							
+						} else {
+							
 							// failed to start delete so grab latest value of next and loop 
 							next = node.getNextSafe() ;
-							continue ;
-						}
-						
-						boolean success ;
-						if (prev == null) {
-							success = getTableUnsafe().compareAndSet(hash, node, next) ;
-							if (!success) {
-								// failed to set head, so regrab head, undo what we've done, and return to outer loop
-								partial = false ;
-								node = getTableUnsafe().writerGetSafe(hash) ;
-							}
-						} else {
-							success = prev.casNext(node, next) ;
-							if (!success) {
-								// failed to set prev's next to node, so step back to prev.next and break to outer loop
-								partial = prevPartial ;
-								node = prev.getNextSafe() ;
-							}
-						}
-						
-						if (success) {
-							node.finishDelete() ;
-							removed(node) ;
-							totalCounter.decrement(hash) ;
-							if (expectOnlyOne) {
-								if (!keptNeighbours && (next == null || hash != next.hash || !eq.prefixMatch(find, next)))
-									uniquePrefixCounter.decrement(hash) ;
-								return ret.apply(node) ;
-							}
-							if (!doneFirst) {
-								r = ret.apply(node) ;
-								doneFirst = true ;
-							}
-							node = next ;
-						} else {
-							node.volatileSetDown(next) ;
-						}
-						waitingOnDelete.wake(node) ;
-						
-						break ;
+						}						
 					}
 					
 				} else {
@@ -1023,46 +1035,52 @@ public class NonBlockingHashStore<N extends NonBlockingHashStore.Node<N>> implem
 							break ;
 						}
 						
-						if (!node.startDelete(next)) {
+						if (node.startDelete(next)) {
+							
+							boolean success ;
+							if (prev == null) {
+								success = getTableUnsafe().compareAndSet(hash, node, next) ;
+								if (!success) {
+									// failed to set head, so regrab head, undo what we've done, and return to outer loop
+									partial = false ;
+									node.volatileSetNext(next) ;
+									waitingOnDelete.wake(node) ;
+									node = getTableUnsafe().writerGetSafe(hash) ;
+								}
+							} else {
+								success = prev.casNext(node, next) ;
+								if (!success) {
+									// failed to set prev's next to node, so step back to prev.next and break to outer loop
+									partial = prevPartial ;
+									node.volatileSetNext(next) ;
+									waitingOnDelete.wake(node) ;
+									node = prev.getNextSafe() ;
+								}
+							}
+							
+							if (success) {
+								node.finishDelete() ;
+								waitingOnDelete.wake(node) ;
+								removed(node) ;
+								totalCounter.decrement(hash) ;
+								if (r == null) {
+									if (!keptNeighbours && (next == null || hash != next.hash || !eq.prefixMatch(find, next)))
+										uniquePrefixCounter.decrement(hash) ;
+									return new UniformList<V>(ret.apply(node), 1) ;
+								}
+								r.add(ret.apply(node)) ;
+								node = next ;
+							}
+							
+							break ;
+							
+						} else {
+							
 							// failed to start delete so grab latest value of next and loop 
 							next = node.getNextSafe() ;
-							continue ;
+							
 						}
 						
-						boolean success ;
-						if (prev == null) {
-							success = getTableUnsafe().compareAndSet(hash, node, next) ;
-							if (!success) {
-								// failed to set head, so regrab head, undo what we've done, and return to outer loop
-								partial = false ;
-								node = getTableUnsafe().writerGetSafe(hash) ;
-							}
-						} else {
-							success = prev.casNext(node, next) ;
-							if (!success) {
-								// failed to set prev's next to node, so step back to prev.next and break to outer loop
-								partial = prevPartial ;
-								node = prev.getNextSafe() ;
-							}
-						}
-						
-						if (success) {
-							node.finishDelete() ;
-							removed(node) ;
-							totalCounter.decrement(hash) ;
-							if (r == null) {
-								if (!keptNeighbours && (next == null || hash != next.hash || !eq.prefixMatch(find, next)))
-									uniquePrefixCounter.decrement(hash) ;
-								return new UniformList<V>(ret.apply(node), 1) ;
-							}
-							r.add(ret.apply(node)) ;
-							node = next ;
-						} else {
-							node.volatileSetDown(next) ;
-						}
-						waitingOnDelete.wake(node) ;
-						
-						break ;
 					}
 					
 				} else {
@@ -1137,43 +1155,46 @@ public class NonBlockingHashStore<N extends NonBlockingHashStore.Node<N>> implem
 							break ;
 						}
 						
-						if (!node.startDelete(next)) {
+						if (node.startDelete(next)) {
+							
+							boolean success ;
+							if (prev == null) {
+								success = getTableUnsafe().compareAndSet(hash, node, next) ;
+								if (!success) {
+									// failed to set head, so regrab head, undo what we've done, and return to outer loop
+									node.volatileSetNext(next) ;
+									waitingOnDelete.wake(node) ;
+									node = getTableUnsafe().writerGetSafe(hash) ;
+								}
+							} else {
+								success = prev.casNext(node, next) ;
+								if (!success) {
+									// failed to set prev's next to node, so step back to prev.next and break to outer loop
+									node.volatileSetNext(next) ;
+									waitingOnDelete.wake(node) ;
+									node = prev.getNextSafe() ;
+								}
+							}
+							
+							if (success) {
+								node.finishDelete() ;
+								waitingOnDelete.wake(node) ;
+								removed(node) ;
+								totalCounter.decrement(hash) ;
+								if ((prev == null || hash != prev.hash || !nodePrefixEq.prefixMatch(nodePrefixEqFunc.apply(n), next)) 
+								 && (next == null || hash != next.hash || !nodePrefixEq.prefixMatch(nodePrefixEqFunc.apply(n), next)))
+									uniquePrefixCounter.decrement(hash) ;
+								return true ;
+								
+							}
+							
+							break ;
+
+						} else {						
+							
 							// failed to start delete so grab latest value of next and loop 
 							next = node.getNextSafe() ;
-							continue ;
-						}
-						
-						boolean success ;
-						if (prev == null) {
-							success = getTableUnsafe().compareAndSet(hash, node, next) ;
-							if (!success) {
-								// failed to set head, so regrab head, undo what we've done, and return to outer loop
-								node = getTableUnsafe().writerGetSafe(hash) ;
-							}
-						} else {
-							success = prev.casNext(node, next) ;
-							if (!success) {
-								// failed to set prev's next to node, so step back to prev.next and break to outer loop
-								node = prev.getNextSafe() ;
-							}
-						}
-						
-						if (success) {
-							
-							node.finishDelete() ;
-							removed(node) ;
-							totalCounter.decrement(hash) ;
-							if ((prev == null || hash != prev.hash || !nodePrefixEq.prefixMatch(nodePrefixEqFunc.apply(n), next)) 
-							 && (next == null || hash != next.hash || !nodePrefixEq.prefixMatch(nodePrefixEqFunc.apply(n), next)))
-								uniquePrefixCounter.decrement(hash) ;
-							return true ;
-							
-						} else {
-							node.volatileSetDown(next) ;
-						}
-						waitingOnDelete.wake(node) ;
-						
-						break ;
+						}						
 					}
 					
 				} else {
@@ -1190,9 +1211,8 @@ public class NonBlockingHashStore<N extends NonBlockingHashStore.Node<N>> implem
 	}
 
 	@Override
-	public <NCmp, V> Iterator<V> find(int hash, NCmp c, HashNodeEquality<? super NCmp, ? super N> findEq, Function<? super N, ? extends NCmp> nodePrefixEqFunc, Function<? super N, ? extends V> ret) {
-		// TODO Auto-generated method stub
-		return null ;
+	public <NCmp, V> Iterator<V> find(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> findEq, Function<? super N, ? extends NCmp> nodePrefixEqFunc, Function<? super N, ? extends V> ret) {
+		return new Search<NCmp, V>(hash, find, findEq, nodePrefixEqFunc, ret) ;
 	}
 	
 	@Override
@@ -1203,10 +1223,12 @@ public class NonBlockingHashStore<N extends NonBlockingHashStore.Node<N>> implem
 	}
 
 	@Override
-	public int clear() {
+	public <NCmp, V> Iterator<V> unique(Function<? super N, ? extends NCmp> eqF, HashNodeEquality<? super NCmp, ? super N> nodePrefixEq,
+			Equality<? super NCmp> forceUniq, Function<? super N, ? extends V> ret) {
 		// TODO Auto-generated method stub
-		return 0 ;
+		return null ;
 	}
+
 
 	@Override
 	public <V> Iterator<V> clearAndReturn(Function<? super N, ? extends V> f) {
@@ -1218,6 +1240,11 @@ public class NonBlockingHashStore<N extends NonBlockingHashStore.Node<N>> implem
 	public HashStore<N> copy() {
 		// TODO Auto-generated method stub
 		return null ;
+	}
+
+	@Override
+	public int clear() {
+		return Iters.count(clearAndReturn(Functions.identity())) ;
 	}
 
 	@Override
@@ -1245,21 +1272,24 @@ public class NonBlockingHashStore<N extends NonBlockingHashStore.Node<N>> implem
 
 	@Override
 	public int totalCount() {
-		// TODO Auto-generated method stub
-		return 0 ;
-	}
-
-	@Override
-	public <NCmp, V> Iterator<V> unique(Function<? super N, ? extends NCmp> eqF, HashNodeEquality<? super NCmp, ? super N> nodePrefixEq,
-			Equality<? super NCmp> forceUniq, Function<? super N, ? extends V> ret) {
-		// TODO Auto-generated method stub
-		return null ;
+		int c = totalCounter.getSafe() ;
+		if (c < -1) {
+			c = 0 ;
+			// count unique nodes
+			throw new UnsupportedOperationException() ;
+		}
+		return c ;
 	}
 
 	@Override
 	public int uniquePrefixCount() {
-		// TODO Auto-generated method stub
-		return 0 ;
+		int c = uniquePrefixCounter.getSafe() ;
+		if (c < -1) {
+			c = 0 ;
+			// count unique nodes
+			throw new UnsupportedOperationException() ;
+		}
+		return c ;
 	}
 
 	private void waitOnDelete(final N node) {
@@ -1294,11 +1324,102 @@ public class NonBlockingHashStore<N extends NonBlockingHashStore.Node<N>> implem
 	}
 
 	// *****************************************
+	// ITERATORS
+	// *****************************************
+	
+	protected abstract class GeneralIterator<NCmp, V> implements Iterator<V> {
+
+		final HashNodeEquality<? super NCmp, ? super N> eq ;
+		final Function<? super N, ? extends NCmp> nodePrefixEqFunc ;
+		final Function<? super N, ? extends V> ret ;
+		N prev2, prev, next ;
+		int prevHash ;
+		boolean deleted = true ;
+		
+		public GeneralIterator(HashNodeEquality<? super NCmp, ? super N> findEq,
+				Function<? super N, ? extends NCmp> nodePrefixEqFunc, Function<? super N, ? extends V> ret) {
+			this.eq = findEq ;
+			this.nodePrefixEqFunc = nodePrefixEqFunc ;
+			this.ret = ret ;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return next != null ;
+		}
+
+		@Override
+		public void remove() {
+			if (deleted)
+				throw new NoSuchElementException() ;
+			N next = prev.getNextUnsafe() ;
+			while (true) {				
+				if (next == REHASHING_FLAG | next == DELETED_FLAG | next == DELETING_FLAG) {
+					if (next == REHASHING_FLAG) {
+						removeNode(nodePrefixEqFunc, eq, prev) ;
+					}
+					break ;
+				}
+				if (prev.startDelete(next)) {
+					boolean success ;
+					if (prev2 == null) {
+						success = getTableUnsafe().compareAndSet(prevHash, prev, next) ;
+					} else {
+						success = prev2.casNext(prev, next) ;
+					}
+					
+					if (success) {
+						prev.finishDelete() ;
+						waitingOnDelete.wake(prev) ;
+						removed(prev) ;
+						totalCounter.decrement(prevHash) ;
+						final NCmp cmp = nodePrefixEqFunc.apply(prev) ;
+						if ((prev2 == null || prevHash != prev2.hash || !eq.prefixMatch(cmp, next)) 
+						 && (next == null || prevHash != next.hash || !eq.prefixMatch(cmp, next)))
+							uniquePrefixCounter.decrement(prevHash) ;
+					} else {
+						prev.volatileSetNext(next) ;
+						waitingOnDelete.wake(prev) ;
+						removeNode(nodePrefixEqFunc, eq, prev) ;
+					}
+					break ;
+				}
+				next = prev.getNextSafe() ;
+			}
+			prev = prev2 ;
+			prev2 = null ;
+			deleted = true ;
+		}
+		
+	}
+	
+	protected final class Search<NCmp, V> extends GeneralIterator<NCmp, V> {
+
+		final NCmp find ;
+		public Search(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> findEq, Function<? super N, ? extends NCmp> nodePrefixEqFunc,
+				Function<? super N, ? extends V> ret) {
+			super(findEq, nodePrefixEqFunc, ret) ;
+			this.find = find ;
+			this.prevHash = hash ;
+		}
+
+
+		@Override
+		public V next() {
+			if (next == null)
+				throw new NoSuchElementException() ;
+			deleted = false ;
+			return null ;
+		}
+		
+	}
+	
+	// *****************************************
 	// NODE DECLARATION
 	// *****************************************
 	
-	protected abstract static class Node<N extends Node<N>> {
-		private final int hash ;
+	public abstract static class Node<N extends Node<N>> {
+		protected final int hash ;
 		private N nextPtr ;
 		public Node(int hash) {
 			this.hash = hash ;
@@ -1326,7 +1447,7 @@ public class NonBlockingHashStore<N extends NonBlockingHashStore.Node<N>> implem
 		final void lazySetNext(N upd) {
 			unsafe.putOrderedObject(this, nextPtrOffset, upd) ;
 		}
-		final void volatileSetDown(N upd) {
+		final void volatileSetNext(N upd) {
 			unsafe.putObjectVolatile(this, nextPtrOffset, upd) ;
 		}
 		private static final long nextPtrOffset ;
@@ -1718,13 +1839,14 @@ public class NonBlockingHashStore<N extends NonBlockingHashStore.Node<N>> implem
 	// COUNTER DECLARATIONS
 	// *************************************
 	
-	private static interface Counter {
+	private static interface Counter extends Serializable {
 		public int getSafe() ;
 		public int getUnsafe() ;
 		public void increment(int hash) ;
 		public void decrement(int hash) ;
 	}
 	private static final class PreciseCounter implements Counter {
+		private static final long serialVersionUID = -2830009566783179121L ;
 		private int count = 0 ;
 		private static final long countOffset ;
 		public int getSafe() {
@@ -1763,6 +1885,7 @@ public class NonBlockingHashStore<N extends NonBlockingHashStore.Node<N>> implem
 		}
 	}
 	private static final class SampledCounter implements Counter {
+		private static final long serialVersionUID = -6437345273821290811L ;
 		private int count = 0 ;
 		private static final long countOffset ;
 		public final int getSafe() {
@@ -1808,7 +1931,9 @@ public class NonBlockingHashStore<N extends NonBlockingHashStore.Node<N>> implem
 			}
 		}
 	}
+	
 	private static final class DontCount implements Counter {
+		private static final long serialVersionUID = 1633916421321597636L ;
 		public final int getSafe() { return Integer.MIN_VALUE ; }
 		public final int getUnsafe() { return Integer.MIN_VALUE ; }
 		public void increment(int hash) { }
