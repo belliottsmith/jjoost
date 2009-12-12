@@ -21,7 +21,7 @@ import org.jjoost.util.concurrent.ThreadQueue ;
 import sun.misc.Unsafe;
 
 @SuppressWarnings("restriction")
-public class NonBlockingHashStore<N extends NonBlockingHashStore.Node<N>> implements HashStore<N> {
+public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements HashStore<N> {
 
 	private static final long serialVersionUID = -1578733824843315344L ;
 	
@@ -38,7 +38,7 @@ public class NonBlockingHashStore<N extends NonBlockingHashStore.Node<N>> implem
 	private Table<N> tablePtr ;
 	
 	@SuppressWarnings("unchecked")
-	public NonBlockingHashStore(int initialCapacity, float loadFactor, Counting totalCounting, Counting uniquePrefixCounting) {
+	public LockFreeHashStore(int initialCapacity, float loadFactor, Counting totalCounting, Counting uniquePrefixCounting) {
         int capacity = 1 ;
         while (capacity < initialCapacity)
         	capacity <<= 1 ;
@@ -1645,11 +1645,11 @@ public class NonBlockingHashStore<N extends NonBlockingHashStore.Node<N>> implem
 		}
 		private void waitUntilGrown() {
 			// small possibility somebody will get to here before the first grow() is called; this should only happen on small hash maps however
-			if (NonBlockingHashStore.this.getTableSafe() != this)
+			if (LockFreeHashStore.this.getTableSafe() != this)
 				return ;
 			final WaitingOnGrow queue = new WaitingOnGrow(Thread.currentThread(), -1) ;
 			waiting.insert(queue) ;
-			while (NonBlockingHashStore.this.getTableSafe() == this)
+			while (LockFreeHashStore.this.getTableSafe() == this)
 				LockSupport.park() ;
 		}
 		
@@ -1673,7 +1673,7 @@ public class NonBlockingHashStore<N extends NonBlockingHashStore.Node<N>> implem
 				if (!rehash(i, !(needThisIndex & (from == i))))
 					break ;
 			if (completion.finishContributing(initiator)) {
-				NonBlockingHashStore.this.setTable(new RegularTable<N>(newTable, capacity)) ;
+				LockFreeHashStore.this.setTable(new RegularTable<N>(newTable, capacity)) ;
 				waiting.wakeAll() ;
 			}
 		}
@@ -1951,7 +1951,7 @@ public class NonBlockingHashStore<N extends NonBlockingHashStore.Node<N>> implem
     private static final long intArrayIndexScale = unsafe.arrayIndexScale(int[].class);
 	static {
 		try {
-			final Field field = NonBlockingHashStore.class.getDeclaredField("tablePtr") ;
+			final Field field = LockFreeHashStore.class.getDeclaredField("tablePtr") ;
 			tablePtrOffset = unsafe.objectFieldOffset(field) ;
 		} catch (Exception e) {
 			throw new UndeclaredThrowableException(e) ;
