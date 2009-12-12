@@ -99,7 +99,7 @@ public class MapMaker {
 				if (type.type() == HashStoreType.Type.SYNCHRONIZED)
 					r = new SynchronizedScalarMap<K, V>(r) ;
 				return r ;
-			case NON_BLOCKING:
+			case LOCK_FREE:
 //			case PARTITIONED_BLOCKING:
 //			case PARTITIONED_NON_BLOCKING:
 				throw new UnsupportedOperationException() ;
@@ -124,7 +124,7 @@ public class MapMaker {
 					if (type.type() == HashStoreType.Type.SYNCHRONIZED)
 						r = new SynchronizedMultiMap<K, V>(r) ;
 					return r ;
-				case NON_BLOCKING:
+				case LOCK_FREE:
 //				case PARTITIONED_BLOCKING:
 //				case PARTITIONED_NON_BLOCKING:
 					throw new UnsupportedOperationException() ;
@@ -144,7 +144,7 @@ public class MapMaker {
 					if (type.type() == HashStoreType.Type.SYNCHRONIZED)
 						r = new SynchronizedMultiMap<K, V>(r) ;
 					return r ;
-				case NON_BLOCKING:
+				case LOCK_FREE:
 //				case PARTITIONED_BLOCKING:
 //				case PARTITIONED_NON_BLOCKING:
 					throw new UnsupportedOperationException() ;
@@ -170,7 +170,7 @@ public class MapMaker {
 					if (type.type() == HashStoreType.Type.SYNCHRONIZED)
 						r = new SynchronizedListMap<K, V>(r) ;
 					return r ;
-				case NON_BLOCKING:
+				case LOCK_FREE:
 //				case PARTITIONED_BLOCKING:
 //				case PARTITIONED_NON_BLOCKING:
 					throw new UnsupportedOperationException() ;
@@ -190,7 +190,7 @@ public class MapMaker {
 					if (type.type() == HashStoreType.Type.SYNCHRONIZED)
 						r = new SynchronizedListMap<K, V>(r) ;
 					return r ;
-				case NON_BLOCKING:
+				case LOCK_FREE:
 //				case PARTITIONED_BLOCKING:
 //				case PARTITIONED_NON_BLOCKING:
 					throw new UnsupportedOperationException() ;
@@ -207,7 +207,7 @@ public class MapMaker {
 //				return Rehashers.jdkConcurrentHashmapRehasher() ;
 			case SERIAL:
 			case SYNCHRONIZED:
-			case NON_BLOCKING:
+			case LOCK_FREE:
 			default:
 				return Rehashers.jdkHashmapRehasher() ;
 			}
@@ -258,5 +258,5 @@ public class MapMaker {
 			return maker.newMultiMap(type) ;
 		}
 	}
-	
+
 }

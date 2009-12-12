@@ -76,7 +76,7 @@ public class SetMaker {
 				if (type.type() == HashStoreType.Type.SYNCHRONIZED)
 					r = new SynchronizedScalarSet<V>(r) ;
 				return r ;
-			case NON_BLOCKING:
+			case LOCK_FREE:
 //			case PARTITIONED_BLOCKING:
 //			case PARTITIONED_NON_BLOCKING:
 			}			
@@ -97,7 +97,7 @@ public class SetMaker {
 					if (type.type() == HashStoreType.Type.SYNCHRONIZED)
 						r = new SynchronizedListSet<V>(r) ;
 					return r ;
-				case NON_BLOCKING:
+				case LOCK_FREE:
 //				case PARTITIONED_BLOCKING:
 //				case PARTITIONED_NON_BLOCKING:
 				}			
@@ -115,7 +115,7 @@ public class SetMaker {
 					if (type.type() == HashStoreType.Type.SYNCHRONIZED)
 						r = new SynchronizedListSet<V>(r) ;
 					return r ;
-				case NON_BLOCKING:
+				case LOCK_FREE:
 //				case PARTITIONED_BLOCKING:
 //				case PARTITIONED_NON_BLOCKING:
 					throw new UnsupportedOperationException() ;
@@ -133,7 +133,7 @@ public class SetMaker {
 					if (type.type() == HashStoreType.Type.SYNCHRONIZED)
 						r = new SynchronizedListSet<V>(r) ;
 					return r ;
-				case NON_BLOCKING:
+				case LOCK_FREE:
 //				case PARTITIONED_BLOCKING:
 //				case PARTITIONED_NON_BLOCKING:
 					throw new UnsupportedOperationException() ;
@@ -150,7 +150,7 @@ public class SetMaker {
 //				return Rehashers.jdkConcurrentHashmapRehasher() ;
 			case SERIAL:
 			case SYNCHRONIZED:
-			case NON_BLOCKING:
+			case LOCK_FREE:
 			default:
 				return Rehashers.jdkHashmapRehasher() ;
 			}

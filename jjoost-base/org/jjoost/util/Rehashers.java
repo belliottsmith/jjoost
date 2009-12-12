@@ -38,7 +38,7 @@ public class Rehashers {
 	public static Rehasher identity() { return IDENTITY_REHASHER ; }
 	private static final Rehasher IDENTITY_REHASHER = new IdentityRehasher() ;
 	private static final class IdentityRehasher implements Rehasher {
-		private static final long serialVersionUID = 6015257664082605934L;
+		private static final long serialVersionUID = 4870639315784742277L ;
 		@Override
 		public final int hash(final int h) {
 	        return h ; 
@@ -48,11 +48,21 @@ public class Rehashers {
 	public static Rehasher flipEveryHalfByte() { return FLIP_HALF_BYTES_REHASHER ; }
 	private static final Rehasher FLIP_HALF_BYTES_REHASHER = new FlipHalfBytesRehasher() ;
 	private static final class FlipHalfBytesRehasher implements Rehasher {
-		private static final long serialVersionUID = 6015257664082605934L;
+		private static final long serialVersionUID = -4332293538549708634L ;
 		@Override
 		public final int hash(int h) {
 			h = Integer.reverse(Integer.reverseBytes(h)) ;
 			return ((h >> 4) & 0x0F0F0F0F) | ((h << 4) & 0xF0F0F0F0);
+		}
+	}
+	
+	public static Rehasher flip() { return FLIP_REHASHER ; }
+	private static final Rehasher FLIP_REHASHER = new FlipRehasher() ;
+	private static final class FlipRehasher implements Rehasher {
+		private static final long serialVersionUID = 3842239312530302269L ;
+		@Override
+		public final int hash(int h) {
+			return Integer.reverse(h) ;
 		}
 	}
 	
