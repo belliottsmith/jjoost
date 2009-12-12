@@ -17,7 +17,7 @@ public class Hashers {
     /**
      * identity hash code
      */
-	public static final Hasher<Object> identityHash() { return IDENTITY ; }
+	public static final Hasher<Object> identity() { return IDENTITY ; }
     private static final Hasher<Object> IDENTITY = new IdentityHasher() ;
     private static final class IdentityHasher implements Hasher<Object> {
 		private static final long serialVersionUID = 5451996420739109559L ;

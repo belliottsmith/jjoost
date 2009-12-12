@@ -16,9 +16,9 @@ public class HashStoreType {
 	public static HashStoreType serial() { return SERIAL ; }
 	public static HashStoreType blocking() { return BLOCKING ; }
 	public static HashStoreType lockFree() { return NON_BLOCKING ; }
-	public static HashStoreType serial(boolean linked) { return SERIAL_LINKED ; }
-	public static HashStoreType blocking(boolean linked) { return BLOCKING_LINKED ; }
-	public static HashStoreType lockFree(boolean linked) { return LOCK_FREE_LINKED ; }
+	public static HashStoreType linkedSerial() { return SERIAL_LINKED ; }
+	public static HashStoreType linkedBlocking() { return BLOCKING_LINKED ; }
+	public static HashStoreType linkedLockFree() { return LOCK_FREE_LINKED ; }
 //	public static final HashTableType partitionBlocking(int partitions) { return new PartitionedHashTableType(Type.PARTITIONED_BLOCKING, partitions) ; }
 //	public static final HashTableType partitionedNonBlocking(int partitions) { return new PartitionedHashTableType(Type.PARTITIONED_BLOCKING, partitions) ; }
 	
