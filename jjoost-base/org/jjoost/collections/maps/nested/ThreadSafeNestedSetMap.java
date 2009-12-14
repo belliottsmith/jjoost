@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 import org.jjoost.collections.ArbitraryMap;
 import org.jjoost.collections.ArbitrarySet;
-import org.jjoost.collections.ListSet ;
+import org.jjoost.collections.MultiSet ;
 import org.jjoost.collections.ScalarMap;
 import org.jjoost.collections.iters.AbstractIterable ;
 import org.jjoost.collections.lists.UniformList;
@@ -30,9 +30,9 @@ public abstract class ThreadSafeNestedSetMap<K, V, S extends ArbitrarySet<V>> im
 	@SuppressWarnings("unchecked")
 	private static final AtomicIntegerFieldUpdater<ThreadSafeNestedSetMap> totalCountUpdater = AtomicIntegerFieldUpdater.newUpdater(ThreadSafeNestedSetMap.class, "totalCount") ;	
 	
-	protected ListSet<K> keySet ;	
+	protected MultiSet<K> keySet ;	
 	@Override
-	public ListSet<K> keys() {
+	public MultiSet<K> keys() {
 		if (keySet == null) {
 			keySet = new KeySet() ;
 		}
@@ -212,7 +212,7 @@ public abstract class ThreadSafeNestedSetMap<K, V, S extends ArbitrarySet<V>> im
 		map.shrink() ;
 	}
 
-	class KeySet extends AbstractIterable<K> implements ListSet<K> {
+	class KeySet extends AbstractIterable<K> implements MultiSet<K> {
 		
 		private static final long serialVersionUID = 1461826147890179114L ;
 
@@ -252,7 +252,7 @@ public abstract class ThreadSafeNestedSetMap<K, V, S extends ArbitrarySet<V>> im
 		}
 
 		@Override
-		public ListSet<K> copy() {
+		public MultiSet<K> copy() {
 			throw new UnsupportedOperationException() ;
 		}
 

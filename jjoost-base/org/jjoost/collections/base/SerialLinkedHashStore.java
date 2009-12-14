@@ -12,14 +12,13 @@ public class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedH
 
 	private static final long serialVersionUID = -6706178526455624676L;
 
-	public static abstract class SerialLinkedHashNode<N> extends SerialHashNode<N> {
+	public static abstract class SerialLinkedHashNode<N extends SerialLinkedHashNode<N>> extends SerialHashNode<N> {
 		private static final long serialVersionUID = 2035712133283347382L;
 		protected N linkNext ;
 		protected N linkPrev ;
 		public SerialLinkedHashNode(int hash) {
 			super(hash) ;
 		}
-		public abstract N copy() ;
 	}
 	
 	private static final <N extends SerialLinkedHashNode<N>> N newHead() {

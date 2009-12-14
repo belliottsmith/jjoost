@@ -7,6 +7,7 @@ import org.jjoost.collections.ArbitrarySet;
 import org.jjoost.collections.base.HashNodeEquality ;
 import org.jjoost.collections.base.HashNodeFactory ;
 import org.jjoost.collections.base.HashStore ;
+import org.jjoost.collections.base.HashStore.HashNode ;
 import org.jjoost.collections.base.SerialHashStore.SerialHashNode ;
 import org.jjoost.collections.base.SerialLinkedHashStore.SerialLinkedHashNode ;
 import org.jjoost.collections.iters.AbstractIterable ;
@@ -14,11 +15,10 @@ import org.jjoost.util.Equality;
 import org.jjoost.util.Function ;
 import org.jjoost.util.Functions;
 import org.jjoost.util.Hasher;
-import org.jjoost.util.Iters ;
 import org.jjoost.util.Rehasher;
 import org.jjoost.util.tuples.Value;
 
-public abstract class AbstractHashSet<V, N extends Value<V>> implements ArbitrarySet<V> {
+public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> implements ArbitrarySet<V> {
 
 	private static final long serialVersionUID = 3187373892419456381L;
 	
@@ -96,7 +96,7 @@ public abstract class AbstractHashSet<V, N extends Value<V>> implements Arbitrar
 	}
 	@Override
 	public List<V> list(V val) {
-		return Iters.toList(all(val)) ;
+		return store.findNow(hash(val), val, valEq, valProj()) ;
 	}
 	@Override
 	public int totalCount() {

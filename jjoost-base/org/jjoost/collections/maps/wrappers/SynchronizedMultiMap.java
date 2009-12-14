@@ -2,7 +2,7 @@ package org.jjoost.collections.maps.wrappers;
 
 import java.util.Map.Entry ;
 
-import org.jjoost.collections.ListSet ;
+import org.jjoost.collections.MultiSet ;
 import org.jjoost.collections.MultiMap;
 import org.jjoost.collections.ScalarSet ;
 
@@ -13,9 +13,9 @@ public class SynchronizedMultiMap<K, V> extends SynchronizedArbitraryMap<K, V, M
 		super(delegate) ;
 	}
 	
-	private ListSet<K> keySet ;
+	private MultiSet<K> keySet ;
 	private ScalarSet<Entry<K, V>> entrySet ;
-	@Override public synchronized ListSet<K> keys() {
+	@Override public synchronized MultiSet<K> keys() {
 		if (keySet == null)
 			keySet = wrap(delegate.keys()) ;
 		return keySet ;

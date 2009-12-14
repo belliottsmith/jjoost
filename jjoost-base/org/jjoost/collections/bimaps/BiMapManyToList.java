@@ -3,7 +3,7 @@ package org.jjoost.collections.bimaps;
 import java.util.Map.Entry ;
 
 import org.jjoost.collections.ListMap ;
-import org.jjoost.collections.ListSet ;
+import org.jjoost.collections.MultiSet ;
 import org.jjoost.collections.MultiMap ;
 import org.jjoost.collections.ScalarSet ;
 
@@ -43,7 +43,7 @@ public class BiMapManyToList<K, V> extends AbstractBiMap<K, V, MultiMap<K, V>, L
 	}
 
 	@Override
-	public ListSet<K> keys() {
+	public MultiSet<K> keys() {
 		return map.keys() ;
 	}
 

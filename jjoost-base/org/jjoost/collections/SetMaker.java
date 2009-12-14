@@ -1,11 +1,11 @@
 package org.jjoost.collections;
 
 import org.jjoost.collections.base.HashStoreType ;
-import org.jjoost.collections.sets.serial.SerialCountingListHashSet ;
-import org.jjoost.collections.sets.serial.SerialInlineListHashSet ;
-import org.jjoost.collections.sets.serial.SerialNestedListHashSet ;
+import org.jjoost.collections.sets.serial.SerialCountingMultiHashSet ;
+import org.jjoost.collections.sets.serial.SerialInlineMultiHashSet ;
+import org.jjoost.collections.sets.serial.SerialNestedMultiHashSet ;
 import org.jjoost.collections.sets.serial.SerialScalarHashSet ;
-import org.jjoost.collections.sets.wrappers.SynchronizedListSet ;
+import org.jjoost.collections.sets.wrappers.SynchronizedMultiSet ;
 import org.jjoost.collections.sets.wrappers.SynchronizedScalarSet ;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
@@ -24,17 +24,17 @@ public class SetMaker {
 	public static abstract class AbstractSetMaker<V> {
 		
 		public abstract ScalarSet<V> newScalarSet() ;
-		public abstract ListSet<V> newListSet(ListSetNesting<V> nesting) ;
+		public abstract MultiSet<V> newMultiSet(MultiSetNesting<V> nesting) ;
 		protected abstract AbstractSetMaker<V> copy() ;
 		
-		public ListSet<V> newListSet() {
-			return newListSet(ListSetNesting.<V>inline()) ;
+		public MultiSet<V> newMultiSet() {
+			return newMultiSet(MultiSetNesting.<V>inline()) ;
 		}
 		public Factory<ScalarSet<V>> newScalarSetFactory() {
 			return new ScalarSetFactory<V>(this) ;
 		}
-		public Factory<ListSet<V>> newListSetFactory(ListSetNesting<V> nesting) {
-			return new ListSetFactory<V>(this, nesting) ;
+		public Factory<MultiSet<V>> newMultiSetFactory(MultiSetNesting<V> nesting) {
+			return new MultiSetFactory<V>(this, nesting) ;
 		}
 	}
 	
@@ -82,56 +82,56 @@ public class SetMaker {
 			}			
 			throw new UnsupportedOperationException() ;
 		}
-		public ListSet<V> newListSet(ListSetNesting<V> nesting) {
+		public MultiSet<V> newMultiSet(MultiSetNesting<V> nesting) {
 			switch (nesting.type()) {
-			case ListSetNesting.Type.INLINE:
+			case MultiSetNesting.Type.INLINE:
 				switch(type.type()) {
 				case SERIAL:
 				case SYNCHRONIZED:
-					ListSet<V> r = new SerialInlineListHashSet<V>(
+					MultiSet<V> r = new SerialInlineMultiHashSet<V>(
 							initialCapacity, 
 							loadFactor, 
 							hasher, 
 							rehasher(), 
 							eq) ;
 					if (type.type() == HashStoreType.Type.SYNCHRONIZED)
-						r = new SynchronizedListSet<V>(r) ;
+						r = new SynchronizedMultiSet<V>(r) ;
 					return r ;
 				case LOCK_FREE:
 //				case PARTITIONED_BLOCKING:
 //				case PARTITIONED_NON_BLOCKING:
 				}			
 				throw new UnsupportedOperationException() ;
-			case ListSetNesting.Type.NESTED:
+			case MultiSetNesting.Type.NESTED:
 				switch(type.type()) {
 				case SERIAL:
 				case SYNCHRONIZED:
-					ListSet<V> r = new SerialNestedListHashSet<V>(
+					MultiSet<V> r = new SerialNestedMultiHashSet<V>(
 							initialCapacity, 
 							loadFactor,
 							hasher, 
 							rehasher(), 
 							eq) ;
 					if (type.type() == HashStoreType.Type.SYNCHRONIZED)
-						r = new SynchronizedListSet<V>(r) ;
+						r = new SynchronizedMultiSet<V>(r) ;
 					return r ;
 				case LOCK_FREE:
 //				case PARTITIONED_BLOCKING:
 //				case PARTITIONED_NON_BLOCKING:
 					throw new UnsupportedOperationException() ;
 				}			
-			case ListSetNesting.Type.COUNTING:
+			case MultiSetNesting.Type.COUNTING:
 				switch(type.type()) {
 				case SERIAL:
 				case SYNCHRONIZED:
-					ListSet<V> r = new SerialCountingListHashSet<V>(
+					MultiSet<V> r = new SerialCountingMultiHashSet<V>(
 							initialCapacity, 
 							loadFactor,
 							hasher, 
 							rehasher(), 
 							eq) ;
 					if (type.type() == HashStoreType.Type.SYNCHRONIZED)
-						r = new SynchronizedListSet<V>(r) ;
+						r = new SynchronizedMultiSet<V>(r) ;
 					return r ;
 				case LOCK_FREE:
 //				case PARTITIONED_BLOCKING:
@@ -161,17 +161,17 @@ public class SetMaker {
 		}
 	}
 
-	private static final class ListSetFactory<V> implements Factory<ListSet<V>> {
+	private static final class MultiSetFactory<V> implements Factory<MultiSet<V>> {
 		private static final long serialVersionUID = 475702452749567764L;
 		private final AbstractSetMaker<V> maker ;
-		private final ListSetNesting<V> type ;
-		public ListSetFactory(AbstractSetMaker<V> maker, ListSetNesting<V> type) {
+		private final MultiSetNesting<V> type ;
+		public MultiSetFactory(AbstractSetMaker<V> maker, MultiSetNesting<V> type) {
 			this.maker = maker.copy() ;
 			this.type = type ;
 		}
 		@Override
-		public ListSet<V> create() {
-			return maker.newListSet(type) ;
+		public MultiSet<V> create() {
+			return maker.newMultiSet(type) ;
 		}
 	}
 	

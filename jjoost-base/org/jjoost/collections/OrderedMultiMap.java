@@ -16,7 +16,7 @@ public interface OrderedMultiMap<K, V> extends MultiMap<K, V>, OrderedMap<K, V> 
 	@Override public OrderedMultiMap<K, V> removeByEntryAndReturn(FilterPartialOrder<Entry<K, V>> filter) ;
 
 	@Override public OrderedMultiMapEntrySet<K, V> entries() ;	
-	@Override public OrderedListSet<K> keys() ;
+	@Override public OrderedMultiSet<K> keys() ;
 
 	public static interface OrderedMultiMapEntrySet<K, V> extends OrderedMapEntrySet<K, V>, ScalarSet<Map.Entry<K, V>> { 
 		@Override public OrderedMultiMapEntrySet<K, V> filter(FilterPartialOrder<Entry<K, V>> filter) ;

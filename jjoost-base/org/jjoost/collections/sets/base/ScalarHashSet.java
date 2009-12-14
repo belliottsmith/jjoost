@@ -3,12 +3,13 @@ package org.jjoost.collections.sets.base;
 import org.jjoost.collections.ScalarSet;
 import org.jjoost.collections.base.HashNodeFactory ;
 import org.jjoost.collections.base.HashStore ;
+import org.jjoost.collections.base.HashStore.HashNode ;
 import org.jjoost.util.Equality ;
 import org.jjoost.util.Hasher;
 import org.jjoost.util.Rehasher;
 import org.jjoost.util.tuples.Value;
 
-public class ScalarHashSet<V, N extends Value<V>> extends AbstractHashSet<V, N> implements ScalarSet<V> {
+public class ScalarHashSet<V, N extends HashNode<N> & Value<V>> extends AbstractHashSet<V, N> implements ScalarSet<V> {
 
 	private static final long serialVersionUID = -6385620376018172675L;
 

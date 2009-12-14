@@ -4,13 +4,14 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 
 import org.jjoost.collections.ListMap;
-import org.jjoost.collections.ListSet ;
+import org.jjoost.collections.MultiSet ;
 import org.jjoost.collections.base.HashStore ;
+import org.jjoost.collections.base.HashStore.HashNode ;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Hasher;
 import org.jjoost.util.Rehasher;
 
-public class InlineListHashMap<K, V, N extends Entry<K, V>> extends AbstractHashMap<K, V, N> implements ListMap<K, V> {
+public class InlineListHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends AbstractHashMap<K, V, N> implements ListMap<K, V> {
 
 	protected InlineListHashMap(
 			Hasher<? super K> keyHasher, Rehasher rehasher, 
@@ -22,21 +23,21 @@ public class InlineListHashMap<K, V, N extends Entry<K, V>> extends AbstractHash
 	
 	private static final long serialVersionUID = -6385620376018172675L;
 
-	private ListSet<Entry<K, V>> entrySet ;
-	private ListSet<K> keySet ;
+	private MultiSet<Entry<K, V>> entrySet ;
+	private MultiSet<K> keySet ;
 	
 	@Override
-	public ListSet<Entry<K, V>> entries() {
+	public MultiSet<Entry<K, V>> entries() {
 		// don't care if we create multiple of these with multiple threads - eventually all but one of them will disappear and don't want to synchronize on every call
-		ListSet<Entry<K, V>> r = entrySet ;
+		MultiSet<Entry<K, V>> r = entrySet ;
 		if (r == null)
 			entrySet = r = new EntrySet() ;
 		return r ;
 	}
 	@Override
-	public ListSet<K> keys() {
+	public MultiSet<K> keys() {
 		// don't care if we create multiple of these with multiple threads - eventually all but one of them will disappear and don't want to synchronize on every call
-		ListSet<K> r = keySet ;
+		MultiSet<K> r = keySet ;
 		if (r == null) {
 			keySet = r = new KeySet() ;
 		}
@@ -70,7 +71,7 @@ public class InlineListHashMap<K, V, N extends Entry<K, V>> extends AbstractHash
 		return new InlineListHashMap<K, V, N>(keyHasher, rehasher, keyEq, entryEq, nodeFactory, store.copy()) ;
 	}
 	
-	final class KeySet extends AbstractKeySet implements ListSet<K> {
+	final class KeySet extends AbstractKeySet implements MultiSet<K> {
 		private static final long serialVersionUID = 2741936401896784235L;
 		@Override public Iterable<K> unique() { 
 			return new Iterable<K>() {
@@ -85,12 +86,12 @@ public class InlineListHashMap<K, V, N extends Entry<K, V>> extends AbstractHash
 			return true ;
 		}
 		@Override
-		public ListSet<K> copy() {
+		public MultiSet<K> copy() {
 			throw new UnsupportedOperationException() ;
 		}
 	}
 
-	final class EntrySet extends AbstractEntrySet implements ListSet<Entry<K, V>> {
+	final class EntrySet extends AbstractEntrySet implements MultiSet<Entry<K, V>> {
 		private static final long serialVersionUID = 2741936401896784235L;
 		@Override public Iterable<Entry<K, V>> unique() {
 			return new Iterable<Entry<K, V>>() {
@@ -119,7 +120,7 @@ public class InlineListHashMap<K, V, N extends Entry<K, V>> extends AbstractHash
 			return true ;
 		}
 		@Override
-		public ListSet<Entry<K, V>> copy() {
+		public MultiSet<Entry<K, V>> copy() {
 			throw new UnsupportedOperationException() ;
 		}
 	}

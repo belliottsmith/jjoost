@@ -6,7 +6,7 @@ import java.util.Map.Entry;
 
 import org.jjoost.collections.ArbitraryMap;
 import org.jjoost.collections.ArbitrarySet;
-import org.jjoost.collections.ListSet ;
+import org.jjoost.collections.MultiSet ;
 import org.jjoost.collections.ScalarSet;
 import org.jjoost.collections.base.SynchronizedDelegator ;
 
@@ -341,8 +341,8 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends ArbitraryMap<K, V
 	}
 	
 	@SuppressWarnings("hiding")
-	protected <V> ListSet<V> wrap(final ListSet<V> delegate) {
-		return new ListSet<V>() {
+	protected <V> MultiSet<V> wrap(final MultiSet<V> delegate) {
+		return new MultiSet<V>() {
 			private static final long serialVersionUID = -4043870977539052035L;
 			@Override public Iterable<V> all() {
 				synchronized(SynchronizedArbitraryMap.this) {
@@ -374,7 +374,7 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends ArbitraryMap<K, V
 					return delegate.contains(value) ;
 				}
 			}
-			@Override public ListSet<V> copy() {
+			@Override public MultiSet<V> copy() {
 				throw new UnsupportedOperationException() ;
 			}
 			@Override public int count(V value) {

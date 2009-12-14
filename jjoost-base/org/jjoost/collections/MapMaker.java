@@ -180,7 +180,7 @@ public class MapMaker {
 				case SERIAL:
 				case SYNCHRONIZED:
 					ListMap<K, V> r = new ThreadSafeNestedSetListMap<K, V>(
-							MapMaker.<K, ListSet<V>>hash()
+							MapMaker.<K, MultiSet<V>>hash()
 								.initialCapacity(initialCapacity)
 								.loadFactor(loadFactor)
 								.hasher(keyHasher)

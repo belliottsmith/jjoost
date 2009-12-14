@@ -1,10 +1,9 @@
 package org.jjoost.collections.base;
 
-import java.io.Serializable;
-
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
+import java.util.List ;
 import java.util.NoSuchElementException;
 
 import org.jjoost.collections.ScalarSet ;
@@ -21,21 +20,17 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 
 	private static final long serialVersionUID = 5818748848600569496L ;
 
-	public static abstract class SerialHashNode<N> implements Serializable {
+	public static abstract class SerialHashNode<N extends SerialHashNode<N>> extends HashNode<N> {
 		private static final long serialVersionUID = 2035712133283347382L;
-		public final int hash ;
 		protected N next ;
 		public SerialHashNode(int hash) {
-			this.hash = hash ;
+			super(hash) ;
 		}
-		public abstract N copy() ;
-		public final int hash() { return hash ; }
 	}
 	
 	protected N[] table ;
 	protected int totalNodeCount ;
 	protected int uniquePrefixCount ;
-//	protected int mask ;
 	protected int loadLimit ;
 	protected final float loadFactor ;
 	protected transient int modCount = 0 ;	
@@ -52,7 +47,6 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
         	capacity <<= 1 ;
         this.totalNodeCount = 0 ;
         this.table = (N[]) new SerialHashNode[capacity] ;
-//        this.mask = capacity - 1 ;
         this.loadLimit = (int) (capacity * loadFactor) ;
 		this.loadFactor = loadFactor ;
 	}
@@ -60,7 +54,6 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	protected SerialHashStore(float loadFactor, N[] table, int size) {
 		this.totalNodeCount = 0 ;
 		this.table = table ;
-//		this.mask = table.length - 1 ;
 		this.loadLimit = (int) (table.length * loadFactor) ;
 		this.loadFactor = loadFactor ;
 	}
@@ -880,6 +873,11 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	
 	private static <C, N extends SerialHashNode<N>> NodeEquality<C, N> nodeEquality(Function<? super N, ? extends C> f, Equality<? super C> eq) {
 		return new NodeEquality<C, N>(f, eq) ;
+	}
+	@Override
+	public <NCmp, V> List<V> findNow(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> findEq,
+			Function<? super N, ? extends V> ret) {
+		return Iters.toList(find(hash, find, findEq, null, ret)) ;
 	}
 	
 }

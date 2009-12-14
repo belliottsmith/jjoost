@@ -39,6 +39,6 @@ public interface MultiMap<K, V> extends ArbitraryMap<K, V>, Function<K, Iterable
 	public ScalarSet<Entry<K, V>> entries() ;
 	
 	@Override
-	public ListSet<K> keys() ;
+	public MultiSet<K> keys() ;
 	
 }

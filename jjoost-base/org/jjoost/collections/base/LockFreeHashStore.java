@@ -674,6 +674,50 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 	}
 
 	@Override
+	public <NCmp, V> List<V> findNow(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+		final List<V> r = new ArrayList<V>(6) ;
+		N prev = null, prev2 = null ;
+		N node = getTableUnsafe().writerGetUnsafe(hash) ;
+		boolean partial = false ;
+		while (true) {
+			if (node == null) {
+				return r ;
+			} else if (node == REHASHING_FLAG) {
+				// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
+				partial = false ;
+				prev2 = prev = null ;
+				node = getTableSafe().writerGetSafe(hash) ;				
+			} else if (node == DELETING_FLAG | node == DELETED_FLAG) {
+				// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
+				waitOnDelete(prev) ;
+				if (prev2 == null) {
+					partial = false ;
+					prev2 = prev = null ;						
+					node = getTableUnsafe().writerGetSafe(hash) ; // note: could improve by performing a get *un*safe, as we have passed a memory barrier already with the waitOnDelete
+				} else {
+					node = prev2.getNextSafe() ;
+					prev = prev2 ;
+					prev2 = null ;
+					partial = prev.hash == hash && eq.prefixMatch(find, prev) ;
+				}
+			} else {
+				if (partial != (node.hash == hash && eq.prefixMatch(find, node))) {
+					if (partial) return r  ;
+					else  partial = true ;
+				}				
+				if (partial && eq.suffixMatch(find, node)) {
+					// this node is a complete match so simply return it
+					r.add(ret.apply(node)) ;
+				}
+				
+				prev2 = prev ;
+				prev = node ;
+				node = node.getNextUnsafe() ;
+			}
+		}
+	}
+	
+	@Override
 	public <NCmp> int remove(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
 		
 		int c = eq.isUnique() ? -1 : 0 ;
@@ -1261,16 +1305,6 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 	}
 
 	@Override
-	public void resize(int size) {
-		throw new UnsupportedOperationException() ;
-	}
-
-	@Override
-	public void shrink() {
-		throw new UnsupportedOperationException() ;
-	}
-
-	@Override
 	public int totalCount() {
 		int c = totalCounter.getSafe() ;
 		if (c < -1) {
@@ -1290,6 +1324,16 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 			throw new UnsupportedOperationException() ;
 		}
 		return c ;
+	}
+
+	@Override
+	public void resize(int size) {
+		throw new UnsupportedOperationException() ;
+	}
+
+	@Override
+	public void shrink() {
+		throw new UnsupportedOperationException() ;
 	}
 
 	private void waitOnDelete(final N node) {
@@ -1401,6 +1445,33 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 			super(findEq, nodePrefixEqFunc, ret) ;
 			this.find = find ;
 			this.prevHash = hash ;
+			N node = getTableUnsafe().readerGetSafe(hash) ;
+			boolean partial = false ;
+			while (node != null) {
+				if (node == REHASHING_FLAG | node == DELETED_FLAG | node == DELETING_FLAG) {
+					if (node == REHASHING_FLAG) {
+						// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
+						prev2 = prev = null ;
+						node = getTableSafe().writerGetSafe(hash) ;				
+					} else {
+						// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
+						waitOnDelete(prev) ;
+						if (prev2 == null) {
+							prev2 = prev = null ;						
+							node = getTableUnsafe().writerGetSafe(hash) ; // note: could improve by performing a get *un*safe, as we have passed a memory barrier already with the waitOnDelete
+						} else {
+							node = prev2.getNextSafe() ;
+							prev = prev2 ;
+							prev2 = null ;
+						}
+					}
+				} else {
+					
+				}
+				prev2 = prev ;
+				prev = next ;
+				next = next.getNextUnsafe() ;
+			}
 		}
 
 
@@ -1418,11 +1489,11 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 	// NODE DECLARATION
 	// *****************************************
 	
-	public abstract static class Node<N extends Node<N>> {
-		protected final int hash ;
+	public abstract static class Node<N extends Node<N>> extends HashNode<N> {
+		private static final long serialVersionUID = -6236082606699747110L ;
 		private N nextPtr ;
 		public Node(int hash) {
-			this.hash = hash ;
+			super(hash) ;
 		}
 		public abstract N copy() ; 
 		final boolean startRehashing(N expect) {
@@ -1462,7 +1533,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 	}
 	
 	@SuppressWarnings("unchecked")
+	// TODO: override serialization methods to ensure they are deserialized into the global REHASHING_FLAG etc.
 	private static final class FlagNode extends Node {
+		private static final long serialVersionUID = -8235849034699744602L ;
 		public final String type ;
 		public FlagNode(String type) {
 			super(-1) ;

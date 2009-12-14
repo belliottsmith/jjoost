@@ -16,10 +16,9 @@ import org.jjoost.util.Equality ;
 import org.jjoost.util.Function ;
 import org.jjoost.util.Functions;
 import org.jjoost.util.Hasher;
-import org.jjoost.util.Iters ;
 import org.jjoost.util.Rehasher;
 
-public abstract class AbstractHashMap<K, V, N extends Map.Entry<K, V>> implements ArbitraryMap<K, V> {
+public abstract class AbstractHashMap<K, V, N extends HashStore.HashNode<N> & Map.Entry<K, V>> implements ArbitraryMap<K, V> {
 
 	protected static abstract class EntryEquality<K, V, N> implements HashNodeEquality<Entry<K, V>, N>, Equality<N> {
 		private static final long serialVersionUID = -4970889935020537472L ;
@@ -141,7 +140,7 @@ public abstract class AbstractHashMap<K, V, N extends Map.Entry<K, V>> implement
 	}
 	@Override
 	public List<V> list(K key) {
-		return Iters.toList(values(key)) ;
+		return store.findNow(hash(key), key, keyEq, valProj()) ;
 	}
 	@Override
 	public int totalCount() {
@@ -262,7 +261,7 @@ public abstract class AbstractHashMap<K, V, N extends Map.Entry<K, V>> implement
 		
 		@Override
 		public List<K> list(final K key) {
-			return Iters.toList(all(key)) ;
+			return store.findNow(hash(key), key, keyEq, keyProj()) ;
 		}
 		
 		@Override
@@ -379,7 +378,7 @@ public abstract class AbstractHashMap<K, V, N extends Map.Entry<K, V>> implement
 
 		@Override
 		public List<Entry<K, V>> list(Entry<K, V> entry) {
-			return Iters.toList(all(entry)) ;
+			return store.findNow(hash(entry.getKey()), entry, entryEq, entryProj()) ;
 		}
 
 		@Override

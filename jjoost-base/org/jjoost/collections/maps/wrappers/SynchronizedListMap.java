@@ -3,7 +3,7 @@ package org.jjoost.collections.maps.wrappers;
 import java.util.Map.Entry ;
 
 import org.jjoost.collections.ListMap;
-import org.jjoost.collections.ListSet ;
+import org.jjoost.collections.MultiSet ;
 
 public class SynchronizedListMap<K, V> extends SynchronizedArbitraryMap<K, V, ListMap<K, V>> implements ListMap<K, V> {
 	
@@ -12,14 +12,14 @@ public class SynchronizedListMap<K, V> extends SynchronizedArbitraryMap<K, V, Li
 		super(delegate) ;
 	}
 	
-	private ListSet<K> keySet ;
-	private ListSet<Entry<K, V>> entrySet ;
-	@Override public synchronized ListSet<K> keys() {
+	private MultiSet<K> keySet ;
+	private MultiSet<Entry<K, V>> entrySet ;
+	@Override public synchronized MultiSet<K> keys() {
 		if (keySet == null)
 			keySet = wrap(delegate.keys()) ;
 		return keySet ;
 	}
-	@Override public synchronized ListSet<Entry<K, V>> entries() {
+	@Override public synchronized MultiSet<Entry<K, V>> entries() {
 		if (entrySet == null)
 			entrySet = wrap(delegate.entries()) ;
 		return entrySet ;

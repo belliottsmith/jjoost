@@ -3,15 +3,16 @@ package org.jjoost.collections.maps.base;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import org.jjoost.collections.ListSet ;
+import org.jjoost.collections.MultiSet ;
 import org.jjoost.collections.MultiMap;
 import org.jjoost.collections.ScalarSet ;
 import org.jjoost.collections.base.HashStore ;
+import org.jjoost.collections.base.HashStore.HashNode ;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Hasher;
 import org.jjoost.util.Rehasher;
 
-public class InlineMultiHashMap<K, V, N extends Entry<K, V>> extends AbstractHashMap<K, V, N> implements MultiMap<K, V> {
+public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends AbstractHashMap<K, V, N> implements MultiMap<K, V> {
 
 	protected InlineMultiHashMap(
 			Hasher<? super K> keyHasher, Rehasher rehasher, 
@@ -24,7 +25,7 @@ public class InlineMultiHashMap<K, V, N extends Entry<K, V>> extends AbstractHas
 	private static final long serialVersionUID = -6385620376018172675L;
 
 	private ScalarSet<Entry<K, V>> entrySet ;
-	private ListSet<K> keySet ;
+	private MultiSet<K> keySet ;
 	
 	@Override
 	public ScalarSet<Entry<K, V>> entries() {
@@ -35,9 +36,9 @@ public class InlineMultiHashMap<K, V, N extends Entry<K, V>> extends AbstractHas
 		return r ;
 	}
 	@Override
-	public ListSet<K> keys() {
+	public MultiSet<K> keys() {
 		// don't care if we create multiple of these with multiple threads - eventually all but one of them will disappear and don't want to synchronize on every call
-		ListSet<K> r = keySet ;
+		MultiSet<K> r = keySet ;
 		if (r == null) {
 			keySet = r = new KeySet() ;
 		}
@@ -71,7 +72,7 @@ public class InlineMultiHashMap<K, V, N extends Entry<K, V>> extends AbstractHas
 		return new InlineMultiHashMap<K, V, N>(keyHasher, rehasher, keyEq, entryEq, nodeFactory, store.copy()) ;
 	}
 
-	final class KeySet extends AbstractKeySet implements ListSet<K> {
+	final class KeySet extends AbstractKeySet implements MultiSet<K> {
 		private static final long serialVersionUID = 2741936401896784235L;
 		@Override public Iterable<K> unique() { 
 			return new Iterable<K>() {
@@ -86,7 +87,7 @@ public class InlineMultiHashMap<K, V, N extends Entry<K, V>> extends AbstractHas
 			return true ;
 		}
 		@Override
-		public ListSet<K> copy() {
+		public MultiSet<K> copy() {
 			throw new UnsupportedOperationException() ;
 		}
 	}

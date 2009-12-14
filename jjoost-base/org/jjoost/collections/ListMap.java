@@ -34,9 +34,9 @@ public interface ListMap<K, V> extends ArbitraryMap<K, V>, Function<K, Iterable<
 	public ListMap<K, V> copy() ;
 
 	@Override
-	public ListSet<Entry<K, V>> entries() ;
+	public MultiSet<Entry<K, V>> entries() ;
 	
 	@Override
-	public ListSet<K> keys() ;
+	public MultiSet<K> keys() ;
 	
 }

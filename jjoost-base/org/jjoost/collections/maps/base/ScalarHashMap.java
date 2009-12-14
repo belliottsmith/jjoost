@@ -6,13 +6,14 @@ import org.jjoost.collections.ScalarMap;
 import org.jjoost.collections.ScalarSet ;
 import org.jjoost.collections.base.HashNodeFactory ;
 import org.jjoost.collections.base.HashStore ;
+import org.jjoost.collections.base.HashStore.HashNode ;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Factory;
 import org.jjoost.util.Function;
 import org.jjoost.util.Hasher;
 import org.jjoost.util.Rehasher;
 
-public class ScalarHashMap<K, V, N extends Entry<K, V>> extends AbstractHashMap<K, V, N> implements ScalarMap<K, V> {
+public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends AbstractHashMap<K, V, N> implements ScalarMap<K, V> {
 
 	protected ScalarHashMap(
 			Hasher<? super K> keyHasher, Rehasher rehasher, 
