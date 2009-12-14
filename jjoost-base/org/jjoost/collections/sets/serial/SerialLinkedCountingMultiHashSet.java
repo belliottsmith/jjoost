@@ -7,7 +7,7 @@ import org.jjoost.collections.base.HashNodeFactory ;
 import org.jjoost.collections.base.SerialHashStore ;
 import org.jjoost.collections.base.SerialLinkedHashStore ;
 import org.jjoost.collections.base.SerialLinkedHashStore.SerialLinkedHashNode ;
-import org.jjoost.collections.sets.base.CountingListHashSet ;
+import org.jjoost.collections.sets.base.CountingMultiHashSet ;
 import org.jjoost.util.Counter ;
 import org.jjoost.util.Counters ;
 import org.jjoost.util.Equalities;
@@ -16,23 +16,23 @@ import org.jjoost.util.Hasher;
 import org.jjoost.util.Hashers;
 import org.jjoost.util.Rehasher;
 
-public class SerialLinkedCountingListHashSet<V> extends CountingListHashSet<V, SerialLinkedCountingListHashSet.SerialLinkedCountingListHashSetNode<V>>{
+public class SerialLinkedCountingMultiHashSet<V> extends CountingMultiHashSet<V, SerialLinkedCountingMultiHashSet.SerialLinkedCountingListHashSetNode<V>>{
 
 	private static final long serialVersionUID = 1051610520557989640L;
 
-	public SerialLinkedCountingListHashSet() {
+	public SerialLinkedCountingMultiHashSet() {
 		this(16, 0.75f) ;
 	}
-	public SerialLinkedCountingListHashSet(int minimumInitialCapacity, float loadFactor) {
+	public SerialLinkedCountingMultiHashSet(int minimumInitialCapacity, float loadFactor) {
 		this(minimumInitialCapacity, loadFactor, Hashers.object(), SerialHashStore.defaultRehasher(), Equalities.object()) ;
 	}
 	
-	public SerialLinkedCountingListHashSet( 
+	public SerialLinkedCountingMultiHashSet( 
 			int minimumInitialCapacity, float loadFactor, Hasher<? super V> keyHasher, 
 			Rehasher rehasher, Equality<? super V> keyEquality) 
 	{
 		super(Counters.newCounter(), keyHasher, rehasher, 
-			SerialLinkedCountingListHashSet.<V>serialLinkedNodeFactory(), 
+			SerialLinkedCountingMultiHashSet.<V>serialLinkedNodeFactory(), 
 			new ValueEquality<V>(keyEquality), 
 			new SerialLinkedHashStore<SerialLinkedCountingListHashSetNode<V>>(minimumInitialCapacity, loadFactor)) ;
 	}
@@ -119,7 +119,7 @@ public class SerialLinkedCountingListHashSet<V> extends CountingListHashSet<V, S
 		}
 	}
 
-	protected static final class ValueEquality<V> extends CountingListHashSet.ValueEquality<V, SerialLinkedCountingListHashSetNode<V>> {
+	protected static final class ValueEquality<V> extends CountingMultiHashSet.ValueEquality<V, SerialLinkedCountingListHashSetNode<V>> {
 		public ValueEquality(Equality<? super V> valEq) {
 			super(valEq) ;
 		}

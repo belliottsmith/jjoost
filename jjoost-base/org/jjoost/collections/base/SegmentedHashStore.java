@@ -1,0 +1,168 @@
+package org.jjoost.collections.base;
+
+import java.util.Arrays ;
+import java.util.Iterator ;
+import java.util.List ;
+
+import org.jjoost.util.Equality ;
+import org.jjoost.util.Factory ;
+import org.jjoost.util.Function ;
+import org.jjoost.util.Iters ;
+
+public class SegmentedHashStore<N extends HashStore.HashNode<N>> implements HashStore<N> {
+	
+	private static final long serialVersionUID = -5186207371319394054L ;
+	
+	private final HashStore<N>[] segments ;
+	private final int segmentShift ;
+	
+	public SegmentedHashStore(int segments, Factory<HashStore<N>> factory) {
+		this(makeSegments(segments, factory)) ; 
+	}
+	public SegmentedHashStore(HashStore<N>[] segments) {
+		if (Integer.bitCount(segments.length) != 1)
+			throw new IllegalArgumentException("Number of segments provided must be a power of 2") ;
+		this.segments = segments ;
+		this.segmentShift = 32 - Integer.bitCount((segments.length - 1)) ;
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <N extends HashNode<N>> HashStore<N>[] makeSegments(int segments, Factory<HashStore<N>> factory) {
+		final HashStore<N>[] r = new HashStore[segments] ;
+		for (int i = 0 ; i != segments ; i++)
+			r[i] = factory.create() ;
+		return r ;
+	}
+	
+	private final HashStore<N> segmentFor(int hash) {
+		return segments[hash >>> segmentShift] ;
+	}
+	@SuppressWarnings("unchecked")
+	@Override
+	public <NCmp, V> Iterator<V> all(Function<? super N, ? extends NCmp> nodePrefixEqFunc,
+			HashNodeEquality<? super NCmp, ? super N> nodePrefixEq, Function<? super N, ? extends V> ret) {
+		Iterator<V>[] iters = new Iterator[segments.length] ;
+		for (int i = 0 ; i != segments.length ; i++)
+			iters[i] = segments[i].all(nodePrefixEqFunc, nodePrefixEq, ret) ;
+		return Iters.concat(Arrays.asList(iters).iterator()) ;
+	}
+	@SuppressWarnings("unchecked")
+	@Override
+	public <NCmp, V> Iterator<V> unique(Function<? super N, ? extends NCmp> eqF, HashNodeEquality<? super NCmp, ? super N> nodePrefixEq,
+			Equality<? super NCmp> forceUniq, Function<? super N, ? extends V> ret) {
+		Iterator<V>[] iters = new Iterator[segments.length] ;
+		for (int i = 0 ; i != segments.length ; i++)
+			iters[i] = segments[i].unique(eqF, nodePrefixEq, forceUniq, ret) ;
+		return Iters.concat(Arrays.asList(iters).iterator()) ;
+	}
+	@Override
+	public int clear() {
+		int c = 0 ;
+		for (HashStore<N> segment : segments)
+			c += segment.clear() ;
+		return c ;
+	}
+	@SuppressWarnings("unchecked")
+	@Override
+	public <V> Iterator<V> clearAndReturn(Function<? super N, ? extends V> f) {
+		Iterator<V>[] iters = new Iterator[segments.length] ;
+		for (int i = 0 ; i != segments.length ; i++)
+			iters[i] = segments[i].clearAndReturn(f) ;
+		return Iters.concat(Arrays.asList(iters).iterator()) ;
+	}
+	@Override
+	public <NCmp> boolean contains(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
+		return segmentFor(hash).contains(hash, find, eq) ;
+	}
+	@Override
+	public HashStore<N> copy() {
+		// TODO Auto-generated method stub
+		return null ;
+	}
+	@Override
+	public <NCmp> int count(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
+		return segmentFor(hash).count(hash, find, eq) ;
+	}
+	@Override
+	public <NCmp, V> V ensureAndGet(int hash, NCmp put, HashNodeEquality<? super NCmp, ? super N> eq,
+			HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret) {
+		return segmentFor(hash).ensureAndGet(hash, put, eq, factory, ret) ;
+	}
+	@Override
+	public <NCmp, V> Iterator<V> find(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> findEq,
+			Function<? super N, ? extends NCmp> nodePrefixEqFunc, Function<? super N, ? extends V> ret) {
+		return segmentFor(hash).find(hash, find, findEq, nodePrefixEqFunc, ret) ;
+	}
+	@Override
+	public <NCmp, V> V first(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+		return segmentFor(hash).first(hash, find, eq, ret) ;
+	}
+	@Override
+	public boolean isEmpty() {
+		for (HashStore<N> segment : segments)
+			if (!segment.isEmpty())
+				return false ;
+		return true ;
+	}
+	@Override
+	public <NCmp, V> V put(NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+		return segmentFor(put.hash).put(find, put, eq, ret) ;
+	}
+	@Override
+	public <NCmp, V> V putIfAbsent(int hash, NCmp put, HashNodeEquality<? super NCmp, ? super N> eq,
+			HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret) {
+		return segmentFor(hash).putIfAbsent(hash, put, eq, factory, ret) ;
+	}
+	@Override
+	public <NCmp, V> V putIfAbsent(NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+		return segmentFor(put.hash).putIfAbsent(find, put, eq, ret) ;
+	}
+	@Override
+	public <NCmp> int remove(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
+		return segmentFor(hash).remove(hash, find, eq) ;
+	}
+	@Override
+	public <NCmp, V> Iterable<V> removeAndReturn(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq,
+			Function<? super N, ? extends V> ret) {
+		return segmentFor(hash).removeAndReturn(hash, find, eq, ret) ;
+	}
+	@Override
+	public <NCmp, V> V removeAndReturnFirst(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq,
+			Function<? super N, ? extends V> ret) {
+		return segmentFor(hash).removeAndReturnFirst(hash, find, eq, ret) ;
+	}
+	@Override
+	public <NCmp> boolean removeNode(Function<? super N, ? extends NCmp> nodePrefixEqFunc,
+			HashNodeEquality<? super NCmp, ? super N> nodePrefixEq, N n) {
+		return segmentFor(n.hash).removeNode(nodePrefixEqFunc, nodePrefixEq, n) ;
+	}
+	@Override
+	public void resize(int size) {
+		throw new UnsupportedOperationException() ;
+	}
+	@Override
+	public void shrink() {
+		for (HashStore<N> segment : segments)
+			segment.shrink() ;
+	}
+	@Override
+	public int totalCount() {
+		int tc = 0 ;
+		for (HashStore<N> segment : segments)
+			tc+= segment.totalCount() ;
+		return tc ;
+	}
+	@Override
+	public int uniquePrefixCount() {
+		int c = 0 ;
+		for (HashStore<N> segment : segments)
+			c+= segment.uniquePrefixCount() ;
+		return c ;
+	}
+	@Override
+	public <NCmp, V> List<V> findNow(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> findEq,
+			Function<? super N, ? extends V> ret) {
+		return segmentFor(hash).findNow(hash, find, findEq, ret) ;
+	}
+	
+}

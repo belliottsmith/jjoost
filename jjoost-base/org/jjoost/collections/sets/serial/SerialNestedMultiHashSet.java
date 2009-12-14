@@ -8,7 +8,7 @@ import java.util.NoSuchElementException ;
 import org.jjoost.collections.base.HashNodeFactory ;
 import org.jjoost.collections.base.SerialHashStore ;
 import org.jjoost.collections.base.SerialHashStore.SerialHashNode ;
-import org.jjoost.collections.sets.base.NestedListHashSet ;
+import org.jjoost.collections.sets.base.NestedMultiHashSet ;
 import org.jjoost.util.Counters ;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
@@ -16,24 +16,24 @@ import org.jjoost.util.Hasher;
 import org.jjoost.util.Hashers;
 import org.jjoost.util.Rehasher;
 
-public class SerialNestedListHashSet<V> extends NestedListHashSet<V, SerialNestedListHashSet.Node<V>>{
+public class SerialNestedMultiHashSet<V> extends NestedMultiHashSet<V, SerialNestedMultiHashSet.Node<V>>{
 
 	private static final long serialVersionUID = 1051610520557989640L;
 
-	public SerialNestedListHashSet() {
+	public SerialNestedMultiHashSet() {
 		this(16, 0.75f) ;
 	}
-	public SerialNestedListHashSet(int minimumInitialCapacity, float loadFactor) {
+	public SerialNestedMultiHashSet(int minimumInitialCapacity, float loadFactor) {
 		this(minimumInitialCapacity, loadFactor, Hashers.object(), SerialHashStore.defaultRehasher(), Equalities.object()) ;
 	}
 	
-	public SerialNestedListHashSet( 
+	public SerialNestedMultiHashSet( 
 			int minimumInitialCapacity, float loadFactor, Hasher<? super V> keyHasher, 
 			Rehasher rehasher, Equality<? super V> keyEquality) 
 	{
 		super(Counters.newCounter(), keyHasher, rehasher, 
 			new ValueEquality<V, Node<V>>(keyEquality), 
-			SerialNestedListHashSet.<V>factory(), 
+			SerialNestedMultiHashSet.<V>factory(), 
 			new SerialHashStore<Node<V>>(minimumInitialCapacity, loadFactor)) ;
 	}
 
@@ -111,7 +111,7 @@ public class SerialNestedListHashSet<V> extends NestedListHashSet<V, SerialNeste
 			};
 		}
 		@Override
-		public Iterator<V> iterator(final NestedListHashSet<V, Node<V>> set) {
+		public Iterator<V> iterator(final NestedMultiHashSet<V, Node<V>> set) {
 			return new Iterator<V>() {
 				int last = -1 ;
 				int next = 0 ;

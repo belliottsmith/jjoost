@@ -9,7 +9,7 @@ import org.jjoost.collections.base.HashNodeFactory ;
 import org.jjoost.collections.base.SerialHashStore ;
 import org.jjoost.collections.base.SerialLinkedHashStore ;
 import org.jjoost.collections.base.SerialLinkedHashStore.SerialLinkedHashNode ;
-import org.jjoost.collections.sets.base.NestedListHashSet ;
+import org.jjoost.collections.sets.base.NestedMultiHashSet ;
 import org.jjoost.util.Counters ;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
@@ -17,24 +17,24 @@ import org.jjoost.util.Hasher;
 import org.jjoost.util.Hashers;
 import org.jjoost.util.Rehasher;
 
-public class SerialLinkedNestedListHashSet<V> extends NestedListHashSet<V, SerialLinkedNestedListHashSet.Node<V>>{
+public class SerialLinkedNestedMultiHashSet<V> extends NestedMultiHashSet<V, SerialLinkedNestedMultiHashSet.Node<V>>{
 
 	private static final long serialVersionUID = 1051610520557989640L;
 
-	public SerialLinkedNestedListHashSet() {
+	public SerialLinkedNestedMultiHashSet() {
 		this(16, 0.75f) ;
 	}
-	public SerialLinkedNestedListHashSet(int minimumInitialCapacity, float loadFactor) {
+	public SerialLinkedNestedMultiHashSet(int minimumInitialCapacity, float loadFactor) {
 		this(minimumInitialCapacity, loadFactor, Hashers.object(), SerialHashStore.defaultRehasher(), Equalities.object()) ;
 	}
 	
-	public SerialLinkedNestedListHashSet( 
+	public SerialLinkedNestedMultiHashSet( 
 			int minimumInitialCapacity, float loadFactor, Hasher<? super V> keyHasher, 
 			Rehasher rehasher, Equality<? super V> keyEquality) 
 	{
 		super(Counters.newCounter(), keyHasher, rehasher, 
 			new ValueEquality<V, Node<V>>(keyEquality), 
-			SerialLinkedNestedListHashSet.<V>factory(), 
+			SerialLinkedNestedMultiHashSet.<V>factory(), 
 			new SerialLinkedHashStore<Node<V>>(minimumInitialCapacity, loadFactor)) ;
 	}
 
@@ -112,7 +112,7 @@ public class SerialLinkedNestedListHashSet<V> extends NestedListHashSet<V, Seria
 			};
 		}
 		@Override
-		public Iterator<V> iterator(final NestedListHashSet<V, Node<V>> set) {
+		public Iterator<V> iterator(final NestedMultiHashSet<V, Node<V>> set) {
 			return new Iterator<V>() {
 				int last = -1 ;
 				int next = 0 ;

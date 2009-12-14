@@ -1,6 +1,6 @@
 package org.jjoost.collections;
 
-public class ListSetNesting<V> {
+public class MultiSetNesting<V> {
 
 	public static final class Type {
 		public static final int INLINE = 1 ;
@@ -10,32 +10,32 @@ public class ListSetNesting<V> {
 	
 	public int type() { return type ; }
 	private final int type ;
-	public ListSetNesting(int type) {
+	public MultiSetNesting(int type) {
 		super();
 		this.type = type;
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static final ListSetNesting INLINE = new ListSetNesting(Type.INLINE) ;
+	private static final MultiSetNesting INLINE = new MultiSetNesting(Type.INLINE) ;
 	
 	@SuppressWarnings("unchecked")
-	private static final ListSetNesting COUNTING = new ListSetNesting(Type.COUNTING) ;
+	private static final MultiSetNesting COUNTING = new MultiSetNesting(Type.COUNTING) ;
 	
 	@SuppressWarnings("unchecked")
-	private static final ListSetNesting NESTED = new ListSetNesting(Type.NESTED) ;
+	private static final MultiSetNesting NESTED = new MultiSetNesting(Type.NESTED) ;
 	
 	@SuppressWarnings("unchecked")
-	public static <V> ListSetNesting<V> inline() {
+	public static <V> MultiSetNesting<V> inline() {
 		return INLINE ;
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static <V> ListSetNesting<V> counting() {
+	public static <V> MultiSetNesting<V> counting() {
 		return COUNTING ;
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static <V> ListSetNesting<V> nested() {
+	public static <V> MultiSetNesting<V> nested() {
 		return NESTED ;
 	}
 	
