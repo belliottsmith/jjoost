@@ -4,10 +4,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jjoost.collections.ArbitrarySet;
+import org.jjoost.collections.base.HashNode ;
 import org.jjoost.collections.base.HashNodeEquality ;
 import org.jjoost.collections.base.HashNodeFactory ;
 import org.jjoost.collections.base.HashStore ;
-import org.jjoost.collections.base.HashStore.HashNode ;
 import org.jjoost.collections.base.SerialHashStore.SerialHashNode ;
 import org.jjoost.collections.base.SerialLinkedHashStore.SerialLinkedHashNode ;
 import org.jjoost.collections.iters.AbstractIterable ;
@@ -125,7 +125,7 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> imple
 		return new Iterable<V>() {
 			@Override
 			public Iterator<V> iterator() {
-				return store.find(hash, val, valEq, valProj(), valProj()) ;
+				return store.find(hash, val, valEq, valProj(), valEq, valProj()) ;
 			}
 		} ;
 	}

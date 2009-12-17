@@ -6,12 +6,11 @@ import java.util.Iterator;
 import java.util.List ;
 import java.util.NoSuchElementException;
 
-import org.jjoost.collections.ScalarSet ;
-import org.jjoost.collections.sets.serial.SerialScalarHashSet ;
+import org.jjoost.collections.ArbitrarySet ;
+import org.jjoost.collections.sets.serial.MultiArraySet ;
 import org.jjoost.util.Equality ;
 import org.jjoost.util.Function;
 import org.jjoost.util.Functions;
-import org.jjoost.util.Hashers ;
 import org.jjoost.util.Iters ;
 import org.jjoost.util.Rehasher;
 import org.jjoost.util.Rehashers;
@@ -457,19 +456,36 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		return null ;
 	}
 
+	// TODO : for efficiency, don't delegate to Iters.toList() 
 	@Override
-	public <NCmp, V> Iterator<V> find(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> findEq, Function<? super N, ? extends NCmp> nodePrefixEqProj, Function<? super N, ? extends V> retProj) {		
-		return new Search<NCmp, V>(hash, find, findEq, nodePrefixEqProj, retProj) ;
+	public <NCmp, V> List<V> findNow(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> findEq,
+			Function<? super N, ? extends V> ret) {
+		return Iters.toList(find(hash, find, findEq, null, null, ret)) ;
+	}
+	
+	@Override
+	public <NCmp, NCmp2, V> Iterator<V> find(
+			int hash, NCmp find, 
+			HashNodeEquality<? super NCmp, ? super N> findEq, 
+			Function<? super N, ? extends NCmp2> nodeEqualityProj, 
+			HashNodeEquality<? super NCmp2, ? super N> nodeEq, 
+			Function<? super N, ? extends V> ret) {		
+		return new Search<NCmp, NCmp2, V>(hash, find, findEq, nodeEqualityProj, nodeEq, ret) ;
 	}
 	
 	@Override
 	public <NCmp, V> Iterator<V> all(Function<? super N, ? extends NCmp> nodePrefixEqProj, HashNodeEquality<? super NCmp, ? super N> nodePrefixEq, Function<? super N, ? extends V> retProj) {
-		return new AllIterator<NCmp, V>(nodePrefixEq, nodePrefixEqProj, retProj) ;
+		return new AllIterator<NCmp, V>(nodePrefixEqProj, nodePrefixEq, retProj) ;
 	}
 	
 	@Override
-	public <NCmp, V> Iterator<V> unique(Function<? super N, ? extends NCmp> proj, HashNodeEquality<? super NCmp, ? super N> nodePrefixEq, Equality<? super NCmp> forceUniq, Function<? super N, ? extends V> ret) {
-		return new UniqueIterator<NCmp, V>(proj, forceUniq, nodePrefixEq, ret) ;
+	public <NCmp, NCmp2, V> Iterator<V> unique(
+			Function<? super N, ? extends NCmp> uniquenessEqualityProj, 
+			Equality<? super NCmp> uniquenessEquality, 
+			Function<? super N, ? extends NCmp2> nodeEqualityProj, 
+			HashNodeEquality<? super NCmp2, ? super N> nodeEquality, 
+			Function<? super N, ? extends V> ret) {
+		return new UniqueIterator<NCmp, NCmp2, V>(uniquenessEqualityProj, uniquenessEquality, nodeEqualityProj, nodeEquality, ret) ;
 	}
 	
 	// **************************************************
@@ -478,14 +494,19 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	
 	abstract class GeneralIterator<NCmp, V> implements Iterator<V> {
 		
-		final Function<? super N, ? extends NCmp> eqF ;
-		final HashNodeEquality<? super NCmp, ? super N> eq ;
+		final Function<? super N, ? extends NCmp> nodeEqualityProj ;
+		final HashNodeEquality<? super NCmp, ? super N> nodeEquality ;
+		final Function<? super N, ? extends V> ret ;
 		int curHash , curModCount = modCount ;
 		N curPrev , curNode , nextPrev , nextNode ;
 
-		public GeneralIterator(HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends NCmp> eqF) {
-			this.eq = eq ;
-			this.eqF = eqF ;
+		public GeneralIterator(
+				Function<? super N, ? extends NCmp> nodeEqualityProj, 
+				HashNodeEquality<? super NCmp, ? super N> nodeEquality,
+				Function<? super N, ? extends V> ret) {
+			this.nodeEqualityProj = nodeEqualityProj ;
+			this.nodeEquality = nodeEquality ;
+			this.ret = ret ;
 		}
 
 		public boolean hasNext() { 
@@ -499,12 +520,12 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 				throw new NoSuchElementException("Nothing to remove!") ;
 			if (curPrev == null) {
 				table[curHash] = curNode.next ;
-				if (nextNode == null || !eq.prefixMatch(eqF.apply(curNode), nextNode))
+				if (nextNode == null || !nodeEquality.prefixMatch(nodeEqualityProj.apply(curNode), nextNode))
 					uniquePrefixCount -= 1 ;
 			} else {
 				curPrev.next = curNode.next ;
-				final NCmp cmp = eqF.apply(curPrev) ;
-				if (!eq.prefixMatch(cmp, curNode) && (nextNode == null || !eq.prefixMatch(cmp, nextNode)))
+				final NCmp cmp = nodeEqualityProj.apply(curPrev) ;
+				if (!nodeEquality.prefixMatch(cmp, curNode) && (nextNode == null || !nodeEquality.prefixMatch(cmp, nextNode)))
 					uniquePrefixCount -= 1 ;
 			}
 			removed(curNode) ;
@@ -518,12 +539,10 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	
 	private class AllIterator<NCmp, V> extends GeneralIterator<NCmp, V> {
 		
-		final Function<? super N, ? extends V> ret ;
 		int nextHash = - 1 ;
 		
-		AllIterator(HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends NCmp> eqF, Function<? super N, ? extends V> ret) {
-			super(eq, eqF) ;
-			this.ret = ret ;
+		AllIterator(Function<? super N, ? extends NCmp> nodeEqualityProj, HashNodeEquality<? super NCmp, ? super N> nodeEquality, Function<? super N, ? extends V> ret) {
+			super(nodeEqualityProj, nodeEquality, ret) ;
 			while (nextNode == null & nextHash != table.length - 1) {
 				nextNode = table[++nextHash] ;
 			}
@@ -542,6 +561,103 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 			while (nextNode == null & nextHash != table.length - 1) {
 				nextPrev = nextNode ;
 				nextNode = table[++nextHash] ;
+			}
+			return ret.apply(curNode) ;
+		}
+		
+	}
+	
+	private class UniqueIterator<NCmp, NCmp2, V> extends GeneralIterator<NCmp2, V> {
+		
+		final Function<? super N, ? extends NCmp> uniquenessEqualityProj ;
+		final ArbitrarySet<NCmp> seen ;
+		
+		int nextHash = - 1 ;
+		
+		UniqueIterator(
+				Function<? super N, ? extends NCmp> uniquenessEqualityProj, 
+				Equality<? super NCmp> uniquenessEquality, 
+				Function<? super N, ? extends NCmp2> nodeEqualityProj, 
+				HashNodeEquality<? super NCmp2, ? super N> nodeEquality, 
+				Function<? super N, ? extends V> ret) {
+			super(nodeEqualityProj, nodeEquality, ret) ;
+			this.seen = new MultiArraySet<NCmp>(4, uniquenessEquality) ;
+			this.uniquenessEqualityProj = uniquenessEqualityProj ;
+			while (nextNode == null & nextHash != table.length - 1) {
+				nextNode = table[++nextHash] ;
+			}
+		}
+		
+		public V next() {
+			if (curModCount != modCount)
+				throw new ConcurrentModificationException() ;
+			if (nextNode == null)
+				throw new NoSuchElementException() ;
+			seen.put(uniquenessEqualityProj.apply(nextNode)) ;
+			curNode = nextNode ;
+			curHash = nextHash ;
+			curPrev = nextPrev ;
+			nextPrev = nextNode ;			
+			nextNode = nextNode.next ;
+			while (nextNode != null && seen.contains(uniquenessEqualityProj.apply(nextNode))) {				
+				nextNode = nextNode.next ;
+				while (nextNode == null & nextHash != table.length - 1) {
+					nextPrev = nextNode ;
+					nextNode = table[++nextHash] ;
+				}
+			}
+			if (nextNode == null || curNode.hash != nextNode.hash 
+					|| !nodeEquality.prefixMatch(nodeEqualityProj.apply(curNode), nextNode))
+				seen.clear() ;
+			return ret.apply(curNode) ;
+		}
+		
+	}
+	
+	class Search<NCmp, NCmp2, V> extends GeneralIterator<NCmp2, V> {
+				
+		final NCmp find ;
+		final HashNodeEquality<? super NCmp, ? super N> findEquality ;
+		
+		Search(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> findEq, 
+				Function<? super N, ? extends NCmp2> nodeEqualityProj,
+				HashNodeEquality<? super NCmp2, ? super N> nodeEquality,
+				Function<? super N, ? extends V> ret) {
+			super(nodeEqualityProj, nodeEquality, ret) ;
+			this.find = find ;
+			this.curHash = hash & (table.length - 1) ;
+			this.findEquality = findEq ;
+			nextNode = table[curHash] ;
+			boolean partial = false ;
+			while (nextNode != null) {
+				if (partial != (curNode.hash == nextNode.hash && findEq.prefixMatch(find, nextNode))) {
+					if (partial) {
+						nextNode = null ;
+						nextPrev = null ;
+						return ;
+					} else partial = true ;
+				}
+				if (partial && findEq.suffixMatch(find, nextNode))
+					break ;
+			}
+		}
+		
+		public V next() {
+			if (curModCount != modCount)
+				throw new ConcurrentModificationException() ;
+			if (nextNode == null)
+				throw new NoSuchElementException() ;
+			curNode = nextNode ;
+			curPrev = nextPrev ;
+			if (findEquality.isUnique()) {
+				nextPrev = nextNode = null ;
+			} else {
+				nextPrev = nextNode ;
+				nextNode = nextNode.next ;
+				while (nextNode != null && curNode.hash == nextNode.hash && findEquality.prefixMatch(find, nextNode) && !findEquality.suffixMatch(find, nextNode)) {
+					nextPrev = nextNode ;
+					nextNode = nextNode.next ;
+				}
 			}
 			return ret.apply(curNode) ;
 		}
@@ -584,94 +700,6 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		
 	}
 
-	private class UniqueIterator<NCmp, V> extends GeneralIterator<NCmp, V> {
-		
-		final ScalarSet<N> seen ;
-		final Function<? super N, ? extends V> ret ;
-		
-		int nextHash = - 1 ;
-		
-		UniqueIterator(Function<? super N, ? extends NCmp> eqF, Equality<? super NCmp> uniqEq, HashNodeEquality<? super NCmp, ? super N> nodeEq, Function<? super N, ? extends V> ret) {
-			super(nodeEq, eqF) ;
-			this.ret = ret ;
-			this.seen = new SerialScalarHashSet<N>(8, 2f, Hashers.object(), Rehashers.flipEveryHalfByte(), SerialHashStore.<NCmp, N>nodeEquality(eqF, uniqEq)) ;
-			while (nextNode == null & nextHash != table.length - 1) {
-				nextNode = table[++nextHash] ;
-			}
-		}
-		
-		public V next() {
-			if (curModCount != modCount)
-				throw new ConcurrentModificationException() ;
-			if (nextNode == null)
-				throw new NoSuchElementException() ;
-			seen.put(nextNode) ;
-			curNode = nextNode ;
-			curHash = nextHash ;
-			curPrev = nextPrev ;
-			nextPrev = nextNode ;			
-			nextNode = nextNode.next ;
-			while (nextNode != null && seen.contains(nextNode)) {				
-				nextNode = nextNode.next ;
-				while (nextNode == null & nextHash != table.length - 1) {
-					nextPrev = nextNode ;
-					nextNode = table[++nextHash] ;
-				}
-			}
-			if (nextNode == null || curNode.hash != nextNode.hash || !eq.prefixMatch(eqF.apply(curNode), nextNode))
-				seen.clear() ;
-			return ret.apply(curNode) ;
-		}
-		
-	}
-	
-	class Search<NCmp, V> extends GeneralIterator<NCmp, V> {
-		
-		final NCmp find ;
-		final Function<? super N, ? extends V> f ;
-		
-		Search(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> findEq, Function<? super N, ? extends NCmp> nodeEqFunc, Function<? super N, ? extends V> f) {
-			super(findEq, nodeEqFunc) ;
-			this.find = find ;
-			this.curHash = hash & (table.length - 1) ;
-			this.f = f ;
-			nextNode = table[curHash] ;
-			boolean partial = false ;
-			while (nextNode != null) {
-				if (partial != (curNode.hash == nextNode.hash && findEq.prefixMatch(find, nextNode))) {
-					if (partial) {
-						nextNode = null ;
-						nextPrev = null ;
-						return ;
-					} else partial = true ;
-				}
-				if (partial && findEq.suffixMatch(find, nextNode))
-					break ;
-			}
-		}
-		
-		public V next() {
-			if (curModCount != modCount)
-				throw new ConcurrentModificationException() ;
-			if (nextNode == null)
-				throw new NoSuchElementException() ;
-			curNode = nextNode ;
-			curPrev = nextPrev ;
-			if (eq.isUnique()) {
-				nextPrev = nextNode = null ;
-			} else {
-				nextPrev = nextNode ;
-				nextNode = nextNode.next ;
-				while (nextNode != null && curNode.hash == nextNode.hash && eq.prefixMatch(find, nextNode) && !eq.suffixMatch(find, nextNode)) {
-					nextPrev = nextNode ;
-					nextNode = nextNode.next ;
-				}
-			}
-			return f.apply(curNode) ;
-		}
-		
-	}
-	
 	// **************************************************
 	// PRIVATE METHODS
 	// **************************************************
@@ -854,30 +882,4 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		return Rehashers.jdkHashmapRehasher() ;
 	}
 
-	private static final class NodeEquality<C, N extends SerialHashNode<N>> implements Equality<N> {
-		private static final long serialVersionUID = 624143538048396654L ;
-		private final Function<? super N, ? extends C> f ;
-		private final Equality<? super C> eq ;
-		public NodeEquality(Function<? super N, ? extends C> f, Equality<? super C> eq) {
-			super() ;
-			this.f = f ;
-			this.eq = eq ;
-		}
-		@Override
-		public boolean equates(N a, N b) {
-			final C ac = f.apply(a) ;
-			final C bc = f.apply(b) ;
-			return eq.equates(ac, bc) ;
-		}
-	} ;
-	
-	private static <C, N extends SerialHashNode<N>> NodeEquality<C, N> nodeEquality(Function<? super N, ? extends C> f, Equality<? super C> eq) {
-		return new NodeEquality<C, N>(f, eq) ;
-	}
-	@Override
-	public <NCmp, V> List<V> findNow(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> findEq,
-			Function<? super N, ? extends V> ret) {
-		return Iters.toList(find(hash, find, findEq, null, ret)) ;
-	}
-	
 }

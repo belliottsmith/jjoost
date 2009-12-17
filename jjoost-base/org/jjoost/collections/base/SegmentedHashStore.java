@@ -9,7 +9,7 @@ import org.jjoost.util.Factory ;
 import org.jjoost.util.Function ;
 import org.jjoost.util.Iters ;
 
-public class SegmentedHashStore<N extends HashStore.HashNode<N>> implements HashStore<N> {
+public class SegmentedHashStore<N extends HashNode<N>> implements HashStore<N> {
 	
 	private static final long serialVersionUID = -5186207371319394054L ;
 	
@@ -48,11 +48,15 @@ public class SegmentedHashStore<N extends HashStore.HashNode<N>> implements Hash
 	}
 	@SuppressWarnings("unchecked")
 	@Override
-	public <NCmp, V> Iterator<V> unique(Function<? super N, ? extends NCmp> eqF, HashNodeEquality<? super NCmp, ? super N> nodePrefixEq,
-			Equality<? super NCmp> forceUniq, Function<? super N, ? extends V> ret) {
+	public <NCmp, NCmp2, V> Iterator<V> unique(
+			Function<? super N, ? extends NCmp> uniquenessEqualityProj, 
+			Equality<? super NCmp> uniquenessEquality, 
+			Function<? super N, ? extends NCmp2> nodeEqualityProj, 
+			HashNodeEquality<? super NCmp2, ? super N> nodeEquality, 
+			Function<? super N, ? extends V> ret) {
 		Iterator<V>[] iters = new Iterator[segments.length] ;
 		for (int i = 0 ; i != segments.length ; i++)
-			iters[i] = segments[i].unique(eqF, nodePrefixEq, forceUniq, ret) ;
+			iters[i] = segments[i].unique(uniquenessEqualityProj, uniquenessEquality, nodeEqualityProj, nodeEquality, ret) ;
 		return Iters.concat(Arrays.asList(iters).iterator()) ;
 	}
 	@Override
@@ -89,9 +93,13 @@ public class SegmentedHashStore<N extends HashStore.HashNode<N>> implements Hash
 		return segmentFor(hash).ensureAndGet(hash, put, eq, factory, ret) ;
 	}
 	@Override
-	public <NCmp, V> Iterator<V> find(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> findEq,
-			Function<? super N, ? extends NCmp> nodePrefixEqFunc, Function<? super N, ? extends V> ret) {
-		return segmentFor(hash).find(hash, find, findEq, nodePrefixEqFunc, ret) ;
+	public <NCmp, NCmp2, V> Iterator<V> find(
+			int hash, NCmp find, 
+			HashNodeEquality<? super NCmp, ? super N> findEq, 
+			Function<? super N, ? extends NCmp2> nodeEqualityProj, 
+			HashNodeEquality<? super NCmp2, ? super N> nodeEq, 
+			Function<? super N, ? extends V> ret) {
+		return segmentFor(hash).find(hash, find, findEq, nodeEqualityProj, nodeEq, ret) ;
 	}
 	@Override
 	public <NCmp, V> V first(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {

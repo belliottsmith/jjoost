@@ -5,8 +5,8 @@ import java.util.Map.Entry;
 
 import org.jjoost.collections.ListMap;
 import org.jjoost.collections.MultiSet ;
+import org.jjoost.collections.base.HashNode ;
 import org.jjoost.collections.base.HashStore ;
-import org.jjoost.collections.base.HashStore.HashNode ;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Hasher;
 import org.jjoost.util.Rehasher;
@@ -77,7 +77,7 @@ public class InlineListHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extend
 			return new Iterable<K>() {
 				@Override
 				public Iterator<K> iterator() {
-					return store.unique(keyProj(), keyEq, keyEq.getKeyEquality(), keyProj()) ;
+					return store.unique(keyProj(), keyEq.getKeyEquality(), nodeProj(), entryEq, keyProj()) ;
 				}
 			} ;
 		}
@@ -97,7 +97,7 @@ public class InlineListHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extend
 			return new Iterable<Entry<K, V>>() {
 				@Override
 				public Iterator<Entry<K, V>> iterator() {
-					return store.unique(nodeProj(), entryEq, entryEq, entryProj()) ;
+					return store.unique(nodeProj(), entryEq, nodeProj(), entryEq, entryProj()) ;
 				}
 			};
 		}

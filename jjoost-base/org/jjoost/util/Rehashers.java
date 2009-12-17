@@ -35,7 +35,7 @@ public class Rehashers {
 		}
 	}
 	
-	public static Rehasher identity() { return IDENTITY_REHASHER ; }
+	public static Rehasher none() { return IDENTITY_REHASHER ; }
 	private static final Rehasher IDENTITY_REHASHER = new IdentityRehasher() ;
 	private static final class IdentityRehasher implements Rehasher {
 		private static final long serialVersionUID = 4870639315784742277L ;

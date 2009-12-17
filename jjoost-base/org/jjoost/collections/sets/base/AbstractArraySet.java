@@ -8,6 +8,7 @@ import java.util.List ;
 import org.jjoost.collections.ArbitrarySet ;
 import org.jjoost.collections.iters.ArrayIterable ;
 import org.jjoost.collections.iters.ArrayIterator ;
+import org.jjoost.util.Equalities ;
 import org.jjoost.util.Equality ;
 
 public abstract class AbstractArraySet<V> implements ArbitrarySet<V> {
@@ -23,6 +24,9 @@ public abstract class AbstractArraySet<V> implements ArbitrarySet<V> {
 		}
 	}
 	
+	public AbstractArraySet(int initialCapacity) {
+		this(initialCapacity, Equalities.object()) ;
+	}
 	@SuppressWarnings("unchecked")
 	public AbstractArraySet(int initialCapacity, Equality<? super V> valEq) {
 		vals = (V[]) new Object[initialCapacity] ;
@@ -110,15 +114,6 @@ public abstract class AbstractArraySet<V> implements ArbitrarySet<V> {
 	@Override
 	public void shrink() {
 		vals = Arrays.copyOf(vals, count < 1 ? 1 : count) ;
-	}
-
-	@Override
-	public Iterable<V> all(V v) {
-		List<V> r = new ArrayList<V>() ;
-		for (int i = 0 ; i != count ; i++)
-			if (valEq.equates(v, vals[i]))
-				r.add(v) ;
-		return r ;
 	}
 
 	@Override

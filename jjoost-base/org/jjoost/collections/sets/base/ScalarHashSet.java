@@ -1,9 +1,9 @@
 package org.jjoost.collections.sets.base;
 
 import org.jjoost.collections.ScalarSet;
+import org.jjoost.collections.base.HashNode ;
 import org.jjoost.collections.base.HashNodeFactory ;
 import org.jjoost.collections.base.HashStore ;
-import org.jjoost.collections.base.HashStore.HashNode ;
 import org.jjoost.util.Equality ;
 import org.jjoost.util.Hasher;
 import org.jjoost.util.Rehasher;

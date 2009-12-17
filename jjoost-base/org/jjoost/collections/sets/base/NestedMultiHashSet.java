@@ -5,10 +5,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jjoost.collections.MultiSet;
+import org.jjoost.collections.base.HashNode ;
 import org.jjoost.collections.base.HashNodeEquality ;
 import org.jjoost.collections.base.HashNodeFactory ;
 import org.jjoost.collections.base.HashStore ;
-import org.jjoost.collections.base.HashStore.HashNode ;
 import org.jjoost.collections.iters.EmptyIterator ;
 import org.jjoost.util.Counter;
 import org.jjoost.util.Equality;
@@ -228,7 +228,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 			@Override
 			public Iterator<V> iterator() {
 				final NodeContentsIterator<V, N> f = new NodeContentsIterator<V, N>() ;
-				final Iterator<Iterator<V>> iters = table.unique(valProj(), valEq, valEq.getEquality(), f) ;
+				final Iterator<Iterator<V>> iters = table.unique(valProj(), valEq.getEquality(), valProj(), valEq, f) ;
 				f.superIter = iters ;
 				return Iters.concat(iters) ;
 			}

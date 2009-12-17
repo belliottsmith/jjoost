@@ -104,7 +104,12 @@ public class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedH
 	}
 	
 	@Override
-	public <NCmp, V> Iterator<V> unique(Function<? super N, ? extends NCmp> eqF, HashNodeEquality<? super NCmp, ? super N> nodePrefixEq, Equality<? super NCmp> forceUniq, Function<? super N, ? extends V> ret) {
+	public <NCmp, NCmp2, V> Iterator<V> unique(
+			Function<? super N, ? extends NCmp> uniquenessEqualityProj, 
+			Equality<? super NCmp> uniquenessEquality, 
+			Function<? super N, ? extends NCmp2> nodeEqualityProj, 
+			HashNodeEquality<? super NCmp2, ? super N> nodeEquality, 
+			Function<? super N, ? extends V> ret) {
 		// TODO : implement - must apply uniqueness filter inside the LinkIterator in order to be able to apply the ret function afterwards...
 		throw new UnsupportedOperationException() ;
 	}

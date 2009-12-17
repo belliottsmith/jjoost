@@ -7,6 +7,7 @@ import java.util.Enumeration ;
 import java.util.Iterator ;
 import java.util.List ;
 
+import org.jjoost.collections.iters.ArrayIterator ;
 import org.jjoost.collections.iters.ClosableIterator ;
 import org.jjoost.collections.iters.ConcatIterable ;
 import org.jjoost.collections.iters.ConcatIterator ;
@@ -19,6 +20,40 @@ import org.jjoost.collections.iters.OnceIterable ;
 
 public class Iters {
 
+	/**
+	 * convert the supplied array into an Iterator
+	 * 
+	 * @param <E>
+	 * @param enumeration
+	 * @return
+	 */
+	public static <E> Iterator<E> iterator(final E[] array) {
+		return new ArrayIterator<E>(array) ;
+	}
+	
+	/**
+	 * convert the supplied array into an Iterator
+	 * 
+	 * @param <E>
+	 * @param enumeration
+	 * @return
+	 */
+	public static <E> Iterator<E> iterator(final E[] array, int count) {
+		return new ArrayIterator<E>(array, 0, count) ;
+	}
+	
+	/**
+	 * convert the supplied array into an Iterator
+	 * 
+	 * @param <E>
+	 * @param enumeration
+	 * @return
+	 */
+	public static <E> Iterator<E> iterator(final E[] array, int lb, int ub) {
+		return new ArrayIterator<E>(array, lb, ub) ;
+	}
+	
+	/**
     /**
      * convert the supplied enumeration into an Iterator
      * 

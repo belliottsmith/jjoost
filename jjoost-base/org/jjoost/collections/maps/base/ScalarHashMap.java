@@ -4,9 +4,9 @@ import java.util.Map.Entry;
 
 import org.jjoost.collections.ScalarMap;
 import org.jjoost.collections.ScalarSet ;
+import org.jjoost.collections.base.HashNode ;
 import org.jjoost.collections.base.HashNodeFactory ;
 import org.jjoost.collections.base.HashStore ;
-import org.jjoost.collections.base.HashStore.HashNode ;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Factory;
 import org.jjoost.util.Function;

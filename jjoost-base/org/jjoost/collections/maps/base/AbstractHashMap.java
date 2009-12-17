@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 
 import org.jjoost.collections.ArbitraryMap;
 import org.jjoost.collections.ArbitrarySet;
+import org.jjoost.collections.base.HashNode ;
 import org.jjoost.collections.base.HashNodeEquality ;
 import org.jjoost.collections.base.HashStore ;
 import org.jjoost.collections.iters.AbstractIterable ;
@@ -18,7 +19,7 @@ import org.jjoost.util.Functions;
 import org.jjoost.util.Hasher;
 import org.jjoost.util.Rehasher;
 
-public abstract class AbstractHashMap<K, V, N extends HashStore.HashNode<N> & Map.Entry<K, V>> implements ArbitraryMap<K, V> {
+public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K, V>> implements ArbitraryMap<K, V> {
 
 	protected static abstract class EntryEquality<K, V, N> implements HashNodeEquality<Entry<K, V>, N>, Equality<N> {
 		private static final long serialVersionUID = -4970889935020537472L ;
@@ -126,7 +127,7 @@ public abstract class AbstractHashMap<K, V, N extends HashStore.HashNode<N> & Ma
 		return new Iterable<Entry<K, V>>() {
 			@Override
 			public Iterator<Entry<K, V>> iterator() {
-				return store.find(hash, key, keyEq, keyProj(), entryProj()) ;
+				return store.find(hash, key, keyEq, nodeProj(), entryEq, entryProj()) ;
 			}
 		} ;
 	}
@@ -169,7 +170,7 @@ public abstract class AbstractHashMap<K, V, N extends HashStore.HashNode<N> & Ma
 		return new Iterable<V>() {
 			@Override
 			public Iterator<V> iterator() {
-				return store.find(hash, key, keyEq, keyProj(), valProj()) ;
+				return store.find(hash, key, keyEq, nodeProj(), entryEq, valProj()) ;
 			}
 		} ;
 	}
@@ -249,7 +250,7 @@ public abstract class AbstractHashMap<K, V, N extends HashStore.HashNode<N> & Ma
 			return new AbstractIterable<K>() {
 				@Override
 				public Iterator<K> iterator() {
-					return store.find(hash, key, keyEq, keyProj(), keyProj()) ;
+					return store.find(hash, key, keyEq, nodeProj(), entryEq, keyProj()) ;
 				}
 			} ;
 		}
@@ -366,7 +367,7 @@ public abstract class AbstractHashMap<K, V, N extends HashStore.HashNode<N> & Ma
 			return new AbstractIterable<Entry<K,V>>() {
 				@Override
 				public Iterator<Entry<K, V>> iterator() {
-					return store.find(hash, entry, entryEq, nodeProj(), entryProj()) ;
+					return store.find(hash, entry, entryEq, nodeProj(), entryEq, entryProj()) ;
 				}
 			} ;
 		}

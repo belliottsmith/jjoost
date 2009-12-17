@@ -5,13 +5,13 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jjoost.collections.MultiSet;
+import org.jjoost.collections.base.HashNode ;
 import org.jjoost.collections.base.HashNodeEquality ;
 import org.jjoost.collections.base.HashNodeFactory ;
 import org.jjoost.collections.base.HashStore ;
-import org.jjoost.collections.base.HashStore.HashNode ;
 import org.jjoost.collections.iters.AbstractIterable ;
 import org.jjoost.collections.iters.RepeatIterable ;
-import org.jjoost.collections.iters.RepeatIterator ;
+import org.jjoost.collections.iters.UniformIterator ;
 import org.jjoost.util.Counter;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Function;
@@ -222,7 +222,7 @@ public class CountingMultiHashSet<V, N extends HashNode<N> & CountingMultiHashSe
 		return new Iterable<V>() {
 			@Override
 			public Iterator<V> iterator() {
-				return table.find(hash, val, valEq, valProj(), valProj()) ;
+				return table.find(hash, val, valEq, valProj(), valEq, valProj()) ;
 			}
 		} ;
 	}
@@ -239,7 +239,7 @@ public class CountingMultiHashSet<V, N extends HashNode<N> & CountingMultiHashSe
 		return new AbstractIterable<V>() {
 			@Override
 			public Iterator<V> iterator() {
-				return table.unique(valProj(), valEq, valEq.getEquality(), valProj()) ;
+				return table.unique(valProj(), valEq.getEquality(), valProj(), valEq, valProj()) ;
 			}
 		} ;
 	}
@@ -318,7 +318,7 @@ public class CountingMultiHashSet<V, N extends HashNode<N> & CountingMultiHashSe
 		@Override
 		public Iterator<V> apply(N n) {
 			final int c = n.destroy() ;
-			return new RepeatIterator<V>(n.getValue(), c > 0 ? c : 0) ;
+			return new UniformIterator<V>(n.getValue(), c > 0 ? c : 0) ;
 		}
 	}
 

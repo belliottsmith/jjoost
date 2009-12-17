@@ -172,12 +172,12 @@ public class Functions {
      * 
      * @param <E>
      * @param <F>
-     * @param list
+     * @param iter
      * @param f
      * @return
      */
-    public static <E, F> Iterable<F> apply(Function<? super E, ? extends F> f, Iterable<? extends E> list) {
-    	return new MappedIterable<E, F>(list, f) ;
+    public static <E, F> Iterable<F> apply(Function<? super E, ? extends F> f, Iterable<? extends E> iter) {
+    	return new MappedIterable<E, F>(iter, f) ;
     }
     
     /**
@@ -211,12 +211,12 @@ public class Functions {
      * 
      * @param <E>
      * @param <F>
-     * @param list
+     * @param iter
      * @param f
      * @return
      */
-    public static <E, F> Iterator<F> apply(Function<? super E, ? extends F> f, Iterator<? extends E> list) {
-    	return new MappedIterator<E, F>(list, f) ;
+    public static <E, F> Iterator<F> apply(Function<? super E, ? extends F> f, Iterator<? extends E> iter) {
+    	return new MappedIterator<E, F>(iter, f) ;
     }
     
     /**
@@ -237,12 +237,12 @@ public class Functions {
      * 
      * @param <E>
      * @param <F>
-     * @param list
+     * @param iter
      * @param f
      * @return
      */
-    public static <E, F> ClosableIterator<F> apply(Function<? super E, ? extends F> f, ClosableIterator<? extends E> list) {
-    	return new MappedClosableIterator<E, F>(list, f) ;
+    public static <E, F> ClosableIterator<F> apply(Function<? super E, ? extends F> f, ClosableIterator<? extends E> iter) {
+    	return new MappedClosableIterator<E, F>(iter, f) ;
     }
     
 

@@ -1,6 +1,5 @@
 package org.jjoost.collections.base;
 
-
 import java.io.Serializable ;
 import java.lang.reflect.Field;
 import java.lang.reflect.UndeclaredThrowableException;
@@ -26,7 +25,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 	private static final long serialVersionUID = -1578733824843315344L ;
 	
 	public enum Counting {
-		OFF, ON_DEMAND, SAMPLED, PRECISE
+		OFF, SAMPLED, PRECISE
 	}
 
 	private static final Unsafe unsafe = getUnsafe();
@@ -47,22 +46,30 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
         if (totalCounting == null || uniquePrefixCounting == null)
         	throw new IllegalArgumentException() ;
         switch (totalCounting) {
-        case OFF: totalCounter = new DontCount() ; break ;
+        case OFF: totalCounter = DONT_COUNT ; break ;
         case SAMPLED: totalCounter = new SampledCounter() ; break ;
         case PRECISE: totalCounter = new PreciseCounter() ; break ;
         default: throw new IllegalArgumentException() ;
         }
         switch (uniquePrefixCounting) {
-        case OFF: uniquePrefixCounter = new DontCount() ; break ;
+        case OFF: uniquePrefixCounter = DONT_COUNT ; break ;
         case SAMPLED: uniquePrefixCounter = new SampledCounter() ; break ;
         case PRECISE: uniquePrefixCounter = new PreciseCounter() ; break ;
         default: throw new IllegalArgumentException() ;
         }
 	}
-	
+
 	protected void inserted(N node) { }
 	protected void removed(N node) { }
 
+
+		
+	// **********************************************************
+	// METHODS FOR INSERTION
+	// **********************************************************	
+	
+	
+	
 	@Override
 	public <NCmp, V> V put(NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
 		grow() ;
@@ -107,7 +114,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
 					partial = false ;
 					prev2 = prev = null ;
-					node = getTableSafe().writerGetSafe(hash) ;				
+					node = getTableFresh().writerGetSafe(hash) ;				
 				} else {
 					// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
 					waitOnDelete(prev) ;
@@ -165,7 +172,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 							// bucket is being rehashed, so start again
 							partial = false ;
 							prev2 = prev = null ;
-							node = getTableSafe().writerGetSafe(hash) ;
+							node = getTableFresh().writerGetSafe(hash) ;
 						} else {
 							// node is being deleted, so wait for it to complete and grab prev.next
 							waitOnDelete(node) ;
@@ -214,7 +221,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 		}
 	}
 
-
+	
 	@Override
 	public <NCmp, V> V putIfAbsent(NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
 		grow() ;
@@ -258,7 +265,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
 					partial = false ;
 					prev2 = prev = null ;
-					node = getTableSafe().writerGetSafe(hash) ;				
+					node = getTableFresh().writerGetSafe(hash) ;				
 				} else {
 					// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
 					waitOnDelete(prev) ;
@@ -363,7 +370,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
 					partial = false ;
 					prev2 = prev = null ;
-					node = getTableSafe().writerGetSafe(hash) ;				
+					node = getTableFresh().writerGetSafe(hash) ;				
 				} else {
 					// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
 					waitOnDelete(prev) ;
@@ -436,6 +443,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 		N node = getTableUnsafe().writerGetUnsafe(hash) ;
 		boolean partial = false ;
 		while (true) {
+			
 			if (node == null) {
 				
 				// we have not encountered any prior partial or complete node matches, so simply insert the node at the end of the list
@@ -466,26 +474,26 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 					node = prev.getNextSafe() ;
 				}
 				
-			} else if (node == REHASHING_FLAG) {
+			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG) {
 				
-				// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
-				partial = false ;
-				prev2 = prev = null ;
-				node = getTableSafe().writerGetSafe(hash) ;				
-				
-			} else if (node == DELETING_FLAG | node == DELETED_FLAG) {
-				
-				// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
-				waitOnDelete(prev) ;
-				if (prev2 == null) {
+				if (node == REHASHING_FLAG) {
+					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
 					partial = false ;
-					prev2 = prev = null ;						
-					node = getTableUnsafe().writerGetSafe(hash) ; // note: could improve by performing a get *un*safe, as we have passed a memory barrier already with the waitOnDelete
+					prev2 = prev = null ;
+					node = getTableFresh().writerGetSafe(hash) ;				
 				} else {
-					node = prev2.getNextSafe() ;
-					prev = prev2 ;
-					prev2 = null ;
-					partial = prev.hash == hash && eq.prefixMatch(find, prev) ;
+					// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
+					waitOnDelete(prev) ;
+					if (prev2 == null) {
+						partial = false ;
+						prev2 = prev = null ;						
+						node = getTableUnsafe().writerGetSafe(hash) ; // note: could improve by performing a get *un*safe, as we have passed a memory barrier already with the waitOnDelete
+					} else {
+						node = prev2.getNextSafe() ;
+						prev = prev2 ;
+						prev2 = null ;
+						partial = prev.hash == hash && eq.prefixMatch(find, prev) ;
+					}
 				}
 				
 			} else {
@@ -533,189 +541,16 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 			}
 		}
 	}
+
 	
-	@Override
-	public <NCmp> boolean contains(final int hash, final NCmp find, final HashNodeEquality<? super NCmp, ? super N> eq) {
-		N prev = null, prev2 = null ;
-		N node = getTableUnsafe().writerGetUnsafe(hash) ;
-		boolean partial = false ;
-		while (true) {
-			if (node == null) {
-				return false ;
-			} else if (node == REHASHING_FLAG) {
-				// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
-				partial = false ;
-				prev2 = prev = null ;
-				node = getTableSafe().writerGetSafe(hash) ;				
-			} else if (node == DELETING_FLAG | node == DELETED_FLAG) {
-				// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
-				waitOnDelete(prev) ;
-				if (prev2 == null) {
-					partial = false ;
-					prev2 = prev = null ;						
-					node = getTableUnsafe().writerGetSafe(hash) ; // note: could improve by performing a get *un*safe, as we have passed a memory barrier already with the waitOnDelete
-				} else {
-					node = prev2.getNextSafe() ;
-					prev = prev2 ;
-					prev2 = null ;
-					partial = prev.hash == hash && eq.prefixMatch(find, prev) ;
-				}
-			} else {
-				if (partial != (node.hash == hash && eq.prefixMatch(find, node))) {
-					if (partial) return false ;
-					else  partial = true ;
-				}				
-				if (partial && eq.suffixMatch(find, node)) {
-					// this node is a complete match so simply return it
-					return true ;
-				}
-				
-				prev2 = prev ;
-				prev = node ;
-				node = node.getNextUnsafe() ;
-			}
-		}
-	}
-
-	@Override
-	public <NCmp> int count(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
-		int c = 0 ;
-		boolean countedLast = false ;
-		N prev = null, prev2 = null ;
-		N node = getTableUnsafe().writerGetUnsafe(hash) ;
-		boolean partial = false ;
-		while (true) {
-			if (node == null) {
-				return c ;
-			} else if (node == REHASHING_FLAG) {
-				// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
-				c = 0 ;
-				partial = false ;
-				prev2 = prev = null ;
-				node = getTableSafe().writerGetSafe(hash) ;				
-			} else if (node == DELETING_FLAG | node == DELETED_FLAG) {
-				// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
-				waitOnDelete(prev) ;
-				if (prev2 == null) {
-					c = 0 ;
-					partial = false ;
-					prev2 = prev = null ;						
-					node = getTableUnsafe().writerGetSafe(hash) ; // note: could improve by performing a get *un*safe, as we have passed a memory barrier already with the waitOnDelete
-				} else {
-					if (countedLast)
-						c-- ;
-					node = prev2.getNextSafe() ;
-					prev = prev2 ;
-					prev2 = null ;
-					partial = prev.hash == hash && eq.prefixMatch(find, prev) ;
-				}
-			} else {
-				
-				if (partial != (node.hash == hash && eq.prefixMatch(find, node))) {
-					if (partial) return c ;
-					else  partial = true ;
-				}				
-				if (partial && eq.suffixMatch(find, node)) {
-					// this node is a complete match so simply return it
-					c++ ;
-					countedLast = true ;
-				} else {
-					countedLast = false ;
-				}
-				
-				prev2 = prev ;
-				prev = node ;
-				node = node.getNextUnsafe() ;
-			}
-		}
-	}
-
-	@Override
-	public <NCmp, V> V first(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
-		N prev = null, prev2 = null ;
-		N node = getTableUnsafe().writerGetUnsafe(hash) ;
-		boolean partial = false ;
-		while (true) {
-			if (node == null) {
-				return null ;
-			} else if (node == REHASHING_FLAG) {
-				// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
-				partial = false ;
-				prev2 = prev = null ;
-				node = getTableSafe().writerGetSafe(hash) ;				
-			} else if (node == DELETING_FLAG | node == DELETED_FLAG) {
-				// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
-				waitOnDelete(prev) ;
-				if (prev2 == null) {
-					partial = false ;
-					prev2 = prev = null ;						
-					node = getTableUnsafe().writerGetSafe(hash) ; // note: could improve by performing a get *un*safe, as we have passed a memory barrier already with the waitOnDelete
-				} else {
-					node = prev2.getNextSafe() ;
-					prev = prev2 ;
-					prev2 = null ;
-					partial = prev.hash == hash && eq.prefixMatch(find, prev) ;
-				}
-			} else {
-				if (partial != (node.hash == hash && eq.prefixMatch(find, node))) {
-					if (partial) return null  ;
-					else  partial = true ;
-				}				
-				if (partial && eq.suffixMatch(find, node)) {
-					// this node is a complete match so simply return it
-					return ret.apply(node) ;
-				}
-				
-				prev2 = prev ;
-				prev = node ;
-				node = node.getNextUnsafe() ;
-			}
-		}
-	}
-
-	@Override
-	public <NCmp, V> List<V> findNow(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
-		final List<V> r = new ArrayList<V>(6) ;
-		N prev = null, prev2 = null ;
-		N node = getTableUnsafe().writerGetUnsafe(hash) ;
-		boolean partial = false ;
-		while (true) {
-			if (node == null) {
-				return r ;
-			} else if (node == REHASHING_FLAG) {
-				// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
-				partial = false ;
-				prev2 = prev = null ;
-				node = getTableSafe().writerGetSafe(hash) ;				
-			} else if (node == DELETING_FLAG | node == DELETED_FLAG) {
-				// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
-				waitOnDelete(prev) ;
-				if (prev2 == null) {
-					partial = false ;
-					prev2 = prev = null ;						
-					node = getTableUnsafe().writerGetSafe(hash) ; // note: could improve by performing a get *un*safe, as we have passed a memory barrier already with the waitOnDelete
-				} else {
-					node = prev2.getNextSafe() ;
-					prev = prev2 ;
-					prev2 = null ;
-					partial = prev.hash == hash && eq.prefixMatch(find, prev) ;
-				}
-			} else {
-				if (partial != (node.hash == hash && eq.prefixMatch(find, node))) {
-					if (partial) return r  ;
-					else  partial = true ;
-				}				
-				if (partial && eq.suffixMatch(find, node)) {
-					// this node is a complete match so simply return it
-					r.add(ret.apply(node)) ;
-				}
-				
-				prev2 = prev ;
-				prev = node ;
-				node = node.getNextUnsafe() ;
-			}
-		}
-	}
+	
+	
+	// **********************************************************
+	// METHODS FOR REMOVAL
+	// **********************************************************	
+	
+	
+	
 	
 	@Override
 	public <NCmp> int remove(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
@@ -740,7 +575,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
 					partial = false ;
 					prev2 = prev = null ;
-					node = getTableSafe().writerGetSafe(hash) ;				
+					node = getTableFresh().writerGetSafe(hash) ;				
 				} else {
 					// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
 					waitOnDelete(prev) ;
@@ -780,7 +615,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 								// bucket is being rehashed, so start from the beginning of the outer loop
 								partial = false ;
 								prev2 = prev = null ;
-								node = getTableSafe().writerGetSafe(hash) ;
+								node = getTableFresh().writerGetSafe(hash) ;
 							} else {
 								// node is being deleted, so wait for it to complete, grab prev.next and return to outer loop
 								waitOnDelete(node) ;
@@ -881,7 +716,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
 					partial = false ;
 					prev2 = prev = null ;
-					node = getTableSafe().writerGetSafe(hash) ;				
+					node = getTableFresh().writerGetSafe(hash) ;				
 				} else {
 					// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
 					waitOnDelete(prev) ;
@@ -921,7 +756,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 								// bucket is being rehashed, so start from the beginning of the outer loop
 								partial = false ;
 								prev2 = prev = null ;
-								node = getTableSafe().writerGetSafe(hash) ;
+								node = getTableFresh().writerGetSafe(hash) ;
 							} else {
 								// node is being deleted, so wait for it to complete, grab prev.next and return to outer loop
 								waitOnDelete(node) ;
@@ -1024,7 +859,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
 					partial = false ;
 					prev2 = prev = null ;
-					node = getTableSafe().writerGetSafe(hash) ;				
+					node = getTableFresh().writerGetSafe(hash) ;				
 				} else {
 					// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
 					waitOnDelete(prev) ;
@@ -1064,7 +899,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 								// bucket is being rehashed, so start from the beginning of the outer loop
 								partial = false ;
 								prev2 = prev = null ;
-								node = getTableSafe().writerGetSafe(hash) ;
+								node = getTableFresh().writerGetSafe(hash) ;
 							} else {
 								// node is being deleted, so wait for it to complete, grab prev.next and return to outer loop
 								waitOnDelete(node) ;
@@ -1160,7 +995,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 				if (node == REHASHING_FLAG) {
 					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
 					prev2 = prev = null ;
-					node = getTableSafe().writerGetSafe(hash) ;				
+					node = getTableFresh().writerGetSafe(hash) ;				
 				} else {
 					// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
 					waitOnDelete(prev) ;
@@ -1186,7 +1021,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 							if (next == REHASHING_FLAG) {
 								// bucket is being rehashed, so start from the beginning of the outer loop
 								prev2 = prev = null ;
-								node = getTableSafe().writerGetSafe(hash) ;
+								node = getTableFresh().writerGetSafe(hash) ;
 							} else {
 								// node is being deleted, so wait for it to complete, grab prev.next and return to outer loop
 								waitOnDelete(node) ;
@@ -1254,25 +1089,247 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 
 	}
 
-	@Override
-	public <NCmp, V> Iterator<V> find(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> findEq, Function<? super N, ? extends NCmp> nodePrefixEqFunc, Function<? super N, ? extends V> ret) {
-		return new Search<NCmp, V>(hash, find, findEq, nodePrefixEqFunc, ret) ;
-	}
+	
+	
+	// **********************************************************
+	// METHODS TO QUERY
+	// **********************************************************	
+	
+	
 	
 	@Override
-	public <NCmp, V> Iterator<V> all(Function<? super N, ? extends NCmp> nodePrefixEqFunc,
-			HashNodeEquality<? super NCmp, ? super N> nodePrefixEq, Function<? super N, ? extends V> ret) {
-		// TODO Auto-generated method stub
-		return null ;
+	public <NCmp> boolean contains(final int hash, final NCmp find, final HashNodeEquality<? super NCmp, ? super N> eq) {
+		N prev = null, prev2 = null ;
+		N node = getTableUnsafe().writerGetUnsafe(hash) ;
+		boolean partial = false ;
+		while (true) {
+			
+			if (node == null) {
+				
+				return false ;
+				
+			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG) {
+				if (node == REHASHING_FLAG) {
+					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
+					partial = false ;
+					prev2 = prev = null ;
+					node = getTableFresh().readerGetFresh(hash) ;				
+				} else {
+					// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
+					waitOnDelete(prev) ;
+					if (prev2 == null) {
+						partial = false ;
+						prev2 = prev = null ;						
+						node = getTableUnsafe().readerGetFresh(hash) ; // note: could improve by performing a get *un*safe, as we have passed a memory barrier already with the waitOnDelete
+					} else {
+						node = prev2.getNextSafe() ;
+						prev = prev2 ;
+						prev2 = null ;
+						partial = prev.hash == hash && eq.prefixMatch(find, prev) ;
+					}
+				}
+			} else {
+				
+				if (partial != (node.hash == hash && eq.prefixMatch(find, node))) {
+					if (partial) return false ;
+					else  partial = true ;
+				}				
+				if (partial && eq.suffixMatch(find, node)) {
+					// this node is a complete match so simply return it
+					return true ;
+				}
+				
+				prev2 = prev ;
+				prev = node ;
+				node = node.getNextUnsafe() ;
+			}
+		}
 	}
 
 	@Override
-	public <NCmp, V> Iterator<V> unique(Function<? super N, ? extends NCmp> eqF, HashNodeEquality<? super NCmp, ? super N> nodePrefixEq,
-			Equality<? super NCmp> forceUniq, Function<? super N, ? extends V> ret) {
+	public <NCmp> int count(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
+		int c = 0 ;
+		boolean countedLast = false ;
+		N prev = null, prev2 = null ;
+		N node = getTableUnsafe().writerGetUnsafe(hash) ;
+		boolean partial = false ;
+		while (true) {
+			
+			if (node == null) {
+				
+				return c ;
+				
+			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG) {
+				
+				if (node == REHASHING_FLAG) {
+					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
+					c = 0 ;
+					partial = false ;
+					prev2 = prev = null ;
+					node = getTableFresh().readerGetFresh(hash) ;				
+				} else {
+					// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
+					waitOnDelete(prev) ;
+					if (prev2 == null) {
+						c = 0 ;
+						partial = false ;
+						prev2 = prev = null ;						
+						node = getTableUnsafe().readerGetFresh(hash) ; // note: could improve by performing a get *un*safe, as we have passed a memory barrier already with the waitOnDelete
+					} else {
+						if (countedLast)
+							c-- ;
+						node = prev2.getNextSafe() ;
+						prev = prev2 ;
+						prev2 = null ;
+						partial = prev.hash == hash && eq.prefixMatch(find, prev) ;
+					}
+				}
+				
+			} else {
+				
+				if (partial != (node.hash == hash && eq.prefixMatch(find, node))) {
+					if (partial) return c ;
+					else  partial = true ;
+				}				
+				if (partial && eq.suffixMatch(find, node)) {
+					// this node is a complete match so simply return it
+					c++ ;
+					countedLast = true ;
+				} else {
+					countedLast = false ;
+				}
+				
+				prev2 = prev ;
+				prev = node ;
+				node = node.getNextUnsafe() ;
+			}
+		}
+	}
+
+	@Override
+	public <NCmp, V> V first(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+		N prev = null, prev2 = null ;
+		N node = getTableUnsafe().writerGetUnsafe(hash) ;
+		boolean partial = false ;
+		while (true) {
+			
+			if (node == null) {		
+				
+				return null ;		
+				
+			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG) {
+				
+				if (node == REHASHING_FLAG) {
+					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
+					partial = false ;
+					prev2 = prev = null ;
+					node = getTableFresh().readerGetFresh(hash) ;				
+				} else {
+					// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
+					waitOnDelete(prev) ;
+					if (prev2 == null) {
+						partial = false ;
+						prev2 = prev = null ;						
+						node = getTableUnsafe().readerGetFresh(hash) ; // note: could improve by performing a get *un*safe, as we have passed a memory barrier already with the waitOnDelete
+					} else {
+						node = prev2.getNextSafe() ;
+						prev = prev2 ;
+						prev2 = null ;
+						partial = prev.hash == hash && eq.prefixMatch(find, prev) ;
+					}
+				}
+				
+			} else {
+				
+				if (partial != (node.hash == hash && eq.prefixMatch(find, node))) {
+					if (partial) return null  ;
+					else  partial = true ;
+				}				
+				if (partial && eq.suffixMatch(find, node)) {
+					// this node is a complete match so simply return it
+					return ret.apply(node) ;
+				}
+				
+				prev2 = prev ;
+				prev = node ;
+				node = node.getNextUnsafe() ;
+			}
+		}
+	}
+
+	@Override
+	public <NCmp, V> List<V> findNow(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+		final List<V> r = new ArrayList<V>(6) ;
+		N prev = null, prev2 = null ;
+		N node = getTableUnsafe().writerGetUnsafe(hash) ;
+		boolean partial = false ;
+		while (true) {
+			
+			if (node == null) {
+				
+				return r ;
+				
+			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG) {
+				
+				if (node == REHASHING_FLAG) {
+					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
+					partial = false ;
+					prev2 = prev = null ;
+					node = getTableFresh().readerGetFresh(hash) ;				
+				} else {
+					// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
+					waitOnDelete(prev) ;
+					if (prev2 == null) {
+						partial = false ;
+						prev2 = prev = null ;						
+						node = getTableUnsafe().readerGetFresh(hash) ; // note: could improve by performing a get *un*safe, as we have passed a memory barrier already with the waitOnDelete
+					} else {
+						node = prev2.getNextSafe() ;
+						prev = prev2 ;
+						prev2 = null ;
+						partial = prev.hash == hash && eq.prefixMatch(find, prev) ;
+					}
+				}
+				
+			} else {
+				
+				if (partial != (node.hash == hash && eq.prefixMatch(find, node))) {
+					if (partial) return r  ;
+					else  partial = true ;
+				}				
+				if (partial && eq.suffixMatch(find, node)) {
+					// this node is a complete match so simply return it
+					r.add(ret.apply(node)) ;
+				}
+				
+				prev2 = prev ;
+				prev = node ;
+				node = node.getNextUnsafe() ;
+				
+			}
+		}
+	}
+
+	@Override
+	public <NCmp, NCmp2, V> Iterator<V> find(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> findEq,
+			Function<? super N, ? extends NCmp2> nodeEqualityProj, HashNodeEquality<? super NCmp2, ? super N> nodeEq,
+			Function<? super N, ? extends V> ret) {
+		return new Search<NCmp, NCmp2, V>(hash, find, findEq, nodeEqualityProj, nodeEq, ret) ;
+	}
+
+	@Override
+	public <NCmp, V> Iterator<V> all(Function<? super N, ? extends NCmp> nodeEqualityProj,
+			HashNodeEquality<? super NCmp, ? super N> nodeEquality, Function<? super N, ? extends V> ret) {
+		return new AllIterator<NCmp, V>(nodeEqualityProj, nodeEquality, ret) ;
+	}
+
+	@Override
+	public <NCmp, NCmp2, V> Iterator<V> unique(Function<? super N, ? extends NCmp> uniquenessEqualityProj,
+			Equality<? super NCmp> uniquenessEquality, Function<? super N, ? extends NCmp2> nodeEqualityProj,
+			HashNodeEquality<? super NCmp2, ? super N> nodeEquality, Function<? super N, ? extends V> ret) {
 		// TODO Auto-generated method stub
 		return null ;
 	}
-
 
 	@Override
 	public <V> Iterator<V> clearAndReturn(Function<? super N, ? extends V> f) {
@@ -1293,37 +1350,21 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 
 	@Override
 	public boolean isEmpty() {
-		int c = totalCounter.getSafe() ;
-		if (c < 0) {
-			c = uniquePrefixCounter.getSafe() ;
-			if (c < 0) {
-				// TODO : search for first node in table
-				throw new UnsupportedOperationException() ;				
-			}
-		}
-		return c == 0 ;
+		if (totalCounter.on())
+			return totalCounter.getSafe() == 0 ;
+		if (uniquePrefixCounter.on())
+			return uniquePrefixCounter.getSafe() == 0 ;
+		return getTableFresh().isEmpty() ;
 	}
 
 	@Override
 	public int totalCount() {
-		int c = totalCounter.getSafe() ;
-		if (c < -1) {
-			c = 0 ;
-			// count unique nodes
-			throw new UnsupportedOperationException() ;
-		}
-		return c ;
+		return totalCounter.getSafe() ;
 	}
 
 	@Override
 	public int uniquePrefixCount() {
-		int c = uniquePrefixCounter.getSafe() ;
-		if (c < -1) {
-			c = 0 ;
-			// count unique nodes
-			throw new UnsupportedOperationException() ;
-		}
-		return c ;
+		return uniquePrefixCounter.getSafe() ;
 	}
 
 	@Override
@@ -1349,7 +1390,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 	@SuppressWarnings("unchecked")
 	private void grow() {		
 		while (totalCounter.getUnsafe() > getTableUnsafe().capacity()) {
-			final Table<N> table = getTableSafe() ;
+			final Table<N> table = getTableFresh() ;
 			if (totalCounter.getSafe() <= table.capacity())
 				return ;
 			if (table instanceof RegularTable) {
@@ -1366,128 +1407,377 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 			}
 		}
 	}
+	
+
+	
+
 
 	// *****************************************
 	// ITERATORS
 	// *****************************************
 	
+	
+	
+	
 	protected abstract class GeneralIterator<NCmp, V> implements Iterator<V> {
 
-		final HashNodeEquality<? super NCmp, ? super N> eq ;
-		final Function<? super N, ? extends NCmp> nodePrefixEqFunc ;
+		final HashNodeEquality<? super NCmp, ? super N> nodeEquality ;
+		final Function<? super N, ? extends NCmp> nodeEqualityProj ;
 		final Function<? super N, ? extends V> ret ;
-		N prev2, prev, next ;
-		int prevHash ;
-		boolean deleted = true ;
+		N prevPred, prevNode, nextPred, nextNode ;
 		
-		public GeneralIterator(HashNodeEquality<? super NCmp, ? super N> findEq,
-				Function<? super N, ? extends NCmp> nodePrefixEqFunc, Function<? super N, ? extends V> ret) {
-			this.eq = findEq ;
-			this.nodePrefixEqFunc = nodePrefixEqFunc ;
+		public GeneralIterator(
+				Function<? super N, ? extends NCmp> nodeEqualityProj,
+				HashNodeEquality<? super NCmp, ? super N> nodeEquality,
+				Function<? super N, ? extends V> ret) {
+			this.nodeEquality = nodeEquality ;
+			this.nodeEqualityProj = nodeEqualityProj ;
 			this.ret = ret ;
 		}
 
 		@Override
 		public boolean hasNext() {
-			return next != null ;
+			return nextNode != null ;
 		}
 
 		@Override
 		public void remove() {
-			if (deleted)
+			if (prevNode == null)
 				throw new NoSuchElementException() ;
-			N next = prev.getNextUnsafe() ;
+			N next = prevNode.getNextUnsafe() ;
 			while (true) {				
 				if (next == REHASHING_FLAG | next == DELETED_FLAG | next == DELETING_FLAG) {
 					if (next == REHASHING_FLAG) {
-						removeNode(nodePrefixEqFunc, eq, prev) ;
+						removeNode(nodeEqualityProj, nodeEquality, prevNode) ;
 					}
 					break ;
 				}
-				if (prev.startDelete(next)) {
+				if (prevNode.startDelete(next)) {
 					boolean success ;
-					if (prev2 == null) {
-						success = getTableUnsafe().compareAndSet(prevHash, prev, next) ;
+					if (prevPred == null) {
+						success = getTableUnsafe().compareAndSet(prevNode.hash, prevNode, next) ;
 					} else {
-						success = prev2.casNext(prev, next) ;
-					}
-					
+						success = prevPred.casNext(prevNode, next) ;
+					}					
 					if (success) {
-						prev.finishDelete() ;
-						waitingOnDelete.wake(prev) ;
-						removed(prev) ;
-						totalCounter.decrement(prevHash) ;
-						final NCmp cmp = nodePrefixEqFunc.apply(prev) ;
-						if ((prev2 == null || prevHash != prev2.hash || !eq.prefixMatch(cmp, next)) 
-						 && (next == null || prevHash != next.hash || !eq.prefixMatch(cmp, next)))
-							uniquePrefixCounter.decrement(prevHash) ;
+						prevNode.finishDelete() ;
+						waitingOnDelete.wake(prevNode) ;
+						removed(prevNode) ;
+						totalCounter.decrement(prevNode.hash) ;
+						if (uniquePrefixCounter.on()) {
+							final NCmp cmp = nodeEqualityProj.apply(prevNode) ;
+							if ((prevPred == null || prevNode.hash != prevPred.hash || !nodeEquality.prefixMatch(cmp, next)) 
+							 && (next == null || prevNode.hash != next.hash || !nodeEquality.prefixMatch(cmp, next)))
+								uniquePrefixCounter.decrement(prevNode.hash) ;
+						}
 					} else {
-						prev.volatileSetNext(next) ;
-						waitingOnDelete.wake(prev) ;
-						removeNode(nodePrefixEqFunc, eq, prev) ;
+						prevNode.volatileSetNext(next) ;
+						waitingOnDelete.wake(prevNode) ;
+						removeNode(nodeEqualityProj, nodeEquality, prevNode) ;
 					}
 					break ;
 				}
-				next = prev.getNextSafe() ;
+				next = prevNode.getNextSafe() ;
 			}
-			prev = prev2 ;
-			prev2 = null ;
-			deleted = true ;
+			prevNode = null ;
+			prevPred = null ;
 		}
 		
 	}
 	
-	protected final class Search<NCmp, V> extends GeneralIterator<NCmp, V> {
+	protected final class Search<NCmp, NCmp2, V> extends GeneralIterator<NCmp2, V> {
 
 		final NCmp find ;
-		public Search(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> findEq, Function<? super N, ? extends NCmp> nodePrefixEqFunc,
+		final HashNodeEquality<? super NCmp, ? super N> findEquality ;
+		final HashNodeSeq<N, NCmp2> visited ;
+		
+		public Search(int hash, NCmp find, 
+				HashNodeEquality<? super NCmp, ? super N> findEquality, 
+				Function<? super N, ? extends NCmp2> nodeEqualityProj, 
+				HashNodeEquality<? super NCmp2, ? super N> nodeEquality, 
 				Function<? super N, ? extends V> ret) {
-			super(findEq, nodePrefixEqFunc, ret) ;
+			super(nodeEqualityProj, nodeEquality, ret) ;
 			this.find = find ;
-			this.prevHash = hash ;
-			N node = getTableUnsafe().readerGetSafe(hash) ;
-			boolean partial = false ;
+			this.findEquality = findEquality ;
+			this.visited = new HashNodeSeq<N, NCmp2>(hash, nodeEqualityProj, nodeEquality) ;
+			moveNext(hash, null, null, true) ;
+		}
+
+		@Override
+		public V next() {
+			if (nextNode == null)
+				throw new NoSuchElementException() ;
+			prevPred = nextPred ;
+			prevNode = nextNode ;
+			visited.visit(prevNode) ;
+			moveNext(prevNode.hash, prevNode, prevPred, false) ;
+			return ret.apply(prevNode) ;
+		}
+		
+		private void moveNext(final int hash, N node, N prev, boolean first) {
+			final NCmp find = this.find ;
+			boolean partial ;
+			N prev2 = prev ;
+			prev = node ;
+			if (first) {
+				partial = false ;
+				node = getTableUnsafe().readerGetFresh(hash) ;
+			} else {
+				partial = true ;
+				node.getNextUnsafe() ;
+			}
 			while (node != null) {
+				
 				if (node == REHASHING_FLAG | node == DELETED_FLAG | node == DELETING_FLAG) {
+					
 					if (node == REHASHING_FLAG) {
-						// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
+						
+						// this bucket is being rehashed, so we need to start from the head again, however we also have to ensure we skip over nodes we have already visited
+						// as a result this inner loop performs the same work as the outer loop except with a membership check for visitedness...
 						prev2 = prev = null ;
-						node = getTableSafe().writerGetSafe(hash) ;				
+						node = getTableFresh().readerGetFresh(hash) ;
+						partial = false ;
+						this.visited.revisit() ;
+						
+						while (node != null) {
+							
+							if (node == REHASHING_FLAG | node == DELETED_FLAG | node == DELETING_FLAG) {
+								
+								if (node == REHASHING_FLAG) {
+									// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
+									prev2 = prev = null ;
+									node = getTableFresh().readerGetFresh(hash) ;
+								} else {
+									// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
+									waitOnDelete(prev) ;
+									if (prev2 == null) {
+										prev2 = prev = null ;						
+										node = getTableUnsafe().readerGetFresh(hash) ;
+									} else {
+										node = prev2.getNextSafe() ;
+										prev = prev2 ;
+										prev2 = null ;
+									}
+								}
+								
+							} else {
+								
+								if (partial != (node.hash == hash && findEquality.prefixMatch(find, node))) {
+									if (partial) {
+										node = null ;
+										break ;
+									} else {
+										partial = true ;
+									}
+								}
+								
+								if (partial && findEquality.suffixMatch(find, node)) {
+									if (!this.visited.haveVisitedAlready(node))
+										break ;
+								}
+								
+							}
+							
+							prev2 = prev ;
+							prev = node ;
+							node = node.getNextUnsafe() ;
+						}
+						
+						break ;
+						
 					} else {
-						// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
+						
+						// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the most recent non-deleted visited node
 						waitOnDelete(prev) ;
 						if (prev2 == null) {
-							prev2 = prev = null ;						
-							node = getTableUnsafe().writerGetSafe(hash) ; // note: could improve by performing a get *un*safe, as we have passed a memory barrier already with the waitOnDelete
+							// cannot backtrack to prev2, so find the last active visited node; if all previously visited nodes have been deleted then backtrack to start of list
+							prev2 = prev = null ;
+							while (!visited.isEmpty()) {
+								prev = visited.last() ;
+								node = prev.getNextSafe() ;
+								if (node == DELETING_FLAG)
+									waitOnDelete(node) ;
+								if (node != DELETED_FLAG)
+									break ;
+								visited.removeLast() ;
+							}
+							if (visited.isEmpty()) {
+								prev = null ;
+								node = getTableUnsafe().readerGetFresh(hash) ;
+							}
 						} else {
 							node = prev2.getNextSafe() ;
 							prev = prev2 ;
 							prev2 = null ;
 						}
+						
 					}
-				} else {
 					
+				} else {
+
+					if (partial != (node.hash == hash && findEquality.prefixMatch(find, node))) {
+						if (partial) {
+							node = null ;
+							break ;
+						} else {
+							partial = true ;
+						}
+					}				
+					if (partial && findEquality.suffixMatch(find, node))
+						break ;
+					
+					prev2 = prev ;
+					prev = node ;
+					node = node.getNextUnsafe() ;
 				}
-				prev2 = prev ;
-				prev = next ;
-				next = next.getNextUnsafe() ;
 			}
+			
+			this.nextPred = prev ;
+			this.nextNode = node ;
 		}
+	
+	}
+	
+	protected final class AllIterator<NCmp, V> extends GeneralIterator<NCmp, V> {
 
-
+		Table<N> tableCache = getTableUnsafe() ;
+		final HashIter32Bit indexIter ;
+		final HashNodeSeqs<N, NCmp> bucketVisited ;
+		HashNodeSeq<N, NCmp> curVisited ;
+		
+		public AllIterator(Function<? super N, ? extends NCmp> nodeEqualityProj, 
+				HashNodeEquality<? super NCmp, ? super N> nodeEquality, 
+				Function<? super N, ? extends V> ret) {
+			super(nodeEqualityProj, nodeEquality, ret) ;
+			tableCache = getTableUnsafe() ;
+			final int bits = Integer.bitCount(tableCache.capacity() - 1) ;
+			indexIter = new HashIter32Bit(bits > 4 ? 4 : 1, bits) ;
+			bucketVisited = new HashNodeSeqs<N, NCmp>(nodeEqualityProj, nodeEquality) ; 
+			moveNext(null, null) ;
+		}
+		
 		@Override
 		public V next() {
-			if (next == null)
+			if (nextNode == null)
 				throw new NoSuchElementException() ;
-			deleted = false ;
-			return null ;
+			prevPred = nextPred ;
+			prevNode = nextNode ;
+			curVisited.visit(prevNode) ;
+			moveNext(nextNode, nextPred) ;
+			return ret.apply(prevNode) ;
+		}
+		
+		private void moveNext(N node, N prev) {
+			
+			N prev2 = prev ;
+			prev = node ;
+			if (node == null) {
+				node = tableCache.readerGetFresh(indexIter.current()) ;
+			} else {
+				node.getNextUnsafe() ;
+			}
+			
+			while (true) {
+				
+				if (node == REHASHING_FLAG | node == DELETED_FLAG | node == DELETING_FLAG) {
+					
+					if (node == REHASHING_FLAG) {
+						
+						// this bucket is being rehashed, so we need to start from the head again, however we also have to ensure we skip over nodes we have already visited
+						// as a result this inner loop performs the same work as the outer loop except with a membership check for visitedness...
+						tableCache = getTableFresh() ;
+						indexIter.resize(Integer.bitCount(tableCache.capacity() - 1)) ;
+						prev2 = prev = null ;
+						node = tableCache.readerGetFresh(indexIter.current()) ;
+						bucketVisited.revisitAll() ;
+						curVisited = null ;
+						
+					} else {
+						
+						// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the most recent non-deleted visited node
+						waitOnDelete(prev) ;
+						if (prev2 == null) {
+							// cannot backtrack to prev2, so find the last active visited node; if all previously visited nodes have been deleted then backtrack to start of list
+							if (!indexIter.safe()) {
+								
+								prev2 = prev = null ;
+								node = tableCache.readerGetFresh(indexIter.current()) ;
+								curVisited = null ;
+								
+							} else {
+								
+								prev2 = prev = node = null ;
+								while (true) {
+									while (!curVisited.isEmpty()) {
+										prev = curVisited.last() ;
+										node = prev.getNextSafe() ;
+										if (node == DELETING_FLAG)
+											waitOnDelete(node) ;
+										if (node != DELETED_FLAG)
+											break ;
+										curVisited.removeLast() ;
+										node = null ;
+									}
+									if (!curVisited.isEmpty())
+										break ;								
+									if (bucketVisited.isEmpty()) {
+										prev = null ;
+										node = tableCache.readerGetFresh(indexIter.current()) ;
+										break ;
+									}								
+									curVisited = bucketVisited.pop() ;
+								}
+								
+							}							
+							
+						} else {
+							
+							node = prev2.getNextSafe() ;
+							prev = prev2 ;
+							prev2 = null ;
+							
+						}
+						
+					}
+					
+				} else if (node == null) {
+					
+					if (!indexIter.next())
+						break ;
+					node = tableCache.readerGetStale(indexIter.current()) ;
+					bucketVisited.clear() ;
+					curVisited = null ;
+					
+				} else {
+					
+					if (curVisited == null || curVisited.hash != node.hash)
+						curVisited = bucketVisited.get(node) ;
+					if (!curVisited.haveVisitedAlready(node))
+						break ;
+					
+					prev2 = prev ;
+					prev = node ;
+					node = node.getNextUnsafe() ;
+					
+				}
+			}
+			
+			this.nextPred = prev ;
+			this.nextNode = node ;
 		}
 		
 	}
 	
+	
+	
+	
+	
 	// *****************************************
 	// NODE DECLARATION
 	// *****************************************
+	
+	
+	
 	
 	public abstract static class Node<N extends Node<N>> extends HashNode<N> {
 		private static final long serialVersionUID = -6236082606699747110L ;
@@ -1553,17 +1843,24 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 	private static final FlagNode DELETED_FLAG = new FlagNode("DELETED") ;
 	private static final FlagNode DELETING_FLAG = new FlagNode("DELETING") ;
 	
+	
+	
+	
 	// *****************************************
 	// UNDERLYING TABLE DEFINITIONS
 	// *****************************************
 
+	
+	
+	
 	private static interface Table<N extends Node<N>> {
 		public N writerGetSafe(int hash) ;
 		public N writerGetUnsafe(int hash) ;
-		public N readerGetSafe(int hash) ;
-		public N readerGetUnsafe(int hash) ;
+		public N readerGetFresh(int hash) ;
+		public N readerGetStale(int hash) ;
 		public boolean compareAndSet(int hash, N expect, N update) ;
 		public int capacity() ;
+		public boolean isEmpty() ;
 	}
 	
 	private static final class RegularTable<N extends Node<N>> implements Table<N> {
@@ -1581,10 +1878,10 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 		public final N writerGetUnsafe(int hash) {
 			return table[hash & mask] ;
 		}
-		public final N readerGetSafe(int hash) {
+		public final N readerGetFresh(int hash) {
 			return getNodeVolatile(table, hash & mask) ;
 		}
-		public final N readerGetUnsafe(int hash) {
+		public final N readerGetStale(int hash) {
 			return table[hash & mask] ;
 		}
 		public final boolean compareAndSet(int hash, N expect, N update) {
@@ -1592,6 +1889,15 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 		}
 		public final int capacity() {
 			return capacity ;
+		}
+		@Override
+		public boolean isEmpty() {
+			for (int i = 0 ; i != table.length ; i++) {
+				final N head = table[i] ;
+				if (head != null)
+					return false ;
+			}
+			return true ;
 		}
 	}	
 	
@@ -1612,13 +1918,13 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 			waitForNext() ;
 			return next.writerGetUnsafe(hash) ;
 		}
-		public N readerGetSafe(int hash) {
+		public N readerGetFresh(int hash) {
 			waitForNext() ;
-			return next.readerGetSafe(hash) ;
+			return next.readerGetFresh(hash) ;
 		}
-		public N readerGetUnsafe(int hash) {
+		public N readerGetStale(int hash) {
 			waitForNext() ;
-			return next.readerGetUnsafe(hash) ;
+			return next.readerGetStale(hash) ;
 		}
 		public boolean compareAndSet(int hash, N expect, N update) {
 			waitForNext() ;
@@ -1631,6 +1937,11 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 		public void wake(Table<N> next) {
 			this.next = next ;
 			waiting.wakeAll() ;
+		}
+		@Override
+		public boolean isEmpty() {
+			waitForNext() ;
+			return next.isEmpty() ;
 		}
 	}
 	
@@ -1653,7 +1964,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 			this.waiting = new WaitingOnGrow(null, -1) ;
 			this.capacity = (int)(newTable.length * loadFactor) ;
 		}
-		public N readerGetSafe(int hash) {
+		public N readerGetFresh(int hash) {
 			final int oldTableIndex = hash & oldTableMask ;
 			final int migratedIndex = oldTableIndex >> 5 ;
 			final int migratedBit = 1 << (oldTableIndex & 31) ;
@@ -1670,7 +1981,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 			}
 			return r ;
 		}
-		public N readerGetUnsafe(int hash) {
+		public N readerGetStale(int hash) {
 			final int oldTableIndex = hash & oldTableMask ;
 			final int migratedIndex = oldTableIndex >> 5 ;
 			final int migratedBit = 1 << (oldTableIndex & 31) ;
@@ -1718,11 +2029,11 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 		}
 		private void waitUntilGrown() {
 			// small possibility somebody will get to here before the first grow() is called; this should only happen on small hash maps however
-			if (LockFreeHashStore.this.getTableSafe() != this)
+			if (LockFreeHashStore.this.getTableFresh() != this)
 				return ;
 			final WaitingOnGrow queue = new WaitingOnGrow(Thread.currentThread(), -1) ;
 			waiting.insert(queue) ;
-			while (LockFreeHashStore.this.getTableSafe() == this)
+			while (LockFreeHashStore.this.getTableFresh() == this)
 				LockSupport.park() ;
 		}
 		
@@ -1835,11 +2146,21 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 		public int capacity() {
 			return capacity ;
 		}
+		@Override
+		public boolean isEmpty() {
+			return false ;
+		}
 	}
+	
+	
+	
 	
 	// ********************************************
 	// THREAD WAITING UTILITIES
 	// ********************************************
+	
+	
+	
 	
 	private static final class GrowCompletion {
 		// false indicates completion is finished
@@ -1907,16 +2228,23 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 		}
 		protected void remove() { super.remove() ; } 
 	}
+
+	
+	
 	
 	// *************************************
 	// COUNTER DECLARATIONS
 	// *************************************
+	
+	
+	
 	
 	private static interface Counter extends Serializable {
 		public int getSafe() ;
 		public int getUnsafe() ;
 		public void increment(int hash) ;
 		public void decrement(int hash) ;
+		public boolean on() ;
 	}
 	private static final class PreciseCounter implements Counter {
 		private static final long serialVersionUID = -2830009566783179121L ;
@@ -1948,6 +2276,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 					return ;
 			}
 		}
+		public boolean on() { return true ; }
 		static {
 			try {
 				final Field field = PreciseCounter.class.getDeclaredField("count") ;
@@ -1995,6 +2324,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 					return ;
 			}
 		}
+		public boolean on() { return true ; }
 		static {
 			try {
 				final Field field = SampledCounter.class.getDeclaredField("count") ;
@@ -2005,17 +2335,25 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 		}
 	}
 	
+	private static final DontCount DONT_COUNT = new DontCount() ;
 	private static final class DontCount implements Counter {
 		private static final long serialVersionUID = 1633916421321597636L ;
 		public final int getSafe() { return Integer.MIN_VALUE ; }
 		public final int getUnsafe() { return Integer.MIN_VALUE ; }
 		public void increment(int hash) { }
 		public void decrement(int hash) { }
+		public boolean on() { return false ; }
 	}
+	
+	
+	
 	
 	// *************************************
 	// "UNSAFE" OPERATIONS
 	// *************************************
+	
+	
+	
 	
 	private static final long tablePtrOffset ;
     private static final long nodeArrayIndexBaseOffset = unsafe.arrayBaseOffset(Node[].class);
@@ -2058,7 +2396,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 	}
 	
 	@SuppressWarnings("unchecked")
-	private final Table<N> getTableSafe() {
+	private final Table<N> getTableFresh() {
 		return (Table<N>) unsafe.getObjectVolatile(this, tablePtrOffset) ;
 	}
 	

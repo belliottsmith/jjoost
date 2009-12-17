@@ -44,7 +44,7 @@ public class SerialLinkedInlineListHashMap<K, V> extends InlineListHashMap<K, V,
 		private V value ;		
 		@Override public K getKey() { return key ; }
 		@Override public V getValue() { return value ; }
-		@Override public V setValue(V value) { throw new UnsupportedOperationException() ; }
+		@Override public V setValue(V value) { final V r = this.value ; this.value = value ; return r ; }
 		@Override public SerialLinkedListHashMapNode<K, V> copy() { return new SerialLinkedListHashMapNode<K, V>(hash, key, value) ; }
 	}
 	

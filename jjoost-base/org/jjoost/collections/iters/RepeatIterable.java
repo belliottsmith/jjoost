@@ -14,7 +14,7 @@ public class RepeatIterable<E> implements Iterable<E> {
 	}
 
 	public Iterator<E> iterator() {
-		return new RepeatIterator<E>(repeat, count) ;
+		return new UniformIterator<E>(repeat, count) ;
 	}	
 
 }
