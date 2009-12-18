@@ -13,4 +13,9 @@ public class SynchronizedMultiSet<V> extends SynchronizedArbitrarySet<V, MultiSe
 	@Override public synchronized MultiSet<V> copy() {
 		return new SynchronizedMultiSet<V>(delegate.copy()) ;
 	}
+
+	@Override public synchronized void put(V val, int numberOfTimes) {
+		delegate.put(val, numberOfTimes) ;
+	}
+	
 }

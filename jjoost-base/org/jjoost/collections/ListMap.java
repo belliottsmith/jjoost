@@ -15,28 +15,14 @@ import org.jjoost.util.Function;
  */
 public interface ListMap<K, V> extends ArbitraryMap<K, V>, Function<K, Iterable<V>> {
 
-	/**
-	 * put the (key,value) pair into the map. always returns null.
-	 * 
-	 * @param key
-	 * @param val
-	 */
-	public V put(K key, V val) ;
+	@Override public V put(K key, V val) ;
+	@Override public V putIfAbsent(K key, V val) ;
+	
+	@Override public MultiSet<V> values(K key) ;
 
-	/**
-	 * put the (key,value) pair into the map. always returns null.
-	 * 
-	 * @param key
-	 * @param val
-	 */
-	public V putIfAbsent(K key, V val) ;
+	@Override public MultiSet<K> keys() ;
+	@Override public MultiSet<Entry<K, V>> entries() ;
 	
-	public ListMap<K, V> copy() ;
+	@Override public ListMap<K, V> copy() ;
 
-	@Override
-	public MultiSet<Entry<K, V>> entries() ;
-	
-	@Override
-	public MultiSet<K> keys() ;
-	
 }

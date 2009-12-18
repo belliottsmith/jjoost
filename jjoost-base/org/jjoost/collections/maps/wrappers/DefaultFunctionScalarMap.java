@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.jjoost.collections.ArbitraryMap;
+import org.jjoost.collections.ArbitrarySet ;
 import org.jjoost.collections.ScalarMap;
 import org.jjoost.collections.ScalarSet ;
 import org.jjoost.util.Factory;
@@ -148,7 +149,7 @@ public class DefaultFunctionScalarMap<K, V> implements ScalarMap<K, V> {
 		return delegate.values();
 	}
 
-	public Iterable<V> values(K key) {
+	public ArbitrarySet<V> values(K key) {
 		return delegate.values(key);
 	}
 

@@ -4,6 +4,7 @@ import java.io.Serializable ;
 import java.lang.reflect.Field;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList ;
+import java.util.Collections ;
 import java.util.Iterator ;
 import java.util.List ;
 import java.util.NoSuchElementException ;
@@ -553,9 +554,15 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 	
 	
 	@Override
-	public <NCmp> int remove(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
+	public <NCmp> int remove(int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
+		if (removeAtMost < 1) {
+			if (removeAtMost == 0)
+				return 0 ;
+			throw new IllegalArgumentException("Cannot remove less than zero elements") ;
+		}
 		
-		int c = eq.isUnique() ? -1 : 0 ;
+		final boolean expectOnlyOne = eq.isUnique() ;
+		int c = 0 ;
 		N prev = null, prev2 = null ;
 		N node = getTableUnsafe().writerGetUnsafe(hash) ;
 		boolean partial = false ;
@@ -658,12 +665,11 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 								waitingOnDelete.wake(node) ;
 								removed(node) ;
 								totalCounter.decrement(hash) ;
-								if (c == -1) {
+								if (expectOnlyOne | (++c == removeAtMost)) {
 									if (!keptNeighbours && (next == null || hash != next.hash || !eq.prefixMatch(find, next)))
 										uniquePrefixCounter.decrement(hash) ;
-									return 1 ;
+									return c ;
 								}
-								c++ ;
 								node = next ;
 							}
 
@@ -692,7 +698,12 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 	}
 	
 	@Override
-	public <NCmp, V> V removeAndReturnFirst(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+	public <NCmp, V> V removeAndReturnFirst(int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+		if (removeAtMost < 1) {
+			if (removeAtMost == 0)
+				return null ;
+			throw new IllegalArgumentException("Cannot remove less than zero elements") ;
+		}
 		
 		final boolean expectOnlyOne = eq.isUnique() ;
 		boolean doneFirst = false ;
@@ -701,6 +712,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 		N node = getTableUnsafe().writerGetUnsafe(hash) ;
 		boolean partial = false ;
 		boolean keptNeighbours = false ;
+		int c = 0 ;
 		
 		while (true) {
 			
@@ -799,7 +811,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 								waitingOnDelete.wake(node) ;
 								removed(node) ;
 								totalCounter.decrement(hash) ;
-								if (expectOnlyOne) {
+								if (expectOnlyOne | (++c == removeAtMost)) {
 									if (!keptNeighbours && (next == null || hash != next.hash || !eq.prefixMatch(find, next)))
 										uniquePrefixCounter.decrement(hash) ;
 									return ret.apply(node) ;
@@ -837,9 +849,15 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 	
 
 	@Override
-	public <NCmp, V> Iterable<V> removeAndReturn(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+	public <NCmp, V> Iterable<V> removeAndReturn(int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+		if (removeAtMost < 1) {
+			if (removeAtMost == 0)
+				return Collections.emptyList() ;
+			throw new IllegalArgumentException("Cannot remove less than zero elements") ;
+		}
 		
-		final List<V> r = eq.isUnique() ? null : new ArrayList<V>(4) ;
+		int c = 0 ;
+		final List<V> r = eq.isUnique() | removeAtMost == 1 ? null : new ArrayList<V>(4) ;
 		N prev = null, prev2 = null ;
 		N node = getTableUnsafe().writerGetUnsafe(hash) ;
 		boolean partial = false ;
@@ -942,10 +960,10 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 								waitingOnDelete.wake(node) ;
 								removed(node) ;
 								totalCounter.decrement(hash) ;
-								if (r == null) {
+								if (r == null | (++c == removeAtMost)) {
 									if (!keptNeighbours && (next == null || hash != next.hash || !eq.prefixMatch(find, next)))
 										uniquePrefixCounter.decrement(hash) ;
-									return new UniformList<V>(ret.apply(node), 1) ;
+									return r == null ? new UniformList<V>(ret.apply(node), 1) : r ;
 								}
 								r.add(ret.apply(node)) ;
 								node = next ;
@@ -1320,7 +1338,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 	@Override
 	public <NCmp, V> Iterator<V> all(Function<? super N, ? extends NCmp> nodeEqualityProj,
 			HashNodeEquality<? super NCmp, ? super N> nodeEquality, Function<? super N, ? extends V> ret) {
-		return new AllIterator<NCmp, V>(nodeEqualityProj, nodeEquality, ret) ;
+		return new LazyAllIterator<NCmp, V>(nodeEqualityProj, nodeEquality, ret) ;
 	}
 
 	@Override
@@ -1331,10 +1349,31 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 		return null ;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public <V> Iterator<V> clearAndReturn(Function<? super N, ? extends V> f) {
-		// TODO Auto-generated method stub
-		return null ;
+	public <V> Iterator<V> clearAndReturn(Function<? super N, ? extends V> ret) {
+		while (true) {
+			final Table<N> table = getTableFresh() ;
+			if (table instanceof BlockingTable) {
+				((BlockingTable<N>) table).waitForNext() ;
+			} else {
+				final BlockingTable<N> tmp = new BlockingTable<N>() ;
+				if (casTable(table, tmp)) {
+					final Table<N> newTable = new RegularTable<N>((N[]) new Node[table.capacity()], table.capacity()) ;
+					if (casTable(tmp, newTable)) {
+						tmp.wake(newTable) ;
+						if (table instanceof RegularTable) {
+							return new DestroyingIterator(((RegularTable) table).table, ret) ;
+						} else {
+							GrowingTable gt = (GrowingTable) table ;
+							gt.waiting.wakeAll() ;
+							gt.grow(0, false, false, true) ;
+							return new DestroyingIterator(gt.newTable, ret) ;
+						}
+					}					
+				} 
+			}
+		}
 	}
 
 	@Override
@@ -1399,9 +1438,10 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 					final GrowingTable growingTable = new GrowingTable((RegularTable<N>) table) ;
 					setTable(growingTable) ;
 					tmp.wake(growingTable) ;
-					growingTable.grow(0, false, true) ;
+					growingTable.grow(0, false, true, false) ;
 				}
 			} else if (table instanceof BlockingTable) {
+				((BlockingTable) table).waitForNext() ;
 			} else {
 				((GrowingTable) table).waitUntilGrown() ;
 			}
@@ -1638,14 +1678,14 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 	
 	}
 	
-	protected final class AllIterator<NCmp, V> extends GeneralIterator<NCmp, V> {
+	protected final class LazyAllIterator<NCmp, V> extends GeneralIterator<NCmp, V> {
 
 		Table<N> tableCache = getTableUnsafe() ;
 		final HashIter32Bit indexIter ;
 		final HashNodeSeqs<N, NCmp> bucketVisited ;
 		HashNodeSeq<N, NCmp> curVisited ;
 		
-		public AllIterator(Function<? super N, ? extends NCmp> nodeEqualityProj, 
+		public LazyAllIterator(Function<? super N, ? extends NCmp> nodeEqualityProj, 
 				HashNodeEquality<? super NCmp, ? super N> nodeEquality, 
 				Function<? super N, ? extends V> ret) {
 			super(nodeEqualityProj, nodeEquality, ret) ;
@@ -1752,7 +1792,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 					
 					if (curVisited == null || curVisited.hash != node.hash)
 						curVisited = bucketVisited.get(node) ;
-					if (!curVisited.haveVisitedAlready(node))
+					if (!(indexIter.haveVisitedAlready(node.hash) || curVisited.haveVisitedAlready(node)))
 						break ;
 					
 					prev2 = prev ;
@@ -1764,6 +1804,160 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 			
 			this.nextPred = prev ;
 			this.nextNode = node ;
+		}
+		
+	}
+	
+	
+	protected final class EagerAllIterator {
+		
+		final HashIter32Bit indexIter ;
+		Table<N> tableCache = getTableUnsafe() ;
+		Iterator<N> current ;
+		
+		public EagerAllIterator() {
+			tableCache = getTableUnsafe() ;
+			final int bits = Integer.bitCount(tableCache.capacity() - 1) ;
+			indexIter = new HashIter32Bit(bits > 4 ? 4 : 1, bits) ;
+		}
+		
+		public N next() {
+			if (current == null | !current.hasNext()) {
+				
+				final List<N> list = new ArrayList<N>() ;
+				N prev2 = null, prev = null ;
+				N node = null ;
+				
+				while (true) {
+					
+					if (node == REHASHING_FLAG | node == DELETED_FLAG | node == DELETING_FLAG) {
+						
+						if (node == REHASHING_FLAG) {
+							
+							// this bucket is being rehashed, so we need to start from the head again. since we visit an entire bucket in one go
+							// we do not need to save previously visited nodes; the indexIter ensures we do not look at any hash that occured in 
+							// a previously visited bucket
+							list.clear() ;
+							tableCache = getTableFresh() ;
+							indexIter.resize(Integer.bitCount(tableCache.capacity() - 1)) ;
+							prev2 = prev = null ;
+							node = tableCache.readerGetFresh(indexIter.current()) ;
+							
+						} else {
+							
+							// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the most recent non-deleted visited node
+							waitOnDelete(prev) ;
+							if (prev2 == null) {
+								
+								prev2 = prev = null ;
+								node = tableCache.readerGetFresh(indexIter.current()) ;
+
+							} else {
+								
+								node = prev2.getNextSafe() ;
+								prev = prev2 ;
+								prev2 = null ;
+								
+							}
+							
+						}
+						
+					} else if (node == null) {
+						
+						if (list.size() != 0) {
+							current = list.iterator() ;
+							return current.next() ;
+						}
+						if (!indexIter.next()) {
+							return null ;
+						}						
+						node = tableCache.readerGetStale(indexIter.current()) ;
+						
+					} else {
+						
+						if (!indexIter.haveVisitedAlready(node.hash)) {
+							list.add(node) ;
+						}
+						
+						prev2 = prev ;
+						prev = node ;
+						node = node.getNextUnsafe() ;						
+					}
+				}
+			} else {
+				
+				return current.next() ;
+				
+			}
+		}
+		
+	}
+	
+	protected final class DestroyingIterator<V> implements Iterator<V> {
+		
+		final Function<? super N, ? extends V> ret ;
+		final N[] table ;
+		int i = 0 ;
+		Iterator<N> current ;
+		
+		public DestroyingIterator(N[] table, Function<? super N, ? extends V> ret) {
+			this.table = table ;
+			this.ret = ret ;
+			nextIterator() ;
+		}
+		
+		@SuppressWarnings("unchecked")
+		private void nextIterator() {
+			final List<N> list = new ArrayList<N>() ;
+			N node = null ;
+			
+			while (true) {
+				
+				if (node == REHASHING_FLAG | node == DELETED_FLAG | node == DELETING_FLAG) {
+					
+					throw new IllegalStateException() ;
+					
+				} else if (node == null) {
+					
+					if (list.size() != 0) {
+						current = list.iterator() ;
+					}
+					if (i == table.length) {
+						current = null ;
+					}
+					i += 1 ;
+					node = table[i] ;
+					while (!casNodeArray(table, i, node, REHASHING_FLAG)) {
+						node = table[i] ;
+					}
+					
+				} else {
+					
+					final N next = node.getNextSafe() ;
+					if (next == DELETING_FLAG) {
+						waitOnDelete(node) ;							
+					} else if (node.oneStepDelete(next)) {
+						list.add(node) ;
+						node = next ;
+					}
+					
+				}
+			}
+		}
+		
+		public boolean hasNext() {
+			return current != null ;
+		}
+		
+		public V next() {
+			if (current == null)
+				throw new NoSuchElementException() ;
+			return ret.apply(current.next()) ;
+		}
+
+		@Override
+		public void remove() {
+			// do nothing - already deleted
 		}
 		
 	}
@@ -1791,6 +1985,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 		}
 		final boolean startDelete(N expect) {
 			return unsafe.compareAndSwapObject(this, nextPtrOffset, expect, DELETING_FLAG) ;
+		}
+		final boolean oneStepDelete(N expect) {
+			return unsafe.compareAndSwapObject(this, nextPtrOffset, expect, DELETED_FLAG) ;
 		}
 		final void finishDelete() {
 			unsafe.putObjectVolatile(this, nextPtrOffset, DELETED_FLAG) ;
@@ -1905,7 +2102,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 	private static final class BlockingTable<N extends Node<N>> implements Table<N> {
 		private final ThreadQueue waiting = new ThreadQueue(null) ;
 		private volatile Table<N> next = null ;
-		private void waitForNext() {
+		void waitForNext() {
 			waiting.insert(new ThreadQueue(Thread.currentThread())) ;
 			while (next == null)
 				LockSupport.park() ;
@@ -2003,7 +2200,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 			final int migratedIndex = oldTableIndex >> 5 ;
 			final int migratedBit = 1 << (oldTableIndex & 31) ;
 			if ((migrated[migratedIndex] & migratedBit) == 0) {
-				grow(oldTableIndex, true, false) ;
+				grow(oldTableIndex, true, false, false) ;
 				return getNodeVolatile(newTable, hash & newTableMask) ;
 			}
 			return getNodeVolatile(newTable, hash & newTableMask) ;
@@ -2013,7 +2210,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 			final int migratedIndex = oldTableIndex >> 5 ;
 			final int migratedBit = 1 << (oldTableIndex & 31) ;
 			if ((migrated[migratedIndex] & migratedBit) == 0) {
-				grow(oldTableIndex, true, false) ;
+				grow(oldTableIndex, true, false, false) ;
 				return newTable[hash & newTableMask] ;
 			}
 			return getNodeVolatile(newTable, hash & newTableMask) ;
@@ -2050,14 +2247,15 @@ public class LockFreeHashStore<N extends LockFreeHashStore.Node<N>> implements H
 				return casNodeArray(newTable, hash & newTableMask, expect, update) ;
 			}
 		}
-		public void grow(int from, boolean needThisIndex, boolean initiator) {
+		public void grow(int from, boolean needThisIndex, boolean initiator, boolean tryAll) {
 			if (!completion.startContributing())
 				return ;
 			for (int i = from ; i != oldTable.length ; i++)
-				if (!rehash(i, !(needThisIndex & (from == i))))
+				if (!rehash(i, !(needThisIndex & (from == i))) & !tryAll)
 					break ;
 			if (completion.finishContributing(initiator)) {
-				LockFreeHashStore.this.setTable(new RegularTable<N>(newTable, capacity)) ;
+				// perform a CAS rather than a set because a clear() could have already removed this table before grow completion
+				LockFreeHashStore.this.casTable(this, new RegularTable<N>(newTable, capacity)) ;
 				waiting.wakeAll() ;
 			}
 		}

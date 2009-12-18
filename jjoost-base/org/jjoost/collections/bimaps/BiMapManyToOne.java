@@ -52,4 +52,9 @@ public class BiMapManyToOne<K, V> extends AbstractBiMap<K, V, MultiMap<K, V>, Sc
 		return map.values(key) ;
 	}
 
+	@Override
+	public ScalarSet<V> values(K key) {
+		return map.values(key) ;
+	}
+	
 }

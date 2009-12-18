@@ -15,30 +15,14 @@ import org.jjoost.util.Function;
  */
 public interface MultiMap<K, V> extends ArbitraryMap<K, V>, Function<K, Iterable<V>> {
 
-	/**
-	 * put the provided (key, value) pair into the map, returning the value previously associated with the pair. Note this will leave untouched any pairs where the key is the same but the value is different. 
-	 * 
-	 * @param key
-	 * @param val
-	 * @return
-	 */
-	public V put(K key, V val) ;
+	@Override public V put(K key, V val) ;
+	@Override public V putIfAbsent(K key, V val) ;
 
-	/**
-	 * put the provided (key, value) pair into the map IFF there is no such (key, value) pair already; return the existing value or null if none.
-	 * 
-	 * @param key
-	 * @param val
-	 * @return
-	 */
-	public V putIfAbsent(K key, V val) ;
+	@Override public ScalarSet<V> values(K key) ;
 
-	public MultiMap<K, V> copy() ;
+	@Override public MultiSet<K> keys() ;
+	@Override public ScalarSet<Entry<K, V>> entries() ;
 	
-	@Override
-	public ScalarSet<Entry<K, V>> entries() ;
-	
-	@Override
-	public MultiSet<K> keys() ;
-	
+	@Override public MultiMap<K, V> copy() ;
+
 }

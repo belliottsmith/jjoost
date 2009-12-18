@@ -40,5 +40,10 @@ public class BiMap<K, V> extends AbstractBiMap<K, V, ArbitraryMap<K, V>, Arbitra
 	public ArbitrarySet<K> keys() {
 		return map.keys() ;
 	}
+	
+	@Override
+	public ArbitrarySet<V> values(K key) {
+		return map.values(key) ;
+	}
 
 }

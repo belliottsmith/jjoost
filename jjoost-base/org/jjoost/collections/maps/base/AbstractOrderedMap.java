@@ -306,11 +306,6 @@ public abstract class AbstractOrderedMap<K, V, N extends Entry<K, V>, S extends 
 	}
 
 	@Override
-	public Iterable<V> values(K key) {
-		return values(key, true) ;
-	}
-
-	@Override
 	public OrderedMap<K, V> copy() {
 		return create(store.<K>copy(Filters.<K>acceptAll(), keyProj(), keyCmp, keyCmpIsTotalOrder)) ;
 	}
@@ -987,11 +982,6 @@ public abstract class AbstractOrderedMap<K, V, N extends Entry<K, V>, S extends 
 			return values(true) ;
 		}
 
-		@Override
-		public Iterable<V> values(K key) {
-			return values(key, true) ;
-		}
-		
 		@Override
 		public int count(K key) {
 			return store.count(filterWithKeyLookup(key), entryProj(), entryCmp, entryCmpIsTotalOrder) ;

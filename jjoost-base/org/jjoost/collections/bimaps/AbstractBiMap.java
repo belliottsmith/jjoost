@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 
 import org.jjoost.collections.ArbitraryMap;
 
+// TODO : all methods returning iterators should be wrapped so that calls to the remove() methods can be trapped to prevent inconsistent state
 public abstract class AbstractBiMap<
 	K, V, 
 	M extends ArbitraryMap<K, V>, 
@@ -29,7 +30,8 @@ implements ArbitraryMap<K, V> {
 	}
 	@Override
 	public Iterator<Entry<K, V>> clearAndReturn() {
-		return null ;
+		// TODO implement
+		throw new UnsupportedOperationException() ;
 	}
 	@Override
 	public ArbitraryMap<V, K> inverse() {
@@ -146,10 +148,6 @@ implements ArbitraryMap<K, V> {
 	@Override
 	public Iterable<V> values() {
 		return map.values() ;
-	}
-	@Override
-	public Iterable<V> values(K key) {
-		return map.values(key) ;
 	}
 	
 }

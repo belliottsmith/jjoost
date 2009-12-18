@@ -138,4 +138,34 @@ public class AdapterFromJDKSet<V> implements ScalarSet<V> {
 		return set.contains(v) ;
 	}
 
+	@Override
+	public int remove(V value, int removeAtMost) {
+		if (removeAtMost < 1) {
+			if (removeAtMost < 0)
+				throw new IllegalArgumentException("Cannot remove less than zero items") ;
+			return 0 ;
+		}
+		return remove(value) ;
+	}
+	
+	@Override
+	public Iterable<V> removeAndReturn(V val, int removeAtMost) {
+		if (removeAtMost < 1) {
+			if (removeAtMost < 0)
+				throw new IllegalArgumentException("Cannot remove less than zero items") ;
+			return Collections.emptyList() ;
+		}
+		return removeAndReturn(val) ;
+	}
+	
+	@Override
+	public V removeAndReturnFirst(V val, int removeAtMost) {
+		if (removeAtMost < 1) {
+			if (removeAtMost < 0)
+				throw new IllegalArgumentException("Cannot remove less than zero items") ;
+			return null ;
+		}
+		return removeAndReturnFirst(val) ;
+	}
+
 }

@@ -50,4 +50,9 @@ public class BiMapListToList<K, V> extends AbstractBiMap<K, V, ListMap<K, V>, Li
 		return map.values(key) ;
 	}
 
+	@Override
+	public MultiSet<V> values(K key) {
+		return map.values(key) ;
+	}
+	
 }

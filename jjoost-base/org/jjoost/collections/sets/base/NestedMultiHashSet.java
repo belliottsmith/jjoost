@@ -1,6 +1,6 @@
 package org.jjoost.collections.sets.base;
 
-import java.util.ArrayList;
+import java.util.Collections ;
 import java.util.Iterator;
 import java.util.List;
 
@@ -9,6 +9,7 @@ import org.jjoost.collections.base.HashNode ;
 import org.jjoost.collections.base.HashNodeEquality ;
 import org.jjoost.collections.base.HashNodeFactory ;
 import org.jjoost.collections.base.HashStore ;
+import org.jjoost.collections.iters.AbstractIterable ;
 import org.jjoost.collections.iters.EmptyIterator ;
 import org.jjoost.util.Counter;
 import org.jjoost.util.Equality;
@@ -73,6 +74,17 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	}
 	
 	@Override
+	public void put(V val, int count) {
+		final int hash = hash(val) ;
+		while (true) {
+			final N existing = table.ensureAndGet(hash, val, valEq, nodeFactory, identity()) ;
+			if (existing.put(val, count))
+				break ;
+		}
+		totalCount.add(count) ;
+	}
+	
+	@Override
 	public int putAll(Iterable<V> vals) {
 		int c = 0 ;
 		for (V val : vals)
@@ -98,13 +110,12 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public int remove(V val) {
 		final int hash = hash(val) ;
 		while (true) {
-			final N r = table.removeAndReturnFirst(hash, val, valEq, identity()) ;
+			final N r = table.removeAndReturnFirst(hash, 1, val, valEq, identity()) ;
 			if (r == null)
 				return 0 ;
-			final int removed = r.destroy() ;
-			if (removed >= 0) {
-				if (removed != 0)
-					totalCount.add(-removed) ;
+			final int removed = r.remove(Integer.MAX_VALUE) ;
+			if (removed > 0) {
+				totalCount.add(-removed) ;
 				return removed ;
 			}
 		}		
@@ -114,14 +125,13 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public V removeAndReturnFirst(V val) {
 		final int hash = hash(val) ;
 		while (true) {
-			final N r = table.removeAndReturnFirst(hash, val, valEq, identity()) ;
+			final N r = table.removeAndReturnFirst(hash, 1, val, valEq, identity()) ;
 			if (r == null)
 				return null ;
 			final V v = r.getValue() ; 
-			final int removed = r.destroy() ;
-			if (removed >= 0) {
-				if (removed != 0)
-					totalCount.add(-removed) ;
+			final int removed = r.remove(Integer.MAX_VALUE) ;
+			if (removed > 0) {
+				totalCount.add(-removed) ;
 				return v ;
 			}
 		}
@@ -130,25 +140,84 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	@Override
 	public Iterable<V> removeAndReturn(V val) {
 		final int hash = hash(val) ;
-		final List<Iterable<V>> iters = new ArrayList<Iterable<V>>() ;
-		for (INode<V, N> n : table.removeAndReturn(hash, val, valEq, identity())) {
-			final List<V> r = n.destroyAndReturn() ;
-			final int c = r.size() ;
-			if (c >= 0) {
-				if (c != 0)
-					totalCount.add(-c) ;
-				iters.add(r) ;
+		while (true) {
+			final N r = table.removeAndReturnFirst(hash, 1, val, valEq, identity()) ;
+			if (r == null)
+				return Collections.emptyList() ;
+			final List<V> removed = r.removeAndReturn(Integer.MAX_VALUE) ;
+			if (removed.size() > 0) {
+				totalCount.add(-removed.size()) ;
+				return removed ;
 			}
 		}
-		switch (iters.size()) {
-		case 0:
-			return java.util.Collections.emptyList() ;
-		case 1:
-			return iters.get(0) ;
-		default:
-			return Iters.concat(iters) ;
+	}
+	
+	@Override
+	public int remove(V val, int atMost) {
+		if (atMost < 1) {
+			if (atMost < 0)
+				throw new IllegalArgumentException("Cannot remove less than zero elements") ;
+			return 0 ;
+		}
+		final int hash = hash(val) ;
+		while (true) {
+			final N r = table.first(hash, val, valEq, identity()) ;
+			if (r == null)
+				return 0 ;
+			final int removed = r.remove(atMost) ;
+			if (removed != 0) {
+				if (removed <= atMost)
+					table.removeNode(valProj(), valEq, r) ;
+				totalCount.add(-removed) ;
+				return removed ;
+			}
 		}
 	}
+	
+	@Override
+	public V removeAndReturnFirst(V val, int atMost) {
+		if (atMost < 1) {
+			if (atMost < 0)
+				throw new IllegalArgumentException("Cannot remove less than zero elements") ;
+			return null ;
+		}
+		final int hash = hash(val) ;
+		while (true) {
+			final N r = table.first(hash, val, valEq, identity()) ;
+			if (r == null)
+				return null ;
+			final int removed = r.remove(atMost) ;
+			if (removed != 0) {
+				if (removed <= atMost)
+					table.removeNode(valProj(), valEq, r) ;
+				totalCount.add(-removed) ;
+				return r.getValue() ;
+			}
+		}
+	}
+
+	@Override
+	public Iterable<V> removeAndReturn(V val, int atMost) {
+		if (atMost < 1) {
+			if (atMost < 0)
+				throw new IllegalArgumentException("Cannot remove less than zero elements") ;
+			return Collections.emptyList() ;
+		}
+		final int hash = hash(val) ;
+		while (true) {
+			final N r = table.first(hash, val, valEq, identity()) ;
+			if (r == null)
+				return Collections.emptyList() ;
+			final List<V> removed = r.removeAndReturn(atMost) ;
+			if (removed.size() != 0) {
+				if (removed.size() <= atMost)
+					table.removeNode(valProj(), valEq, r) ;
+				totalCount.add(-removed.size()) ;
+				return removed ;
+			}
+		}
+	}
+	
 	@Override
 	public boolean contains(V val) {
 		final int hash = hash(val) ;
@@ -196,10 +265,14 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public boolean isEmpty() {
 		return table.isEmpty() ;
 	}
-	@SuppressWarnings("unchecked")
 	@Override
 	public Iterable<V> all() {
-		return Functions.apply(Functions.<V>getAbstractValueContentsProjection(), (Iterable<Value<V>>) table);
+		return new AbstractIterable<V>() {
+			@Override
+			public Iterator<V> iterator() {
+				return table.all(valProj(), valEq, valProj()) ;
+			}
+		} ;
 	}
 	@Override
 	public Iterable<V> all(final V val) {
@@ -263,11 +336,12 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	// **********************************
 	
 	protected static interface INode<V, N extends HashNode<N> & INode<V, N>> extends Value<V> {
+		public boolean put(V v, int count) ;
 		public boolean put(V v) ;
 		public boolean valid() ;
 		public int count() ;
-		public int destroy() ;
-		public List<V> destroyAndReturn() ;
+		public int remove(int target) ;
+		public List<V> removeAndReturn(int target) ;
 		public Iterator<V> iterator(Iterator<Iterator<V>> superIter) ;		
 		public Iterator<V> iterator(NestedMultiHashSet<V, N> set) ;		
 	}
@@ -293,29 +367,6 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 		}
 	}
 	
-//	protected static final class NodeEquality<V, N extends INode<V, N>> implements HashNodeEquality<N, N>, Equality<N> {
-//		private static final long serialVersionUID = 3918906145341080830L ;
-//		protected final Equality<? super V> valEq ;
-//		public NodeEquality(Equality<? super V> valEq) {
-//			this.valEq = valEq ;
-//		}
-//		public final boolean isUnique() {
-//			return true ;
-//		}
-//		@Override
-//		public boolean prefixMatch(N n1, N n2) {
-//			return valEq.equates(n1.getValue(), n2.getValue()) ;
-//		}
-//		@Override
-//		public boolean suffixMatch(N cmp, N n) {
-//			return true ;
-//		}
-//		@Override
-//		public boolean equates(N a, N b) {
-//			return prefixMatch(a, b) ;
-//		}
-//	}
-//	
 	// *******************************
 	// UTILITY CLASSES
 	// *******************************
@@ -323,11 +374,12 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	private static final <V, N extends HashNode<N> & INode<V, N>> Destroyer<V, N> destroyer() {
 		return new Destroyer<V, N>() ;
 	}
+	
 	private static final class Destroyer<V, N extends HashNode<N> & INode<V, N>> implements Function<N, Iterator<V>> {
 		private static final long serialVersionUID = -965724235732791909L;
 		@Override
 		public Iterator<V> apply(N n) {
-			return n.destroyAndReturn().iterator() ;
+			return n.removeAndReturn(Integer.MAX_VALUE).iterator() ;
 		}
 	}
 

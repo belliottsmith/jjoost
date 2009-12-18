@@ -65,9 +65,11 @@ public abstract class AbstractArraySet<V> implements ArbitrarySet<V> {
 	}
 
 	@Override
-	public int remove(V v) {
+	public int remove(V v, int atMost) {
+		if (atMost < 0)
+			throw new IllegalArgumentException("Cannot delete fewer than zero elements") ;
 		int del = 0 ;
-		for (int i = 0 ; i != count ; i++) {
+		for (int i = 0 ; (del != atMost) & (i != count) ; i++) {
 			if (valEq.equates(v, vals[i])) {
 				del += 1 ;
 			} else if (del != 0) {
@@ -79,10 +81,12 @@ public abstract class AbstractArraySet<V> implements ArbitrarySet<V> {
 	}
 
 	@Override
-	public Iterable<V> removeAndReturn(V v) {
+	public Iterable<V> removeAndReturn(V v, int atMost) {
+		if (atMost < 0)
+			throw new IllegalArgumentException("Cannot delete fewer than zero elements") ;
 		List<V> deleted = new ArrayList<V>() ;
 		int del = 0 ;
-		for (int i = 0 ; i != count ; i++) {
+		for (int i = 0 ; (del != atMost) & (i != count) ; i++) {
 			if (valEq.equates(v, vals[i])) {
 				del += 1 ;
 				deleted.add(v) ;
@@ -95,10 +99,10 @@ public abstract class AbstractArraySet<V> implements ArbitrarySet<V> {
 	}
 
 	@Override
-	public V removeAndReturnFirst(V v) {
+	public V removeAndReturnFirst(V v, int atMost) {
 		V deleted = null ;
 		int del = 0 ;
-		for (int i = 0 ; i != count ; i++) {
+		for (int i = 0 ; (del != atMost) & (i != count) ; i++) {
 			if (valEq.equates(v, vals[i])) {
 				if (del == 0)
 					deleted = vals[i] ;
@@ -109,6 +113,21 @@ public abstract class AbstractArraySet<V> implements ArbitrarySet<V> {
 		}
 		count -= del ;
 		return deleted ;
+	}
+	
+	@Override
+	public int remove(V value) {
+		return remove(value, Integer.MAX_VALUE) ;
+	}
+
+	@Override
+	public Iterable<V> removeAndReturn(V value) {
+		return removeAndReturn(value, Integer.MAX_VALUE) ;
+	}
+
+	@Override
+	public V removeAndReturnFirst(V value) {
+		return removeAndReturnFirst(value, Integer.MAX_VALUE) ;
 	}
 
 	@Override

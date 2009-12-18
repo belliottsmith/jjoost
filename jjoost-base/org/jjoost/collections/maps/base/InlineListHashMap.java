@@ -1,6 +1,5 @@
 package org.jjoost.collections.maps.base;
 
-import java.util.Iterator;
 import java.util.Map.Entry;
 
 import org.jjoost.collections.ListMap;
@@ -71,36 +70,41 @@ public class InlineListHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extend
 		return new InlineListHashMap<K, V, N>(keyHasher, rehasher, keyEq, entryEq, nodeFactory, store.copy()) ;
 	}
 	
+	@Override
+	public MultiSet<V> values(K key) {
+		return new KeyValueSet(key) ;
+	}
+
+	final class KeyValueSet extends AbstractKeyValueSet implements MultiSet<V> {
+		private static final long serialVersionUID = 2741936401896784235L ;
+		public KeyValueSet(K key) {
+			super(key) ;
+		}
+		@Override
+		public MultiSet<V> copy() {
+			throw new UnsupportedOperationException() ;
+		}
+		@Override
+		public void put(V val, int count) {
+			for (int i = 0 ; i != count ; i++)
+				put(val) ;
+		}
+	}
+	
 	final class KeySet extends AbstractKeySet implements MultiSet<K> {
 		private static final long serialVersionUID = 2741936401896784235L;
-		@Override public Iterable<K> unique() { 
-			return new Iterable<K>() {
-				@Override
-				public Iterator<K> iterator() {
-					return store.unique(keyProj(), keyEq.getKeyEquality(), nodeProj(), entryEq, keyProj()) ;
-				}
-			} ;
-		}
-		@Override
-		public boolean permitsDuplicates() {
-			return true ;
-		}
 		@Override
 		public MultiSet<K> copy() {
+			throw new UnsupportedOperationException() ;
+		}
+		@Override
+		public void put(K val, int numberOfTimes) {
 			throw new UnsupportedOperationException() ;
 		}
 	}
 
 	final class EntrySet extends AbstractEntrySet implements MultiSet<Entry<K, V>> {
 		private static final long serialVersionUID = 2741936401896784235L;
-		@Override public Iterable<Entry<K, V>> unique() {
-			return new Iterable<Entry<K, V>>() {
-				@Override
-				public Iterator<Entry<K, V>> iterator() {
-					return store.unique(nodeProj(), entryEq, nodeProj(), entryEq, entryProj()) ;
-				}
-			};
-		}
 		@Override
 		public Entry<K, V> put(Entry<K, V> entry) {
 			final K key = entry.getKey() ;
@@ -116,12 +120,13 @@ public class InlineListHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extend
 			return store.putIfAbsent(n, n, entryEq, entryProj()) ;
 		}
 		@Override
-		public boolean permitsDuplicates() {
-			return true ;
-		}
-		@Override
 		public MultiSet<Entry<K, V>> copy() {
 			throw new UnsupportedOperationException() ;
+		}
+		@Override
+		public void put(Entry<K, V> val, int numberOfTimes) {
+			for (int i = 0 ; i != numberOfTimes ; i++)
+				put(val) ;
 		}
 	}
 

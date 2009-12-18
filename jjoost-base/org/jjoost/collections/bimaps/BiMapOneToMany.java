@@ -2,6 +2,7 @@ package org.jjoost.collections.bimaps;
 
 import java.util.Map.Entry ;
 
+import org.jjoost.collections.ArbitrarySet ;
 import org.jjoost.collections.MultiMap ;
 import org.jjoost.collections.ScalarMap ;
 import org.jjoost.collections.ScalarSet ;
@@ -100,6 +101,11 @@ public class BiMapOneToMany<K, V> extends AbstractBiMap<K, V, ScalarMap<K, V>, M
 	@Override
 	public V apply(K v) {
 		return map.apply(v) ;
+	}
+	
+	@Override
+	public ArbitrarySet<V> values(K key) {
+		return map.values(key) ;
 	}
 	
 }

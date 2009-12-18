@@ -126,18 +126,18 @@ public class SegmentedHashStore<N extends HashNode<N>> implements HashStore<N> {
 		return segmentFor(put.hash).putIfAbsent(find, put, eq, ret) ;
 	}
 	@Override
-	public <NCmp> int remove(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
-		return segmentFor(hash).remove(hash, find, eq) ;
+	public <NCmp> int remove(int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
+		return segmentFor(hash).remove(hash, removeAtMost, find, eq) ;
 	}
 	@Override
-	public <NCmp, V> Iterable<V> removeAndReturn(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq,
+	public <NCmp, V> Iterable<V> removeAndReturn(int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq,
 			Function<? super N, ? extends V> ret) {
-		return segmentFor(hash).removeAndReturn(hash, find, eq, ret) ;
+		return segmentFor(hash).removeAndReturn(hash, removeAtMost, find, eq, ret) ;
 	}
 	@Override
-	public <NCmp, V> V removeAndReturnFirst(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq,
+	public <NCmp, V> V removeAndReturnFirst(int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq,
 			Function<? super N, ? extends V> ret) {
-		return segmentFor(hash).removeAndReturnFirst(hash, find, eq, ret) ;
+		return segmentFor(hash).removeAndReturnFirst(hash, removeAtMost, find, eq, ret) ;
 	}
 	@Override
 	public <NCmp> boolean removeNode(Function<? super N, ? extends NCmp> nodePrefixEqFunc,

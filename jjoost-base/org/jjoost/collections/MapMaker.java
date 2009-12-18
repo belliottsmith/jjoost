@@ -1,8 +1,8 @@
 package org.jjoost.collections;
 
 import org.jjoost.collections.base.HashStoreType ;
-import org.jjoost.collections.maps.nested.ThreadSafeNestedSetListMap ;
-import org.jjoost.collections.maps.nested.ThreadSafeNestedSetMultiMap ;
+import org.jjoost.collections.maps.nested.NestedSetListMap ;
+import org.jjoost.collections.maps.nested.NestedSetMultiMap ;
 import org.jjoost.collections.maps.serial.SerialInlineListHashMap ;
 import org.jjoost.collections.maps.serial.SerialInlineMultiHashMap ;
 import org.jjoost.collections.maps.serial.SerialScalarHashMap ;
@@ -133,7 +133,7 @@ public class MapMaker {
 				switch(type.type()) {
 				case SERIAL:
 				case SYNCHRONIZED:
-					MultiMap<K, V> r = new ThreadSafeNestedSetMultiMap<K, V>(
+					MultiMap<K, V> r = new NestedSetMultiMap<K, V>(
 							MapMaker.<K, ScalarSet<V>>hash()
 								.initialCapacity(initialCapacity)
 								.loadFactor(loadFactor)
@@ -179,7 +179,7 @@ public class MapMaker {
 				switch(type.type()) {
 				case SERIAL:
 				case SYNCHRONIZED:
-					ListMap<K, V> r = new ThreadSafeNestedSetListMap<K, V>(
+					ListMap<K, V> r = new NestedSetListMap<K, V>(
 							MapMaker.<K, MultiSet<V>>hash()
 								.initialCapacity(initialCapacity)
 								.loadFactor(loadFactor)

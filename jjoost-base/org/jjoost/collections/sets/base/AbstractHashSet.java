@@ -51,11 +51,20 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> imple
 	
 	@Override
 	public int remove(V val) {
-		return store.remove(hash(val), val, valEq) ;
+		return store.remove(hash(val), Integer.MAX_VALUE, val, valEq) ;
 	}
 	@Override
 	public Iterable<V> removeAndReturn(V val) {
-		return store.removeAndReturn(hash(val), val, valEq, valProj()) ;
+		return store.removeAndReturn(hash(val), Integer.MAX_VALUE, val, valEq, valProj()) ;
+	}
+	
+	@Override
+	public int remove(V val, int atMost) {
+		return store.remove(hash(val), atMost, val, valEq) ;
+	}
+	@Override
+	public Iterable<V> removeAndReturn(V val, int atMost) {
+		return store.removeAndReturn(hash(val), atMost, val, valEq, valProj()) ;
 	}
 	
 	@Override
@@ -75,9 +84,14 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> imple
 
 	@Override
 	public V removeAndReturnFirst(V value) {
-		return store.removeAndReturnFirst(hash(value), value, valEq, valProj()) ;
+		return store.removeAndReturnFirst(hash(value), Integer.MAX_VALUE, value, valEq, valProj()) ;
 	}
 
+	@Override
+	public V removeAndReturnFirst(V value, int atMost) {
+		return store.removeAndReturnFirst(hash(value), atMost, value, valEq, valProj()) ;
+	}
+	
 	@Override
 	public boolean contains(V value) {
 		return store.contains(hash(value), value, valEq) ;

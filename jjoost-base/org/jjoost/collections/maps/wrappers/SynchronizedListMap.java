@@ -32,5 +32,9 @@ public class SynchronizedListMap<K, V> extends SynchronizedArbitraryMap<K, V, Li
 	@Override public ListMap<K, V> copy() {
 		return new SynchronizedListMap<K, V>(delegate.copy()) ;
 	}
+	
+	@Override public synchronized MultiSet<V> values(K key) {
+		return wrap(delegate.values(key)) ;
+	}
 
 }

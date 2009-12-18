@@ -84,5 +84,17 @@ public class SynchronizedArbitrarySet<V, S extends ArbitrarySet<V>> extends Sync
 	@Override public synchronized int uniqueCount() {
 		return delegate.uniqueCount();
 	}
+	@Override
+	public int remove(V value, int removeAtMost) {
+		return delegate.remove(value, removeAtMost) ;
+	}
+	@Override
+	public Iterable<V> removeAndReturn(V value, int removeAtMost) {
+		return delegate.removeAndReturn(value, removeAtMost) ;
+	}
+	@Override
+	public V removeAndReturnFirst(V value, int removeAtMost) {
+		return delegate.removeAndReturnFirst(value, removeAtMost) ;
+	}
 
 }

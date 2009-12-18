@@ -1,6 +1,5 @@
 package org.jjoost.collections.maps.base;
 
-import java.util.Iterator;
 import java.util.Map.Entry;
 
 import org.jjoost.collections.MultiSet ;
@@ -46,6 +45,11 @@ public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> exten
 	}
 	
 	@Override
+	public ScalarSet<V> values(K k) {
+		return new KeyValueSet(k) ;
+	}
+	
+	@Override
 	public Iterable<V> apply(K v) {
 		return values(v) ;
 	}
@@ -72,31 +76,39 @@ public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> exten
 		return new InlineMultiHashMap<K, V, N>(keyHasher, rehasher, keyEq, entryEq, nodeFactory, store.copy()) ;
 	}
 
+	final class KeyValueSet extends AbstractKeyValueSet implements ScalarSet<V> {
+		private static final long serialVersionUID = 2741936401896784235L;
+		public KeyValueSet(K key) {
+			super(key) ;
+		}
+		@Override
+		public ScalarSet<V> copy() {
+			throw new UnsupportedOperationException() ;
+		}
+		@Override
+		public V get(V key) {
+			return first(key) ;
+		}
+		@Override
+		public int size() {
+			return totalCount() ;
+		}
+	}
+	
 	final class KeySet extends AbstractKeySet implements MultiSet<K> {
 		private static final long serialVersionUID = 2741936401896784235L;
-		@Override public Iterable<K> unique() { 
-			return new Iterable<K>() {
-				@Override
-				public Iterator<K> iterator() {
-					return store.unique(keyProj(), keyEq.getKeyEquality(), nodeProj(), entryEq, keyProj()) ;
-				}				
-			} ;
-		}
-		@Override
-		public boolean permitsDuplicates() {
-			return true ;
-		}
 		@Override
 		public MultiSet<K> copy() {
+			throw new UnsupportedOperationException() ;
+		}
+		@Override
+		public void put(K val, int numberOfTimes) {
 			throw new UnsupportedOperationException() ;
 		}
 	}
 
 	final class EntrySet extends AbstractEntrySet implements ScalarSet<Entry<K, V>> {
 		private static final long serialVersionUID = 2741936401896784235L;
-		@Override public Iterable<Entry<K, V>> unique() {
-			return all() ;
-		}
 		@Override
 		public Entry<K, V> put(Entry<K, V> entry) {
 			final K key = entry.getKey() ;
@@ -110,10 +122,6 @@ public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> exten
 			final V val = entry.getValue() ;
 			final N n = nodeFactory.node(hash(key), key, val) ;
 			return store.putIfAbsent(n, n, entryEq, entryProj()) ;
-		}
-		@Override
-		public boolean permitsDuplicates() {
-			return false ;
 		}
 		@Override
 		public Entry<K, V> get(Entry<K, V> key) {

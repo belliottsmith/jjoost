@@ -32,5 +32,8 @@ public class SynchronizedMultiMap<K, V> extends SynchronizedArbitraryMap<K, V, M
 	@Override public synchronized MultiMap<K, V> copy() {
 		return new SynchronizedMultiMap<K, V>(delegate.copy()) ;
 	}
-	
+	@Override public synchronized ScalarSet<V> values(K key) {
+		return wrap(delegate.values(key)) ;
+	}
+
 }

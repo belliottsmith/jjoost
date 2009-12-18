@@ -38,6 +38,14 @@ public class MultiArraySet<V> extends AbstractArraySet<V> implements MultiSet<V>
 	}
 
 	@Override
+	public void put(V v, int c) {
+		ensureIndex(count + c) ;
+		for (int i = 0 ; i != c ; i++)
+			vals[count+i] = v ;
+		count += c ;
+	}
+	
+	@Override
 	public int putAll(Iterable<V> vs) {
 		final int oldc = count ;
 		for (V v : vs) {

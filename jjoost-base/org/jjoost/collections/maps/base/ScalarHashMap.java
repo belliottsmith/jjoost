@@ -79,6 +79,11 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 	}
 
 	@Override
+	public ScalarSet<V> values(K key) {
+		return new KeyValueSet(key) ;
+	}	
+
+	@Override
 	public V get(K key) {
 		return first(key) ;
 	}
@@ -109,16 +114,27 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 		return totalCount() ;
 	}
 
-	final class KeySet extends AbstractKeySet implements ScalarSet<K> {
+	final class KeyValueSet extends AbstractKeyValueSet implements ScalarSet<V> {
 		private static final long serialVersionUID = 2741936401896784235L;
-		@Override 
-		public Iterable<K> unique() { 
-			return all() ; 
+		public KeyValueSet(K key) {
+			super(key) ;
 		}
 		@Override
-		public boolean permitsDuplicates() {
-			return false ;
+		public V get(V key) {
+			return first(key) ;
 		}
+		@Override
+		public int size() {
+			return totalCount() ;
+		}
+		@Override
+		public ScalarSet<V> copy() {
+			throw new UnsupportedOperationException() ;
+		}
+	}
+	
+	final class KeySet extends AbstractKeySet implements ScalarSet<K> {
+		private static final long serialVersionUID = 2741936401896784235L;
 		@Override
 		public K get(K key) {
 			return first(key) ;
@@ -135,9 +151,6 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 
 	final class EntrySet extends AbstractEntrySet implements ScalarSet<Entry<K, V>> {
 		private static final long serialVersionUID = 2741936401896784235L;
-		@Override public Iterable<Entry<K, V>> unique() { 
-			return all() ; 
-		}
 		@Override
 		public Entry<K, V> put(Entry<K, V> entry) {
 			throw new UnsupportedOperationException() ;
@@ -145,10 +158,6 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 		@Override
 		public Entry<K, V> putIfAbsent(Entry<K, V> val) {
 			throw new UnsupportedOperationException() ;
-		}
-		@Override
-		public boolean permitsDuplicates() {
-			return false ;
 		}
 		@Override
 		public Entry<K, V> get(Entry<K, V> key) {
@@ -191,6 +200,6 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 		public boolean isUnique() {
 			return true ;
 		}
-	}	
+	}
 
 }

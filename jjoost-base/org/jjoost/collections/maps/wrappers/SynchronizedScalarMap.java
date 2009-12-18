@@ -2,6 +2,7 @@ package org.jjoost.collections.maps.wrappers;
 
 import java.util.Map.Entry ;
 
+import org.jjoost.collections.ArbitrarySet ;
 import org.jjoost.collections.ScalarMap;
 import org.jjoost.collections.ScalarSet ;
 import org.jjoost.util.Factory;
@@ -51,6 +52,9 @@ public class SynchronizedScalarMap<K, V> extends SynchronizedArbitraryMap<K, V, 
 	@Override
 	public ScalarMap<K, V> copy() {
 		return new SynchronizedScalarMap<K, V>(delegate.copy()) ;
+	}
+	@Override public synchronized ArbitrarySet<V> values(K key) {
+		return wrap(delegate.values(key)) ;
 	}
 
 }

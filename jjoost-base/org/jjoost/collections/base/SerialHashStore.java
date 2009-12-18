@@ -271,8 +271,12 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	// **************************************************
 	
 	@Override
-	public <NCmp> int remove(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
-
+	public <NCmp> int remove(int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
+		if (removeAtMost < 1) {
+			if (removeAtMost == 0)
+				return 0 ;
+			throw new IllegalArgumentException("Cannot remove less than zero elements") ;
+		}
 		final boolean eqIsUniq = eq.isUnique() ;
 		boolean partial = false ;
     	hash = hash & (table.length - 1) ;
@@ -300,6 +304,13 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
     			removed(n) ;
 				n = next ;
     			totalNodeCount -= 1 ;
+    			if (eqIsUniq | (r == removeAtMost)) {
+    				if (!keptNeighbours)
+    					keptNeighbours = n != null 
+    						&& n.hash == hash 
+    						&& eq.prefixMatch(find, n) ;
+    				break ;
+    			}
     		} else if (partial) {
     			keptNeighbours = true ;
     			if (eqIsUniq)
@@ -338,15 +349,20 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	}
 
 	@Override
-	public <NCmp, V> Iterable<V> removeAndReturn(int hash, NCmp c, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
-		return removedNodeIterable(internalRemoveAndReturn(hash, c, eq), ret) ;
+	public <NCmp, V> Iterable<V> removeAndReturn(int hash, int removeAtMost, NCmp c, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+		return removedNodeIterable(internalRemoveAndReturn(hash, removeAtMost, c, eq), ret) ;
 	}
 	@Override
-	public <NCmp, V> V removeAndReturnFirst(int hash, NCmp c, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
-		final N n = internalRemoveAndReturn(hash, c, eq) ;
+	public <NCmp, V> V removeAndReturnFirst(int hash, int removeAtMost, NCmp c, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+		final N n = internalRemoveAndReturn(hash, removeAtMost, c, eq) ;
 		return n == null ? null : ret.apply(n) ;
 	}
-	private <NCmp> N internalRemoveAndReturn(int hash, NCmp c, HashNodeEquality<? super NCmp, ? super N> eq) {
+	private <NCmp> N internalRemoveAndReturn(int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
+		if (removeAtMost < 1) {
+			if (removeAtMost == 0)
+				return null ;
+			throw new IllegalArgumentException("Cannot remove less than zero elements") ;
+		}
 		
 		final boolean eqIsUniq = eq.isUnique() ;
 		boolean partial = false ;
@@ -354,16 +370,18 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		N p = null ;
 		N n = table[hash] ; 
 		boolean keptNeighbours = false ;
-		N removedHead = null, removedTail = null ;		
+		N removedHead = null, removedTail = null ;
+		int c = 0 ;
 		while (n != null) {
-			if (partial != (n.hash == hash && eq.prefixMatch(c, n))) {
+			if (partial != (n.hash == hash && eq.prefixMatch(find, n))) {
 				if (partial) {
 					if (!keptNeighbours)
 						uniquePrefixCount -= 1 ;
 					return removedHead ;
 				} else partial = true ;
 			}
-			if (partial && eq.suffixMatch(c, n)) {
+			if (partial && eq.suffixMatch(find, n)) {
+				c++ ;
 				final N next = n.next ;
 				if (p == null) {
 					table[hash] = next ;
@@ -379,6 +397,13 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 				totalNodeCount -= 1 ;
 				removed(n) ;				
 				n = next ;
+				if (eqIsUniq | (c == removeAtMost)) {
+    				if (!keptNeighbours)
+    					keptNeighbours = n != null 
+    						&& n.hash == hash 
+    						&& eq.prefixMatch(find, n) ;
+    				break ;
+				}
 			} else if (partial) {
 				keptNeighbours = true ;
 				if (eqIsUniq)

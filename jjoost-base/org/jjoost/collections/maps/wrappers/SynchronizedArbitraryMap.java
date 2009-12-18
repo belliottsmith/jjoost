@@ -89,9 +89,6 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends ArbitraryMap<K, V
 	@Override public synchronized Iterable<V> values() {
 		return wrap(delegate.values()) ;
 	}
-	@Override public synchronized Iterable<V> values(K key) {
-		return wrap(delegate.values(key)) ;
-	}
 
 	@SuppressWarnings("hiding")
 	protected <V> ArbitrarySet<V> wrap(final ArbitrarySet<V> delegate) {
@@ -208,6 +205,24 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends ArbitraryMap<K, V
 			@Override public int uniqueCount() {
 				synchronized(SynchronizedArbitraryMap.this) {
 					return delegate.uniqueCount() ;
+				}
+			}
+			@Override
+			public int remove(V value, int removeAtMost) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.remove(value, removeAtMost) ;
+				}
+			}
+			@Override
+			public Iterable<V> removeAndReturn(V value, int removeAtMost) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.removeAndReturn(value, removeAtMost) ;
+				}
+			}
+			@Override
+			public V removeAndReturnFirst(V value, int removeAtMost) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.removeAndReturnFirst(value, removeAtMost) ;
 				}
 			}
 		} ;
@@ -331,11 +346,33 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends ArbitraryMap<K, V
 				}
 			}
 			@Override
-			public synchronized V get(V key) {
-				return delegate.get(key) ;
+			public V get(V key) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.get(key) ;
+				}
 			}
-			@Override public synchronized int size() {
-				return delegate.size() ;
+			@Override public int size() {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.size() ;
+				}
+			}
+			@Override
+			public int remove(V value, int removeAtMost) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.remove(value, removeAtMost) ;
+				}
+			}
+			@Override
+			public Iterable<V> removeAndReturn(V value, int removeAtMost) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.removeAndReturn(value, removeAtMost) ;
+				}
+			}
+			@Override
+			public V removeAndReturnFirst(V value, int removeAtMost) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.removeAndReturnFirst(value, removeAtMost) ;
+				}
 			}
 		} ;
 	}
@@ -412,6 +449,11 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends ArbitraryMap<K, V
 					return delegate.put(val) ;
 				}
 			}
+			@Override public void put(V val, int count) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					delegate.put(val, count) ;
+				}
+			}
 			@Override public int putAll(Iterable<V> val) {
 				synchronized(SynchronizedArbitraryMap.this) {
 					return delegate.putAll(val) ;
@@ -457,6 +499,24 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends ArbitraryMap<K, V
 					return delegate.uniqueCount() ;
 				}
 			}			
+			@Override
+			public int remove(V value, int removeAtMost) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.remove(value, removeAtMost) ;
+				}
+			}
+			@Override
+			public Iterable<V> removeAndReturn(V value, int removeAtMost) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.removeAndReturn(value, removeAtMost) ;
+				}
+			}
+			@Override
+			public V removeAndReturnFirst(V value, int removeAtMost) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.removeAndReturnFirst(value, removeAtMost) ;
+				}
+			}
 		} ;
 	}
 	

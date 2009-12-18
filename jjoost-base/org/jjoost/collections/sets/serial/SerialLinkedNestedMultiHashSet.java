@@ -62,21 +62,59 @@ public class SerialLinkedNestedMultiHashSet<V> extends NestedMultiHashSet<V, Ser
 		public int count() {
 			return count ;
 		}
-		@Override public int destroy() {
-			final int c = count ;
-			count = -1 ;
-			return c ;
+		@Override
+		public boolean put(V value) {
+			if (count <= 0)
+				return false ;
+			if (count == values.length)
+				values = Arrays.copyOf(values, values.length << 1) ;
+			values[count++] = value ;
+			return true ;
+		}
+		@Override 
+		public boolean valid() { 
+			return count > 0 ; 
 		}
 		@Override
-		public List<V> destroyAndReturn() {
-			final int c = count ;
-			count = -1 ;
-			return Arrays.asList(values).subList(0, c) ;
+		public boolean put(V v, int c) {
+			if (count <= 0)
+				return false ;
+			while (count + c >= values.length)
+				values = Arrays.copyOf(values, values.length << 1) ;
+			for (int i = 0 ; i != c ; i++)
+				values[count+i] = v ;
+			count += c ;
+			return true ;
 		}
+		
+		@Override public int remove(int target) {
+			final int newc = count - target ;
+			if (newc <= 0) {
+				final int oldc = count ;
+				count = 0 ;
+				return oldc ;
+			}
+			count = newc ;
+			return target ;
+		}
+		
+		@Override
+		public List<V> removeAndReturn(int target) {
+			final int oldc = count ;
+			final int newc = count - target ;
+			if (newc <= 0) {
+				count = 0 ;
+				return Arrays.asList(Arrays.copyOf(values, oldc)) ;
+			}
+			count = newc ;
+			return Arrays.asList(Arrays.copyOfRange(values, oldc, newc)) ;
+		}
+		
 		@Override
 		public V getValue() {
 			return values[0] ;
 		}
+		
 		@Override
 		public Iterator<V> iterator(final Iterator<Iterator<V>> superIter) {
 			return new Iterator<V>() {
@@ -111,6 +149,7 @@ public class SerialLinkedNestedMultiHashSet<V> extends NestedMultiHashSet<V, Ser
 				}				
 			};
 		}
+		
 		@Override
 		public Iterator<V> iterator(final NestedMultiHashSet<V, Node<V>> set) {
 			return new Iterator<V>() {
@@ -145,19 +184,7 @@ public class SerialLinkedNestedMultiHashSet<V> extends NestedMultiHashSet<V, Ser
 				}				
 			};
 		}
-		@Override
-		public boolean put(V value) {
-			if (count <= 0)
-				return false ;
-			if (count == values.length)
-				values = Arrays.copyOf(values, values.length << 1) ;
-			values[count++] = value ;
-			return true ;
-		}
-		@Override 
-		public boolean valid() { 
-			return count > 0 ; 
-		}
+		
 	}
 	
 	@SuppressWarnings("unchecked")

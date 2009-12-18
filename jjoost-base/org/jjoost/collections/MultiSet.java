@@ -9,8 +9,9 @@ public interface MultiSet<V> extends ArbitrarySet<V> {
 	 * @param val
 	 * @return
 	 */
-	public V put(V val) ;
+	@Override public V put(V val) ;
+	public void put(V val, int numberOfTimes) ;
 	
-	public MultiSet<V> copy() ;
+	@Override public MultiSet<V> copy() ;
 	
 }

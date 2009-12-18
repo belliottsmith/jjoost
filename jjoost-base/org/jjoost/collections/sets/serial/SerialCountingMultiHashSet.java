@@ -1,13 +1,14 @@
 package org.jjoost.collections.sets.serial;
 
 import java.util.Iterator ;
+import java.util.List ;
 import java.util.NoSuchElementException ;
 
 import org.jjoost.collections.base.HashNodeFactory ;
 import org.jjoost.collections.base.SerialHashStore ;
 import org.jjoost.collections.base.SerialHashStore.SerialHashNode ;
-import org.jjoost.collections.sets.base.CountingMultiHashSet ;
-import org.jjoost.util.Counter ;
+import org.jjoost.collections.lists.UniformList ;
+import org.jjoost.collections.sets.base.NestedMultiHashSet ;
 import org.jjoost.util.Counters ;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
@@ -15,7 +16,7 @@ import org.jjoost.util.Hasher;
 import org.jjoost.util.Hashers;
 import org.jjoost.util.Rehasher;
 
-public class SerialCountingMultiHashSet<V> extends CountingMultiHashSet<V, SerialCountingMultiHashSet.SerialCountingListHashSetNode<V>>{
+public class SerialCountingMultiHashSet<V> extends NestedMultiHashSet<V, SerialCountingMultiHashSet.Node<V>>{
 
 	private static final long serialVersionUID = 1051610520557989640L;
 
@@ -31,50 +32,74 @@ public class SerialCountingMultiHashSet<V> extends CountingMultiHashSet<V, Seria
 			Rehasher rehasher, Equality<? super V> keyEquality) 
 	{
 		super(Counters.newCounter(), keyHasher, rehasher, 
+			new NestedMultiHashSet.ValueEquality<V, SerialCountingMultiHashSet.Node<V>>(keyEquality), 
 			SerialCountingMultiHashSet.<V>serialNodeFactory(), 
-			new ValueEquality<V>(keyEquality), 
-			new SerialHashStore<SerialCountingListHashSetNode<V>>(minimumInitialCapacity, loadFactor)) ;
+			new SerialHashStore<Node<V>>(minimumInitialCapacity, loadFactor)) ;
 	}
 
 	// this implementation has no concurrency guarantees
-	public static final class SerialCountingListHashSetNode<V> extends SerialHashNode<SerialCountingListHashSetNode<V>> implements INode<V, SerialCountingListHashSetNode<V>> {
+	public static final class Node<V> extends SerialHashNode<Node<V>> implements INode<V, Node<V>> {
+		
 		private static final long serialVersionUID = -5766263745864028747L;
-		public SerialCountingListHashSetNode(int hash, V value, int count) {
+		
+		public Node(int hash, V value, int count) {
 			super(hash);
 			this.value = value;
 			this.count = count ;
 		}
+		
 		private final V value ;
 		private int count ; 
+		
 		@Override public V getValue() { 
 			return value ; 
 		}
-		@Override public SerialCountingListHashSetNode<V> copy() { 
-			return new SerialCountingListHashSetNode<V>(hash, value, count) ; 
+		
+		@Override public Node<V> copy() { 
+			return new Node<V>(hash, value, count) ; 
 		}
-		@Override public int destroy() {
-			int r = count ;
-			count = -1 ;
-			return r ; 
-		}
-		@Override public int get() {
+		
+		@Override public int count() {
 			return count ;
 		}
+		
+		@Override public int remove(int i) {
+			final int newc = count - i ;
+			if (newc <= 0) {
+				final int oldc = count ;
+				count = 0 ;
+				return oldc ;
+			}
+			count = newc ;
+			return i ;
+		}
+		
 		@Override
-		public boolean add(int i) {
-			count += i ; 
+		public List<V> removeAndReturn(int target) {
+			return new UniformList<V>(value, remove(target)) ;
+		}
+
+		@Override public boolean put(V val) {
+			if (count < 1)
+				return false ;
+			count += 1 ; 
 			return true ;
 		}
+		
+		@Override public boolean put(V val, int c) {
+			if (count < 1)
+				return false ;
+			count += c ; 
+			return true ;
+		}
+		
 		@Override 
 		public boolean valid() { 
 			return count > 0 ; 
 		}
+		
 		@Override
-		public Counter newInstance() {
-			throw new UnsupportedOperationException() ;
-		}
-		@Override
-		public Iterator<V> iter(final Iterator<Iterator<V>> superIter) {
+		public Iterator<V> iterator(final Iterator<Iterator<V>> superIter) {
 			return new Iterator<V>() {
 				int c = 0 ;
 				boolean last = false ;
@@ -103,6 +128,38 @@ public class SerialCountingMultiHashSet<V> extends CountingMultiHashSet<V, Seria
 				}
 			} ;
 		}
+		
+		@Override
+		public Iterator<V> iterator(final NestedMultiHashSet<V, Node<V>> set) {
+			return new Iterator<V>() {
+				int c = 0 ;
+				boolean last = false ;
+				boolean next = false ;
+				@Override
+				public boolean hasNext() {
+					return next = (count > c) ;
+				}
+				@Override
+				public V next() {
+					if (!next)
+						throw new NoSuchElementException() ;
+					c++ ;
+					last = true ;
+					return value ;
+				}
+				@Override
+				public void remove() {
+					if (!last)
+						throw new NoSuchElementException() ;
+					count -= 1 ;
+					if (count <= 0) {
+						count = -1 ;
+						removeNode(set, Node.this) ;
+					}
+				}
+			} ;			
+		}
+		
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -111,25 +168,11 @@ public class SerialCountingMultiHashSet<V> extends CountingMultiHashSet<V, Seria
 	public static <V> SerialCountingListHashSetNodeFactory<V> serialNodeFactory() {
 		return SERIAL_SCALAR_HASH_NODE_FACTORY ;
 	}
-	public static final class SerialCountingListHashSetNodeFactory<V> implements HashNodeFactory<V, SerialCountingListHashSetNode<V>> {
+	public static final class SerialCountingListHashSetNodeFactory<V> implements HashNodeFactory<V, Node<V>> {
 		@Override
-		public final SerialCountingListHashSetNode<V> makeNode(final int hash, final V value) {
-			return new SerialCountingListHashSetNode<V>(hash, value, 0) ;
+		public final Node<V> makeNode(final int hash, final V value) {
+			return new Node<V>(hash, value, 0) ;
 		}
 	}
 
-	protected static final class ValueEquality<V> extends CountingMultiHashSet.ValueEquality<V, SerialCountingListHashSetNode<V>> {
-		public ValueEquality(Equality<? super V> valEq) {
-			super(valEq) ;
-		}
-		@Override
-		public boolean prefixMatch(V cmp, SerialCountingListHashSetNode<V> n) {
-			return valEq.equates(cmp, n.value) ;
-		}
-		@Override
-		public boolean suffixMatch(V cmp, SerialCountingListHashSetNode<V> n) {
-			return true ;
-		}		
-	}
-	
 }

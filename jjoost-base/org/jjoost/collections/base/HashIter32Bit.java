@@ -79,7 +79,7 @@ public class HashIter32Bit {
 		}
 	}
 	
-	public boolean visited(int hash) {
+	public boolean haveVisitedAlready(int hash) {
 		return completionCaps[hash & lowBitsMask] > Integer.reverse(hash & ~lowBitsMask) ;
 	}
 	
@@ -99,7 +99,7 @@ public class HashIter32Bit {
 		try {
 			while (cont) {
 				System.out.println(String.format("%32s  %4s %10s %b", Integer.toBinaryString(iter.currentHighBits), Integer.toBinaryString(iter.currentLowBits), Integer.toBinaryString(iter.current()), iter.safe())) ;
-				if (iter.visited(iter.current()))
+				if (iter.haveVisitedAlready(iter.current()))
 					System.out.println("visited") ;				
 				visited[iter.current()] = true ;
 				c++ ;

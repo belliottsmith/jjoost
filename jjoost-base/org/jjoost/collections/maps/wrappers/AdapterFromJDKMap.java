@@ -10,12 +10,15 @@ import java.util.Map.Entry ;
 import org.jjoost.collections.ArbitraryMap ;
 import org.jjoost.collections.ScalarMap ;
 import org.jjoost.collections.ScalarSet ;
+import org.jjoost.collections.iters.EmptyIterator ;
+import org.jjoost.collections.iters.UniformIterator ;
 import org.jjoost.collections.lists.UniformList ;
 import org.jjoost.collections.maps.ImmutableMapEntry ;
 import org.jjoost.collections.sets.wrappers.AdapterFromJDKSet ;
 import org.jjoost.util.Factory ;
 import org.jjoost.util.Function ;
 
+// TODO : this class' methods currently assume keys/values stored in it are non null, which is an invalid assumption
 public class AdapterFromJDKMap<K, V> implements ScalarMap<K, V> {
 	
 	private static final long serialVersionUID = -5498331996410891451L ;
@@ -215,8 +218,174 @@ public class AdapterFromJDKMap<K, V> implements ScalarMap<K, V> {
 		return map.values() ;
 	}
 	@Override
-	public Iterable<V> values(K key) {
-		return list(key) ;
+	public ScalarSet<V> values(K key) {
+		return new KeyValueSet(key) ;
+	}
+	
+	private final class KeyValueSet implements ScalarSet<V> {
+		private static final long serialVersionUID = 6651319386421757315L ;
+		final K key ;
+		public KeyValueSet(K key) {
+			this.key = key ;
+		}
+		@Override
+		public int clear() {
+			return AdapterFromJDKMap.this.remove(key) ;
+		}
+		@Override
+		public Iterator<V> clearAndReturn() {
+			if (map.containsKey(key)) {
+				final V v = map.remove(key) ;
+				return new UniformIterator<V>(v, 1) ;
+			}
+			return new EmptyIterator<V>() ;
+		}
+		@Override
+		public int putAll(Iterable<V> val) {
+			throw new UnsupportedOperationException() ;
+		}
+		@Override
+		public V putIfAbsent(V val) {
+			throw new UnsupportedOperationException() ;
+		}
+		@Override
+		public int remove(V value, int removeAtMost) {
+			if (removeAtMost < 1) {
+				if (removeAtMost < 0)
+					throw new IllegalArgumentException("Cannot remove less than zero items") ;
+				return 0 ;
+			}
+			return remove(value) ;
+		}
+		@Override
+		public int remove(V value) {
+			return AdapterFromJDKMap.this.remove(key, value) ;
+		}
+		@Override
+		public Iterable<V> removeAndReturn(V val, int removeAtMost) {
+			if (removeAtMost < 1) {
+				if (removeAtMost < 0)
+					throw new IllegalArgumentException("Cannot remove less than zero items") ;
+				return Collections.emptyList() ;
+			}
+			return removeAndReturn(val) ;
+		}
+		@Override
+		public Iterable<V> removeAndReturn(V val) {
+			final V e = map.get(key) ;
+			if (e != null && e.equals(val)) {
+				map.remove(key) ;
+				return new UniformList<V>(val, 1) ;
+			}
+			return Collections.emptyList() ;
+		}
+		@Override
+		public V removeAndReturnFirst(V val, int removeAtMost) {
+			if (removeAtMost < 1) {
+				if (removeAtMost < 0)
+					throw new IllegalArgumentException("Cannot remove less than zero items") ;
+				return null ;
+			}
+			return removeAndReturnFirst(val) ;
+		}
+		@Override
+		public V removeAndReturnFirst(V val) {
+			final V e = map.get(key) ;
+			if (e != null && e.equals(val)) {
+				map.remove(key) ;
+				return val ;
+			}
+			return null ;
+		}
+		@Override
+		public void shrink() {
+		}
+		@Override
+		public Iterable<V> all() {
+			return this ;
+		}
+		@Override
+		public Iterable<V> all(V value) {
+			final V val = map.get(key) ;
+			if (val == null) {
+				return Collections.emptyList() ;
+			}
+			if (value != null && val.equals(value))
+				return new UniformList<V>(val, 1) ;
+			return Collections.emptyList() ;
+		}
+		@Override
+		public boolean contains(V val) {
+			return AdapterFromJDKMap.this.contains(key, val) ;
+		}
+		@Override
+		public int count(V val) {
+			return AdapterFromJDKMap.this.count(key, val) ;
+		}
+		@Override
+		public V first(V value) {
+			final V val = map.get(key) ;
+			if (val == null) {
+				return null ;
+			}
+			if (value != null && val.equals(value))
+				return val ;
+			return null ;
+		}
+		@Override
+		public boolean isEmpty() {
+			return AdapterFromJDKMap.this.contains(key) ;
+		}
+		@Override
+		public List<V> list(V value) {
+			if (map.containsKey(key))
+				return new UniformList<V>(value, 1) ;
+			return Collections.emptyList() ;
+		}
+		@Override
+		public boolean permitsDuplicates() {
+			return false ;
+		}
+		@Override
+		public int totalCount() {
+			return AdapterFromJDKMap.this.count(key) ;
+		}
+		@Override
+		public Iterable<V> unique() {
+			return this ;
+		}
+		@Override
+		public int uniqueCount() {
+			return totalCount() ;
+		}
+		@Override
+		public ScalarSet<V> copy() {
+			throw new UnsupportedOperationException() ;
+		}
+		@Override
+		public V get(V key) {
+			return first(key) ;
+		}
+		@Override
+		public V put(V val) {
+			throw new UnsupportedOperationException() ;
+		}
+		@Override
+		public int size() {
+			return totalCount() ;
+		}
+		@Override
+		public Boolean apply(V v) {
+			return contains(v) ;
+		}
+		@Override
+		public Iterator<V> iterator() {
+			if (map.containsKey(key)) {
+				return new UniformIterator<V>(map.get(key), 1) ;
+			}
+			return EmptyIterator.get() ;
+		}
+		
 	}
 
 }
