@@ -8,11 +8,11 @@ import org.jjoost.collections.ScalarSet;
 import org.jjoost.collections.maps.ImmutableMapEntry ;
 import org.jjoost.util.Factory;
 
-public class ThreadSafeNestedSetMultiMap<K, V> extends ThreadSafeNestedSetMap<K, V, ScalarSet<V>> implements MultiMap<K, V> {
+public class NestedSetMultiMap<K, V> extends NestedSetMap<K, V, ScalarSet<V>> implements MultiMap<K, V> {
 
 	private static final long serialVersionUID = -490119082143181821L;
 
-	public ThreadSafeNestedSetMultiMap(ScalarMap<K, ScalarSet<V>> map, Factory<ScalarSet<V>> factory) {
+	public NestedSetMultiMap(ScalarMap<K, ScalarSet<V>> map, Factory<ScalarSet<V>> factory) {
 		super(map, factory);
 	}
 
@@ -29,7 +29,7 @@ public class ThreadSafeNestedSetMultiMap<K, V> extends ThreadSafeNestedSetMap<K,
 		final ScalarMap<K, ScalarSet<V>> copy = map.copy() ;
 		for (Entry<K, ScalarSet<V>> entry : copy.entries())
 			entry.setValue(entry.getValue().copy()) ;
-		return new ThreadSafeNestedSetMultiMap<K, V>(copy, factory) ;
+		return new NestedSetMultiMap<K, V>(copy, factory) ;
 	}
 	
 	@Override
@@ -43,7 +43,7 @@ public class ThreadSafeNestedSetMultiMap<K, V> extends ThreadSafeNestedSetMap<K,
 
 		@Override
 		public Entry<K, V> put(Entry<K, V> entry) {
-			final V r = ThreadSafeNestedSetMultiMap.this.put(entry.getKey(), entry.getValue()) ;
+			final V r = NestedSetMultiMap.this.put(entry.getKey(), entry.getValue()) ;
 			return r == null ? null : new ImmutableMapEntry<K, V>(entry.getKey(), r) ;
 		}
 
@@ -54,7 +54,7 @@ public class ThreadSafeNestedSetMultiMap<K, V> extends ThreadSafeNestedSetMap<K,
 		
 		@Override
 		public Entry<K, V> putIfAbsent(Entry<K, V> entry) {
-			final V r = ThreadSafeNestedSetMultiMap.this.put(entry.getKey(), entry.getValue()) ;
+			final V r = NestedSetMultiMap.this.put(entry.getKey(), entry.getValue()) ;
 			return r == null ? null : new ImmutableMapEntry<K, V>(entry.getKey(), r) ;
 		}
 		

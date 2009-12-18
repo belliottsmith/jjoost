@@ -8,11 +8,11 @@ import org.jjoost.collections.ScalarMap;
 import org.jjoost.collections.maps.ImmutableMapEntry ;
 import org.jjoost.util.Factory;
 
-public class ThreadSafeNestedSetListMap<K, V> extends ThreadSafeNestedSetMap<K, V, MultiSet<V>> implements ListMap<K, V> {
+public class NestedSetListMap<K, V> extends NestedSetMap<K, V, MultiSet<V>> implements ListMap<K, V> {
 
 	private static final long serialVersionUID = -490119082143181821L;
 
-	public ThreadSafeNestedSetListMap(ScalarMap<K, MultiSet<V>> map, Factory<MultiSet<V>> factory) {
+	public NestedSetListMap(ScalarMap<K, MultiSet<V>> map, Factory<MultiSet<V>> factory) {
 		super(map, factory) ;
 	}
 
@@ -35,7 +35,7 @@ public class ThreadSafeNestedSetListMap<K, V> extends ThreadSafeNestedSetMap<K, 
 		final ScalarMap<K, MultiSet<V>> copy = map.copy() ;
 		for (Entry<K, MultiSet<V>> entry : copy.entries())
 			entry.setValue(entry.getValue().copy()) ;
-		return new ThreadSafeNestedSetListMap<K, V>(copy, factory) ;
+		return new NestedSetListMap<K, V>(copy, factory) ;
 	}
 	
 	protected final class EntrySet extends AbstractEntrySet implements MultiSet<Entry<K, V>> {
@@ -44,18 +44,18 @@ public class ThreadSafeNestedSetListMap<K, V> extends ThreadSafeNestedSetMap<K, 
 
 		@Override
 		public Entry<K, V> put(Entry<K, V> entry) {
-			final V r = ThreadSafeNestedSetListMap.this.put(entry.getKey(), entry.getValue()) ;
-			return r == null ? null : new ImmutableMapEntry<K, V>(entry.getKey(), r) ;
+			NestedSetListMap.this.put(entry.getKey(), entry.getValue()) ;
+			return null ;
 		}
 
 		@Override
 		public Iterable<Entry<K, V>> unique() {
-			return all() ;
+			return this ;
 		}
 
 		@Override
 		public Entry<K, V> putIfAbsent(Entry<K, V> entry) {
-			final V r = ThreadSafeNestedSetListMap.this.put(entry.getKey(), entry.getValue()) ;
+			final V r = NestedSetListMap.this.put(entry.getKey(), entry.getValue()) ;
 			return r == null ? null : new ImmutableMapEntry<K, V>(entry.getKey(), r) ;
 		}
 		
@@ -69,6 +69,12 @@ public class ThreadSafeNestedSetListMap<K, V> extends ThreadSafeNestedSetMap<K, 
 			throw new UnsupportedOperationException() ;
 		}
 
+		@Override
+		public void put(Entry<K, V> entry, int numberOfTimes) {
+			for (int i = 0 ; i != numberOfTimes ; i++)
+				NestedSetListMap.this.put(entry.getKey(), entry.getValue()) ;
+		}
+		
 	}
 
 }

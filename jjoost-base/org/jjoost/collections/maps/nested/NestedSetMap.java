@@ -1,6 +1,6 @@
 package org.jjoost.collections.maps.nested;
 
-import java.util.ArrayList;
+import java.util.Collections ;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +19,7 @@ import org.jjoost.util.Function;
 import org.jjoost.util.Functions;
 import org.jjoost.util.Iters ;
 
-public abstract class ThreadSafeNestedSetMap<K, V, S extends ArbitrarySet<V>> implements ArbitraryMap<K, V> {
+public abstract class NestedSetMap<K, V, S extends ArbitrarySet<V>> implements ArbitraryMap<K, V> {
 
 	private static final long serialVersionUID = -6962291049889502542L;
 	
@@ -28,7 +28,7 @@ public abstract class ThreadSafeNestedSetMap<K, V, S extends ArbitrarySet<V>> im
 	private volatile int totalCount ;
 	
 	@SuppressWarnings("unchecked")
-	private static final AtomicIntegerFieldUpdater<ThreadSafeNestedSetMap> totalCountUpdater = AtomicIntegerFieldUpdater.newUpdater(ThreadSafeNestedSetMap.class, "totalCount") ;	
+	private static final AtomicIntegerFieldUpdater<NestedSetMap> totalCountUpdater = AtomicIntegerFieldUpdater.newUpdater(NestedSetMap.class, "totalCount") ;	
 	
 	protected MultiSet<K> keySet ;	
 	@Override
@@ -39,7 +39,7 @@ public abstract class ThreadSafeNestedSetMap<K, V, S extends ArbitrarySet<V>> im
 		return keySet  ;
 	}
 
-	public ThreadSafeNestedSetMap(ScalarMap<K, S> map, Factory<S> factory) {
+	public NestedSetMap(ScalarMap<K, S> map, Factory<S> factory) {
 		super();
 		this.map = map ;
 		this.factory = factory ;
@@ -94,7 +94,7 @@ public abstract class ThreadSafeNestedSetMap<K, V, S extends ArbitrarySet<V>> im
 		return Iters.concat(Functions.apply(Functions.<S, Entry<K, S>>getMapEntryValueProjection(), map.entries())) ;
 	}
 	@Override
-	public Iterable<V> values(K key) {
+	public S values(K key) {
 		final S set = map.get(key) ;
 		return set == null ? null : set ;
 	}
@@ -137,6 +137,7 @@ public abstract class ThreadSafeNestedSetMap<K, V, S extends ArbitrarySet<V>> im
 	public ArbitraryMap<V, K> inverse() {
 		throw new UnsupportedOperationException() ;
 	}
+	
 	@Override
 	public int remove(K key, V value) {
 		final S set = map.get(key) ;
@@ -145,12 +146,14 @@ public abstract class ThreadSafeNestedSetMap<K, V, S extends ArbitrarySet<V>> im
 		final int r = set.remove(value) ;
 		if (r != 0)
 			totalCountUpdater.addAndGet(this, -r) ;
+		if (set.isEmpty())
+			map.remove(key) ;
 		return r ;
 	}
 	@Override
 	public int remove(K key) {
-		final Iterator<Entry<K, S>> removed = map.removeAndReturn(key).iterator() ;
-		final int r = removed.hasNext() ? removed.next().getValue().totalCount() : 0 ;
+		S removed = map.removeAndReturnFirst(key) ;
+		final int r = removed.totalCount() ;
 		if (r != 0)
 			totalCountUpdater.addAndGet(this, -r) ;
 		return r ;
@@ -169,33 +172,22 @@ public abstract class ThreadSafeNestedSetMap<K, V, S extends ArbitrarySet<V>> im
 	}
 	
 	@Override
-	public Iterable<Entry<K, V>> removeAndReturn(K key) {
-		final Iterator<Entry<K, S>> removed = map.entries(key).iterator() ;
-		if (!removed.hasNext())
-			return java.util.Collections.emptyList() ;
-		List<Entry<K, List<V>>> asList = new ArrayList<Entry<K, List<V>>>() ;
-		int c = 0 ;
-		while (removed.hasNext()) {
-			Entry<K, S> rem = removed.next() ;
-			List<V> vs = Iters.toList(rem.getValue().clearAndReturn()) ;
-			asList.add(new ImmutableMapEntry<K, List<V>>(rem.getKey(), vs)) ;
-			c += vs.size() ;
-		}
-		if (c != 0)
-			totalCountUpdater.addAndGet(this, -c) ;
-		return Iters.concat(Functions.apply(ThreadSafeNestedSetMap.<K, V>entryFlattener(), (Iterable<Entry<K, List<V>>>) asList)) ;
+	public Iterable<Entry<K, V>> removeAndReturn(K key) {		
+		S removed = map.removeAndReturnFirst(key) ;
+		if (!removed.isEmpty())
+			totalCountUpdater.addAndGet(this, -removed.totalCount()) ;
+		return Functions.apply(new EntryMaker<K, V>(key), removed) ;
 	}
 
 	@Override
 	public V removeAndReturnFirst(K key) {
-		final Iterator<Entry<K, S>> removed = map.removeAndReturn(key).iterator() ;
-		if (!removed.hasNext())
+		S removed = map.removeAndReturnFirst(key) ;
+		if (removed == null)
 			return null ;
-		final S set = removed.next().getValue() ;
-		final Iterator<V> vals = set.iterator() ;
+		final Iterator<V> vals = removed.iterator() ;
 		if (vals.hasNext()) {
 			final V r = vals.next() ;
-			final int deleted = set.clear() ;
+			final int deleted = removed.clear() ;
 			totalCountUpdater.addAndGet(this, -deleted) ;
 			return r ;
 		}
@@ -217,35 +209,35 @@ public abstract class ThreadSafeNestedSetMap<K, V, S extends ArbitrarySet<V>> im
 		private static final long serialVersionUID = 1461826147890179114L ;
 
 		@Override
+		public void put(K val, int numberOfTimes) {
+			throw new UnsupportedOperationException() ;
+		}
+
+		@Override
 		public boolean contains(K value) {
-			return ThreadSafeNestedSetMap.this.contains(value) ;
+			return NestedSetMap.this.contains(value) ;
 		}
 
 		@Override
 		public int count(K value) {
-			return ThreadSafeNestedSetMap.this.count(value) ;			
+			return NestedSetMap.this.count(value) ;			
 		}
 
 		@Override
 		public int totalCount() {
-			return ThreadSafeNestedSetMap.this.totalCount() ;			
+			return NestedSetMap.this.totalCount() ;			
 		}
 
 		@Override
 		public int clear() {
-			return ThreadSafeNestedSetMap.this.clear() ;			
+			return NestedSetMap.this.clear() ;			
 		}
 
 		@Override
 		public void shrink() {
-			ThreadSafeNestedSetMap.this.shrink() ;			
+			NestedSetMap.this.shrink() ;			
 		}
 		
-		@Override
-		public int remove(K key) {
-			return ThreadSafeNestedSetMap.this.remove(key) ;			
-		}
-
 		@Override
 		public Boolean apply(K v) {
 			return contains(v) ? Boolean.TRUE : Boolean.FALSE ;
@@ -285,33 +277,22 @@ public abstract class ThreadSafeNestedSetMap<K, V, S extends ArbitrarySet<V>> im
 		
 		@Override
 		public Iterator<K> iterator() {
-			return Iters.concat(Functions.apply(ThreadSafeNestedSetMap.<K, V>keyRepeater(), map.entries())).iterator() ;
+			return Iters.concat(Functions.apply(NestedSetMap.<K, V>keyRepeater(), map.entries())).iterator() ;
 		}
 
 		@Override
 		public boolean isEmpty() {
-			return ThreadSafeNestedSetMap.this.isEmpty() ;
+			return NestedSetMap.this.isEmpty() ;
 		}
 
 		@Override
 		public int uniqueCount() {
-			return ThreadSafeNestedSetMap.this.uniqueKeyCount() ;
+			return NestedSetMap.this.uniqueKeyCount() ;
 		}
 
 		@Override
 		public final K put(K val) {
 			throw new UnsupportedOperationException() ;
-		}
-
-		@Override
-		public Iterable<K> removeAndReturn(K key) {
-			return Functions.apply(Functions.<K, Entry<K, V>>getMapEntryKeyProjection(), ThreadSafeNestedSetMap.this.removeAndReturn(key)) ;
-		}
-
-		@Override
-		public K removeAndReturnFirst(K key) {
-			final Iterator<? extends Entry<K, S>> removed = map.removeAndReturn(key).iterator() ;
-			return removed.hasNext() ? removed.next().getKey() : null ;
 		}
 
 		@Override
@@ -331,12 +312,91 @@ public abstract class ThreadSafeNestedSetMap<K, V, S extends ArbitrarySet<V>> im
 
 		@Override
 		public Iterator<K> clearAndReturn() {
-			return Functions.apply(Functions.<K, Entry<K, V>>getMapEntryKeyProjection(), ThreadSafeNestedSetMap.this.clearAndReturn()) ;
+			return Functions.apply(Functions.<K, Entry<K, V>>getMapEntryKeyProjection(), NestedSetMap.this.clearAndReturn()) ;
 		}
 		
 		@Override
 		public boolean permitsDuplicates() {
 			return true ;
+		}
+
+		@Override
+		public int remove(K key) {
+			return NestedSetMap.this.remove(key) ;			
+		}
+
+		@Override
+		public Iterable<K> removeAndReturn(K key) {
+			return Functions.apply(Functions.<K, Entry<K, V>>getMapEntryKeyProjection(), NestedSetMap.this.removeAndReturn(key)) ;
+		}
+
+		@Override
+		public K removeAndReturnFirst(K key) {
+			final Iterator<? extends Entry<K, S>> removed = map.removeAndReturn(key).iterator() ;
+			return removed.hasNext() ? removed.next().getKey() : null ;
+		}
+
+		@Override
+		public int remove(K key, int removeAtMost) {
+			if (removeAtMost < 1) {
+				if (removeAtMost < 0)
+					throw new IllegalArgumentException("Cannot remove fewer than zero elements") ;
+				return 0 ;
+			}
+			final S set = map.first(key) ;
+			final Iterator<?> iter = set.iterator() ;
+			int removed = 0 ;
+			while ((removed != removeAtMost) && iter.hasNext()) {
+				iter.next() ;
+				iter.remove() ;
+			}
+			if (removed != 0)
+				totalCountUpdater.addAndGet(NestedSetMap.this, -removed) ;
+			if (set.isEmpty())
+				map.remove(key) ;
+			return removed ;
+		}
+
+		@Override
+		public Iterable<K> removeAndReturn(K key, int removeAtMost) {
+			if (removeAtMost < 1) {
+				if (removeAtMost < 0)
+					throw new IllegalArgumentException("Cannot remove fewer than zero elements") ;
+				return Collections.emptyList() ;
+			}
+			final S set = map.first(key) ;
+			final Iterator<?> iter = set.iterator() ;
+			int removed = 0 ;
+			while ((removed != removeAtMost) && iter.hasNext()) {
+				iter.next() ;
+				iter.remove() ;
+			}
+			if (removed != 0)
+				totalCountUpdater.addAndGet(NestedSetMap.this, -removed) ;
+			if (set.isEmpty())
+				map.remove(key) ;
+			return new UniformList<K>(key, removed) ;
+		}
+
+		@Override
+		public K removeAndReturnFirst(K key, int removeAtMost) {
+			if (removeAtMost < 1) {
+				if (removeAtMost < 0)
+					throw new IllegalArgumentException("Cannot remove fewer than zero elements") ;
+				return null ;
+			}
+			final S set = map.first(key) ;
+			final Iterator<?> iter = set.iterator() ;
+			int removed = 0 ;
+			while ((removed != removeAtMost) && iter.hasNext()) {
+				iter.next() ;
+				iter.remove() ;
+			}
+			if (removed != 0)
+				totalCountUpdater.addAndGet(NestedSetMap.this, -removed) ;
+			if (set.isEmpty())
+				map.remove(key) ;			
+			return key ;
 		}
 
 	}
@@ -347,37 +407,37 @@ public abstract class ThreadSafeNestedSetMap<K, V, S extends ArbitrarySet<V>> im
 
 		@Override
 		public boolean contains(Entry<K, V> value) {
-			return ThreadSafeNestedSetMap.this.contains(value.getKey(), value.getValue()) ;
+			return NestedSetMap.this.contains(value.getKey(), value.getValue()) ;
 		}
 
 		@Override
 		public int count(Entry<K, V> value) {
-			return ThreadSafeNestedSetMap.this.count(value.getKey(), value.getValue()) ;
+			return NestedSetMap.this.count(value.getKey(), value.getValue()) ;
 		}
 
 		@Override
 		public int totalCount() {
-			return ThreadSafeNestedSetMap.this.totalCount() ;			
+			return NestedSetMap.this.totalCount() ;			
 		}
 
 		@Override
 		public int clear() {
-			return ThreadSafeNestedSetMap.this.clear() ;			
+			return NestedSetMap.this.clear() ;			
 		}
 
 		@Override
 		public Iterator<Entry<K, V>> clearAndReturn() {
-			return ThreadSafeNestedSetMap.this.clearAndReturn() ;
+			return NestedSetMap.this.clearAndReturn() ;
 		}
 		
 		@Override
 		public void shrink() {
-			ThreadSafeNestedSetMap.this.shrink() ;			
+			NestedSetMap.this.shrink() ;			
 		}
 		
 		@Override
 		public int remove(Map.Entry<K, V> entry) {
-			return ThreadSafeNestedSetMap.this.remove(entry.getKey(), entry.getValue()) ;			
+			return NestedSetMap.this.remove(entry.getKey(), entry.getValue()) ;			
 		}
 
 		@Override
@@ -423,27 +483,27 @@ public abstract class ThreadSafeNestedSetMap<K, V, S extends ArbitrarySet<V>> im
 
 		@Override
 		public Iterator<Entry<K, V>> iterator() {
-			return ThreadSafeNestedSetMap.this.entries().iterator() ;
+			return NestedSetMap.this.entries().iterator() ;
 		}
 		
 		@Override
 		public boolean isEmpty() {
-			return ThreadSafeNestedSetMap.this.isEmpty() ;
+			return NestedSetMap.this.isEmpty() ;
 		}
 		
 		@Override
 		public int uniqueCount() {
-			return ThreadSafeNestedSetMap.this.totalCount() ;
+			return NestedSetMap.this.totalCount() ;
 		}
 
 		@Override
 		public Iterable<Entry<K, V>> removeAndReturn(Entry<K, V> entry) {
-			return ThreadSafeNestedSetMap.this.removeAndReturn(entry.getKey(), entry.getValue()) ;
+			return NestedSetMap.this.removeAndReturn(entry.getKey(), entry.getValue()) ;
 		}
 
 		@Override
 		public Entry<K, V> removeAndReturnFirst(Entry<K, V> entry) {
-			final Iterator<? extends Entry<K, V>> removed = ThreadSafeNestedSetMap.this.removeAndReturn(entry.getKey(), entry.getValue()).iterator() ;
+			final Iterator<? extends Entry<K, V>> removed = NestedSetMap.this.removeAndReturn(entry.getKey(), entry.getValue()).iterator() ;
 			return removed.hasNext() ? removed.next() : null ;
 		}
 
@@ -454,6 +514,52 @@ public abstract class ThreadSafeNestedSetMap<K, V, S extends ArbitrarySet<V>> im
 				if (put(val) == null)
 					c++ ;
 			return c ;
+		}
+
+		@Override
+		public int remove(Entry<K, V> entry, int removeAtMost) {
+			final S set = map.get(entry.getKey()) ;
+			if (set == null)
+				return 0 ;
+			final int r = set.remove(entry.getValue(), removeAtMost) ;
+			if (r != 0) {
+				totalCountUpdater.addAndGet(NestedSetMap.this, -r) ;
+				if (set.isEmpty())
+					map.remove(entry.getKey()) ;
+			}
+			return r ;
+		}
+
+		@Override
+		public Iterable<Entry<K, V>> removeAndReturn(Entry<K, V> entry, int removeAtMost) {
+			final S set = map.get(entry.getKey()) ;
+			if (set == null)
+				return Collections.emptyList() ;
+			final Iterable<V> iter = set.removeAndReturn(entry.getValue(), removeAtMost) ;
+			final int r = Iters.count(iter) ;			
+			if (r != 0) {
+				totalCountUpdater.addAndGet(NestedSetMap.this, -r) ;
+				if (set.isEmpty())
+					map.remove(entry.getKey()) ;
+				return Functions.apply(new EntryMaker<K, V>(entry.getKey()), iter) ;
+			}
+			return Collections.emptyList() ;
+		}
+
+		@Override
+		public Entry<K, V> removeAndReturnFirst(Entry<K, V> entry, int removeAtMost) {
+			final S set = map.get(entry.getKey()) ;
+			if (set == null)
+				return null ;
+			final Iterable<V> iter = set.removeAndReturn(entry.getValue(), removeAtMost) ;
+			final int r = Iters.count(iter) ;			
+			if (r != 0) {
+				totalCountUpdater.addAndGet(NestedSetMap.this, -r) ;
+				if (set.isEmpty())
+					map.remove(entry.getKey()) ;
+				return new ImmutableMapEntry<K, V>(entry.getKey(), iter.iterator().next()) ;
+			}
+			return null ;
 		}
 
 	}
@@ -481,20 +587,6 @@ public abstract class ThreadSafeNestedSetMap<K, V, S extends ArbitrarySet<V>> im
 		@Override
 		public Iterable<K> apply(Entry<K, ? extends ArbitrarySet<V>> entry) {
 			return new UniformList<K>(entry.getKey(), entry.getValue().totalCount()) ;
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private static final EntryFlattener ENTRY_FLATTENER = new EntryFlattener () ;
-	@SuppressWarnings("unchecked")
-	private static final <K, V> EntryFlattener <K, V> entryFlattener() {
-		return ENTRY_FLATTENER ;
-	}
-	private static final class EntryFlattener <K, V> implements Function<Entry<K, ? extends Iterable<V>>, Iterable<Entry<K, V>>> {
-		private static final long serialVersionUID = -965724235732791909L;
-		@Override
-		public Iterable<Entry<K, V>> apply(Entry<K, ? extends Iterable<V>> entry) {
-			return Functions.apply(new EntryMaker<K, V>(entry.getKey()), entry.getValue()) ;
 		}
 	}
 
