@@ -1,8 +1,20 @@
 package org.jjoost.collections;
 
 import org.jjoost.collections.base.HashStoreType ;
+import org.jjoost.collections.sets.concurrent.LockFreeCountingMultiHashSet ;
+import org.jjoost.collections.sets.concurrent.LockFreeInlineMultiHashSet ;
+import org.jjoost.collections.sets.concurrent.LockFreeLinkedCountingMultiHashSet ;
+import org.jjoost.collections.sets.concurrent.LockFreeLinkedInlineMultiHashSet ;
+import org.jjoost.collections.sets.concurrent.LockFreeLinkedNestedMultiHashSet ;
+import org.jjoost.collections.sets.concurrent.LockFreeLinkedScalarHashSet ;
+import org.jjoost.collections.sets.concurrent.LockFreeNestedMultiHashSet ;
+import org.jjoost.collections.sets.concurrent.LockFreeScalarHashSet ;
 import org.jjoost.collections.sets.serial.SerialCountingMultiHashSet ;
 import org.jjoost.collections.sets.serial.SerialInlineMultiHashSet ;
+import org.jjoost.collections.sets.serial.SerialLinkedCountingMultiHashSet ;
+import org.jjoost.collections.sets.serial.SerialLinkedInlineMultiHashSet ;
+import org.jjoost.collections.sets.serial.SerialLinkedNestedMultiHashSet ;
+import org.jjoost.collections.sets.serial.SerialLinkedScalarHashSet ;
 import org.jjoost.collections.sets.serial.SerialNestedMultiHashSet ;
 import org.jjoost.collections.sets.serial.SerialScalarHashSet ;
 import org.jjoost.collections.sets.wrappers.SynchronizedMultiSet ;
@@ -66,77 +78,129 @@ public class SetMaker {
 		public ScalarSet<V> newScalarSet() {
 			switch(type.type()) {
 			case SERIAL:
-			case SYNCHRONIZED:				
-				ScalarSet<V> r = new SerialScalarHashSet<V>(
-						initialCapacity, 
-						loadFactor, 
-						hasher, 
-						rehasher(), 
-						eq) ;
-				if (type.type() == HashStoreType.Type.SYNCHRONIZED)
-					r = new SynchronizedScalarSet<V>(r) ;
-				return r ;
+				return new SerialScalarHashSet<V>(
+					initialCapacity, loadFactor, hasher, 
+					rehasher(), eq) ;
+			case SYNCHRONIZED:
+				return new SynchronizedScalarSet<V>(
+					new SerialScalarHashSet<V>(
+						initialCapacity, loadFactor, hasher, 
+						rehasher(), eq)) ;
+			case LINKED_SERIAL:
+				return new SerialLinkedScalarHashSet<V>(
+					initialCapacity, loadFactor, hasher, 
+					rehasher(), eq) ;
+			case LINKED_SYNCHRONIZED:
+				return new SynchronizedScalarSet<V>(
+					new SerialLinkedScalarHashSet<V>(
+						initialCapacity, loadFactor, hasher, 
+						rehasher(), eq)) ;
 			case LOCK_FREE:
-//			case PARTITIONED_BLOCKING:
-//			case PARTITIONED_NON_BLOCKING:
+				return new LockFreeScalarHashSet<V>(
+					initialCapacity, loadFactor, hasher, 
+					rehasher(), eq) ;
+			case LINKED_LOCK_FREE:
+				return new LockFreeLinkedScalarHashSet<V>(
+					initialCapacity, loadFactor, hasher, 
+					rehasher(), eq) ;
+			default:
+				throw new IllegalArgumentException(type.toString()) ;
 			}			
-			throw new UnsupportedOperationException() ;
 		}
 		public MultiSet<V> newMultiSet(MultiSetNesting<V> nesting) {
 			switch (nesting.type()) {
 			case MultiSetNesting.Type.INLINE:
 				switch(type.type()) {
 				case SERIAL:
+					return new SerialInlineMultiHashSet<V>(
+						initialCapacity, loadFactor, hasher, 
+						rehasher(), eq) ;
 				case SYNCHRONIZED:
-					MultiSet<V> r = new SerialInlineMultiHashSet<V>(
-							initialCapacity, 
-							loadFactor, 
-							hasher, 
-							rehasher(), 
-							eq) ;
-					if (type.type() == HashStoreType.Type.SYNCHRONIZED)
-						r = new SynchronizedMultiSet<V>(r) ;
-					return r ;
+					return new SynchronizedMultiSet<V>(
+						new SerialInlineMultiHashSet<V>(
+							initialCapacity, loadFactor, hasher, 
+							rehasher(), eq)) ;
+				case LINKED_SERIAL:
+					return new SerialLinkedInlineMultiHashSet<V>(
+						initialCapacity, loadFactor, hasher, 
+						rehasher(), eq) ;
+				case LINKED_SYNCHRONIZED:
+					return new SynchronizedMultiSet<V>(
+						new SerialLinkedInlineMultiHashSet<V>(
+							initialCapacity, loadFactor, hasher, 
+							rehasher(), eq)) ;
 				case LOCK_FREE:
-//				case PARTITIONED_BLOCKING:
-//				case PARTITIONED_NON_BLOCKING:
+					return new LockFreeInlineMultiHashSet<V>(
+						initialCapacity, loadFactor, hasher, 
+						rehasher(), eq) ;
+				case LINKED_LOCK_FREE:
+					return new LockFreeLinkedInlineMultiHashSet<V>(
+						initialCapacity, loadFactor, hasher, 
+						rehasher(), eq) ;
+				default:
+					throw new IllegalArgumentException(type.toString()) ;
 				}			
-				throw new UnsupportedOperationException() ;
 			case MultiSetNesting.Type.NESTED:
 				switch(type.type()) {
 				case SERIAL:
+					return new SerialNestedMultiHashSet<V>(
+						initialCapacity, loadFactor, hasher, 
+						rehasher(), eq) ;
 				case SYNCHRONIZED:
-					MultiSet<V> r = new SerialNestedMultiHashSet<V>(
-							initialCapacity, 
-							loadFactor,
-							hasher, 
-							rehasher(), 
-							eq) ;
-					if (type.type() == HashStoreType.Type.SYNCHRONIZED)
-						r = new SynchronizedMultiSet<V>(r) ;
-					return r ;
+					return new SynchronizedMultiSet<V>(
+						new SerialNestedMultiHashSet<V>(
+							initialCapacity, loadFactor, hasher, 
+							rehasher(), eq)) ;
+				case LINKED_SERIAL:
+					return new SerialLinkedNestedMultiHashSet<V>(
+						initialCapacity, loadFactor, hasher, 
+						rehasher(), eq) ;
+				case LINKED_SYNCHRONIZED:
+					return new SynchronizedMultiSet<V>(
+						new SerialLinkedNestedMultiHashSet<V>(
+							initialCapacity, loadFactor, hasher, 
+							rehasher(), eq)) ;
 				case LOCK_FREE:
-//				case PARTITIONED_BLOCKING:
-//				case PARTITIONED_NON_BLOCKING:
-					throw new UnsupportedOperationException() ;
+					return new LockFreeNestedMultiHashSet<V>(
+						initialCapacity, loadFactor, hasher, 
+						rehasher(), eq) ;
+				case LINKED_LOCK_FREE:
+					return new LockFreeLinkedNestedMultiHashSet<V>(
+						initialCapacity, loadFactor, hasher, 
+						rehasher(), eq) ;
+				default:
+					throw new IllegalArgumentException(type.toString()) ;
 				}			
 			case MultiSetNesting.Type.COUNTING:
 				switch(type.type()) {
 				case SERIAL:
+					return new SerialCountingMultiHashSet<V>(
+						initialCapacity, loadFactor, hasher, 
+						rehasher(), eq) ;
 				case SYNCHRONIZED:
-					MultiSet<V> r = new SerialCountingMultiHashSet<V>(
-							initialCapacity, 
-							loadFactor,
-							hasher, 
-							rehasher(), 
-							eq) ;
-					if (type.type() == HashStoreType.Type.SYNCHRONIZED)
-						r = new SynchronizedMultiSet<V>(r) ;
-					return r ;
+					return new SynchronizedMultiSet<V>(
+						new SerialCountingMultiHashSet<V>(
+							initialCapacity, loadFactor, hasher, 
+							rehasher(), eq)) ;
+				case LINKED_SERIAL:
+					return new SerialLinkedCountingMultiHashSet<V>(
+						initialCapacity, loadFactor, hasher, 
+						rehasher(), eq) ;
+				case LINKED_SYNCHRONIZED:
+					return new SynchronizedMultiSet<V>(
+						new SerialLinkedCountingMultiHashSet<V>(
+							initialCapacity, loadFactor, hasher, 
+							rehasher(), eq)) ;
 				case LOCK_FREE:
-//				case PARTITIONED_BLOCKING:
-//				case PARTITIONED_NON_BLOCKING:
-					throw new UnsupportedOperationException() ;
+					return new LockFreeCountingMultiHashSet<V>(
+						initialCapacity, loadFactor, hasher, 
+						rehasher(), eq) ;
+				case LINKED_LOCK_FREE:
+					return new LockFreeLinkedCountingMultiHashSet<V>(
+						initialCapacity, loadFactor, hasher, 
+						rehasher(), eq) ;
+				default:
+					throw new IllegalArgumentException(type.toString()) ;
 				}			
 			}
 			throw new IllegalArgumentException() ;
@@ -145,9 +209,6 @@ public class SetMaker {
 			if (rehasher != null)
 				return rehasher ;
 			switch(type.type()) {
-//			case PARTITIONED_BLOCKING:
-//			case PARTITIONED_NON_BLOCKING:
-//				return Rehashers.jdkConcurrentHashmapRehasher() ;
 			case SERIAL:
 			case SYNCHRONIZED:
 			case LOCK_FREE:

@@ -1,10 +1,19 @@
 package org.jjoost.collections;
 
 import org.jjoost.collections.base.HashStoreType ;
+import org.jjoost.collections.maps.concurrent.LockFreeInlineListHashMap ;
+import org.jjoost.collections.maps.concurrent.LockFreeInlineMultiHashMap ;
+import org.jjoost.collections.maps.concurrent.LockFreeLinkedInlineListHashMap ;
+import org.jjoost.collections.maps.concurrent.LockFreeLinkedInlineMultiHashMap ;
+import org.jjoost.collections.maps.concurrent.LockFreeLinkedScalarHashMap ;
+import org.jjoost.collections.maps.concurrent.LockFreeScalarHashMap ;
 import org.jjoost.collections.maps.nested.NestedSetListMap ;
 import org.jjoost.collections.maps.nested.NestedSetMultiMap ;
 import org.jjoost.collections.maps.serial.SerialInlineListHashMap ;
 import org.jjoost.collections.maps.serial.SerialInlineMultiHashMap ;
+import org.jjoost.collections.maps.serial.SerialLinkedInlineListHashMap ;
+import org.jjoost.collections.maps.serial.SerialLinkedInlineMultiHashMap ;
+import org.jjoost.collections.maps.serial.SerialLinkedScalarHashMap ;
 import org.jjoost.collections.maps.serial.SerialScalarHashMap ;
 import org.jjoost.collections.maps.wrappers.SynchronizedListMap ;
 import org.jjoost.collections.maps.wrappers.SynchronizedMultiMap ;
@@ -88,23 +97,34 @@ public class MapMaker {
 		public ScalarMap<K, V> newScalarMap() {
 			switch(type.type()) {
 			case SERIAL:
+				return new SerialScalarHashMap<K, V>(
+					initialCapacity, loadFactor, keyHasher, 
+					rehasher(), keyEquality, valEquality) ;
 			case SYNCHRONIZED:
-				ScalarMap<K, V> r = new SerialScalarHashMap<K, V>(
-						initialCapacity, 
-						loadFactor, 
-						keyHasher, 
-						rehasher(), 
-						keyEquality,
-						valEquality) ;
-				if (type.type() == HashStoreType.Type.SYNCHRONIZED)
-					r = new SynchronizedScalarMap<K, V>(r) ;
-				return r ;
+				return new SynchronizedScalarMap<K, V>(
+					new SerialScalarHashMap<K, V>(
+						initialCapacity, loadFactor, keyHasher, 
+						rehasher(), keyEquality, valEquality)) ;
+			case LINKED_SERIAL:
+				return new SerialLinkedScalarHashMap<K, V>(
+					initialCapacity, loadFactor, keyHasher, 
+					rehasher(), keyEquality, valEquality) ;
+			case LINKED_SYNCHRONIZED:
+				return new SynchronizedScalarMap<K, V>(
+					new SerialLinkedScalarHashMap<K, V>(
+						initialCapacity, loadFactor, keyHasher, 
+						rehasher(), keyEquality, valEquality)) ;
 			case LOCK_FREE:
-//			case PARTITIONED_BLOCKING:
-//			case PARTITIONED_NON_BLOCKING:
+				return new LockFreeScalarHashMap<K, V>(
+					initialCapacity, loadFactor, keyHasher, 
+					rehasher(), keyEquality, valEquality) ;
+			case LINKED_LOCK_FREE:
+				return new LockFreeLinkedScalarHashMap<K, V>(
+					initialCapacity, loadFactor, keyHasher, 
+					rehasher(), keyEquality, valEquality) ;
+			default:
 				throw new UnsupportedOperationException() ;
-			}			
-			throw new IllegalArgumentException() ;
+			}
 		}
 		public MultiMap<K, V> newMultiMap(MultiMapNesting<V> nesting) {
 			if (factory != null || factoryFunction != null)
@@ -113,44 +133,49 @@ public class MapMaker {
 			case MultiMapNesting.Type.INLINE:
 				switch(type.type()) {
 				case SERIAL:
+					return new SerialInlineMultiHashMap<K, V>(
+						initialCapacity, loadFactor, keyHasher, 
+						rehasher(), keyEquality, valEquality) ;
 				case SYNCHRONIZED:
-					MultiMap<K, V> r = new SerialInlineMultiHashMap<K, V>(
-							initialCapacity, 
-							loadFactor, 
-							keyHasher, 
-							rehasher(), 
-							keyEquality, 
-							valEquality) ;
-					if (type.type() == HashStoreType.Type.SYNCHRONIZED)
-						r = new SynchronizedMultiMap<K, V>(r) ;
-					return r ;
+					return new SynchronizedMultiMap<K, V>(
+						new SerialInlineMultiHashMap<K, V>(
+							initialCapacity, loadFactor, keyHasher, 
+							rehasher(), keyEquality, valEquality)) ;
+				case LINKED_SERIAL:
+					return new SerialLinkedInlineMultiHashMap<K, V>(
+						initialCapacity, loadFactor, keyHasher, 
+						rehasher(), keyEquality, valEquality) ;
+				case LINKED_SYNCHRONIZED:
+					return new SynchronizedMultiMap<K, V>(
+						new SerialLinkedInlineMultiHashMap<K, V>(
+							initialCapacity, loadFactor, keyHasher, 
+							rehasher(), keyEquality, valEquality)) ;
 				case LOCK_FREE:
-//				case PARTITIONED_BLOCKING:
-//				case PARTITIONED_NON_BLOCKING:
+					return new LockFreeInlineMultiHashMap<K, V>(
+						initialCapacity, loadFactor, keyHasher, 
+						rehasher(), keyEquality, valEquality) ;
+				case LINKED_LOCK_FREE:
+					return new LockFreeLinkedInlineMultiHashMap<K, V>(
+						initialCapacity, loadFactor, keyHasher, 
+						rehasher(), keyEquality, valEquality) ;
+				default:
 					throw new UnsupportedOperationException() ;
 				}			
 			case MultiMapNesting.Type.NESTED:
-				switch(type.type()) {
-				case SERIAL:
-				case SYNCHRONIZED:
-					MultiMap<K, V> r = new NestedSetMultiMap<K, V>(
-							MapMaker.<K, ScalarSet<V>>hash()
-								.initialCapacity(initialCapacity)
-								.loadFactor(loadFactor)
-								.hasher(keyHasher)
-								.keyEq(keyEquality)
-								.rehasher(rehasher)
-								.newScalarMap(), nesting.factory()) ;
-					if (type.type() == HashStoreType.Type.SYNCHRONIZED)
-						r = new SynchronizedMultiMap<K, V>(r) ;
-					return r ;
-				case LOCK_FREE:
-//				case PARTITIONED_BLOCKING:
-//				case PARTITIONED_NON_BLOCKING:
+				// TODO : NestedSetMultiMap only really supports SERIAL and SYNCHRONIZED; 
+				// need a new threadsafe version
+				return new NestedSetMultiMap<K, V>(
+					MapMaker.<K, ScalarSet<V>>hash()
+						.initialCapacity(initialCapacity)
+						.loadFactor(loadFactor)
+						.hasher(keyHasher)
+						.keyEq(keyEquality)
+						.rehasher(rehasher)
+						.type(type)
+						.newScalarMap(), nesting.factory()) ;
+			default:
 					throw new UnsupportedOperationException() ;
-				}			
 			}
-			throw new IllegalArgumentException() ;
 		}
 		public ListMap<K, V> newListMap(ListMapNesting<V> nesting) {
 			if (factory != null || factoryFunction != null)
@@ -159,52 +184,51 @@ public class MapMaker {
 			case ListMapNesting.Type.INLINE:
 				switch(type.type()) {
 				case SERIAL:
+					return new SerialInlineListHashMap<K, V>(
+						initialCapacity, loadFactor, keyHasher, 
+						rehasher(),  keyEquality, valEquality) ;
 				case SYNCHRONIZED:
-					ListMap<K, V> r = new SerialInlineListHashMap<K, V>(
-							initialCapacity, 
-							loadFactor, 
-							keyHasher, 
-							rehasher(), 
-							keyEquality, 
-							valEquality) ;
-					if (type.type() == HashStoreType.Type.SYNCHRONIZED)
-						r = new SynchronizedListMap<K, V>(r) ;
-					return r ;
+					return new SynchronizedListMap<K, V>(
+						new SerialInlineListHashMap<K, V>(
+							initialCapacity, loadFactor, keyHasher, 
+							rehasher(),  keyEquality, valEquality)) ;
+				case LINKED_SERIAL:
+					return new SerialLinkedInlineListHashMap<K, V>(
+						initialCapacity, loadFactor, keyHasher, 
+						rehasher(),  keyEquality, valEquality) ;
+				case LINKED_SYNCHRONIZED:
+					return new SynchronizedListMap<K, V>(
+						new SerialLinkedInlineListHashMap<K, V>(
+							initialCapacity, loadFactor, keyHasher, 
+							rehasher(),  keyEquality, valEquality)) ;
 				case LOCK_FREE:
-//				case PARTITIONED_BLOCKING:
-//				case PARTITIONED_NON_BLOCKING:
+					return new LockFreeInlineListHashMap<K, V>(
+						initialCapacity, loadFactor, keyHasher, 
+						rehasher(),  keyEquality, valEquality) ;
+				case LINKED_LOCK_FREE:
+					return new LockFreeLinkedInlineListHashMap<K, V>(
+						initialCapacity, loadFactor, keyHasher, 
+						rehasher(),  keyEquality, valEquality) ;
+				default:
 					throw new UnsupportedOperationException() ;
 				}			
 			case ListMapNesting.Type.NESTED:
-				switch(type.type()) {
-				case SERIAL:
-				case SYNCHRONIZED:
-					ListMap<K, V> r = new NestedSetListMap<K, V>(
-							MapMaker.<K, MultiSet<V>>hash()
-								.initialCapacity(initialCapacity)
-								.loadFactor(loadFactor)
-								.hasher(keyHasher)
-								.keyEq(keyEquality)
-								.rehasher(rehasher)
-								.newScalarMap(), nesting.factory()) ;
-					if (type.type() == HashStoreType.Type.SYNCHRONIZED)
-						r = new SynchronizedListMap<K, V>(r) ;
-					return r ;
-				case LOCK_FREE:
-//				case PARTITIONED_BLOCKING:
-//				case PARTITIONED_NON_BLOCKING:
-					throw new UnsupportedOperationException() ;
-				}			
+				return new NestedSetListMap<K, V>(MapMaker.<K, MultiSet<V>>hash()
+					.initialCapacity(initialCapacity)
+					.loadFactor(loadFactor)
+					.hasher(keyHasher)
+					.keyEq(keyEquality)
+					.rehasher(rehasher)
+					.type(type)
+					.newScalarMap(), nesting.factory()) ;
+			default:
+				throw new UnsupportedOperationException() ;
 			}
-			throw new IllegalArgumentException() ; 
 		}
 		protected Rehasher rehasher() {
 			if (rehasher != null)
 				return rehasher ;
 			switch(type.type()) {
-//			case PARTITIONED_BLOCKING:
-//			case PARTITIONED_NON_BLOCKING:
-//				return Rehashers.jdkConcurrentHashmapRehasher() ;
 			case SERIAL:
 			case SYNCHRONIZED:
 			case LOCK_FREE:
