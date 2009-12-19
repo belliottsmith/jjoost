@@ -19,12 +19,12 @@ public class InlineMultiHashSet<V, N extends HashNode<N> & Value<V>> extends Abs
 	private static final long serialVersionUID = -6385620376018172675L;
 
 	public InlineMultiHashSet(Hasher<? super V> valHasher, Rehasher rehasher, Equality<? super V> equality, HashNodeFactory<V, N> nodeFactory, HashStore<N> table) {
-		super(valHasher, rehasher, nodeFactory, new ValueEquality<V>(equality), table) ;
+		super(valHasher, rehasher, new ValueEquality<V>(equality), nodeFactory, table) ;
 		this.putEq = new PutEquality<V>(equality) ;
 	}
 	
-	private InlineMultiHashSet(Hasher<? super V> valHasher, Rehasher rehasher, HashNodeFactory<V, N> nodeFactory, AbstractHashSet.ValueEquality<V> equality, PutEquality<V> putEq, HashStore<N> table) {
-		super(valHasher, rehasher, nodeFactory, equality, table) ;
+	private InlineMultiHashSet(Hasher<? super V> valHasher, Rehasher rehasher, AbstractHashSet.ValueEquality<V> equality, HashNodeFactory<V, N> nodeFactory, PutEquality<V> putEq, HashStore<N> table) {
+		super(valHasher, rehasher, equality, nodeFactory, table) ;
 		this.putEq = putEq ;
 	}
 	
@@ -44,12 +44,16 @@ public class InlineMultiHashSet<V, N extends HashNode<N> & Value<V>> extends Abs
 	
 	@Override
 	public MultiSet<V> copy() {
-		return new InlineMultiHashSet<V, N>(valHasher, rehasher, nodeFactory, valEq, putEq, store.copy()) ;
+		return new InlineMultiHashSet<V, N>(valHasher, rehasher, valEq, nodeFactory, putEq, store.copy(valProj(), valEq)) ;
 	}
 
 	@Override
 	public boolean permitsDuplicates() {
 		return true ;
+	}
+	@Override
+	public int uniqueCount() {
+		return store.uniquePrefixCount() ;
 	}
 
 	@Override

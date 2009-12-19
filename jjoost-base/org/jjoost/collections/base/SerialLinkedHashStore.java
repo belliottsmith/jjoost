@@ -5,7 +5,6 @@ import java.util.NoSuchElementException;
 
 import org.jjoost.util.Equality ;
 import org.jjoost.util.Function;
-import org.jjoost.util.Functions;
 
 @SuppressWarnings("unchecked")
 public class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedHashNode<N>> extends SerialHashStore<N> {
@@ -66,36 +65,38 @@ public class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedH
 	// TODO : is there an efficient way to copy this without temporarily doubling table memory utilisation? 
 	// we could instead iterate over the array twice, first time inserting in opposite order into buckets and on second pass reversing this...
 	@Override
-	public HashStore<N> copy() {
-		final N[] table = (N[]) new SerialLinkedHashNode[this.table.length] ;
-		final N[] tails = (N[]) new SerialLinkedHashNode[this.table.length] ;
-		final Iterator<N> ns = all(null, null, Functions.<N>identity()) ;
-		N listTail = newHead() ;
-		while (ns.hasNext()) {
-			final N n = ns.next().copy() ;
-			final int hash = n.hash & (table.length - 1) ;
-			final N tail = tails[hash] ;
-			if (tail == null) {
-				table[hash] = tails[hash] = n ;
-			} else {
-				tails[hash] = tail.next = n ;
-			}
-			n.linkPrev = listTail ;
-			listTail = listTail.linkNext = n ;
-		}
-		for (int i = 0 ; i != table.length ; i++) {
-			N orig = table[i] ;
-			if (orig != null) {
-				N copy = orig.copy() ;
-				table[i] = copy ;
-				orig = orig.linkNext ;
-				while (orig != null) {
-					copy.linkNext = copy = orig.copy() ;
-					orig = orig.linkNext ;
-				}
-			}
-		}
-		return new SerialHashStore<N>(loadFactor, table, totalNodeCount) ;
+	public <NCmp> HashStore<N> copy(Function<? super N, ? extends NCmp> nodeEqualityProj,
+		HashNodeEquality<? super NCmp, ? super N> nodeEquality) {
+		throw new UnsupportedOperationException() ;
+//		final N[] table = (N[]) new SerialLinkedHashNode[this.table.length] ;
+//		final N[] tails = (N[]) new SerialLinkedHashNode[this.table.length] ;
+//		final Iterator<N> ns = all(null, null, Functions.<N>identity()) ;
+//		N listTail = newHead() ;
+//		while (ns.hasNext()) {
+//			final N n = ns.next().copy() ;
+//			final int hash = n.hash & (table.length - 1) ;
+//			final N tail = tails[hash] ;
+//			if (tail == null) {
+//				table[hash] = tails[hash] = n ;
+//			} else {
+//				tails[hash] = tail.next = n ;
+//			}
+//			n.linkPrev = listTail ;
+//			listTail = listTail.linkNext = n ;
+//		}
+//		for (int i = 0 ; i != table.length ; i++) {
+//			N orig = table[i] ;
+//			if (orig != null) {
+//				N copy = orig.copy() ;
+//				table[i] = copy ;
+//				orig = orig.linkNext ;
+//				while (orig != null) {
+//					copy.linkNext = copy = orig.copy() ;
+//					orig = orig.linkNext ;
+//				}
+//			}
+//		}
+//		return new SerialHashStore<N>(loadFactor, table, totalNodeCount) ;
 	}
 
 	@Override

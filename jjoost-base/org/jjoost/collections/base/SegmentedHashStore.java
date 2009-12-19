@@ -79,9 +79,9 @@ public class SegmentedHashStore<N extends HashNode<N>> implements HashStore<N> {
 		return segmentFor(hash).contains(hash, find, eq) ;
 	}
 	@Override
-	public HashStore<N> copy() {
-		// TODO Auto-generated method stub
-		return null ;
+	public <NCmp> HashStore<N> copy(Function<? super N, ? extends NCmp> nodeEqualityProj,
+		HashNodeEquality<? super NCmp, ? super N> nodeEquality) {
+		throw new UnsupportedOperationException() ;
 	}
 	@Override
 	public <NCmp> int count(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {

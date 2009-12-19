@@ -45,13 +45,13 @@ public class InlineListHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extend
 
 	@Override
 	public V put(K key, V val) {
-		final N n = nodeFactory.node(hash(key), key, val) ;
+		final N n = nodeFactory.makeNode(hash(key), key, val) ;
 		return store.put(n, n, entryEq, valProj()) ;
 	}
 
 	@Override
 	public V putIfAbsent(K key, V val) {
-		final N n = nodeFactory.node(hash(key), key, val) ;
+		final N n = nodeFactory.makeNode(hash(key), key, val) ;
 		return store.putIfAbsent(n, n, entryEq, valProj()) ;
 	}
 
@@ -66,8 +66,13 @@ public class InlineListHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extend
 	}
 
 	@Override
+	public int uniqueKeyCount() {
+		return store.uniquePrefixCount() ;
+	}
+	
+	@Override
 	public ListMap<K, V> copy() {
-		return new InlineListHashMap<K, V, N>(keyHasher, rehasher, keyEq, entryEq, nodeFactory, store.copy()) ;
+		return new InlineListHashMap<K, V, N>(keyHasher, rehasher, keyEq, entryEq, nodeFactory, store.copy(nodeProj(), entryEq)) ;
 	}
 	
 	@Override
@@ -109,14 +114,14 @@ public class InlineListHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extend
 		public Entry<K, V> put(Entry<K, V> entry) {
 			final K key = entry.getKey() ;
 			final V val = entry.getValue() ;
-			final N n = nodeFactory.node(hash(key), key, val) ;
+			final N n = nodeFactory.makeNode(hash(key), key, val) ;
 			return store.put(n, n, entryEq, entryProj()) ;
 		}
 		@Override
 		public Entry<K, V> putIfAbsent(Entry<K, V> entry) {
 			final K key = entry.getKey() ;
 			final V val = entry.getValue() ;
-			final N n = nodeFactory.node(hash(key), key, val) ;
+			final N n = nodeFactory.makeNode(hash(key), key, val) ;
 			return store.putIfAbsent(n, n, entryEq, entryProj()) ;
 		}
 		@Override

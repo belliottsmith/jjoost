@@ -8,6 +8,8 @@ import org.jjoost.collections.base.HashNode ;
 import org.jjoost.collections.base.HashNodeEquality ;
 import org.jjoost.collections.base.HashNodeFactory ;
 import org.jjoost.collections.base.HashStore ;
+import org.jjoost.collections.base.LockFreeHashStore.LockFreeHashNode ;
+import org.jjoost.collections.base.LockFreeLinkedHashStore.LockFreeLinkedHashNode ;
 import org.jjoost.collections.base.SerialHashStore.SerialHashNode ;
 import org.jjoost.collections.base.SerialLinkedHashStore.SerialLinkedHashNode ;
 import org.jjoost.collections.iters.AbstractIterable ;
@@ -28,7 +30,7 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> imple
 	protected final HashNodeFactory<V, N> nodeFactory ;
 	protected final ValueEquality<V> valEq ;
 	
-	protected AbstractHashSet(Hasher<? super V> valHasher, Rehasher rehasher, HashNodeFactory<V, N> nodeFactory, ValueEquality<V> equality, HashStore<N> table) {
+	protected AbstractHashSet(Hasher<? super V> valHasher, Rehasher rehasher, ValueEquality<V> equality, HashNodeFactory<V, N> nodeFactory, HashStore<N> table) {
 		this.store = table ;
 		this.valHasher = valHasher ;
 		this.rehasher = rehasher ;
@@ -115,10 +117,6 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> imple
 	@Override
 	public int totalCount() {
 		return store.totalCount() ;
-	}
-	@Override
-	public int uniqueCount() {
-		return store.uniquePrefixCount() ;
 	}
 	@Override
 	public boolean isEmpty() {
@@ -228,6 +226,54 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> imple
 		@Override
 		public final SerialLinkedHashSetNode<V> makeNode(final int hash, final V value) {
 			return new SerialLinkedHashSetNode<V>(hash, value) ;
+		}
+	}
+	
+	public static final class LockFreeHashSetNode<V> extends LockFreeHashNode<LockFreeHashSetNode<V>> implements Value<V> {
+		private static final long serialVersionUID = -5766263745864028747L;
+		public LockFreeHashSetNode(int hash, V value) {
+			super(hash);
+			this.value = value;
+		}
+		private V value ;		
+		@Override public V getValue() { return value ; }
+		@Override public LockFreeHashSetNode<V> copy() { return new LockFreeHashSetNode<V>(hash, value) ; }
+	}
+	
+	@SuppressWarnings("unchecked")
+	private static final LockFreeHashSetNodeFactory LOCKFREE_FACTORY = new LockFreeHashSetNodeFactory() ;
+	@SuppressWarnings("unchecked")
+	public static <V> LockFreeHashSetNodeFactory<V> lockFreeNodeFactory() {
+		return LOCKFREE_FACTORY ;
+	}
+	public static final class LockFreeHashSetNodeFactory<V> implements HashNodeFactory<V, LockFreeHashSetNode<V>> {
+		@Override
+		public final LockFreeHashSetNode<V> makeNode(final int hash, final V value) {
+			return new LockFreeHashSetNode<V>(hash, value) ;
+		}
+	}
+	
+	public static final class LockFreeLinkedHashSetNode<V> extends LockFreeLinkedHashNode<LockFreeLinkedHashSetNode<V>> implements Value<V> {
+		private static final long serialVersionUID = -5766263745864028747L;
+		public LockFreeLinkedHashSetNode(int hash, V value) {
+			super(hash);
+			this.value = value;
+		}
+		private V value ;		
+		@Override public V getValue() { return value ; }
+		@Override public LockFreeLinkedHashSetNode<V> copy() { return new LockFreeLinkedHashSetNode<V>(hash, value) ; }
+	}
+	
+	@SuppressWarnings("unchecked")
+	private static final LockFreeLinkedHashSetNodeFactory LOCKFREE_LINKED_FACTORY = new LockFreeLinkedHashSetNodeFactory() ;
+	@SuppressWarnings("unchecked")
+	public static <V> LockFreeLinkedHashSetNodeFactory<V> lockFreeLinkedNodeFactory() {
+		return LOCKFREE_LINKED_FACTORY ;
+	}
+	public static final class LockFreeLinkedHashSetNodeFactory<V> implements HashNodeFactory<V, LockFreeLinkedHashSetNode<V>> {
+		@Override
+		public final LockFreeLinkedHashSetNode<V> makeNode(final int hash, final V value) {
+			return new LockFreeLinkedHashSetNode<V>(hash, value) ;
 		}
 	}
 	

@@ -48,12 +48,12 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 	
 	@Override
 	public V put(K key, V val) {
-		return store.put(key, nodeFactory.node(hash(key), key, val), keyEq, valProj()) ;
+		return store.put(key, nodeFactory.makeNode(hash(key), key, val), keyEq, valProj()) ;
 	}
 
 	@Override
 	public V putIfAbsent(K key, V val) {
-		return store.putIfAbsent(key, nodeFactory.node(hash(key), key, val), keyEq, valProj()) ;
+		return store.putIfAbsent(key, nodeFactory.makeNode(hash(key), key, val), keyEq, valProj()) ;
 	}
 
 	@Override
@@ -62,7 +62,7 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 			private static final long serialVersionUID = 1L;
 			@Override
 			public N makeNode(int hash, K key) {
-				return nodeFactory.node(hash, key, putIfNotPresent.create()) ;
+				return nodeFactory.makeNode(hash, key, putIfNotPresent.create()) ;
 			}
 		}, valProj()) ;
 	}
@@ -73,7 +73,7 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 			private static final long serialVersionUID = 526770033919300687L;
 			@Override
 			public N makeNode(int hash, K key) {
-				return nodeFactory.node(hash, key, putIfNotPresent.apply(key)) ;
+				return nodeFactory.makeNode(hash, key, putIfNotPresent.apply(key)) ;
 			}
 		}, valProj());
 	}
@@ -99,7 +99,7 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 			private static final long serialVersionUID = 3624491527804791117L;
 			@Override
 			public N makeNode(int hash, K key) {
-				return nodeFactory.node(hash, key, putIfNotPresent.apply(key)) ;
+				return nodeFactory.makeNode(hash, key, putIfNotPresent.apply(key)) ;
 			}
 		}, valProj()) ;
 	}
@@ -114,6 +114,11 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 		return totalCount() ;
 	}
 
+	@Override
+	public int uniqueKeyCount() {
+		return totalCount() ;
+	}
+	
 	final class KeyValueSet extends AbstractKeyValueSet implements ScalarSet<V> {
 		private static final long serialVersionUID = 2741936401896784235L;
 		public KeyValueSet(K key) {
@@ -174,7 +179,7 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 
 	@Override
 	public ScalarMap<K, V> copy() {
-		return new ScalarHashMap<K, V, N>(keyHasher, rehasher, keyEq, entryEq, nodeFactory, store.copy()) ;
+		return new ScalarHashMap<K, V, N>(keyHasher, rehasher, keyEq, entryEq, nodeFactory, store.copy(nodeProj(), entryEq)) ;
 	}
 
 	// **********************************

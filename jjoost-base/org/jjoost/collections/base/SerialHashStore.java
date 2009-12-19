@@ -847,7 +847,8 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
     }
 
 	@Override
-	public HashStore<N> copy() {
+	public <NCmp> HashStore<N> copy(Function<? super N, ? extends NCmp> nodeEqualityProj,
+		HashNodeEquality<? super NCmp, ? super N> nodeEquality) {
 		final N[] table = this.table.clone() ;
 		for (int i = 0 ; i != table.length ; i++) {
 			N orig = table[i] ;

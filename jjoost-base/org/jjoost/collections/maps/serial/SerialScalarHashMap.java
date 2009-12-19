@@ -56,7 +56,7 @@ public class SerialScalarHashMap<K, V> extends ScalarHashMap<K, V, SerialScalarH
 	}
 	public static final class SerialScalarHashNodeFactory<K, V> implements HashMapNodeFactory<K, V, SerialScalarHashMapNode<K, V>> {
 		@Override
-		public final SerialScalarHashMapNode<K, V> node(final int hash, final K key, final V value) {
+		public final SerialScalarHashMapNode<K, V> makeNode(final int hash, final K key, final V value) {
 			return new SerialScalarHashMapNode<K, V>(hash, key, value) ;
 		}
 	}

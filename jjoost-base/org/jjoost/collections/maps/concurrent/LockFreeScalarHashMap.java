@@ -2,7 +2,6 @@ package org.jjoost.collections.maps.concurrent;
 
 import java.util.Map.Entry ;
 
-import org.jjoost.collections.ScalarMap ;
 import org.jjoost.collections.base.LockFreeHashStore ;
 import org.jjoost.collections.base.SerialHashStore ;
 import org.jjoost.collections.maps.base.HashMapNodeFactory ;
@@ -29,11 +28,11 @@ public class LockFreeScalarHashMap<K, V> extends ScalarHashMap<K, V, LockFreeSca
 			Rehasher rehasher, Equality<? super K> keyEquality, Equality<? super V> valEquality) 
 	{
 		super(keyHasher, rehasher, new KeyEquality<K, V>(keyEquality), new EntryEquality<K, V>(keyEquality, valEquality),
-			LockFreeScalarHashMap.<K, V>serialNodeFactory(), 
+			LockFreeScalarHashMap.<K, V>factory(), 
 			new LockFreeHashStore<Node<K, V>>(minimumInitialCapacity, loadFactor, LockFreeHashStore.Counting.PRECISE, LockFreeHashStore.Counting.OFF)) ;
 	}
 	
-	public static final class Node<K, V> extends LockFreeHashStore.Node<Node<K, V>> implements Entry<K, V> {
+	public static final class Node<K, V> extends LockFreeHashStore.LockFreeHashNode<Node<K, V>> implements Entry<K, V> {
 		private static final long serialVersionUID = -5766263745864028747L;
 		public Node(int hash, K key, V value) {
 			super(hash);
@@ -49,27 +48,15 @@ public class LockFreeScalarHashMap<K, V> extends ScalarHashMap<K, V, LockFreeSca
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static final SerialScalarHashNodeFactory SERIAL_SCALAR_HASH_NODE_FACTORY = new SerialScalarHashNodeFactory() ;
+	private static final SerialScalarHashNodeFactory FACTORY = new SerialScalarHashNodeFactory() ;
 	@SuppressWarnings("unchecked")
-	public static <K, V> SerialScalarHashNodeFactory<K, V> serialNodeFactory() {
-		return SERIAL_SCALAR_HASH_NODE_FACTORY ;
+	public static <K, V> SerialScalarHashNodeFactory<K, V> factory() {
+		return FACTORY ;
 	}
 	public static final class SerialScalarHashNodeFactory<K, V> implements HashMapNodeFactory<K, V, Node<K, V>> {
 		@Override
-		public final Node<K, V> node(final int hash, final K key, final V value) {
+		public final Node<K, V> makeNode(final int hash, final K key, final V value) {
 			return new Node<K, V>(hash, key, value) ;
-		}
-	}
-
-	public static void main(String[] args) {
-		ScalarMap<Integer, Integer> map = new LockFreeScalarHashMap<Integer, Integer>() ;
-		for (int i = 0 ; i != 100 ; i++) {
-			map.put(i, i) ;
-			map.put(i, i + 1) ;
-			map.put(i, i) ;
-		}
-		for (Integer i : map.values()) {
-			System.out.println(i) ;
 		}
 	}
 

@@ -45,6 +45,11 @@ public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> exten
 	}
 	
 	@Override
+	public int uniqueKeyCount() {
+		return store.uniquePrefixCount() ;
+	}
+	
+	@Override
 	public ScalarSet<V> values(K k) {
 		return new KeyValueSet(k) ;
 	}
@@ -56,13 +61,13 @@ public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> exten
 
 	@Override
 	public V put(K key, V val) {
-		final N n = nodeFactory.node(hash(key), key, val) ;
+		final N n = nodeFactory.makeNode(hash(key), key, val) ;
 		return store.put(n, n, entryEq, valProj()) ;
 	}
 
 	@Override
 	public V putIfAbsent(K key, V val) {
-		final N n = nodeFactory.node(hash(key), key, val) ;
+		final N n = nodeFactory.makeNode(hash(key), key, val) ;
 		return store.putIfAbsent(n, n, entryEq, valProj()) ;
 	}
 
@@ -73,7 +78,7 @@ public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> exten
 	
 	@Override
 	public MultiMap<K, V> copy() {
-		return new InlineMultiHashMap<K, V, N>(keyHasher, rehasher, keyEq, entryEq, nodeFactory, store.copy()) ;
+		return new InlineMultiHashMap<K, V, N>(keyHasher, rehasher, keyEq, entryEq, nodeFactory, store.copy(nodeProj(), entryEq)) ;
 	}
 
 	final class KeyValueSet extends AbstractKeyValueSet implements ScalarSet<V> {
@@ -113,14 +118,14 @@ public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> exten
 		public Entry<K, V> put(Entry<K, V> entry) {
 			final K key = entry.getKey() ;
 			final V val = entry.getValue() ;
-			final N n = nodeFactory.node(hash(key), key, val) ;
+			final N n = nodeFactory.makeNode(hash(key), key, val) ;
 			return store.put(n, n, entryEq, entryProj()) ;
 		}
 		@Override
 		public Entry<K, V> putIfAbsent(Entry<K, V> entry) {
 			final K key = entry.getKey() ;
 			final V val = entry.getValue() ;
-			final N n = nodeFactory.node(hash(key), key, val) ;
+			final N n = nodeFactory.makeNode(hash(key), key, val) ;
 			return store.putIfAbsent(n, n, entryEq, entryProj()) ;
 		}
 		@Override

@@ -150,10 +150,6 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		return store.totalCount() ;
 	}
 	@Override
-	public int uniqueKeyCount() {
-		return store.uniquePrefixCount() ;
-	}
-	@Override
 	public boolean isEmpty() {
 		return store.isEmpty() ;
 	}
@@ -286,7 +282,7 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		public final V put(V val) {
 			if (keyEq.isUnique())
 				throw new UnsupportedOperationException() ;
-			final N insert = nodeFactory.node(hash, key, val) ;
+			final N insert = nodeFactory.makeNode(hash, key, val) ;
 			return store.put(insert, insert, entryEq, valProj()) ;
 		}
 		
@@ -294,7 +290,7 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		public final V putIfAbsent(V val) {
 			if (keyEq.isUnique())
 				throw new UnsupportedOperationException() ;
-			final N insert = nodeFactory.node(hash, key, val) ;
+			final N insert = nodeFactory.makeNode(hash, key, val) ;
 			return store.putIfAbsent(insert, insert, entryEq, valProj()) ;
 		}
 		

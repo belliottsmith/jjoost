@@ -14,11 +14,11 @@ public class ScalarHashSet<V, N extends HashNode<N> & Value<V>> extends Abstract
 	private static final long serialVersionUID = -6385620376018172675L;
 
 	public ScalarHashSet(Hasher<? super V> valHasher, Rehasher rehasher, Equality<? super V> equality, HashNodeFactory<V, N> nodeFactory, HashStore<N> table) {
-		super(valHasher, rehasher, nodeFactory, new ValueEquality<V>(equality), table) ;
+		super(valHasher, rehasher, new ValueEquality<V>(equality), nodeFactory, table) ;
 	}
 	
-	private ScalarHashSet(Hasher<? super V> valHasher, Rehasher rehasher, HashNodeFactory<V, N> nodeFactory, AbstractHashSet.ValueEquality<V> equality, HashStore<N> table) {
-		super(valHasher, rehasher, nodeFactory, equality, table) ;
+	private ScalarHashSet(Hasher<? super V> valHasher, Rehasher rehasher, AbstractHashSet.ValueEquality<V> equality, HashNodeFactory<V, N> nodeFactory, HashStore<N> table) {
+		super(valHasher, rehasher, equality, nodeFactory, table) ;
 	}
 	
 	@Override
@@ -33,7 +33,7 @@ public class ScalarHashSet<V, N extends HashNode<N> & Value<V>> extends Abstract
 
 	@Override
 	public ScalarSet<V> copy() {
-		return new ScalarHashSet<V, N>(valHasher, rehasher, nodeFactory, valEq, store.copy()) ;
+		return new ScalarHashSet<V, N>(valHasher, rehasher, valEq, nodeFactory, store.copy(valProj(), valEq)) ;
 	}
 
 	@Override
@@ -51,6 +51,11 @@ public class ScalarHashSet<V, N extends HashNode<N> & Value<V>> extends Abstract
 		return totalCount() ;
 	}
 
+	@Override
+	public int uniqueCount() {
+		return totalCount() ;
+	}
+	
 	private static final class ValueEquality<V> extends AbstractHashSet.ValueEquality<V> {
 		public ValueEquality(Equality<? super V> valEq) {
 			super(valEq) ;

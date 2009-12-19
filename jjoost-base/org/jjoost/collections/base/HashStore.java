@@ -14,7 +14,7 @@ public interface HashStore<N extends HashNode<N>> extends Serializable {
 	public boolean isEmpty() ;
 	public int clear() ;
 	public <V> Iterator<V> clearAndReturn(Function<? super N, ? extends V> f) ;
-	public HashStore<N> copy() ;
+	public <NCmp> HashStore<N> copy(Function<? super N, ? extends NCmp> nodeEqualityProj, HashNodeEquality<? super NCmp, ? super N> nodeEquality) ;
 	public void shrink() ;
 	public void resize(int size) ;
 	
