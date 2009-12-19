@@ -66,16 +66,6 @@ final class HashNodeVisitSet<N extends HashNode<N>, NCmp> {
 		cur = null ;
 	}
 	
-//	HashNodeVisits<N, NCmp> pop() {
-//		
-//		if (last == null)
-//			return null ;
-//		table[last.visited.hash & (table.length - 1)] = last.next ;
-//		last = last.prev ;
-//		return last.visited ;
-//		
-//	}
-//	
 	void grow() {
 		
 		final Chain<N, NCmp>[] oldTable = table ;
@@ -107,21 +97,6 @@ final class HashNodeVisitSet<N extends HashNode<N>, NCmp> {
 		}
 	}
 	
-//	Chain<N, NCmp> alloc(N n, Chain<N, NCmp> next, Chain<N, NCmp> prev) {
-//	Chain<N, NCmp> alloc(N n, Chain<N, NCmp> next, Chain<N, NCmp> prev) {
-//		final NCmp key = nodeEqualityProj.apply(n) ;
-//		if (reuse == null)
-//			return new Chain<N, NCmp>(n.hash, key, 
-//					next, prev, nodeEqualityProj, nodeEquality) ;
-//		Chain<N, NCmp> r = reuse ;
-//		reuse = r.prev ;
-//		r.next = next ;
-//		r.prev = prev ;
-//		r.key = key ;
-//		r.visited.reset(n.hash) ;
-//		return r ;
-//	}
-	
 	Chain<N, NCmp> alloc(N n, Chain<N, NCmp> next) {
 		final NCmp key = nodeEqualityProj.apply(n) ;
 		if (reuse == null)
@@ -131,12 +106,4 @@ final class HashNodeVisitSet<N extends HashNode<N>, NCmp> {
 		return r ;
 	}
 	
-//	void revisitAll() {
-//		Chain<N, NCmp> n = last ;
-//		while (n != null) {
-//			n.visited.revisit() ;
-//			n = n.prev ;
-//		}
-//	}
-//	
 }
