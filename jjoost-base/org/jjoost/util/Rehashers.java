@@ -1,11 +1,9 @@
 package org.jjoost.util;
 
 /**
- * A simple interface defining custom hash functions over objects
+ * A collection of default implementations of <code>Rehasher</code>
  * 
  * @author b.elliottsmith
- *
- * @param <E>
  */
 public class Rehashers {
 

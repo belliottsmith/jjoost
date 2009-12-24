@@ -3,8 +3,7 @@ package org.jjoost.util;
 import java.io.Serializable;
 
 /**
- * A simple class that can be used to define equality over objects, and hence can be used to define
- * custom equalities for sets, maps and the like
+ * This interface declares a method which defines equality been objects of type <code>E</code>
  * 
  * @author b.elliottsmith
  *
@@ -13,6 +12,9 @@ import java.io.Serializable;
 public interface Equality<E> extends Serializable {
 	
 	/**
+	 * Returns a boolean indicating if the two parameters are considered equal
+	 * by this <code>Equality</code>
+	 * 
 	 * @param a
 	 * @param b
 	 * @return true if this equality equates the two arguments 

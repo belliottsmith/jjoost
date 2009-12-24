@@ -2,16 +2,34 @@ package org.jjoost.util;
 
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater ;
 
+/**
+ * Some default <code>Counter</code> implementations
+ * 
+ * @author b.elliottsmith
+ *
+ */
 public class Counters {
 
+	/**
+	 * Returns a new thread safe <code>Counter</code> which uses compare and set operations to modify its value
+	 * @return
+	 */
 	public static Counter newThreadSafeCounter() {
 		return new ThreadSafeCounter() ;
 	}
 	
+	/**
+	 * Returns a <code>Counter</code> which ignores all updates to its value and always returns a value less than zero.
+	 * @return
+	 */
 	public static Counter newDoNothingCounter() {
 		return new DontCounter() ;
 	}
 	
+	/**
+	 * Returns a regular <code>Counter</code> which performs ordinary addition with no concurrent guarantees
+	 * @return
+	 */
 	public static Counter newCounter() {
 		return new SerialCounter() ;
 	}

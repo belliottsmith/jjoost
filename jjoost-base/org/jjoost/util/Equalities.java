@@ -1,17 +1,16 @@
 package org.jjoost.util;
 
 /**
- * A simple class that can be used to define equality over objects, and hence can be used to define
- * custom equalities for sets, maps and the like
+ * Default implementations of <code>Equality</code>.
  * 
  * @author b.elliottsmith
- *
- * @param <E>
  */
 public class Equalities {
 	
     /**
      * Standard object equality (a.equals(b))
+     * 
+     * @return Equality
      */
 	public static Equality<Object> object() { return OBJECT ; } 
     private static final Equality<Object> OBJECT = new ObjectEquality() ;

@@ -11,6 +11,8 @@ import java.io.Serializable;
 public interface Filter<E> extends Serializable {
 
     /**
+     * Returns true if the filter accepts the parameter and false otherwise
+     * 
      * @param test
      * @return true if the filter accepts test; false otherwise
      */
