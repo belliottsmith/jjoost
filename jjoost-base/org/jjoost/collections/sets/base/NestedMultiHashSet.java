@@ -9,7 +9,6 @@ import org.jjoost.collections.base.HashNode ;
 import org.jjoost.collections.base.HashNodeEquality ;
 import org.jjoost.collections.base.HashNodeFactory ;
 import org.jjoost.collections.base.HashStore ;
-import org.jjoost.collections.iters.AbstractIterable ;
 import org.jjoost.collections.iters.EmptyIterator ;
 import org.jjoost.util.Counter;
 import org.jjoost.util.Equality;
@@ -264,15 +263,6 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	@Override
 	public boolean isEmpty() {
 		return table.isEmpty() ;
-	}
-	@Override
-	public Iterable<V> all() {
-		return new AbstractIterable<V>() {
-			@Override
-			public Iterator<V> iterator() {
-				return table.all(valProj(), valEq, valProj()) ;
-			}
-		} ;
 	}
 	@Override
 	public Iterable<V> all(final V val) {

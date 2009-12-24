@@ -5,13 +5,12 @@ import java.util.Arrays ;
 import java.util.Iterator ;
 import java.util.List ;
 
-import org.jjoost.collections.ArbitrarySet ;
-import org.jjoost.collections.iters.ArrayIterable ;
+import org.jjoost.collections.AnySet ;
 import org.jjoost.collections.iters.ArrayIterator ;
 import org.jjoost.util.Equalities ;
 import org.jjoost.util.Equality ;
 
-public abstract class AbstractArraySet<V> implements ArbitrarySet<V> {
+public abstract class AbstractArraySet<V> implements AnySet<V> {
 
 	private static final long serialVersionUID = 6236060917384423908L ;
 	protected final Equality<? super V> valEq ;
@@ -133,11 +132,6 @@ public abstract class AbstractArraySet<V> implements ArbitrarySet<V> {
 	@Override
 	public void shrink() {
 		vals = Arrays.copyOf(vals, count < 1 ? 1 : count) ;
-	}
-
-	@Override
-	public Iterable<V> all() {
-		return new ArrayIterable<V>(vals, 0, count) ;
 	}
 
 	@Override

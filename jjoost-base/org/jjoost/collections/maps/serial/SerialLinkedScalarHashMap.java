@@ -2,7 +2,7 @@ package org.jjoost.collections.maps.serial;
 
 import java.util.Map.Entry ;
 
-import org.jjoost.collections.ScalarMap ;
+import org.jjoost.collections.Map ;
 import org.jjoost.collections.base.SerialHashStore ;
 import org.jjoost.collections.base.SerialLinkedHashStore ;
 import org.jjoost.collections.base.SerialLinkedHashStore.SerialLinkedHashNode ;
@@ -64,7 +64,7 @@ public class SerialLinkedScalarHashMap<K, V> extends ScalarHashMap<K, V, SerialL
 	}
 
 	public static void main(String[] args) {
-		ScalarMap<Integer, Integer> map = new SerialLinkedScalarHashMap<Integer, Integer>() ;
+		Map<Integer, Integer> map = new SerialLinkedScalarHashMap<Integer, Integer>() ;
 		for (int i = 0 ; i != 100 ; i++) {
 			map.put(i, i) ;
 			map.put(i, i + 1) ;

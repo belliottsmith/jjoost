@@ -4,7 +4,7 @@ import java.util.Map.Entry ;
 
 import org.jjoost.collections.MultiSet ;
 import org.jjoost.collections.MultiMap;
-import org.jjoost.collections.ScalarSet ;
+import org.jjoost.collections.Set ;
 
 public class SynchronizedMultiMap<K, V> extends SynchronizedArbitraryMap<K, V, MultiMap<K, V>> implements MultiMap<K, V> {
 	
@@ -14,13 +14,13 @@ public class SynchronizedMultiMap<K, V> extends SynchronizedArbitraryMap<K, V, M
 	}
 	
 	private MultiSet<K> keySet ;
-	private ScalarSet<Entry<K, V>> entrySet ;
+	private Set<Entry<K, V>> entrySet ;
 	@Override public synchronized MultiSet<K> keys() {
 		if (keySet == null)
 			keySet = wrap(delegate.keys()) ;
 		return keySet ;
 	}
-	@Override public synchronized ScalarSet<Entry<K, V>> entries() {
+	@Override public synchronized Set<Entry<K, V>> entries() {
 		if (entrySet == null)
 			entrySet = wrap(delegate.entries()) ;
 		return entrySet ;
@@ -32,7 +32,7 @@ public class SynchronizedMultiMap<K, V> extends SynchronizedArbitraryMap<K, V, M
 	@Override public synchronized MultiMap<K, V> copy() {
 		return new SynchronizedMultiMap<K, V>(delegate.copy()) ;
 	}
-	@Override public synchronized ScalarSet<V> values(K key) {
+	@Override public synchronized Set<V> values(K key) {
 		return wrap(delegate.values(key)) ;
 	}
 

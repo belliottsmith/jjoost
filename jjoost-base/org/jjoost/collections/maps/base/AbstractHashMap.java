@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.jjoost.collections.ArbitraryMap;
-import org.jjoost.collections.ArbitrarySet;
+import org.jjoost.collections.AnyMap;
+import org.jjoost.collections.AnySet;
 import org.jjoost.collections.base.HashNode ;
 import org.jjoost.collections.base.HashNodeEquality ;
 import org.jjoost.collections.base.HashStore ;
@@ -21,7 +21,7 @@ import org.jjoost.util.Hasher;
 import org.jjoost.util.Iters ;
 import org.jjoost.util.Rehasher;
 
-public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K, V>> implements ArbitraryMap<K, V> {
+public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K, V>> implements AnyMap<K, V> {
 
 	protected static abstract class EntryEquality<K, V, N> implements HashNodeEquality<Entry<K, V>, N>, Equality<N> {
 		private static final long serialVersionUID = -4970889935020537472L ;
@@ -174,11 +174,11 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 	}
 	
 	@Override
-	public ArbitraryMap<V, K> inverse() {
+	public AnyMap<V, K> inverse() {
 		throw new UnsupportedOperationException() ;
 	}
 	
-	protected abstract class AbstractKeyValueSet extends AbstractIterable<V> implements ArbitrarySet<V> {
+	protected abstract class AbstractKeyValueSet extends AbstractIterable<V> implements AnySet<V> {
 		
 		private static final long serialVersionUID = 1461826147890179114L ;
 		
@@ -222,11 +222,6 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		@Override
 		public Boolean apply(V v) {
 			return store.contains(hash, entry(key, v), entryEq) ;
-		}
-		
-		@Override
-		public Iterable<V> all() {
-			return this ;
 		}
 		
 		@Override
@@ -331,7 +326,7 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		
 	}
 	
-	protected abstract class AbstractKeySet extends AbstractIterable<K> implements ArbitrarySet<K> {
+	protected abstract class AbstractKeySet extends AbstractIterable<K> implements AnySet<K> {
 		
 		private static final long serialVersionUID = 1461826147890179114L ;
 
@@ -385,16 +380,6 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 			return contains(v) ? Boolean.TRUE : Boolean.FALSE ;
 		}
 
-		@Override
-		public Iterable<K> all() {
-			return new AbstractIterable<K>() {
-				@Override
-				public Iterator<K> iterator() {
-					return store.all(keyProj(), keyEq, keyProj()) ;
-				}
-			} ;
-		}
-		
 		@Override
 		public Iterable<K> all(final K key) {
 			final int hash = hash(key) ;
@@ -478,7 +463,7 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		
 	}
 	
-	protected abstract class AbstractEntrySet extends AbstractIterable<Entry<K, V>> implements ArbitrarySet<Entry<K, V>> {
+	protected abstract class AbstractEntrySet extends AbstractIterable<Entry<K, V>> implements AnySet<Entry<K, V>> {
 		
 		private static final long serialVersionUID = 4037233101289518536L ;
 
@@ -534,16 +519,6 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 			return contains(v) ? Boolean.TRUE : Boolean.FALSE ;
 		}
 		
-		@Override
-		public Iterable<Entry<K, V>> all() {
-			return new AbstractIterable<Entry<K,V>>() {
-				@Override
-				public Iterator<Entry<K, V>> iterator() {
-					return store.all(keyProj(), keyEq, entryProj()) ;
-				}
-			} ;
-		}
-
 		@Override
 		public Iterable<Entry<K, V>> all(final Entry<K, V> entry) {
 			final int hash = hash(entry.getKey()) ;

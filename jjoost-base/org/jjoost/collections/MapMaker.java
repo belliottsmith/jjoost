@@ -35,7 +35,7 @@ public class MapMaker {
 	
 	public static abstract class AbstractMapMaker<K, V> {
 		
-		public abstract ScalarMap<K, V> newScalarMap() ;
+		public abstract Map<K, V> newScalarMap() ;
 		public abstract ListMap<K, V> newListMap(ListMapNesting<V> nesting) ;
 		public abstract MultiMap<K, V> newMultiMap(MultiMapNesting<V> nesting) ;
 		protected abstract AbstractMapMaker<K, V> copy() ;
@@ -46,7 +46,7 @@ public class MapMaker {
 		public MultiMap<K, V> newMultiMap() {
 			return newMultiMap(MultiMapNesting.<V>inline()) ;			
 		}
-		public Factory<ScalarMap<K, V>> newScalarMapFactory() {
+		public Factory<Map<K, V>> newScalarMapFactory() {
 			return new ScalarMapFactory<K, V>(this) ;
 		}
 		public Factory<ListMap<K, V>> newListMapFactory(ListMapNesting<V> nesting) {
@@ -94,7 +94,7 @@ public class MapMaker {
 		public HashMapMaker<K, V> loadFactor(float loadFactor) { this.loadFactor = loadFactor ; return this ; }
 		public HashMapMaker<K, V> defaultsTo(Factory<V> factory) { this.factory = factory ; this.factoryFunction = null ; return this ; }
 		public HashMapMaker<K, V> defaultsTo(Function<K, V> function) { this.factoryFunction = function ; this.factory = null ; return this ; }
-		public ScalarMap<K, V> newScalarMap() {
+		public Map<K, V> newScalarMap() {
 			switch(type.type()) {
 			case SERIAL:
 				return new SerialScalarHashMap<K, V>(
@@ -130,7 +130,7 @@ public class MapMaker {
 			if (factory != null || factoryFunction != null)
 				throw new IllegalArgumentException("Default values cannot be used in MultiMap or ListMap") ;
 			switch (nesting.type()) {
-			case MultiMapNesting.Type.INLINE:
+			case INLINE:
 				switch(type.type()) {
 				case SERIAL:
 					return new SerialInlineMultiHashMap<K, V>(
@@ -161,18 +161,22 @@ public class MapMaker {
 				default:
 					throw new UnsupportedOperationException() ;
 				}			
-			case MultiMapNesting.Type.NESTED:
-				// TODO : NestedSetMultiMap only really supports SERIAL and SYNCHRONIZED; 
-				// need a new threadsafe version
-				return new NestedSetMultiMap<K, V>(
-					MapMaker.<K, ScalarSet<V>>hash()
-						.initialCapacity(initialCapacity)
-						.loadFactor(loadFactor)
-						.hasher(keyHasher)
-						.keyEq(keyEquality)
-						.rehasher(rehasher)
-						.type(type)
-						.newScalarMap(), nesting.factory()) ;
+			case NESTED:
+				switch (type.type()) {
+				case SERIAL: case LINKED_SERIAL: case LINKED_SYNCHRONIZED: case SYNCHRONIZED:
+					return new NestedSetMultiMap<K, V>(
+							MapMaker.<K, Set<V>>hash()
+								.initialCapacity(initialCapacity)
+								.loadFactor(loadFactor)
+								.hasher(keyHasher)
+								.keyEq(keyEquality)
+								.rehasher(rehasher)
+								.type(type)
+								.newScalarMap(), nesting.factory()) ;
+				default:
+					// TODO : NestedSetMultiMap only really supports SERIAL and SYNCHRONIZED; need a new threadsafe version
+					throw new UnsupportedOperationException("NestedSetMultiMap is not concurrency safe, and there is not yet an equivalent class providing this functionality. You could try an Inline multi map instead.") ;
+				}
 			default:
 					throw new UnsupportedOperationException() ;
 			}
@@ -181,13 +185,14 @@ public class MapMaker {
 			if (factory != null || factoryFunction != null)
 				throw new IllegalArgumentException("Default values cannot be used in MultiMap or ListMap") ;
 			switch (nesting.type()) {
-			case ListMapNesting.Type.INLINE:
+			case INLINE:
 				switch(type.type()) {
 				case SERIAL:
 					return new SerialInlineListHashMap<K, V>(
 						initialCapacity, loadFactor, keyHasher, 
 						rehasher(),  keyEquality, valEquality) ;
 				case SYNCHRONIZED:
+					// TODO : SynchronizedHashStore class so that we need fewer wrapping classes
 					return new SynchronizedListMap<K, V>(
 						new SerialInlineListHashMap<K, V>(
 							initialCapacity, loadFactor, keyHasher, 
@@ -212,15 +217,21 @@ public class MapMaker {
 				default:
 					throw new UnsupportedOperationException() ;
 				}			
-			case ListMapNesting.Type.NESTED:
-				return new NestedSetListMap<K, V>(MapMaker.<K, MultiSet<V>>hash()
-					.initialCapacity(initialCapacity)
-					.loadFactor(loadFactor)
-					.hasher(keyHasher)
-					.keyEq(keyEquality)
-					.rehasher(rehasher)
-					.type(type)
-					.newScalarMap(), nesting.factory()) ;
+			case NESTED:
+				switch (type.type()) {
+				case SERIAL: case LINKED_SERIAL: case LINKED_SYNCHRONIZED: case SYNCHRONIZED:
+					return new NestedSetListMap<K, V>(MapMaker.<K, MultiSet<V>>hash()
+						.initialCapacity(initialCapacity)
+						.loadFactor(loadFactor)
+						.hasher(keyHasher)
+						.keyEq(keyEquality)
+						.rehasher(rehasher)
+						.type(type)
+						.newScalarMap(), nesting.factory()) ;
+				default:
+					// TODO : NestedSetListMap only really supports SERIAL and SYNCHRONIZED; need a new threadsafe version
+					throw new UnsupportedOperationException("NestedSetListMap is not concurrency safe, and there is not yet an equivalent class providing this functionality. You could try an Inline list map instead.") ;
+				}
 			default:
 				throw new UnsupportedOperationException() ;
 			}
@@ -257,14 +268,14 @@ public class MapMaker {
 		}
 	}
 	
-	private static final class ScalarMapFactory<K, V> implements Factory<ScalarMap<K, V>> {
+	private static final class ScalarMapFactory<K, V> implements Factory<Map<K, V>> {
 		private static final long serialVersionUID = 475702452749567764L;
 		private final AbstractMapMaker<K, V> maker ;
 		public ScalarMapFactory(AbstractMapMaker<K, V> maker) {
 			this.maker = maker.copy() ;
 		}
 		@Override
-		public ScalarMap<K, V> create() {
+		public Map<K, V> create() {
 			return maker.newScalarMap() ;
 		}
 	}

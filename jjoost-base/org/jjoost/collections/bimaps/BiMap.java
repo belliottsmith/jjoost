@@ -2,47 +2,47 @@ package org.jjoost.collections.bimaps;
 
 import java.util.Map.Entry ;
 
-import org.jjoost.collections.ArbitraryMap ;
-import org.jjoost.collections.ArbitrarySet ;
+import org.jjoost.collections.AnyMap ;
+import org.jjoost.collections.AnySet ;
 
-public class BiMap<K, V> extends AbstractBiMap<K, V, ArbitraryMap<K, V>, ArbitraryMap<V, K>> {
+public class BiMap<K, V> extends AbstractBiMap<K, V, AnyMap<K, V>, AnyMap<V, K>> {
 
 	private static final long serialVersionUID = -3696446893675439338L ;
 
 	private final BiMap<V, K> partner ;
-	@Override protected final AbstractBiMap<V, K, ArbitraryMap<V, K>, ArbitraryMap<K, V>> partner() {
+	@Override protected final AbstractBiMap<V, K, AnyMap<V, K>, AnyMap<K, V>> partner() {
 		return partner ;
 	}
 
-	public BiMap(ArbitraryMap<K, V> forwards, ArbitraryMap<V, K> back) {
+	public BiMap(AnyMap<K, V> forwards, AnyMap<V, K> back) {
 		super(forwards) ;
 		this.partner = new BiMap<V, K>(back, this) ;
 	}
 
-	private BiMap(ArbitraryMap<K, V> forwards, BiMap<V, K> partner) {
+	private BiMap(AnyMap<K, V> forwards, BiMap<V, K> partner) {
 		super(forwards) ;
 		this.partner = partner ;
 	}
 	
 	@Override
-	public ArbitraryMap<K, V> copy() {
-		final ArbitraryMap<K, V> fwds = map.copy() ;
-		final ArbitraryMap<V, K> back = partner().map.copy() ;		
+	public AnyMap<K, V> copy() {
+		final AnyMap<K, V> fwds = map.copy() ;
+		final AnyMap<V, K> back = partner().map.copy() ;		
 		return new BiMap<K, V>(fwds, back) ;
 	}
 
 	@Override
-	public ArbitrarySet<Entry<K, V>> entries() {
+	public AnySet<Entry<K, V>> entries() {
 		return map.entries() ;
 	}
 
 	@Override
-	public ArbitrarySet<K> keys() {
+	public AnySet<K> keys() {
 		return map.keys() ;
 	}
 	
 	@Override
-	public ArbitrarySet<V> values(K key) {
+	public AnySet<V> values(K key) {
 		return map.values(key) ;
 	}
 

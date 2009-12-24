@@ -13,7 +13,6 @@ public class LockFreeLinkedHashStore<N extends LockFreeLinkedHashStore.LockFreeL
 
 	private static final long serialVersionUID = 5364765360666482653L ;
 
-	@SuppressWarnings("restriction")
 	public static abstract class LockFreeLinkedHashNode<N extends LockFreeLinkedHashNode<N>> extends LockFreeHashNode<N> {
 		private static final long serialVersionUID = 2035712133283347382L;
 		protected N linkNextPtr ;

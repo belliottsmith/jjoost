@@ -2,24 +2,22 @@ package org.jjoost.collections.maps.wrappers;
 
 import java.util.Collection ;
 import java.util.Iterator ;
-import java.util.Map ;
-import java.util.Set ;
 
-import org.jjoost.collections.ScalarMap ;
+import org.jjoost.collections.Map ;
 import org.jjoost.collections.sets.wrappers.AdapterToJDKSet ;
 import org.jjoost.util.Iters ;
 import org.jjoost.util.Objects ;
 
-public class AdapterToJDKMap<K, V> implements Map<K, V> {
+public class AdapterToJDKMap<K, V> implements java.util.Map<K, V> {
 	
 	private final Class<K> keyClazz ;
 	private final Class<V> valueClazz ;
-	private final ScalarMap<K, V> map ;
-	private Set<K> keySet ;
-	private Set<Entry<K, V>> entrySet ;
+	private final Map<K, V> map ;
+	private java.util.Set<K> keySet ;
+	private java.util.Set<Entry<K, V>> entrySet ;
 	private Collection<V> valueCollection ;
 	
-	public AdapterToJDKMap(Class<K> keyClazz, Class<V> valueClazz, ScalarMap<K, V> map) {
+	public AdapterToJDKMap(Class<K> keyClazz, Class<V> valueClazz, Map<K, V> map) {
 		super() ;
 		this.keyClazz = keyClazz ;
 		this.valueClazz = valueClazz ;
@@ -40,7 +38,7 @@ public class AdapterToJDKMap<K, V> implements Map<K, V> {
 	}
 	@SuppressWarnings("unchecked")
 	@Override
-	public Set<java.util.Map.Entry<K, V>> entrySet() {
+	public java.util.Set<java.util.Map.Entry<K, V>> entrySet() {
 		if (entrySet == null)
 			entrySet = new AdapterToJDKSet<Entry<K, V>>((Class<Entry<K, V>>) (Class<?>) Entry.class, map.entries()) ;
 		return entrySet ;
@@ -54,7 +52,7 @@ public class AdapterToJDKMap<K, V> implements Map<K, V> {
 		return map.isEmpty() ;
 	}
 	@Override
-	public Set<K> keySet() {
+	public java.util.Set<K> keySet() {
 		if (keySet == null)
 			keySet = new AdapterToJDKSet<K>(keyClazz, map.keys()) ;
 		return keySet ;
@@ -64,8 +62,8 @@ public class AdapterToJDKMap<K, V> implements Map<K, V> {
 		return map.put(key, value) ;
 	}
 	@Override
-	public void putAll(Map<? extends K, ? extends V> m) {
-		for (Map.Entry<? extends K, ? extends V> e : m.entrySet())
+	public void putAll(java.util.Map<? extends K, ? extends V> m) {
+		for (Entry<? extends K, ? extends V> e : m.entrySet())
 			map.put(e.getKey(), e.getValue()) ;
 	}
 	@Override

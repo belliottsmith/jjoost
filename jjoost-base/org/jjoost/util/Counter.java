@@ -6,7 +6,7 @@ package org.jjoost.util;
  * @author b.elliottsmith
  */
 public interface Counter {
-
+	
 	public boolean add(int i) ;
 	public int get() ;
 	public Counter newInstance() ;

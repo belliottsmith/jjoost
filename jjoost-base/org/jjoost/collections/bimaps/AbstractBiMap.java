@@ -4,14 +4,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.jjoost.collections.ArbitraryMap;
+import org.jjoost.collections.AnyMap;
 
 // TODO : all methods returning iterators should be wrapped so that calls to the remove() methods can be trapped to prevent inconsistent state
 public abstract class AbstractBiMap<
 	K, V, 
-	M extends ArbitraryMap<K, V>, 
-	I extends ArbitraryMap<V, K>> 
-implements ArbitraryMap<K, V> {
+	M extends AnyMap<K, V>, 
+	I extends AnyMap<V, K>> 
+implements AnyMap<K, V> {
 	
 	private static final long serialVersionUID = 2790620014005060840L ;
 	
@@ -34,7 +34,7 @@ implements ArbitraryMap<K, V> {
 		throw new UnsupportedOperationException() ;
 	}
 	@Override
-	public ArbitraryMap<V, K> inverse() {
+	public AnyMap<V, K> inverse() {
 		return partner() ;
 	}
 	@Override

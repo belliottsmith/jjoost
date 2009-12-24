@@ -2,15 +2,13 @@ package org.jjoost.collections;
 
 public class MultiSetNesting<V> {
 
-	public static final class Type {
-		public static final int INLINE = 1 ;
-		public static final int COUNTING = 2 ;
-		public static final int NESTED = 3 ;
+	public static enum Type {
+		INLINE, COUNTING, NESTED ;
 	}
 	
-	public int type() { return type ; }
-	private final int type ;
-	public MultiSetNesting(int type) {
+	public Type type() { return type ; }
+	private final Type type ;
+	public MultiSetNesting(Type type) {
 		super();
 		this.type = type;
 	}

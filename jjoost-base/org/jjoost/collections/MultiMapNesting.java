@@ -6,16 +6,15 @@ import org.jjoost.util.Rehashers;
 
 public class MultiMapNesting<V> {
 
-	public static final class Type {
-		public static final int INLINE = 1 ;
-		public static final int NESTED = 2 ;
+	public static enum Type {
+		INLINE, NESTED ;
 	}
 	
-	public int type() { return type ; }
-	public Factory<ScalarSet<V>> factory() { return factory ; }
-	private final int type ;
-	private final Factory<ScalarSet<V>> factory ;
-	protected MultiMapNesting(Factory<ScalarSet<V>> factory, int type) {
+	public Type type() { return type ; }
+	public Factory<Set<V>> factory() { return factory ; }
+	private final Type type ;
+	private final Factory<Set<V>> factory ;
+	protected MultiMapNesting(Factory<Set<V>> factory, Type type) {
 		super();
 		this.factory = factory;
 		this.type = type ;
@@ -30,7 +29,7 @@ public class MultiMapNesting<V> {
 		return INLINE ;
 	}
 	
-	public static <V> MultiMapNesting<V> nested(Factory<ScalarSet<V>> factory) {
+	public static <V> MultiMapNesting<V> nested(Factory<Set<V>> factory) {
 		if (factory == null)
 			throw new IllegalArgumentException() ;
 		return new MultiMapNesting<V>(factory, Type.NESTED) ;

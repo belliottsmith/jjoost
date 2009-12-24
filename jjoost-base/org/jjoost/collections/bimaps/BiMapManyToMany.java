@@ -4,7 +4,7 @@ import java.util.Map.Entry ;
 
 import org.jjoost.collections.MultiSet ;
 import org.jjoost.collections.MultiMap ;
-import org.jjoost.collections.ScalarSet ;
+import org.jjoost.collections.Set ;
 
 public class BiMapManyToMany<K, V> extends AbstractBiMap<K, V, MultiMap<K, V>, MultiMap<V, K>> implements MultiMap<K, V> {
 
@@ -37,7 +37,7 @@ public class BiMapManyToMany<K, V> extends AbstractBiMap<K, V, MultiMap<K, V>, M
 	}
 	
 	@Override
-	public ScalarSet<Entry<K, V>> entries() {
+	public Set<Entry<K, V>> entries() {
 		return map.entries() ;
 	}
 
@@ -52,7 +52,7 @@ public class BiMapManyToMany<K, V> extends AbstractBiMap<K, V, MultiMap<K, V>, M
 	}
 
 	@Override
-	public ScalarSet<V> values(K key) {
+	public Set<V> values(K key) {
 		return map.values(key) ;
 	}
 	

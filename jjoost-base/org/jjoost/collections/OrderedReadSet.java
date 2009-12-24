@@ -3,7 +3,7 @@ package org.jjoost.collections;
 import org.jjoost.util.FilterPartialOrder;
 import org.jjoost.util.tuples.Pair;
 
-public interface OrderedReadSet<V> extends ArbitraryReadSet<V> {
+public interface OrderedReadSet<V> extends AnyReadSet<V> {
 
 	public V first() ;
 	public V last() ;

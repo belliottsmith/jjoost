@@ -2,7 +2,7 @@ package org.jjoost.collections;
 
 import org.jjoost.util.FilterPartialOrder;
 
-public interface OrderedSet<V> extends ArbitrarySet<V>, OrderedReadSet<V> {
+public interface OrderedSet<V> extends AnySet<V>, OrderedReadSet<V> {
 
 	public int remove(FilterPartialOrder<V> filter) ;
 	public OrderedSet<V> removeAndReturn(FilterPartialOrder<V> filter) ;

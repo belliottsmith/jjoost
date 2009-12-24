@@ -4,16 +4,15 @@ import org.jjoost.util.Factory;
 
 public class ListMapNesting<V> {
 
-	public static final class Type {
-		public static final int INLINE = 1 ;
-		public static final int NESTED = 2 ;
+	public static enum Type {
+		INLINE , NESTED ;
 	}
 	
-	public int type() { return type ; }
+	public Type type() { return type ; }
 	public Factory<MultiSet<V>> factory() { return factory ; }
-	private final int type ;
+	private final Type type ;
 	private final Factory<MultiSet<V>> factory ;
-	protected ListMapNesting(Factory<MultiSet<V>> factory, int type) {
+	protected ListMapNesting(Factory<MultiSet<V>> factory, Type type) {
 		super();
 		this.factory = factory ;
 		this.type = type ;

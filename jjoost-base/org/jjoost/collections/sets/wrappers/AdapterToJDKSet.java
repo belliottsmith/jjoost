@@ -2,17 +2,16 @@ package org.jjoost.collections.sets.wrappers;
 
 import java.util.Collection ;
 import java.util.Iterator ;
-import java.util.Set ;
 
-import org.jjoost.collections.ScalarSet ;
+import org.jjoost.collections.Set ;
 import org.jjoost.util.Iters ;
 
-public class AdapterToJDKSet<V> implements Set<V> {
+public class AdapterToJDKSet<V> implements java.util.Set<V> {
 
 	private final Class<V> clazz ;
-	private final ScalarSet<V> set ;
+	private final Set<V> set ;
 	
-	public AdapterToJDKSet(Class<V> clazz, ScalarSet<V> set) {
+	public AdapterToJDKSet(Class<V> clazz, Set<V> set) {
 		super() ;
 		this.clazz = clazz ;
 		this.set = set ;

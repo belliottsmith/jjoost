@@ -3,7 +3,7 @@ package org.jjoost.collections.sets.base;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jjoost.collections.ArbitrarySet;
+import org.jjoost.collections.AnySet;
 import org.jjoost.collections.base.HashNode ;
 import org.jjoost.collections.base.HashNodeEquality ;
 import org.jjoost.collections.base.HashNodeFactory ;
@@ -12,7 +12,6 @@ import org.jjoost.collections.base.LockFreeHashStore.LockFreeHashNode ;
 import org.jjoost.collections.base.LockFreeLinkedHashStore.LockFreeLinkedHashNode ;
 import org.jjoost.collections.base.SerialHashStore.SerialHashNode ;
 import org.jjoost.collections.base.SerialLinkedHashStore.SerialLinkedHashNode ;
-import org.jjoost.collections.iters.AbstractIterable ;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Function ;
 import org.jjoost.util.Functions;
@@ -20,7 +19,7 @@ import org.jjoost.util.Hasher;
 import org.jjoost.util.Rehasher;
 import org.jjoost.util.tuples.Value;
 
-public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> implements ArbitrarySet<V> {
+public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> implements AnySet<V> {
 
 	private static final long serialVersionUID = 3187373892419456381L;
 	
@@ -121,15 +120,6 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> imple
 	@Override
 	public boolean isEmpty() {
 		return store.isEmpty() ;
-	}
-	@Override
-	public Iterable<V> all() {
-		return new AbstractIterable<V>() {
-			@Override
-			public Iterator<V> iterator() {
-				return store.all(valProj(), valEq, valProj()) ;
-			}
-		} ;
 	}
 	@Override
 	public Iterable<V> all(final V val) {

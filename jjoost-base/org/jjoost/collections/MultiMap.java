@@ -13,15 +13,15 @@ import org.jjoost.util.Function;
  * @param <K>
  * @param <V>
  */
-public interface MultiMap<K, V> extends ArbitraryMap<K, V>, Function<K, Iterable<V>> {
+public interface MultiMap<K, V> extends AnyMap<K, V>, Function<K, Iterable<V>> {
 
 	@Override public V put(K key, V val) ;
 	@Override public V putIfAbsent(K key, V val) ;
 
-	@Override public ScalarSet<V> values(K key) ;
+	@Override public Set<V> values(K key) ;
 
 	@Override public MultiSet<K> keys() ;
-	@Override public ScalarSet<Entry<K, V>> entries() ;
+	@Override public Set<Entry<K, V>> entries() ;
 	
 	@Override public MultiMap<K, V> copy() ;
 

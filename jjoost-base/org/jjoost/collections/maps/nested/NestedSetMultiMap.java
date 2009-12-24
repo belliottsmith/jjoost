@@ -3,22 +3,22 @@ package org.jjoost.collections.maps.nested;
 import java.util.Map.Entry;
 
 import org.jjoost.collections.MultiMap;
-import org.jjoost.collections.ScalarMap;
-import org.jjoost.collections.ScalarSet;
+import org.jjoost.collections.Map;
+import org.jjoost.collections.Set;
 import org.jjoost.collections.maps.ImmutableMapEntry ;
 import org.jjoost.util.Factory;
 
-public class NestedSetMultiMap<K, V> extends NestedSetMap<K, V, ScalarSet<V>> implements MultiMap<K, V> {
+public class NestedSetMultiMap<K, V> extends NestedSetMap<K, V, Set<V>> implements MultiMap<K, V> {
 
 	private static final long serialVersionUID = -490119082143181821L;
 
-	public NestedSetMultiMap(ScalarMap<K, ScalarSet<V>> map, Factory<ScalarSet<V>> factory) {
+	public NestedSetMultiMap(Map<K, Set<V>> map, Factory<Set<V>> factory) {
 		super(map, factory);
 	}
 
-	protected ScalarSet<Entry<K, V>> entrySet ;	
+	protected Set<Entry<K, V>> entrySet ;	
 	@Override
-	public ScalarSet<Entry<K, V>> entries() {
+	public Set<Entry<K, V>> entries() {
 		if (entrySet == null) {
 			entrySet = new EntrySet() ;
 		}
@@ -26,8 +26,8 @@ public class NestedSetMultiMap<K, V> extends NestedSetMap<K, V, ScalarSet<V>> im
 	}
 	@Override
 	public MultiMap<K, V> copy() {
-		final ScalarMap<K, ScalarSet<V>> copy = map.copy() ;
-		for (Entry<K, ScalarSet<V>> entry : copy.entries())
+		final Map<K, Set<V>> copy = map.copy() ;
+		for (Entry<K, Set<V>> entry : copy.entries())
 			entry.setValue(entry.getValue().copy()) ;
 		return new NestedSetMultiMap<K, V>(copy, factory) ;
 	}
@@ -37,7 +37,7 @@ public class NestedSetMultiMap<K, V> extends NestedSetMap<K, V, ScalarSet<V>> im
 		return values(v) ;
 	}
 	
-	protected final class EntrySet extends AbstractEntrySet implements ScalarSet<Entry<K, V>> {
+	protected final class EntrySet extends AbstractEntrySet implements Set<Entry<K, V>> {
 
 		private static final long serialVersionUID = 8122351713234623044L;
 
@@ -49,7 +49,7 @@ public class NestedSetMultiMap<K, V> extends NestedSetMap<K, V, ScalarSet<V>> im
 
 		@Override
 		public Iterable<Entry<K, V>> unique() {
-			return all() ;
+			return this ;
 		}
 		
 		@Override
@@ -71,7 +71,7 @@ public class NestedSetMultiMap<K, V> extends NestedSetMap<K, V, ScalarSet<V>> im
 		public int size() {
 			return totalCount() ;
 		}
-		public ScalarSet<Entry<K, V>> copy() {
+		public Set<Entry<K, V>> copy() {
 			throw new UnsupportedOperationException() ;
 		}
 		

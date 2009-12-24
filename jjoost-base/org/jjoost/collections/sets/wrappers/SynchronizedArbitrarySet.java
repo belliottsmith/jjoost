@@ -3,10 +3,10 @@ package org.jjoost.collections.sets.wrappers;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jjoost.collections.ArbitrarySet;
+import org.jjoost.collections.AnySet;
 import org.jjoost.collections.base.SynchronizedDelegator ;
 
-public class SynchronizedArbitrarySet<V, S extends ArbitrarySet<V>> extends SynchronizedDelegator implements ArbitrarySet<V> {
+public class SynchronizedArbitrarySet<V, S extends AnySet<V>> extends SynchronizedDelegator implements AnySet<V> {
 	
 	private static final long serialVersionUID = -8766973234275059454L;
 	
@@ -15,9 +15,6 @@ public class SynchronizedArbitrarySet<V, S extends ArbitrarySet<V>> extends Sync
 		this.delegate = delegate;
 	}
 	
-	@Override public synchronized Iterable<V> all() {
-		return wrap(delegate.all()) ;
-	}
 	@Override public synchronized Iterable<V> all(V value) {
 		return wrap(delegate.all(value)) ;
 	}
@@ -33,8 +30,8 @@ public class SynchronizedArbitrarySet<V, S extends ArbitrarySet<V>> extends Sync
 	@Override public synchronized boolean contains(V value) {
 		return delegate.contains(value);
 	}
-	@Override public synchronized ArbitrarySet<V> copy() {
-		return new SynchronizedArbitrarySet<V, ArbitrarySet<V>>(delegate.copy()) ;
+	@Override public synchronized AnySet<V> copy() {
+		return new SynchronizedArbitrarySet<V, AnySet<V>>(delegate.copy()) ;
 	}
 	@Override public synchronized int count(V value) {
 		return delegate.count(value);

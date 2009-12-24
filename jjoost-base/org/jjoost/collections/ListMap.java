@@ -13,7 +13,7 @@ import org.jjoost.util.Function;
  * @param <K>
  * @param <V>
  */
-public interface ListMap<K, V> extends ArbitraryMap<K, V>, Function<K, Iterable<V>> {
+public interface ListMap<K, V> extends AnyMap<K, V>, Function<K, Iterable<V>> {
 
 	@Override public V put(K key, V val) ;
 	@Override public V putIfAbsent(K key, V val) ;

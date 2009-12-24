@@ -5,7 +5,7 @@ import java.util.Iterator ;
 import java.util.List ;
 import java.util.Map.Entry ;
 
-import org.jjoost.collections.ArbitraryMap ;
+import org.jjoost.collections.AnyMap ;
 import org.jjoost.collections.OrderedMap ;
 import org.jjoost.collections.OrderedSet ;
 import org.jjoost.collections.base.OrderedStore ;
@@ -529,11 +529,6 @@ public abstract class AbstractOrderedMap<K, V, N extends Entry<K, V>, S extends 
 		}
 
 		@Override
-		public Iterable<K> all() {
-			return all(true) ;
-		}
-
-		@Override
 		public Iterable<K> all(K value) {
 			return all(value, true) ;
 		}
@@ -803,7 +798,7 @@ public abstract class AbstractOrderedMap<K, V, N extends Entry<K, V>, S extends 
 		}
 
 		@Override
-		public ArbitraryMap<V, K> inverse() {
+		public AnyMap<V, K> inverse() {
 			throw new UnsupportedOperationException() ;
 		}
 
@@ -1146,11 +1141,6 @@ public abstract class AbstractOrderedMap<K, V, N extends Entry<K, V>, S extends 
 		}
 
 		@Override
-		public Iterable<Entry<K, V>> all() {
-			return all(true) ;
-		}
-
-		@Override
 		public Iterable<Entry<K, V>> all(final Entry<K, V> value) {
 			return all(value, true) ;
 		}
@@ -1371,11 +1361,6 @@ public abstract class AbstractOrderedMap<K, V, N extends Entry<K, V>, S extends 
 					return store.<K>iterator(asc, keyProj()) ;				
 				}
 			} ;
-		}
-		
-		@Override
-		public Iterable<K> all() {
-			return all(true) ;
 		}
 		
 		@Override

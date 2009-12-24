@@ -2,35 +2,35 @@ package org.jjoost.collections.bimaps;
 
 import java.util.Map.Entry ;
 
-import org.jjoost.collections.ArbitrarySet ;
+import org.jjoost.collections.AnySet ;
 import org.jjoost.collections.MultiMap ;
-import org.jjoost.collections.ScalarMap ;
-import org.jjoost.collections.ScalarSet ;
+import org.jjoost.collections.Map ;
+import org.jjoost.collections.Set ;
 import org.jjoost.util.Factory ;
 import org.jjoost.util.Function ;
 
-public class BiMapOneToMany<K, V> extends AbstractBiMap<K, V, ScalarMap<K, V>, MultiMap<V, K>> implements ScalarMap<K, V> {
+public class BiMapOneToMany<K, V> extends AbstractBiMap<K, V, Map<K, V>, MultiMap<V, K>> implements Map<K, V> {
 
 	private static final long serialVersionUID = -3696446893675439338L ;
 
 	private final BiMapManyToOne<V, K> partner ;
-	@Override protected final AbstractBiMap<V, K, MultiMap<V, K>, ScalarMap<K, V>> partner() {
+	@Override protected final AbstractBiMap<V, K, MultiMap<V, K>, Map<K, V>> partner() {
 		return partner ;
 	}
 
-	public BiMapOneToMany(ScalarMap<K, V> forwards, MultiMap<V, K> back) {
+	public BiMapOneToMany(Map<K, V> forwards, MultiMap<V, K> back) {
 		super(forwards) ;
 		this.partner = new BiMapManyToOne<V, K>(back, this) ;
 	}
 
-	private BiMapOneToMany(ScalarMap<K, V> forwards, BiMapManyToOne<V, K> partner) {
+	private BiMapOneToMany(Map<K, V> forwards, BiMapManyToOne<V, K> partner) {
 		super(forwards) ;
 		this.partner = partner ;
 	}
 	
 	@Override
-	public ScalarMap<K, V> copy() {
-		final ScalarMap<K, V> fwds = map.copy() ;
+	public Map<K, V> copy() {
+		final Map<K, V> fwds = map.copy() ;
 		final MultiMap<V, K> back = partner().map.copy() ;		
 		return new BiMapOneToMany<K, V>(fwds, back) ;
 	}
@@ -40,12 +40,12 @@ public class BiMapOneToMany<K, V> extends AbstractBiMap<K, V, ScalarMap<K, V>, M
 	}
 	
 	@Override
-	public ScalarSet<Entry<K, V>> entries() {
+	public Set<Entry<K, V>> entries() {
 		return map.entries() ;
 	}
 
 	@Override
-	public ScalarSet<K> keys() {
+	public Set<K> keys() {
 		return map.keys() ;
 	}
 
@@ -104,7 +104,7 @@ public class BiMapOneToMany<K, V> extends AbstractBiMap<K, V, ScalarMap<K, V>, M
 	}
 	
 	@Override
-	public ArbitrarySet<V> values(K key) {
+	public AnySet<V> values(K key) {
 		return map.values(key) ;
 	}
 	

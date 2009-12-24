@@ -4,12 +4,11 @@ import java.util.ArrayList ;
 import java.util.Collections ;
 import java.util.Iterator ;
 import java.util.List ;
-import java.util.Map ;
 import java.util.Map.Entry ;
 
-import org.jjoost.collections.ArbitraryMap ;
-import org.jjoost.collections.ScalarMap ;
-import org.jjoost.collections.ScalarSet ;
+import org.jjoost.collections.AnyMap ;
+import org.jjoost.collections.Map ;
+import org.jjoost.collections.Set ;
 import org.jjoost.collections.iters.EmptyIterator ;
 import org.jjoost.collections.iters.UniformIterator ;
 import org.jjoost.collections.lists.UniformList ;
@@ -19,21 +18,21 @@ import org.jjoost.util.Factory ;
 import org.jjoost.util.Function ;
 
 // TODO : this class' methods currently assume keys/values stored in it are non null, which is an invalid assumption
-public class AdapterFromJDKMap<K, V> implements ScalarMap<K, V> {
+public class AdapterFromJDKMap<K, V> implements Map<K, V> {
 	
 	private static final long serialVersionUID = -5498331996410891451L ;
 	
-	private final Map<K, V> map ;
-	private ScalarSet<Entry<K, V>> entrySet ;
-	private ScalarSet<K> keySet ;
+	private final java.util.Map<K, V> map ;
+	private Set<Entry<K, V>> entrySet ;
+	private Set<K> keySet ;
 	
-	public AdapterFromJDKMap(Map<K, V> map) {
+	public AdapterFromJDKMap(java.util.Map<K, V> map) {
 		super() ;
 		this.map = map ;
 	}
 	
 	@Override
-	public ScalarMap<K, V> copy() {
+	public Map<K, V> copy() {
 		throw new UnsupportedOperationException() ;
 	}
 	@Override
@@ -99,17 +98,17 @@ public class AdapterFromJDKMap<K, V> implements ScalarMap<K, V> {
 		return vals.iterator() ;
 	}
 	@Override
-	public ScalarSet<Entry<K, V>> entries() {
+	public Set<Entry<K, V>> entries() {
 		if (entrySet == null)
 			entrySet = new AdapterFromJDKSet<Entry<K, V>>(map.entrySet()) ;
 		return entrySet ;
 	}
 	@Override
-	public ArbitraryMap<V, K> inverse() {
+	public AnyMap<V, K> inverse() {
 		throw new UnsupportedOperationException() ;
 	}
 	@Override
-	public ScalarSet<K> keys() {
+	public Set<K> keys() {
 		if (keySet == null)
 			keySet = new AdapterFromJDKSet<K>(map.keySet()) ;
 		return keySet ;
@@ -218,11 +217,11 @@ public class AdapterFromJDKMap<K, V> implements ScalarMap<K, V> {
 		return map.values() ;
 	}
 	@Override
-	public ScalarSet<V> values(K key) {
+	public Set<V> values(K key) {
 		return new KeyValueSet(key) ;
 	}
 	
-	private final class KeyValueSet implements ScalarSet<V> {
+	private final class KeyValueSet implements Set<V> {
 		private static final long serialVersionUID = 6651319386421757315L ;
 		final K key ;
 		public KeyValueSet(K key) {
@@ -301,10 +300,6 @@ public class AdapterFromJDKMap<K, V> implements ScalarMap<K, V> {
 		public void shrink() {
 		}
 		@Override
-		public Iterable<V> all() {
-			return this ;
-		}
-		@Override
 		public Iterable<V> all(V value) {
 			final V val = map.get(key) ;
 			if (val == null) {
@@ -359,7 +354,7 @@ public class AdapterFromJDKMap<K, V> implements ScalarMap<K, V> {
 			return totalCount() ;
 		}
 		@Override
-		public ScalarSet<V> copy() {
+		public Set<V> copy() {
 			throw new UnsupportedOperationException() ;
 		}
 		@Override

@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.List ;
 import java.util.NoSuchElementException;
 
-import org.jjoost.collections.ArbitrarySet ;
+import org.jjoost.collections.AnySet ;
 import org.jjoost.collections.sets.serial.MultiArraySet ;
 import org.jjoost.util.Equality ;
 import org.jjoost.util.Function;
@@ -595,7 +595,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	private class UniqueIterator<NCmp, NCmp2, V> extends GeneralIterator<NCmp2, V> {
 		
 		final Function<? super N, ? extends NCmp> uniquenessEqualityProj ;
-		final ArbitrarySet<NCmp> seen ;
+		final AnySet<NCmp> seen ;
 		
 		int nextHash = - 1 ;
 		

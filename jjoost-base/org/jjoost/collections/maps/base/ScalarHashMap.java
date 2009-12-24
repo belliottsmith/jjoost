@@ -2,8 +2,8 @@ package org.jjoost.collections.maps.base;
 
 import java.util.Map.Entry;
 
-import org.jjoost.collections.ScalarMap;
-import org.jjoost.collections.ScalarSet ;
+import org.jjoost.collections.Map;
+import org.jjoost.collections.Set ;
 import org.jjoost.collections.base.HashNode ;
 import org.jjoost.collections.base.HashNodeFactory ;
 import org.jjoost.collections.base.HashStore ;
@@ -13,7 +13,7 @@ import org.jjoost.util.Function;
 import org.jjoost.util.Hasher;
 import org.jjoost.util.Rehasher;
 
-public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends AbstractHashMap<K, V, N> implements ScalarMap<K, V> {
+public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends AbstractHashMap<K, V, N> implements Map<K, V> {
 
 	protected ScalarHashMap(
 			Hasher<? super K> keyHasher, Rehasher rehasher, 
@@ -25,21 +25,21 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 	
 	private static final long serialVersionUID = -6385620376018172675L;
 
-	private ScalarSet<Entry<K, V>> entrySet ;
-	private ScalarSet<K> keySet ;
+	private Set<Entry<K, V>> entrySet ;
+	private Set<K> keySet ;
 	
 	@Override
-	public ScalarSet<Entry<K, V>> entries() {
+	public Set<Entry<K, V>> entries() {
 		// don't care if we create multiple of these with multiple threads - eventually all but one of them will disappear and don't want to synchronize on every call
-		ScalarSet<Entry<K, V>> r = entrySet ;
+		Set<Entry<K, V>> r = entrySet ;
 		if (r == null)
 			entrySet = r = new EntrySet() ;
 		return r ;
 	}
 	@Override
-	public ScalarSet<K> keys() {
+	public Set<K> keys() {
 		// don't care if we create multiple of these with multiple threads - eventually all but one of them will disappear and don't want to synchronize on every call
-		ScalarSet<K> r = keySet ;
+		Set<K> r = keySet ;
 		if (r == null) {
 			keySet = r = new KeySet() ;
 		}
@@ -79,7 +79,7 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 	}
 
 	@Override
-	public ScalarSet<V> values(K key) {
+	public Set<V> values(K key) {
 		return new KeyValueSet(key) ;
 	}	
 
@@ -119,7 +119,7 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 		return totalCount() ;
 	}
 	
-	final class KeyValueSet extends AbstractKeyValueSet implements ScalarSet<V> {
+	final class KeyValueSet extends AbstractKeyValueSet implements Set<V> {
 		private static final long serialVersionUID = 2741936401896784235L;
 		public KeyValueSet(K key) {
 			super(key) ;
@@ -133,12 +133,12 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 			return totalCount() ;
 		}
 		@Override
-		public ScalarSet<V> copy() {
+		public Set<V> copy() {
 			throw new UnsupportedOperationException() ;
 		}
 	}
 	
-	final class KeySet extends AbstractKeySet implements ScalarSet<K> {
+	final class KeySet extends AbstractKeySet implements Set<K> {
 		private static final long serialVersionUID = 2741936401896784235L;
 		@Override
 		public K get(K key) {
@@ -149,12 +149,12 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 			return totalCount() ;
 		}
 		@Override
-		public ScalarSet<K> copy() {
+		public Set<K> copy() {
 			throw new UnsupportedOperationException() ;
 		}
 	}
 
-	final class EntrySet extends AbstractEntrySet implements ScalarSet<Entry<K, V>> {
+	final class EntrySet extends AbstractEntrySet implements Set<Entry<K, V>> {
 		private static final long serialVersionUID = 2741936401896784235L;
 		@Override
 		public Entry<K, V> put(Entry<K, V> entry) {
@@ -172,13 +172,13 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 		public int size() {
 			return totalCount() ;
 		}
-		public ScalarSet<Entry<K, V>> copy() {
+		public Set<Entry<K, V>> copy() {
 			throw new UnsupportedOperationException() ;
 		}
 	}
 
 	@Override
-	public ScalarMap<K, V> copy() {
+	public Map<K, V> copy() {
 		return new ScalarHashMap<K, V, N>(keyHasher, rehasher, keyEq, entryEq, nodeFactory, store.copy(nodeProj(), entryEq)) ;
 	}
 

@@ -20,7 +20,6 @@ import org.jjoost.util.concurrent.ThreadQueue ;
 
 import sun.misc.Unsafe;
 
-@SuppressWarnings("restriction")
 public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> implements HashStore<N> {
 
 	private static final long serialVersionUID = -1578733824843315344L ;

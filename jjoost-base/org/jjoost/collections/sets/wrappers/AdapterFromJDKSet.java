@@ -4,23 +4,22 @@ import java.util.ArrayList ;
 import java.util.Collections ;
 import java.util.Iterator ;
 import java.util.List ;
-import java.util.Set ;
 
-import org.jjoost.collections.ScalarSet ;
+import org.jjoost.collections.Set ;
 import org.jjoost.collections.lists.UniformList ;
 
-public class AdapterFromJDKSet<V> implements ScalarSet<V> {
+public class AdapterFromJDKSet<V> implements Set<V> {
 	
 	private static final long serialVersionUID = -4114089352987855164L ;
 	
-	private final Set<V> set ;
-	public AdapterFromJDKSet(Set<V> map) {
+	private final java.util.Set<V> set ;
+	public AdapterFromJDKSet(java.util.Set<V> map) {
 		super() ;
 		this.set = map ;
 	}
 	
 	@Override
-	public ScalarSet<V> copy() {
+	public Set<V> copy() {
 		throw new UnsupportedOperationException() ;
 	}
 	@Override
@@ -86,10 +85,6 @@ public class AdapterFromJDKSet<V> implements ScalarSet<V> {
 		if (set.contains(value))
 			return new UniformList<V>(value, 1) ;
 		return Collections.emptyList() ;
-	}
-	@Override
-	public Iterable<V> all() {
-		return this ;
 	}
 	@Override
 	public boolean contains(V value) {

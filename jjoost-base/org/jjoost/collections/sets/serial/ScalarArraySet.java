@@ -3,12 +3,12 @@ package org.jjoost.collections.sets.serial;
 import java.util.ArrayList ;
 import java.util.List ;
 
-import org.jjoost.collections.ScalarSet ;
+import org.jjoost.collections.Set ;
 import org.jjoost.collections.sets.base.AbstractArraySet ;
 import org.jjoost.util.Equality ;
 import org.jjoost.util.Iters ;
 
-public class ScalarArraySet<V> extends AbstractArraySet<V> implements ScalarSet<V> {
+public class ScalarArraySet<V> extends AbstractArraySet<V> implements Set<V> {
 
 	private static final long serialVersionUID = 7815149592942049121L ;
 
@@ -32,7 +32,7 @@ public class ScalarArraySet<V> extends AbstractArraySet<V> implements ScalarSet<
 	}
 
 	@Override
-	public ScalarSet<V> copy() {
+	public Set<V> copy() {
 		return new ScalarArraySet<V>(vals.clone(), count, valEq) ;
 	}
 

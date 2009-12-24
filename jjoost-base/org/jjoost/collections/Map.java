@@ -6,14 +6,14 @@ import org.jjoost.util.Factory;
 import org.jjoost.util.Function;
 
 /**
- * A ScalarMap permits at most one value for each possible key, much like the java.util.Map
+ * A Map permits at most one value for each possible key, much like the java.util.Map
  * 
  * @author b.elliottsmith
  *
  * @param <K>
  * @param <V>
  */
-public interface ScalarMap<K, V> extends ArbitraryMap<K, V>, Function<K, V> {
+public interface Map<K, V> extends AnyMap<K, V>, Function<K, V> {
 
 	/**
 	 * put the provided (key, value) pair into the map, returning the value previously associated with the key 
@@ -71,8 +71,8 @@ public interface ScalarMap<K, V> extends ArbitraryMap<K, V>, Function<K, V> {
 	 */
 	public int size() ;
 	
-	@Override public ScalarMap<K, V> copy() ;
-	@Override public ScalarSet<Entry<K, V>> entries() ;
-	@Override public ScalarSet<K> keys() ;
+	@Override public Map<K, V> copy() ;
+	@Override public Set<Entry<K, V>> entries() ;
+	@Override public Set<K> keys() ;
 	
 }

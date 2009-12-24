@@ -4,7 +4,7 @@ import java.util.Map.Entry;
 
 import org.jjoost.collections.ListMap;
 import org.jjoost.collections.MultiSet;
-import org.jjoost.collections.ScalarMap;
+import org.jjoost.collections.Map;
 import org.jjoost.collections.maps.ImmutableMapEntry ;
 import org.jjoost.util.Factory;
 
@@ -12,7 +12,7 @@ public class NestedSetListMap<K, V> extends NestedSetMap<K, V, MultiSet<V>> impl
 
 	private static final long serialVersionUID = -490119082143181821L;
 
-	public NestedSetListMap(ScalarMap<K, MultiSet<V>> map, Factory<MultiSet<V>> factory) {
+	public NestedSetListMap(Map<K, MultiSet<V>> map, Factory<MultiSet<V>> factory) {
 		super(map, factory) ;
 	}
 
@@ -32,7 +32,7 @@ public class NestedSetListMap<K, V> extends NestedSetMap<K, V, MultiSet<V>> impl
 
 	@Override
 	public ListMap<K, V> copy() {
-		final ScalarMap<K, MultiSet<V>> copy = map.copy() ;
+		final Map<K, MultiSet<V>> copy = map.copy() ;
 		for (Entry<K, MultiSet<V>> entry : copy.entries())
 			entry.setValue(entry.getValue().copy()) ;
 		return new NestedSetListMap<K, V>(copy, factory) ;

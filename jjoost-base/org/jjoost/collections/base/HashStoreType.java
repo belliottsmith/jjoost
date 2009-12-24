@@ -3,7 +3,7 @@ package org.jjoost.collections.base;
 public class HashStoreType {
 
 	public static enum Type {
-		SERIAL , LINKED_SERIAL, SYNCHRONIZED , LINKED_SYNCHRONIZED, LOCK_FREE , LINKED_LOCK_FREE ; 
+		SERIAL , LINKED_SERIAL , SYNCHRONIZED , LINKED_SYNCHRONIZED , LOCK_FREE , LINKED_LOCK_FREE ; 
 	}
 	
 	private final Type type ;

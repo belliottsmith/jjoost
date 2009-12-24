@@ -4,7 +4,7 @@ import java.util.Map.Entry ;
 
 import org.jjoost.util.FilterPartialOrder;
 
-public interface OrderedMap<K, V> extends ArbitraryMap<K, V>, OrderedReadMap<K, V> {
+public interface OrderedMap<K, V> extends AnyMap<K, V>, OrderedReadMap<K, V> {
 
 	public int remove(FilterPartialOrder<K> filter) ;
 	public OrderedMap<K, V> removeAndReturn(FilterPartialOrder<K> filter) ;

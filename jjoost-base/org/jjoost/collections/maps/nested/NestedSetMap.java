@@ -3,14 +3,13 @@ package org.jjoost.collections.maps.nested;
 import java.util.Collections ;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
-import org.jjoost.collections.ArbitraryMap;
-import org.jjoost.collections.ArbitrarySet;
+import org.jjoost.collections.AnyMap;
+import org.jjoost.collections.AnySet;
 import org.jjoost.collections.MultiSet ;
-import org.jjoost.collections.ScalarMap;
+import org.jjoost.collections.Map;
 import org.jjoost.collections.iters.AbstractIterable ;
 import org.jjoost.collections.lists.UniformList;
 import org.jjoost.collections.maps.ImmutableMapEntry ;
@@ -19,11 +18,11 @@ import org.jjoost.util.Function;
 import org.jjoost.util.Functions;
 import org.jjoost.util.Iters ;
 
-public abstract class NestedSetMap<K, V, S extends ArbitrarySet<V>> implements ArbitraryMap<K, V> {
+public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<K, V> {
 
 	private static final long serialVersionUID = -6962291049889502542L;
 	
-	protected final ScalarMap<K, S> map ;
+	protected final Map<K, S> map ;
 	protected final Factory<S> factory ;
 	private volatile int totalCount ;
 	
@@ -39,7 +38,7 @@ public abstract class NestedSetMap<K, V, S extends ArbitrarySet<V>> implements A
 		return keySet  ;
 	}
 
-	public NestedSetMap(ScalarMap<K, S> map, Factory<S> factory) {
+	public NestedSetMap(Map<K, S> map, Factory<S> factory) {
 		super();
 		this.map = map ;
 		this.factory = factory ;
@@ -69,12 +68,12 @@ public abstract class NestedSetMap<K, V, S extends ArbitrarySet<V>> implements A
 		final S set = map.get(key) ;
 		if (set == null) 
 			return java.util.Collections.emptyList() ;
-		return Functions.apply(new EntryMaker<K, V>(key), set.all()) ;
+		return Functions.apply(new EntryMaker<K, V>(key), set) ;
 	}
 	@Override
 	public V first(K key) {
 		final S set = map.get(key) ;
-		return set == null ? null : set.isEmpty() ? null : set.all().iterator().next() ;
+		return set == null ? null : set.isEmpty() ? null : set.iterator().next() ;
 	}
 	@Override
 	public List<V> list(K key) {
@@ -134,7 +133,7 @@ public abstract class NestedSetMap<K, V, S extends ArbitrarySet<V>> implements A
 	}
 
 	@Override
-	public ArbitraryMap<V, K> inverse() {
+	public AnyMap<V, K> inverse() {
 		throw new UnsupportedOperationException() ;
 	}
 	
@@ -248,16 +247,6 @@ public abstract class NestedSetMap<K, V, S extends ArbitrarySet<V>> implements A
 			throw new UnsupportedOperationException() ;
 		}
 
-		@Override
-		public Iterable<K> all() {
-			return new AbstractIterable<K>() {
-				@Override
-				public Iterator<K> iterator() {
-					return KeySet.this.iterator() ;
-				}
-			} ;
-		}
-		
 		@Override
 		public Iterable<K> all(final K key) {
 			final S set = map.get(key) ;
@@ -401,7 +390,7 @@ public abstract class NestedSetMap<K, V, S extends ArbitrarySet<V>> implements A
 
 	}
 	
-	abstract class AbstractEntrySet extends AbstractIterable<Entry<K, V>> implements ArbitrarySet<Entry<K, V>> {
+	abstract class AbstractEntrySet extends AbstractIterable<Entry<K, V>> implements AnySet<Entry<K, V>> {
 		
 		private static final long serialVersionUID = 4037233101289518536L ;
 
@@ -436,7 +425,7 @@ public abstract class NestedSetMap<K, V, S extends ArbitrarySet<V>> implements A
 		}
 		
 		@Override
-		public int remove(Map.Entry<K, V> entry) {
+		public int remove(Entry<K, V> entry) {
 			return NestedSetMap.this.remove(entry.getKey(), entry.getValue()) ;			
 		}
 
@@ -445,16 +434,6 @@ public abstract class NestedSetMap<K, V, S extends ArbitrarySet<V>> implements A
 			return contains(v) ? Boolean.TRUE : Boolean.FALSE ;
 		}
 		
-		@Override
-		public Iterable<Entry<K, V>> all() {
-			return new AbstractIterable<Entry<K,V>>() {
-				@Override
-				public Iterator<Entry<K, V>> iterator() {
-					return AbstractEntrySet.this.iterator() ;
-				}
-			} ;
-		}
-
 		@Override
 		public Iterable<Entry<K, V>> all(Entry<K, V> entry) {
 			final K key = entry.getKey() ;
@@ -582,10 +561,10 @@ public abstract class NestedSetMap<K, V, S extends ArbitrarySet<V>> implements A
 	private static final <K, V> KeyRepeater<K, V> keyRepeater() {
 		return KEY_REPEATER ;
 	}
-	private static final class KeyRepeater<K, V> implements Function<Entry<K, ? extends ArbitrarySet<V>>, Iterable<K>> {
+	private static final class KeyRepeater<K, V> implements Function<Entry<K, ? extends AnySet<V>>, Iterable<K>> {
 		private static final long serialVersionUID = -965724235732791909L;
 		@Override
-		public Iterable<K> apply(Entry<K, ? extends ArbitrarySet<V>> entry) {
+		public Iterable<K> apply(Entry<K, ? extends AnySet<V>> entry) {
 			return new UniformList<K>(entry.getKey(), entry.getValue().totalCount()) ;
 		}
 	}

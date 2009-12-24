@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.jjoost.util.filters.* ;
-import org.jjoost.collections.ArbitrarySet ;
-import org.jjoost.collections.ScalarSet ;
+import org.jjoost.collections.AnySet ;
+import org.jjoost.collections.Set ;
 import org.jjoost.collections.iters.ClosableIterator ;
 import org.jjoost.collections.iters.FilteredClosableIterator ;
 import org.jjoost.collections.iters.FilteredIterable ;
@@ -392,7 +392,7 @@ public class Filters {
     	return AcceptUnique.<E>get() ;
     }
     
-    public static final <E> Filter<E> unique(ScalarSet<E> set) {
+    public static final <E> Filter<E> unique(Set<E> set) {
     	return AcceptUnique.<E>get(set) ;
     }
     
@@ -458,7 +458,7 @@ public class Filters {
     	return matches(Pattern.compile(pattern)) ;
     }
 
-    public static <E> Filter<E> isMemberOf(ArbitrarySet<E> set) {
+    public static <E> Filter<E> isMemberOf(AnySet<E> set) {
     	return new AcceptIfMember<E>(set) ;
     }
 

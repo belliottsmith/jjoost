@@ -4,13 +4,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.jjoost.collections.ArbitraryMap;
-import org.jjoost.collections.ArbitrarySet;
+import org.jjoost.collections.AnyMap;
+import org.jjoost.collections.AnySet;
 import org.jjoost.collections.MultiSet ;
-import org.jjoost.collections.ScalarSet;
+import org.jjoost.collections.Set;
 import org.jjoost.collections.base.SynchronizedDelegator ;
 
-public abstract class SynchronizedArbitraryMap<K, V, M extends ArbitraryMap<K, V>> extends SynchronizedDelegator implements ArbitraryMap<K, V> {
+public abstract class SynchronizedArbitraryMap<K, V, M extends AnyMap<K, V>> extends SynchronizedDelegator implements AnyMap<K, V> {
 	
 	private static final long serialVersionUID = -7183655836427941893L ;
 	
@@ -44,7 +44,7 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends ArbitraryMap<K, V
 	@Override public synchronized V first(K key) {
 		return delegate.first(key);
 	}
-	@Override public synchronized ArbitraryMap<V, K> inverse() {
+	@Override public synchronized AnyMap<V, K> inverse() {
 		return delegate.inverse();
 	}
 	@Override public synchronized boolean isEmpty() {
@@ -91,14 +91,9 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends ArbitraryMap<K, V
 	}
 
 	@SuppressWarnings("hiding")
-	protected <V> ArbitrarySet<V> wrap(final ArbitrarySet<V> delegate) {
-		return new ArbitrarySet<V>() {
+	protected <V> AnySet<V> wrap(final AnySet<V> delegate) {
+		return new AnySet<V>() {
 			private static final long serialVersionUID = -4043870977539052035L;
-			@Override public Iterable<V> all() {
-				synchronized(SynchronizedArbitraryMap.this) {
-					return wrap(delegate.all()) ;
-				}
-			}
 			@Override public Iterable<V> all(V value) {
 				synchronized(SynchronizedArbitraryMap.this) {
 					return wrap(delegate.all(value)) ;
@@ -124,7 +119,7 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends ArbitraryMap<K, V
 					return delegate.contains(value) ;
 				}
 			}
-			@Override public ScalarSet<V> copy() {
+			@Override public Set<V> copy() {
 				throw new UnsupportedOperationException() ;
 			}
 			@Override public int count(V value) {
@@ -229,14 +224,9 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends ArbitraryMap<K, V
 	}
 	
 	@SuppressWarnings("hiding")
-	protected <V> ScalarSet<V> wrap(final ScalarSet<V> delegate) {
-		return new ScalarSet<V>() {
+	protected <V> Set<V> wrap(final Set<V> delegate) {
+		return new Set<V>() {
 			private static final long serialVersionUID = -4043870977539052035L;
-			@Override public Iterable<V> all() {
-				synchronized(SynchronizedArbitraryMap.this) {
-					return wrap(delegate.all()) ;
-				}
-			}
 			@Override public Iterable<V> all(V value) {
 				synchronized(SynchronizedArbitraryMap.this) {
 					return wrap(delegate.all(value)) ;
@@ -262,7 +252,7 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends ArbitraryMap<K, V
 					return delegate.contains(value) ;
 				}
 			}
-			@Override public ScalarSet<V> copy() {
+			@Override public Set<V> copy() {
 				throw new UnsupportedOperationException() ;
 			}
 			@Override public int count(V value) {
@@ -381,11 +371,6 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends ArbitraryMap<K, V
 	protected <V> MultiSet<V> wrap(final MultiSet<V> delegate) {
 		return new MultiSet<V>() {
 			private static final long serialVersionUID = -4043870977539052035L;
-			@Override public Iterable<V> all() {
-				synchronized(SynchronizedArbitraryMap.this) {
-					return wrap(delegate.all()) ;
-				}
-			}
 			@Override public Iterable<V> all(V value) {
 				synchronized(SynchronizedArbitraryMap.this) {
 					return wrap(delegate.all(value)) ;

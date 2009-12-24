@@ -4,7 +4,7 @@ import java.util.Map.Entry;
 
 import org.jjoost.collections.MultiSet ;
 import org.jjoost.collections.MultiMap;
-import org.jjoost.collections.ScalarSet ;
+import org.jjoost.collections.Set ;
 import org.jjoost.collections.base.HashNode ;
 import org.jjoost.collections.base.HashStore ;
 import org.jjoost.util.Equality;
@@ -23,13 +23,13 @@ public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> exten
 	
 	private static final long serialVersionUID = -6385620376018172675L;
 
-	private ScalarSet<Entry<K, V>> entrySet ;
+	private Set<Entry<K, V>> entrySet ;
 	private MultiSet<K> keySet ;
 	
 	@Override
-	public ScalarSet<Entry<K, V>> entries() {
+	public Set<Entry<K, V>> entries() {
 		// don't care if we create multiple of these with multiple threads - eventually all but one of them will disappear and don't want to synchronize on every call
-		ScalarSet<Entry<K, V>> r = entrySet ;
+		Set<Entry<K, V>> r = entrySet ;
 		if (r == null)
 			entrySet = r = new EntrySet() ;
 		return r ;
@@ -50,7 +50,7 @@ public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> exten
 	}
 	
 	@Override
-	public ScalarSet<V> values(K k) {
+	public Set<V> values(K k) {
 		return new KeyValueSet(k) ;
 	}
 	
@@ -81,13 +81,13 @@ public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> exten
 		return new InlineMultiHashMap<K, V, N>(keyHasher, rehasher, keyEq, entryEq, nodeFactory, store.copy(nodeProj(), entryEq)) ;
 	}
 
-	final class KeyValueSet extends AbstractKeyValueSet implements ScalarSet<V> {
+	final class KeyValueSet extends AbstractKeyValueSet implements Set<V> {
 		private static final long serialVersionUID = 2741936401896784235L;
 		public KeyValueSet(K key) {
 			super(key) ;
 		}
 		@Override
-		public ScalarSet<V> copy() {
+		public Set<V> copy() {
 			throw new UnsupportedOperationException() ;
 		}
 		@Override
@@ -112,7 +112,7 @@ public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> exten
 		}
 	}
 
-	final class EntrySet extends AbstractEntrySet implements ScalarSet<Entry<K, V>> {
+	final class EntrySet extends AbstractEntrySet implements Set<Entry<K, V>> {
 		private static final long serialVersionUID = 2741936401896784235L;
 		@Override
 		public Entry<K, V> put(Entry<K, V> entry) {
@@ -136,7 +136,7 @@ public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> exten
 		public int size() {
 			return totalCount() ;
 		}
-		public ScalarSet<Entry<K, V>> copy() {
+		public Set<Entry<K, V>> copy() {
 			throw new UnsupportedOperationException() ;
 		}
 	}

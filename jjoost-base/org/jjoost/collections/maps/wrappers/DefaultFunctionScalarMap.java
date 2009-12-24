@@ -4,20 +4,20 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.jjoost.collections.ArbitraryMap;
-import org.jjoost.collections.ArbitrarySet ;
-import org.jjoost.collections.ScalarMap;
-import org.jjoost.collections.ScalarSet ;
+import org.jjoost.collections.AnyMap;
+import org.jjoost.collections.AnySet ;
+import org.jjoost.collections.Map;
+import org.jjoost.collections.Set ;
 import org.jjoost.util.Factory;
 import org.jjoost.util.Function;
 
-public class DefaultFunctionScalarMap<K, V> implements ScalarMap<K, V> {
+public class DefaultFunctionScalarMap<K, V> implements Map<K, V> {
 
 	private static final long serialVersionUID = 7778573411318310241L;
-	private final ScalarMap<K, V> delegate ;
+	private final Map<K, V> delegate ;
 	private final Function<K, V> defaultFunction ;
 
-	public DefaultFunctionScalarMap(ScalarMap<K, V> delegate,
+	public DefaultFunctionScalarMap(Map<K, V> delegate,
 			Function<K, V> defaultFunction) {
 		super();
 		this.delegate = delegate;
@@ -44,7 +44,7 @@ public class DefaultFunctionScalarMap<K, V> implements ScalarMap<K, V> {
 		return delegate.contains(key);
 	}
 
-	public ScalarMap<K, V> copy() {
+	public Map<K, V> copy() {
 		return delegate.copy();
 	}
 
@@ -65,7 +65,7 @@ public class DefaultFunctionScalarMap<K, V> implements ScalarMap<K, V> {
 		return delegate.ensureAndGet(key, putIfNotPresent);
 	}
 
-	public ScalarSet<Entry<K, V>> entries() {
+	public Set<Entry<K, V>> entries() {
 		return delegate.entries();
 	}
 
@@ -77,7 +77,7 @@ public class DefaultFunctionScalarMap<K, V> implements ScalarMap<K, V> {
 		return delegate.ensureAndGet(key, defaultFunction);
 	}
 
-	public ArbitraryMap<V, K> inverse() {
+	public AnyMap<V, K> inverse() {
 		return delegate.inverse();
 	}
 
@@ -85,7 +85,7 @@ public class DefaultFunctionScalarMap<K, V> implements ScalarMap<K, V> {
 		return delegate.isEmpty();
 	}
 
-	public ScalarSet<K> keys() {
+	public Set<K> keys() {
 		return delegate.keys();
 	}
 
@@ -149,7 +149,7 @@ public class DefaultFunctionScalarMap<K, V> implements ScalarMap<K, V> {
 		return delegate.values();
 	}
 
-	public ArbitrarySet<V> values(K key) {
+	public AnySet<V> values(K key) {
 		return delegate.values(key);
 	}
 

@@ -2,27 +2,27 @@ package org.jjoost.collections.maps.wrappers;
 
 import java.util.Map.Entry ;
 
-import org.jjoost.collections.ArbitrarySet ;
-import org.jjoost.collections.ScalarMap;
-import org.jjoost.collections.ScalarSet ;
+import org.jjoost.collections.AnySet ;
+import org.jjoost.collections.Map;
+import org.jjoost.collections.Set ;
 import org.jjoost.util.Factory;
 import org.jjoost.util.Function;
 
-public class SynchronizedScalarMap<K, V> extends SynchronizedArbitraryMap<K, V, ScalarMap<K, V>> implements ScalarMap<K, V> {
+public class SynchronizedScalarMap<K, V> extends SynchronizedArbitraryMap<K, V, Map<K, V>> implements Map<K, V> {
 	
 	private static final long serialVersionUID = 2692454383540344975L;
-	public SynchronizedScalarMap(ScalarMap<K, V> delegate) {
+	public SynchronizedScalarMap(Map<K, V> delegate) {
 		super(delegate) ;
 	}
 	
-	private ScalarSet<K> keySet ;
-	private ScalarSet<Entry<K, V>> entrySet ;
-	@Override public synchronized ScalarSet<K> keys() {
+	private Set<K> keySet ;
+	private Set<Entry<K, V>> entrySet ;
+	@Override public synchronized Set<K> keys() {
 		if (keySet == null)
 			keySet = wrap(delegate.keys()) ;
 		return keySet ;
 	}
-	@Override public synchronized ScalarSet<Entry<K, V>> entries() {
+	@Override public synchronized Set<Entry<K, V>> entries() {
 		if (entrySet == null)
 			entrySet = wrap(delegate.entries()) ;
 		return entrySet ;
@@ -50,10 +50,10 @@ public class SynchronizedScalarMap<K, V> extends SynchronizedArbitraryMap<K, V, 
 	}
 
 	@Override
-	public ScalarMap<K, V> copy() {
+	public Map<K, V> copy() {
 		return new SynchronizedScalarMap<K, V>(delegate.copy()) ;
 	}
-	@Override public synchronized ArbitrarySet<V> values(K key) {
+	@Override public synchronized AnySet<V> values(K key) {
 		return wrap(delegate.values(key)) ;
 	}
 

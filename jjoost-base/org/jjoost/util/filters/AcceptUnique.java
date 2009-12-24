@@ -1,6 +1,6 @@
 package org.jjoost.util.filters ;
 
-import org.jjoost.collections.ScalarSet ;
+import org.jjoost.collections.Set ;
 import org.jjoost.collections.sets.serial.SerialScalarHashSet ;
 import org.jjoost.util.Equalities ;
 import org.jjoost.util.Equality ;
@@ -14,12 +14,12 @@ import org.jjoost.util.Rehashers ;
 public class AcceptUnique<V> implements Filter<V> {
 
 	private static final long serialVersionUID = 4135610622081116945L ;
-	private final ScalarSet<V> seen ;
+	private final Set<V> seen ;
 
 	public AcceptUnique() {
 		this(new SerialScalarHashSet<V>(8, 0.75f, Hashers.object(), Rehashers.compose(Rehashers.jdkHashmapRehasher(), Rehashers.flipEveryHalfByte()), Equalities.object())) ;
 	}
-	public AcceptUnique(ScalarSet<V> set) {
+	public AcceptUnique(Set<V> set) {
 		this.seen = set ;
 	}
 
@@ -47,7 +47,7 @@ public class AcceptUnique<V> implements Filter<V> {
 		return get(new SerialScalarHashSet<V>(Hashers.object(), eq)) ;
 	}
 	
-	public static <V> AcceptUnique<V> get(ScalarSet<V> set) {
+	public static <V> AcceptUnique<V> get(Set<V> set) {
 		return new AcceptUnique<V>(set) ;
 	}
 	

@@ -2,7 +2,7 @@ package org.jjoost.util.filters ;
 
 import java.util.List ;
 
-import org.jjoost.collections.ArbitrarySet ;
+import org.jjoost.collections.AnySet ;
 import org.jjoost.collections.SetMaker ;
 import org.jjoost.util.Filter ;
 
@@ -20,14 +20,14 @@ public class AcceptIfMember<E> implements Filter<E> {
 		return new AcceptIfMember<E>(members) ;
 	}
 
-	public static <E> AcceptIfMember<E> get(ArbitrarySet<E> members) {
+	public static <E> AcceptIfMember<E> get(AnySet<E> members) {
 		return new AcceptIfMember<E>(members) ;
 	}
 
 	private static final long serialVersionUID = 8506853231172669315L ;
-	private final ArbitrarySet<E> members ;
+	private final AnySet<E> members ;
 
-	public AcceptIfMember(ArbitrarySet<E> members) {
+	public AcceptIfMember(AnySet<E> members) {
 		this.members = members ;
 	}
 

@@ -35,14 +35,14 @@ public class SetMaker {
 	
 	public static abstract class AbstractSetMaker<V> {
 		
-		public abstract ScalarSet<V> newScalarSet() ;
+		public abstract Set<V> newScalarSet() ;
 		public abstract MultiSet<V> newMultiSet(MultiSetNesting<V> nesting) ;
 		protected abstract AbstractSetMaker<V> copy() ;
 		
 		public MultiSet<V> newMultiSet() {
 			return newMultiSet(MultiSetNesting.<V>inline()) ;
 		}
-		public Factory<ScalarSet<V>> newScalarSetFactory() {
+		public Factory<Set<V>> newScalarSetFactory() {
 			return new ScalarSetFactory<V>(this) ;
 		}
 		public Factory<MultiSet<V>> newMultiSetFactory(MultiSetNesting<V> nesting) {
@@ -75,7 +75,7 @@ public class SetMaker {
 		public HashSetMaker<V> type(HashStoreType type) { this.type = type ; return this ; }
 		public HashSetMaker<V> initialCapacity(int initialCapacity) { this.initialCapacity = initialCapacity ; return this ; }
 		public HashSetMaker<V> loadFactor(float loadFactor) { this.loadFactor = loadFactor ; return this ; }
-		public ScalarSet<V> newScalarSet() {
+		public Set<V> newScalarSet() {
 			switch(type.type()) {
 			case SERIAL:
 				return new SerialScalarHashSet<V>(
@@ -109,7 +109,7 @@ public class SetMaker {
 		}
 		public MultiSet<V> newMultiSet(MultiSetNesting<V> nesting) {
 			switch (nesting.type()) {
-			case MultiSetNesting.Type.INLINE:
+			case INLINE:
 				switch(type.type()) {
 				case SERIAL:
 					return new SerialInlineMultiHashSet<V>(
@@ -140,7 +140,7 @@ public class SetMaker {
 				default:
 					throw new IllegalArgumentException(type.toString()) ;
 				}			
-			case MultiSetNesting.Type.NESTED:
+			case NESTED:
 				switch(type.type()) {
 				case SERIAL:
 					return new SerialNestedMultiHashSet<V>(
@@ -171,7 +171,7 @@ public class SetMaker {
 				default:
 					throw new IllegalArgumentException(type.toString()) ;
 				}			
-			case MultiSetNesting.Type.COUNTING:
+			case COUNTING:
 				switch(type.type()) {
 				case SERIAL:
 					return new SerialCountingMultiHashSet<V>(
@@ -236,14 +236,14 @@ public class SetMaker {
 		}
 	}
 	
-	private static final class ScalarSetFactory<V> implements Factory<ScalarSet<V>> {
+	private static final class ScalarSetFactory<V> implements Factory<Set<V>> {
 		private static final long serialVersionUID = 475702452749567764L;
 		private final AbstractSetMaker<V> maker ;
 		public ScalarSetFactory(AbstractSetMaker<V> maker) {
 			this.maker = maker.copy() ;
 		}
 		@Override
-		public ScalarSet<V> create() {
+		public Set<V> create() {
 			return maker.newScalarSet() ;
 		}
 	}
