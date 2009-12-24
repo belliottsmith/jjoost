@@ -145,7 +145,7 @@ public class DefaultFactoryScalarMap<K, V> implements Map<K, V> {
 		return delegate.uniqueKeyCount();
 	}
 
-	public Iterable<V> values() {
+	public AnySet<V> values() {
 		return delegate.values();
 	}
 

@@ -8,11 +8,13 @@ import java.util.Map.Entry;
 
 import org.jjoost.collections.AnyMap;
 import org.jjoost.collections.AnySet;
+import org.jjoost.collections.MultiSet;
 import org.jjoost.collections.base.HashNode ;
 import org.jjoost.collections.base.HashNodeEquality ;
 import org.jjoost.collections.base.HashStore ;
 import org.jjoost.collections.iters.AbstractIterable ;
 import org.jjoost.collections.maps.ImmutableMapEntry ;
+import org.jjoost.collections.sets.base.IterableSet;
 import org.jjoost.util.Equality ;
 import org.jjoost.util.Filters ;
 import org.jjoost.util.Function ;
@@ -48,6 +50,7 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 	protected final KeyEquality<K, V, N> keyEq ;
 	protected final EntryEquality<K, V, N> entryEq ;
 	protected final HashMapNodeFactory<K, V, N> nodeFactory ;
+	protected IterableSet<V> valueSet ;
 	
 	protected AbstractHashMap(
 			Hasher<? super K> keyHasher, Rehasher rehasher, 
@@ -154,13 +157,10 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		return store.isEmpty() ;
 	}
 	@Override
-	public Iterable<V> values() {
-		return new AbstractIterable<V>() {
-			@Override
-			public Iterator<V> iterator() {
-				return store.all(keyProj(), keyEq, valProj()) ;
-			}
-		} ;
+	public MultiSet<V> values() {
+		if (valueSet == null)
+			valueSet = new ValueSet() ;
+		return valueSet ;
 	}
 
 	@Override
@@ -178,7 +178,19 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		throw new UnsupportedOperationException() ;
 	}
 	
-	protected abstract class AbstractKeyValueSet extends AbstractIterable<V> implements AnySet<V> {
+	protected final class ValueSet extends IterableSet<V> {
+		private static final long serialVersionUID = -1124458438016390808L;
+		@Override
+		public Iterator<V> iterator() {
+			return store.all(keyProj(), keyEq, valProj()) ;
+		}
+		@Override
+		protected Equality<? super V> equality() {
+			return entryEq.valEq  ;
+		}
+	} ;
+
+	protected abstract class AbstractKeyValueSet implements AnySet<V> {
 		
 		private static final long serialVersionUID = 1461826147890179114L ;
 		
@@ -326,7 +338,7 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		
 	}
 	
-	protected abstract class AbstractKeySet extends AbstractIterable<K> implements AnySet<K> {
+	protected abstract class AbstractKeySet implements AnySet<K> {
 		
 		private static final long serialVersionUID = 1461826147890179114L ;
 
@@ -461,9 +473,13 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 			return store.removeAndReturn(hash(key), atMost, key, keyEq, keyProj());
 		}
 		
+		public String toString() {
+			return Iters.toString(this) ;
+		}
+		
 	}
 	
-	protected abstract class AbstractEntrySet extends AbstractIterable<Entry<K, V>> implements AnySet<Entry<K, V>> {
+	protected abstract class AbstractEntrySet implements AnySet<Entry<K, V>> {
 		
 		private static final long serialVersionUID = 4037233101289518536L ;
 
@@ -519,13 +535,15 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 			return contains(v) ? Boolean.TRUE : Boolean.FALSE ;
 		}
 		
+		@SuppressWarnings("unchecked")
 		@Override
 		public Iterable<Entry<K, V>> all(final Entry<K, V> entry) {
 			final int hash = hash(entry.getKey()) ;
-			return new AbstractIterable<Entry<K,V>>() {
+			return (Iterable<Entry<K, V>>) 
+			new AbstractIterable<N>() {
 				@Override
-				public Iterator<Entry<K, V>> iterator() {
-					return store.find(hash, entry, entryEq, nodeProj(), entryEq, entryProj()) ;
+				public Iterator<N> iterator() {
+					return store.find(hash, entry, entryEq, nodeProj(), entryEq, nodeProj()) ;
 				}
 			} ;
 		}
@@ -592,6 +610,10 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		@Override
 		public Iterable<Entry<K, V>> removeAndReturn(Entry<K, V> entry) {
 			return store.removeAndReturn(hash(entry.getKey()), Integer.MAX_VALUE, entry, entryEq, entryProj()) ;
+		}
+		
+		public String toString() {
+			return Iters.toString(this) ;
 		}
 		
 	}

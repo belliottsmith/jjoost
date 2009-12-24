@@ -8,12 +8,16 @@ import java.util.Map.Entry ;
 
 import org.jjoost.collections.AnyMap ;
 import org.jjoost.collections.Map ;
+import org.jjoost.collections.MultiSet;
 import org.jjoost.collections.Set ;
 import org.jjoost.collections.iters.EmptyIterator ;
 import org.jjoost.collections.iters.UniformIterator ;
 import org.jjoost.collections.lists.UniformList ;
 import org.jjoost.collections.maps.ImmutableMapEntry ;
+import org.jjoost.collections.sets.base.IterableSet;
 import org.jjoost.collections.sets.wrappers.AdapterFromJDKSet ;
+import org.jjoost.util.Equalities;
+import org.jjoost.util.Equality;
 import org.jjoost.util.Factory ;
 import org.jjoost.util.Function ;
 
@@ -213,8 +217,18 @@ public class AdapterFromJDKMap<K, V> implements Map<K, V> {
 		return map.size() ;
 	}
 	@Override
-	public Iterable<V> values() {
-		return map.values() ;
+	public MultiSet<V> values() {
+		return new IterableSet<V>() {
+			private static final long serialVersionUID = 1241705304994308496L;
+			@Override
+			protected Equality<? super V> equality() {
+				return Equalities.object();
+			}
+			@Override
+			public Iterator<V> iterator() {
+				return map.values().iterator() ;
+			}
+		} ;
 	}
 	@Override
 	public Set<V> values(K key) {

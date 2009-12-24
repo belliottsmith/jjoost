@@ -11,7 +11,9 @@ import org.jjoost.collections.iters.ArrayIterator ;
 import org.jjoost.collections.iters.ClosableIterator ;
 import org.jjoost.collections.iters.ConcatIterable ;
 import org.jjoost.collections.iters.ConcatIterator ;
+import org.jjoost.collections.iters.DestructiveIterator;
 import org.jjoost.collections.iters.DropIterable ;
+import org.jjoost.collections.iters.EmptyIterator;
 import org.jjoost.collections.iters.EnumerationIterator ;
 import org.jjoost.collections.iters.HeadClosableIterator ;
 import org.jjoost.collections.iters.HeadIterable ;
@@ -20,6 +22,10 @@ import org.jjoost.collections.iters.OnceIterable ;
 
 public class Iters {
 
+	public static <E> Iterator<E> empty() {
+		return EmptyIterator.<E>get() ;
+	}
+	
 	/**
 	 * convert the supplied array into an Iterator
 	 * 
@@ -93,22 +99,53 @@ public class Iters {
     }
     
     public static boolean equal(Iterator<?> a, Iterator<?> b) {
+    	return equal(Equalities.object(), a, b) ;
+    }
+    public static <E> boolean equal(Equality<? super E> eq, Iterator<? extends E> a, Iterator<? extends E> b) {
     	while (a.hasNext() && b.hasNext()) {
-    		if (!Objects.equalQuick(a.next(), b.next()))
+    		if (!eq.equates(a.next(), b.next()))
     			return false ;
     	}
     	return a.hasNext() == b.hasNext() ;
     }
     
-    public static <E> boolean contains(final E o, final Iterable<? super E> iter) {
-    	return contains(o, iter.iterator()) ;
+    public static <E> boolean contains(final E o, final Iterable<E> iter) {
+    	return contains(o, Equalities.object(), iter.iterator()) ;
     }
-    public static <E> boolean contains(final E o, final Iterator<? super E> iter) {
+    public static <E> boolean contains(final E o, final Iterator<E> iter) {
+    	return contains(o, Equalities.object(), iter) ;
+    }    
+    public static <E> boolean contains(final E o, final Equality<? super E> eq, final Iterable<E> iter) {
+    	return contains(o, eq, iter.iterator()) ;
+    }
+    public static <E> boolean contains(final E o, final Equality<? super E> eq, final Iterator<E> iter) {
     	while (iter.hasNext()) {
-    		if (Objects.equalQuick(o, iter.next()))
+    		if (eq.equates(o, iter.next()))
     			return true ;
     	}
     	return false ;
+    }
+    
+    public static <E> int count(final E o, final Iterable<E> iter) {
+    	return count(o, iter.iterator()) ;
+    }
+    public static <E> int count(final E o, final Iterator<E> iter) {
+    	return count(o, Equalities.object(), iter) ;
+    }    
+    public static <E> int count(final E o, final Equality<? super E> eq, final Iterable<E> iter) {
+    	return count(o, eq, iter.iterator()) ;
+    }
+    public static <E> int count(final E o, final Equality<? super E> eq, final Iterator<E> iter) {
+    	int c = 0 ;
+    	while (iter.hasNext()) {
+    		if (eq.equates(o, iter.next()))
+    			c++ ;
+    	}
+    	return c ;
+    }
+    
+    public static <E> Iterator<E> destroyAsConsumed(Iterator<E> iter) {
+    	return new DestructiveIterator<E>(iter) ;
     }
     
     /**
@@ -142,17 +179,6 @@ public class Iters {
 	 * @return
 	 */
 	public static <E> ConcatIterable<E> concat(Iterable<? extends Iterable<E>> a) {
-		return new ConcatIterable<E>(a) ;
-	}
-	
-	/**
-	 * Concentenate the supplied Iterables (lazily)
-	 * 
-	 * @param <E>
-	 * @param a
-	 * @return
-	 */
-	public static <E> ConcatIterable<E> concat(Iterator<? extends Iterable<E>> a) {
 		return new ConcatIterable<E>(a) ;
 	}
 	
@@ -330,6 +356,18 @@ public class Iters {
 		return new HeadIterator<E>(iter, count) ;
 	}
 
+	/**
+	 * Returns a new iterator which returns the first <code>count</code> elements of the supplied iterator (or all of them if that is fewer)
+	 * 
+	 * @param <E>
+	 * @param iter
+	 * @param count
+	 * @return
+	 */
+	public static <E> HeadIterator<E> head(int count, Iterator<E> iter) {
+		return new HeadIterator<E>(iter, count) ;
+	}
+	
     public static <E> HeadClosableIterator<E> head(ClosableIterator<E> iter, int count) {
     	return new HeadClosableIterator<E>(iter, count) ;
     }
@@ -346,6 +384,18 @@ public class Iters {
 		return new HeadIterable<E>(iter, count) ;
 	}
 
+	/**
+	 * Returns a new iterable which returns the first <code>count</code> elements of the supplied iterator (or all of them if that is fewer)
+	 * 
+	 * @param <E>
+	 * @param iter
+	 * @param count
+	 * @return
+	 */
+	public static <E> HeadIterable<E> head(int count, Iterable<E> iter) {
+		return new HeadIterable<E>(iter, count) ;
+	}
+	
     public static <E> List<E> head(List<E> list, int count) {
     	return list.subList(0, Math.max(0, Math.min(list.size(), count < 0 ? list.size() + count : count))) ;
     }

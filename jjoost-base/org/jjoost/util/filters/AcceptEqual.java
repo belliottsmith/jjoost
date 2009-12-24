@@ -1,8 +1,8 @@
 package org.jjoost.util.filters ;
 
 import java.util.Comparator ;
-
-import org.jjoost.util.Objects ;
+import org.jjoost.util.Equalities;
+import org.jjoost.util.Equality;
 
 /**
  * a simple filter that accepts only objects that equal that provided in its
@@ -17,13 +17,15 @@ public class AcceptEqual<E> implements BothFilter<E> {
 	private static final long serialVersionUID = 1064862673649778571L ;
 
 	protected final E than ;
+	protected final Equality<? super E> equality ;
 
-	public AcceptEqual(E than) {
+	public AcceptEqual(E than, Equality<? super E> equality) {
 		this.than = than ;
+		this.equality = equality ;
 	}
 
 	public boolean accept(E test) {
-		return Objects.equalQuick(test, than) ;
+		return equality.equates(test, than) ;
 	}
 
 	public boolean accept(E test, Comparator<? super E> cmp) {
@@ -37,9 +39,13 @@ public class AcceptEqual<E> implements BothFilter<E> {
 	}
 
 	public static <E> AcceptEqual<E> get(E than) {
-		return new AcceptEqual<E>(than) ;
+		return new AcceptEqual<E>(than, Equalities.object()) ;
 	}
 
+	public static <E> AcceptEqual<E> get(E than, Equality<? super E> equality) {
+		return new AcceptEqual<E>(than, equality) ;
+	}
+	
 	public String toString() {
 		return "equals " + than ;
 	}

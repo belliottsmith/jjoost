@@ -37,4 +37,12 @@ public interface AnyMap<K, V> extends AnyReadMap<K, V> {
 	
 	public AnyMap<V, K> inverse() ;
 
+	/**
+	 * Returns a set representing the range of the map. Operations on this
+	 * set will typically be expensive (O(n) where n is the size of the map).
+	 * 
+	 * @return the range of the map
+	 */
+	public AnySet<V> values() ;	
+	
 }

@@ -268,13 +268,10 @@ public class Filters {
     	return AcceptEqual.get(val) ;
     }
     
-    /**
-     * Returns a filter accepting everything strictly less than the supplied Comparable object
-     * 
-     * @param <E>
-     * @param val
-     * @return
-     */
+    public static <E> BothFilter<E> isEqualTo(E val, Equality<? super E> equality) {
+    	return AcceptEqual.get(val, equality) ;
+    }
+    
     public static <E> FilterPartialOrder<E> isLess(E val) {
         return PartialOrderAcceptLess.get(val) ;
     }
@@ -553,7 +550,7 @@ public class Filters {
     }
     
     /**
-     * lazily filter the supplied closable iterator through the supplied filter
+     * lazily filter the supplied closeable iterator through the supplied filter
      * 
      * @param <E>
      * @param iter
@@ -564,4 +561,40 @@ public class Filters {
     	return new FilteredClosableIterator<E>(iter, filter) ;
     }
     
+	public static <V> int remove(Filter<? super V> removeMatches, int removeAtMost, Iterator<V> iter) {
+		if (removeAtMost < 0)
+			throw new IllegalArgumentException("Cannot remove fewer than zero elements") ;
+		int c = 0 ;
+		while (c != removeAtMost & iter.hasNext()) {
+			if (removeMatches.accept(iter.next())) {
+				iter.remove() ;
+				c += 1 ;
+			}
+		}
+		return c ;
+	}
+
+	public static <V> V removeAndReturnFirst(Filter<? super V> removeMatches, int removeAtMost, Iterator<V> iter) {
+		if (removeAtMost < 0)
+			throw new IllegalArgumentException("Cannot remove fewer than zero elements") ;
+		int c = 0 ;
+		V r = null ;
+		while (c != removeAtMost & iter.hasNext()) {
+			final V next = iter.next() ;
+			if (removeMatches.accept(next)) {
+				iter.remove() ;
+				if (c == 0)
+					r = next ; 
+				c += 1 ;
+			}
+		}
+		return r ;
+	}
+	
+	public static <V> Iterator<V> removeAndReturn(Filter<? super V> removeMatches, int removeAtMost, Iterator<V> iter) {
+		if (removeAtMost < 0)
+			throw new IllegalArgumentException("Cannot remove fewer than zero elements") ;
+		return Iters.head(removeAtMost, Iters.destroyAsConsumed(apply(removeMatches, iter))) ;
+	}
+	
 }

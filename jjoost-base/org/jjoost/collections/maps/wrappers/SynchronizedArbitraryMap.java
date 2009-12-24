@@ -6,7 +6,7 @@ import java.util.Map.Entry;
 
 import org.jjoost.collections.AnyMap;
 import org.jjoost.collections.AnySet;
-import org.jjoost.collections.MultiSet ;
+import org.jjoost.collections.MultiSet;
 import org.jjoost.collections.Set;
 import org.jjoost.collections.base.SynchronizedDelegator ;
 
@@ -86,7 +86,7 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends AnyMap<K, V>> ext
 	@Override public synchronized int uniqueKeyCount() {
 		return delegate.uniqueKeyCount();
 	}
-	@Override public synchronized Iterable<V> values() {
+	@Override public synchronized AnySet<V> values() {
 		return wrap(delegate.values()) ;
 	}
 

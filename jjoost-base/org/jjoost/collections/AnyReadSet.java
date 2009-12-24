@@ -54,7 +54,7 @@ public interface AnyReadSet<V> extends Iterable<V>, Function<V, Boolean>, Serial
 	/**
 	 * Returns a <code>List</code> of all values contained in the set which are equal
 	 * to the parameter, as determined by the set's definition of equality. This list
-	 * should be constructed "eagerly" and as such should be a consistent snapshot of 
+	 * should be constructed "eagerly" and should be a consistent snapshot of 
 	 * the values valid at some point between the method being called and it returning.
 	 * 
 	 * @param find
@@ -84,7 +84,7 @@ public interface AnyReadSet<V> extends Iterable<V>, Function<V, Boolean>, Serial
 	/**
 	 * Returns an <code>Iterable</code> of only unique values in the set, as determined by
 	 * the set's definition of equality. This method is guaranteed not to return duplicates,
-	 * even  
+	 * even under concurrent reads/writes of the same value in the middle of iteration.
 	 * 
 	 * @return unique values
 	 */

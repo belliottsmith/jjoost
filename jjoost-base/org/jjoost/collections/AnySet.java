@@ -96,7 +96,7 @@ public interface AnySet<V> extends AnyReadSet<V> {
 	 * @param value the value
 	 * @param removeAtMost remove at most
 	 * 
-	 * @return the iterable< v>
+	 * @return values removed
 	 */
 	public Iterable<V> removeAndReturn(V value, int removeAtMost) ;	
 	
@@ -135,8 +135,8 @@ public interface AnySet<V> extends AnyReadSet<V> {
 	/**
 	 * Removes all values from the set and returns an <code>Iterator</code> over them. This <code>Iterator</code>
 	 * must be exactly equal to the set of values removed from the set by the action, however this set of values
-	 * may not necessarily be determined (and hence the <code>clear()</code> complete) until the <code>Iterator</code> 
-	 * has been exhausted. 
+	 * may not necessarily be determined, or the <code>clear()</code> completed, until the <code>Iterator</code> 
+	 * has been exhausted.
 	 * 
 	 * @return values removed
 	 */

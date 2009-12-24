@@ -23,6 +23,15 @@ public interface Set<V> extends AnySet<V>, Function<V, Boolean> {
 	 */
 	@Override public V put(V val) ;
 	
+	/**
+	 * Returns the value stored in the set that is equal to the provided value, as determined by
+	 * any provided <code>Equality</code> or <code>Comparator</code>. Returns null if no
+	 * matching item is stored in the set. Equivalent to <code>first(key)</code>
+	 * 
+	 * @param find
+	 * 
+	 * @return first matching value
+	 */
 	public V get(V key) ;
 
 	/**

@@ -10,7 +10,6 @@ import org.jjoost.collections.AnyMap;
 import org.jjoost.collections.AnySet;
 import org.jjoost.collections.MultiSet ;
 import org.jjoost.collections.Map;
-import org.jjoost.collections.iters.AbstractIterable ;
 import org.jjoost.collections.lists.UniformList;
 import org.jjoost.collections.maps.ImmutableMapEntry ;
 import org.jjoost.util.Factory;
@@ -89,8 +88,8 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 		return map.totalCount() ;
 	}
 	@Override
-	public Iterable<V> values() {
-		return Iters.concat(Functions.apply(Functions.<S, Entry<K, S>>getMapEntryValueProjection(), map.entries())) ;
+	public AnySet<V> values() {
+		
 	}
 	@Override
 	public S values(K key) {
@@ -203,7 +202,7 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 		map.shrink() ;
 	}
 
-	class KeySet extends AbstractIterable<K> implements MultiSet<K> {
+	class KeySet implements MultiSet<K> {
 		
 		private static final long serialVersionUID = 1461826147890179114L ;
 
@@ -390,7 +389,7 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 
 	}
 	
-	abstract class AbstractEntrySet extends AbstractIterable<Entry<K, V>> implements AnySet<Entry<K, V>> {
+	abstract class AbstractEntrySet implements AnySet<Entry<K, V>> {
 		
 		private static final long serialVersionUID = 4037233101289518536L ;
 
