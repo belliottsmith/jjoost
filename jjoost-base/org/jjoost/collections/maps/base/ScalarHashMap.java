@@ -18,7 +18,7 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 	protected ScalarHashMap(
 			Hasher<? super K> keyHasher, Rehasher rehasher, 
 			AbstractHashMap.KeyEquality<K, V, N> keyEquality, 
-			AbstractHashMap.EntryEquality<K, V, N> entryEquality,
+			AbstractHashMap.NodeEquality<K, V, N> entryEquality,
 			HashMapNodeFactory<K, V, N> nodeFactory, HashStore<N> table) {
 		super(keyHasher, rehasher, keyEquality, entryEquality, nodeFactory, table) ;
 	}
@@ -179,16 +179,16 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 
 	@Override
 	public Map<K, V> copy() {
-		return new ScalarHashMap<K, V, N>(keyHasher, rehasher, keyEq, entryEq, nodeFactory, store.copy(nodeProj(), entryEq)) ;
+		return new ScalarHashMap<K, V, N>(keyHasher, rehasher, keyEq, nodeEq, nodeFactory, store.copy(nodeProj(), nodeEq)) ;
 	}
 
 	// **********************************
 	// EQUALITY
 	// **********************************
 	
-	protected static abstract class EntryEquality<K, V, N> extends  AbstractHashMap.EntryEquality<K, V, N> {
+	protected static abstract class NodeEquality<K, V, N> extends  AbstractHashMap.NodeEquality<K, V, N> {
 		private static final long serialVersionUID = -4970889935020537472L ;
-		public EntryEquality(Equality<? super K> keyEq, Equality<? super V> valEq) {
+		public NodeEquality(Equality<? super K> keyEq, Equality<? super V> valEq) {
 			super(keyEq, valEq) ;
 		}
 		@Override

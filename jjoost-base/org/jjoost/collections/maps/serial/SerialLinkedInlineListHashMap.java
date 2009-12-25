@@ -71,7 +71,7 @@ public class SerialLinkedInlineListHashMap<K, V> extends InlineListHashMap<K, V,
 		}
 	}
 
-	public static final class EntryEquality<K, V> extends InlineListHashMap.EntryEquality<K, V, Node<K, V>> {
+	public static final class EntryEquality<K, V> extends InlineListHashMap.NodeEquality<K, V, Node<K, V>> {
 		private static final long serialVersionUID = -8668943955126687051L ;
 
 		public EntryEquality(Equality<? super K> keyEq, Equality<? super V> valEq) {

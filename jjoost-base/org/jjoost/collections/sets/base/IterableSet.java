@@ -12,7 +12,7 @@ public abstract class IterableSet<V> implements MultiSet<V> {
 
 	private static final long serialVersionUID = 7475686519443650191L;
 
-	protected abstract Equality<? super V> equality() ;
+	public abstract Equality<? super V> equality() ;
 	public abstract Iterator<V> iterator() ;
 
 	@Override

@@ -56,6 +56,11 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	}
 	
 	@Override
+	public Equality<? super V> equality() {
+		return valEq.valEq ;
+	}
+	
+	@Override
 	public boolean permitsDuplicates() {
 		return true ;
 	}

@@ -83,7 +83,7 @@ public class SerialScalarHashMap<K, V> extends ScalarHashMap<K, V, SerialScalarH
 		}
 	}
 
-	public static final class EntryEquality<K, V> extends ScalarHashMap.EntryEquality<K, V, SerialScalarHashMapNode<K, V>> {
+	public static final class EntryEquality<K, V> extends ScalarHashMap.NodeEquality<K, V, SerialScalarHashMapNode<K, V>> {
 		private static final long serialVersionUID = -8668943955126687051L ;
 
 		public EntryEquality(Equality<? super K> keyEq, Equality<? super V> valEq) {

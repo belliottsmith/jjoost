@@ -6,14 +6,16 @@ import org.jjoost.collections.ListMap;
 import org.jjoost.collections.MultiSet;
 import org.jjoost.collections.Map;
 import org.jjoost.collections.maps.ImmutableMapEntry ;
+import org.jjoost.util.Equality;
 import org.jjoost.util.Factory;
 
 public class NestedSetListMap<K, V> extends NestedSetMap<K, V, MultiSet<V>> implements ListMap<K, V> {
 
 	private static final long serialVersionUID = -490119082143181821L;
 
-	public NestedSetListMap(Map<K, MultiSet<V>> map, Factory<MultiSet<V>> factory) {
-		super(map, factory) ;
+	public NestedSetListMap(Map<K, MultiSet<V>> map,
+			Equality<? super V> valueEq, Factory<MultiSet<V>> factory) {
+		super(map, valueEq, factory);
 	}
 
 	protected MultiSet<Entry<K, V>> entrySet ;	
@@ -35,7 +37,7 @@ public class NestedSetListMap<K, V> extends NestedSetMap<K, V, MultiSet<V>> impl
 		final Map<K, MultiSet<V>> copy = map.copy() ;
 		for (Entry<K, MultiSet<V>> entry : copy.entries())
 			entry.setValue(entry.getValue().copy()) ;
-		return new NestedSetListMap<K, V>(copy, factory) ;
+		return new NestedSetListMap<K, V>(copy, valueEq, factory) ;
 	}
 	
 	protected final class EntrySet extends AbstractEntrySet implements MultiSet<Entry<K, V>> {

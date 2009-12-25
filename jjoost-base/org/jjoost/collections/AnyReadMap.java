@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map.Entry;
 
-// TODO: Auto-generated Javadoc
 /**
  * This is the common super interface for all Jjoost maps.
  * <p>
@@ -115,7 +114,8 @@ public interface AnyReadMap<K, V> extends Serializable {
 	 * <code>MultiMap</code> or <code>ListMap</code> this will be a
 	 * <code>MultiSet</code>. This set should always reflect changes to the map,
 	 * and changes to the set should be reflected in the map also. Otherwise,
-	 * this set should behave exactly as a regular set does.
+	 * this set should behave exactly as a regular set does. The key equality used
+	 * by this map can be obtained from this set.
 	 * <p>
 	 * Note that the <code>put()</code> methods on this set will always fail,
 	 * because no value can be provided to update the map with.
@@ -133,11 +133,12 @@ public interface AnyReadMap<K, V> extends Serializable {
 	 * 
 	 * @return the entry set< k>
 	 */
-	public AnyReadSet<Entry<K, V>> entries() ;	
+	public AnyReadSet<? extends Entry<K, V>> entries() ;	
 	
 	/**
 	 * Returns a set representing the range of the map. Operations on this
 	 * set will typically be expensive (O(n) where n is the size of the map).
+	 * The value equality used by this map can be obtained from this set.
 	 * 
 	 * @return the range of the map
 	 */

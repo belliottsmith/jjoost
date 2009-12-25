@@ -179,4 +179,9 @@ public abstract class AbstractArraySet<V> implements AnySet<V> {
 		return contains(v) ;
 	}
 
+	@Override
+	public Equality<? super V> equality() {
+		return valEq ;
+	}
+
 }

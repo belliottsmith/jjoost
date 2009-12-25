@@ -92,5 +92,10 @@ public class InlineMultiHashSet<V, N extends HashNode<N> & Value<V>> extends Abs
 			return false ;
 		}
 	}
+
+	@Override
+	public Equality<? super V> equality() {
+		return valEq.valEq ;
+	}
 	
 }

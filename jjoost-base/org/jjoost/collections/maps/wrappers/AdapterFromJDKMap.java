@@ -221,7 +221,7 @@ public class AdapterFromJDKMap<K, V> implements Map<K, V> {
 		return new IterableSet<V>() {
 			private static final long serialVersionUID = 1241705304994308496L;
 			@Override
-			protected Equality<? super V> equality() {
+			public Equality<? super V> equality() {
 				return Equalities.object();
 			}
 			@Override
@@ -393,6 +393,10 @@ public class AdapterFromJDKMap<K, V> implements Map<K, V> {
 				return new UniformIterator<V>(map.get(key), 1) ;
 			}
 			return EmptyIterator.get() ;
+		}
+		@Override
+		public Equality<? super V> equality() {
+			return Equalities.object() ;
 		}
 		
 	}

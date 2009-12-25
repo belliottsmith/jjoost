@@ -9,6 +9,7 @@ import org.jjoost.collections.AnySet;
 import org.jjoost.collections.MultiSet;
 import org.jjoost.collections.Set;
 import org.jjoost.collections.base.SynchronizedDelegator ;
+import org.jjoost.util.Equality;
 
 public abstract class SynchronizedArbitraryMap<K, V, M extends AnyMap<K, V>> extends SynchronizedDelegator implements AnyMap<K, V> {
 	
@@ -220,6 +221,12 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends AnyMap<K, V>> ext
 					return delegate.removeAndReturnFirst(value, removeAtMost) ;
 				}
 			}
+			@Override
+			public Equality<? super V> equality() {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.equality() ;
+				}
+			}
 		} ;
 	}
 	
@@ -364,6 +371,12 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends AnyMap<K, V>> ext
 					return delegate.removeAndReturnFirst(value, removeAtMost) ;
 				}
 			}
+			@Override
+			public Equality<? super V> equality() {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.equality() ;
+				}
+			}
 		} ;
 	}
 	
@@ -500,6 +513,12 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends AnyMap<K, V>> ext
 			public V removeAndReturnFirst(V value, int removeAtMost) {
 				synchronized(SynchronizedArbitraryMap.this) {
 					return delegate.removeAndReturnFirst(value, removeAtMost) ;
+				}
+			}
+			@Override
+			public Equality<? super V> equality() {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.equality() ;
 				}
 			}
 		} ;

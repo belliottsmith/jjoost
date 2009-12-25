@@ -15,7 +15,7 @@ public class InlineListHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extend
 	protected InlineListHashMap(
 			Hasher<? super K> keyHasher, Rehasher rehasher, 
 			AbstractHashMap.KeyEquality<K, V, N> keyEquality, 
-			AbstractHashMap.EntryEquality<K, V, N> entryEquality,
+			AbstractHashMap.NodeEquality<K, V, N> entryEquality,
 			HashMapNodeFactory<K, V, N> nodeFactory, HashStore<N> table) {
 		super(keyHasher, rehasher, keyEquality, entryEquality, nodeFactory, table) ;
 	}
@@ -46,13 +46,13 @@ public class InlineListHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extend
 	@Override
 	public V put(K key, V val) {
 		final N n = nodeFactory.makeNode(hash(key), key, val) ;
-		return store.put(n, n, entryEq, valProj()) ;
+		return store.put(n, n, nodeEq, valProj()) ;
 	}
 
 	@Override
 	public V putIfAbsent(K key, V val) {
 		final N n = nodeFactory.makeNode(hash(key), key, val) ;
-		return store.putIfAbsent(n, n, entryEq, valProj()) ;
+		return store.putIfAbsent(n, n, nodeEq, valProj()) ;
 	}
 
 	@Override
@@ -72,7 +72,7 @@ public class InlineListHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extend
 	
 	@Override
 	public ListMap<K, V> copy() {
-		return new InlineListHashMap<K, V, N>(keyHasher, rehasher, keyEq, entryEq, nodeFactory, store.copy(nodeProj(), entryEq)) ;
+		return new InlineListHashMap<K, V, N>(keyHasher, rehasher, keyEq, nodeEq, nodeFactory, store.copy(nodeProj(), nodeEq)) ;
 	}
 	
 	@Override
@@ -115,14 +115,14 @@ public class InlineListHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extend
 			final K key = entry.getKey() ;
 			final V val = entry.getValue() ;
 			final N n = nodeFactory.makeNode(hash(key), key, val) ;
-			return store.put(n, n, entryEq, entryProj()) ;
+			return store.put(n, n, nodeEq, entryProj()) ;
 		}
 		@Override
 		public Entry<K, V> putIfAbsent(Entry<K, V> entry) {
 			final K key = entry.getKey() ;
 			final V val = entry.getValue() ;
 			final N n = nodeFactory.makeNode(hash(key), key, val) ;
-			return store.putIfAbsent(n, n, entryEq, entryProj()) ;
+			return store.putIfAbsent(n, n, nodeEq, entryProj()) ;
 		}
 		@Override
 		public MultiSet<Entry<K, V>> copy() {
@@ -159,9 +159,9 @@ public class InlineListHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extend
 //		}		
 //	}	
 //	
-	protected static abstract class EntryEquality<K, V, N> extends AbstractHashMap.EntryEquality<K, V, N> {		
+	protected static abstract class NodeEquality<K, V, N> extends AbstractHashMap.NodeEquality<K, V, N> {		
 		private static final long serialVersionUID = -925214185778609894L ;
-		public EntryEquality(Equality<? super K> keyEq, Equality<? super V> valEq) {
+		public NodeEquality(Equality<? super K> keyEq, Equality<? super V> valEq) {
 			super(keyEq, valEq) ;
 		}
 		@Override

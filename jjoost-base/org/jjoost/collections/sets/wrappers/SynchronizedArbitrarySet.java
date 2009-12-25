@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.jjoost.collections.AnySet;
 import org.jjoost.collections.base.SynchronizedDelegator ;
+import org.jjoost.util.Equality;
 
 public class SynchronizedArbitrarySet<V, S extends AnySet<V>> extends SynchronizedDelegator implements AnySet<V> {
 	
@@ -82,16 +83,21 @@ public class SynchronizedArbitrarySet<V, S extends AnySet<V>> extends Synchroniz
 		return delegate.uniqueCount();
 	}
 	@Override
-	public int remove(V value, int removeAtMost) {
+	public synchronized int remove(V value, int removeAtMost) {
 		return delegate.remove(value, removeAtMost) ;
 	}
 	@Override
-	public Iterable<V> removeAndReturn(V value, int removeAtMost) {
+	public synchronized Iterable<V> removeAndReturn(V value, int removeAtMost) {
 		return delegate.removeAndReturn(value, removeAtMost) ;
 	}
 	@Override
-	public V removeAndReturnFirst(V value, int removeAtMost) {
+	public synchronized V removeAndReturnFirst(V value, int removeAtMost) {
 		return delegate.removeAndReturnFirst(value, removeAtMost) ;
+	}
+
+	@Override
+	public synchronized Equality<? super V> equality() {
+		return delegate.equality() ;
 	}
 
 }

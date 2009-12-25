@@ -172,7 +172,9 @@ public class MapMaker {
 								.keyEq(keyEquality)
 								.rehasher(rehasher)
 								.type(type)
-								.newScalarMap(), nesting.factory()) ;
+								.newScalarMap(), 
+								valEquality, 
+								nesting.factory()) ;
 				default:
 					// TODO : NestedSetMultiMap only really supports SERIAL and SYNCHRONIZED; need a new threadsafe version
 					throw new UnsupportedOperationException("NestedSetMultiMap is not concurrency safe, and there is not yet an equivalent class providing this functionality. You could try an Inline multi map instead.") ;
@@ -227,7 +229,9 @@ public class MapMaker {
 						.keyEq(keyEquality)
 						.rehasher(rehasher)
 						.type(type)
-						.newScalarMap(), nesting.factory()) ;
+						.newScalarMap(),
+						valEquality,
+						nesting.factory()) ;
 				default:
 					// TODO : NestedSetListMap only really supports SERIAL and SYNCHRONIZED; need a new threadsafe version
 					throw new UnsupportedOperationException("NestedSetListMap is not concurrency safe, and there is not yet an equivalent class providing this functionality. You could try an Inline list map instead.") ;

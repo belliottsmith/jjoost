@@ -1,6 +1,7 @@
 package org.jjoost.util;
 
 import java.util.Comparator;
+import java.util.Map.Entry;
 
 /**
  * Default implementations of <code>Equality</code>.
@@ -82,6 +83,25 @@ public class Equalities {
 			this.cmp = cmp;
 		}
 		public final boolean equates(E a, E b) { return cmp.compare(a, b) == 0 ; }
+    } ;
+    
+    /**
+     * Entry equality
+     */
+    public static <K, V> Equality<Entry<K, V>> forMapEntries(Equality<? super K> keyEq, Equality<? super V> valEq) { return new EntryEquality<K, V>(keyEq, valEq) ; } 
+    private static final class EntryEquality<K, V> implements Equality<Entry<K, V>> {
+    	private static final long serialVersionUID = -6611748225612686746L ;
+    	private final Equality<? super K> keyEq ;
+    	private final Equality<? super V> valEq ;
+		public EntryEquality(Equality<? super K> keyEq,
+				Equality<? super V> valEq) {
+			this.keyEq = keyEq;
+			this.valEq = valEq;
+		}
+		@Override
+		public boolean equates(Entry<K, V> a, Entry<K, V> b) {
+			return keyEq.equates(a.getKey(), b.getKey()) && valEq.equates(a.getValue(), b.getValue()) ;
+		}
     } ;
     
 }

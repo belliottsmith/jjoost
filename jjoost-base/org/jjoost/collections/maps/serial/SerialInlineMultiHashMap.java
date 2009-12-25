@@ -73,7 +73,7 @@ public class SerialInlineMultiHashMap<K, V> extends InlineMultiHashMap<K, V, Ser
 		}
 	}
 
-	public static final class EntryEquality<K, V> extends InlineMultiHashMap.EntryEquality<K, V, Node<K, V>> {
+	public static final class EntryEquality<K, V> extends InlineMultiHashMap.NodeEquality<K, V, Node<K, V>> {
 		private static final long serialVersionUID = -8668943955126687051L ;
 
 		public EntryEquality(Equality<? super K> keyEq, Equality<? super V> valEq) {

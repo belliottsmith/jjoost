@@ -7,6 +7,8 @@ import java.util.List ;
 
 import org.jjoost.collections.Set ;
 import org.jjoost.collections.lists.UniformList ;
+import org.jjoost.util.Equalities;
+import org.jjoost.util.Equality;
 
 public class AdapterFromJDKSet<V> implements Set<V> {
 	
@@ -161,6 +163,11 @@ public class AdapterFromJDKSet<V> implements Set<V> {
 			return null ;
 		}
 		return removeAndReturnFirst(val) ;
+	}
+
+	@Override
+	public Equality<? super V> equality() {
+		return Equalities.object() ;
 	}
 
 }

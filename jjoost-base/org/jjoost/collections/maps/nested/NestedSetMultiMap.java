@@ -6,14 +6,16 @@ import org.jjoost.collections.MultiMap;
 import org.jjoost.collections.Map;
 import org.jjoost.collections.Set;
 import org.jjoost.collections.maps.ImmutableMapEntry ;
+import org.jjoost.util.Equality;
 import org.jjoost.util.Factory;
 
 public class NestedSetMultiMap<K, V> extends NestedSetMap<K, V, Set<V>> implements MultiMap<K, V> {
 
 	private static final long serialVersionUID = -490119082143181821L;
 
-	public NestedSetMultiMap(Map<K, Set<V>> map, Factory<Set<V>> factory) {
-		super(map, factory);
+	public NestedSetMultiMap(Map<K, Set<V>> map, Equality<? super V> valueEq,
+			Factory<Set<V>> factory) {
+		super(map, valueEq, factory);
 	}
 
 	protected Set<Entry<K, V>> entrySet ;	
@@ -29,7 +31,7 @@ public class NestedSetMultiMap<K, V> extends NestedSetMap<K, V, Set<V>> implemen
 		final Map<K, Set<V>> copy = map.copy() ;
 		for (Entry<K, Set<V>> entry : copy.entries())
 			entry.setValue(entry.getValue().copy()) ;
-		return new NestedSetMultiMap<K, V>(copy, factory) ;
+		return new NestedSetMultiMap<K, V>(copy, valueEq, factory) ;
 	}
 	
 	@Override

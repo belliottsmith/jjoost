@@ -147,6 +147,11 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> imple
 		return contains(v) ;
 	}
 	
+	@Override
+	public Equality<? super V> equality() {
+		return valEq.valEq ;
+	}
+	
 	// **********************************
 	// EQUALITY
 	// **********************************

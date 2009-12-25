@@ -3,6 +3,7 @@ package org.jjoost.collections;
 import java.io.Serializable;
 import java.util.List;
 
+import org.jjoost.util.Equality;
 import org.jjoost.util.Function;
 
 /**
@@ -117,5 +118,13 @@ public interface AnyReadSet<V> extends Iterable<V>, Function<V, Boolean>, Serial
 	 * @return true, if successful
 	 */
 	public boolean permitsDuplicates() ;
+	
+	/**
+	 * Returns an object that represents the definition of equality used
+	 * by this set
+	 * 
+	 * @return an object representing the equality used by this set
+	 */
+	public Equality<? super V> equality() ;
 	
 }

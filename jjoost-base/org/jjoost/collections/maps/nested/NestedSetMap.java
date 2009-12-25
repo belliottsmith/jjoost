@@ -12,6 +12,9 @@ import org.jjoost.collections.MultiSet ;
 import org.jjoost.collections.Map;
 import org.jjoost.collections.lists.UniformList;
 import org.jjoost.collections.maps.ImmutableMapEntry ;
+import org.jjoost.collections.sets.base.IterableSet;
+import org.jjoost.util.Equalities;
+import org.jjoost.util.Equality;
 import org.jjoost.util.Factory;
 import org.jjoost.util.Function;
 import org.jjoost.util.Functions;
@@ -23,6 +26,7 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 	
 	protected final Map<K, S> map ;
 	protected final Factory<S> factory ;
+	protected final Equality<? super V> valueEq ;
 	private volatile int totalCount ;
 	
 	@SuppressWarnings("unchecked")
@@ -37,10 +41,11 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 		return keySet  ;
 	}
 
-	public NestedSetMap(Map<K, S> map, Factory<S> factory) {
+	public NestedSetMap(Map<K, S> map, Equality<? super V> valueEq, Factory<S> factory) {
 		super();
 		this.map = map ;
 		this.factory = factory ;
+		this.valueEq = valueEq ;
 	}
 
 	@Override
@@ -89,7 +94,7 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 	}
 	@Override
 	public AnySet<V> values() {
-		
+		return new ValueSet() ;
 	}
 	@Override
 	public S values(K key) {
@@ -202,6 +207,18 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 		map.shrink() ;
 	}
 
+	class ValueSet extends IterableSet<V> {
+		private static final long serialVersionUID = 7253995600614012301L;
+		@Override
+		public Equality<? super V> equality() {
+			return valueEq ;
+		}
+		@Override
+		public Iterator<V> iterator() {
+			return Iters.concat(Functions.apply(Functions.<S, Entry<K, S>>getMapEntryValueProjection(), map.entries())).iterator() ;
+		}
+	}
+	
 	class KeySet implements MultiSet<K> {
 		
 		private static final long serialVersionUID = 1461826147890179114L ;
@@ -387,6 +404,11 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 			return key ;
 		}
 
+		@Override
+		public Equality<? super K> equality() {
+			return map.keys().equality() ;
+		}
+
 	}
 	
 	abstract class AbstractEntrySet implements AnySet<Entry<K, V>> {
@@ -538,6 +560,11 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 				return new ImmutableMapEntry<K, V>(entry.getKey(), iter.iterator().next()) ;
 			}
 			return null ;
+		}
+
+		@Override
+		public Equality<? super Entry<K, V>> equality() {
+			return Equalities.forMapEntries(map.keys().equality(), factory.create().equality()) ;
 		}
 
 	}

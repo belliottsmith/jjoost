@@ -5,8 +5,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.jjoost.collections.AnyMap;
-import org.jjoost.collections.ExtendedIterable;
-import org.jjoost.collections.MultiSet;
+import org.jjoost.collections.AnySet;
 
 // TODO : all methods returning iterators should be wrapped so that calls to the remove() methods can be trapped to prevent inconsistent state
 public abstract class AbstractBiMap<
@@ -148,7 +147,7 @@ implements AnyMap<K, V> {
 		return map.uniqueKeyCount() ;
 	}
 	@Override
-	public MultiSet<V> values() {
+	public AnySet<V> values() {
 		return map.values() ;
 	}
 	
