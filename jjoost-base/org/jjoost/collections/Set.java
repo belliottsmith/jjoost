@@ -1,7 +1,5 @@
 package org.jjoost.collections;
 
-import org.jjoost.util.Function;
-
 /**
  * <p> This interface declares that a set supports precisely one occurence of each value
  * 
@@ -12,7 +10,7 @@ import org.jjoost.util.Function;
  * 
  * @author b.elliottsmith
  */
-public interface Set<V> extends AnySet<V>, Function<V, Boolean> {
+public interface Set<V> extends AnySet<V> {
 
 	/**
 	 * Insert the parameter into the set, removing and returning any value equal to the

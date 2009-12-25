@@ -71,6 +71,8 @@ public interface Map<K, V> extends AnyMap<K, V>, Function<K, V> {
 	 */
 	public int size() ;
 	
+	@Override public UnitarySet<V> values(K key) ;
+
 	@Override public Map<K, V> copy() ;
 	@Override public Set<Entry<K, V>> entries() ;
 	@Override public Set<K> keys() ;

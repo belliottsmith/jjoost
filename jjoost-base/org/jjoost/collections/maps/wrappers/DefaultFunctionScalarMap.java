@@ -8,6 +8,7 @@ import org.jjoost.collections.AnyMap;
 import org.jjoost.collections.AnySet ;
 import org.jjoost.collections.Map;
 import org.jjoost.collections.Set ;
+import org.jjoost.collections.UnitarySet;
 import org.jjoost.util.Factory;
 import org.jjoost.util.Function;
 
@@ -149,7 +150,7 @@ public class DefaultFunctionScalarMap<K, V> implements Map<K, V> {
 		return delegate.values();
 	}
 
-	public AnySet<V> values(K key) {
+	public UnitarySet<V> values(K key) {
 		return delegate.values(key);
 	}
 

@@ -4,6 +4,7 @@ import java.util.Map.Entry;
 
 import org.jjoost.collections.Map;
 import org.jjoost.collections.Set ;
+import org.jjoost.collections.UnitarySet;
 import org.jjoost.collections.base.HashNode ;
 import org.jjoost.collections.base.HashNodeFactory ;
 import org.jjoost.collections.base.HashStore ;
@@ -79,7 +80,7 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 	}
 
 	@Override
-	public Set<V> values(K key) {
+	public UnitarySet<V> values(K key) {
 		return new KeyValueSet(key) ;
 	}	
 
@@ -119,21 +120,17 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 		return totalCount() ;
 	}
 	
-	final class KeyValueSet extends AbstractKeyValueSet implements Set<V> {
+	final class KeyValueSet extends AbstractKeyValueSet implements UnitarySet<V> {
 		private static final long serialVersionUID = 2741936401896784235L;
 		public KeyValueSet(K key) {
 			super(key) ;
 		}
 		@Override
-		public V get(V key) {
-			return first(key) ;
+		public V get() {
+			return ScalarHashMap.this.first(key) ;
 		}
 		@Override
-		public int size() {
-			return totalCount() ;
-		}
-		@Override
-		public Set<V> copy() {
+		public UnitarySet<V> copy() {
 			throw new UnsupportedOperationException() ;
 		}
 	}

@@ -8,6 +8,7 @@ import org.jjoost.collections.AnyMap;
 import org.jjoost.collections.AnySet;
 import org.jjoost.collections.MultiSet;
 import org.jjoost.collections.Set;
+import org.jjoost.collections.UnitarySet;
 import org.jjoost.collections.base.SynchronizedDelegator ;
 import org.jjoost.util.Equality;
 
@@ -225,6 +226,151 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends AnyMap<K, V>> ext
 			public Equality<? super V> equality() {
 				synchronized(SynchronizedArbitraryMap.this) {
 					return delegate.equality() ;
+				}
+			}
+		} ;
+	}
+	
+	@SuppressWarnings("hiding")
+	protected <V> UnitarySet<V> wrap(final UnitarySet<V> delegate) {
+		return new UnitarySet<V>() {
+			private static final long serialVersionUID = -4043870977539052035L;
+			@Override public Iterable<V> all(V value) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return wrap(delegate.all(value)) ;
+				}
+			}
+			@Override public Boolean apply(V v) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.apply(v) ;
+				}
+			}
+			@Override public int clear() {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.clear() ;
+				}
+			}
+			@Override public Iterator<V> clearAndReturn() {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.clearAndReturn() ;
+				}
+			}
+			@Override public boolean contains(V value) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.contains(value) ;
+				}
+			}
+			@Override public UnitarySet<V> copy() {
+				throw new UnsupportedOperationException() ;
+			}
+			@Override public int count(V value) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.count(value) ;
+				}
+			}
+			@Override public V first(V value) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.first(value) ;
+				}
+			}
+			@Override public boolean isEmpty() {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.isEmpty() ;
+				}
+			}
+			@Override public Iterator<V> iterator() {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return wrap(delegate.iterator()) ;
+				}
+			}
+			@Override public List<V> list(V value) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.list(value) ;
+				}
+			}
+			@Override public boolean permitsDuplicates() {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.permitsDuplicates() ;
+				}
+			}
+			@Override public V put(V val) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.put(val) ;
+				}
+			}
+			@Override public int putAll(Iterable<V> val) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.putAll(val) ;
+				}
+			}
+			@Override public V putIfAbsent(V val) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.putIfAbsent(val) ;
+				}
+			}
+			@Override public int remove(V value) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.remove(value) ;
+				}
+			}
+			@Override public Iterable<V> removeAndReturn(V value) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return wrap(delegate.removeAndReturn(value)) ;
+				}
+			}
+			@Override public V removeAndReturnFirst(V value) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.removeAndReturnFirst(value) ;
+				}
+			}
+			@Override public void shrink() {
+				synchronized(SynchronizedArbitraryMap.this) {
+					delegate.shrink() ;
+				}
+			}
+			@Override public int totalCount() {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.totalCount() ;
+				}
+			}
+			@Override public Iterable<V> unique() {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return wrap(delegate.unique()) ;
+				}
+			}
+			@Override public int uniqueCount() {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.uniqueCount() ;
+				}
+			}
+			@Override
+			public int remove(V value, int removeAtMost) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.remove(value, removeAtMost) ;
+				}
+			}
+			@Override
+			public Iterable<V> removeAndReturn(V value, int removeAtMost) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.removeAndReturn(value, removeAtMost) ;
+				}
+			}
+			@Override
+			public V removeAndReturnFirst(V value, int removeAtMost) {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.removeAndReturnFirst(value, removeAtMost) ;
+				}
+			}
+			@Override
+			public Equality<? super V> equality() {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.equality() ;
+				}
+			}
+			@Override
+			public V get() {
+				synchronized(SynchronizedArbitraryMap.this) {
+					return delegate.get() ;
 				}
 			}
 		} ;

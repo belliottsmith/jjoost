@@ -10,6 +10,7 @@ import org.jjoost.collections.AnyMap ;
 import org.jjoost.collections.Map ;
 import org.jjoost.collections.MultiSet;
 import org.jjoost.collections.Set ;
+import org.jjoost.collections.UnitarySet;
 import org.jjoost.collections.iters.EmptyIterator ;
 import org.jjoost.collections.iters.UniformIterator ;
 import org.jjoost.collections.lists.UniformList ;
@@ -231,11 +232,11 @@ public class AdapterFromJDKMap<K, V> implements Map<K, V> {
 		} ;
 	}
 	@Override
-	public Set<V> values(K key) {
+	public UnitarySet<V> values(K key) {
 		return new KeyValueSet(key) ;
 	}
 	
-	private final class KeyValueSet implements Set<V> {
+	private final class KeyValueSet implements UnitarySet<V> {
 		private static final long serialVersionUID = 6651319386421757315L ;
 		final K key ;
 		public KeyValueSet(K key) {
@@ -368,20 +369,16 @@ public class AdapterFromJDKMap<K, V> implements Map<K, V> {
 			return totalCount() ;
 		}
 		@Override
-		public Set<V> copy() {
+		public UnitarySet<V> copy() {
 			throw new UnsupportedOperationException() ;
 		}
 		@Override
-		public V get(V key) {
-			return first(key) ;
+		public V get() {
+			return map.get(key) ;
 		}
 		@Override
 		public V put(V val) {
 			throw new UnsupportedOperationException() ;
-		}
-		@Override
-		public int size() {
-			return totalCount() ;
 		}
 		@Override
 		public Boolean apply(V v) {

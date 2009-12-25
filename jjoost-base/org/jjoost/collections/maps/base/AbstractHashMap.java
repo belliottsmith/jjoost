@@ -203,8 +203,8 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		
 		private static final long serialVersionUID = 1461826147890179114L ;
 		
-		private final int hash ;
-		private final K key ;
+		protected final int hash ;
+		protected final K key ;
 		
 		public AbstractKeyValueSet(K key) {
 			this.key = key ;
