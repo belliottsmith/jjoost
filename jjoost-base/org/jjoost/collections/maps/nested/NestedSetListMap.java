@@ -12,7 +12,9 @@ import org.jjoost.collections.maps.ImmutableMapEntry;
 import org.jjoost.collections.sets.base.AbstractUniqueSetAdapter;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Factory;
+import org.jjoost.util.Function;
 import org.jjoost.util.Functions;
+import org.jjoost.util.Iters;
 
 public class NestedSetListMap<K, V> extends NestedSetMap<K, V, MultiSet<V>> implements ListMap<K, V> {
 
@@ -92,10 +94,20 @@ public class NestedSetListMap<K, V> extends NestedSetMap<K, V, MultiSet<V>> impl
 			}
 			@Override
 			public Iterator<Entry<K, V>> iterator() {
-				
+				return Iters.concat(Functions.apply(new UniqueMultiEntryMaker<K, V>(), map.entries())).iterator() ;
 			}
 		}
 		
 	}
 	
+	private static final class UniqueMultiEntryMaker<K, V> implements Function<Entry<K, ? extends AnySet<V>>, Iterable<Entry<K, V>>> {
+		private static final long serialVersionUID = -965724235732791909L;
+		private final UpdateableEntryMaker<K, V> f = new UpdateableEntryMaker<K, V>() ;
+		@Override
+		public Iterable<Entry<K, V>> apply(Entry<K, ? extends AnySet<V>> entry) {
+			f.update(entry.getKey()) ;
+			return Functions.apply(f, entry.getValue().unique()) ;
+		}
+
+	}
 }

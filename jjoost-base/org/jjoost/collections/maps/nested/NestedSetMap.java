@@ -21,6 +21,10 @@ import org.jjoost.util.Function;
 import org.jjoost.util.Functions;
 import org.jjoost.util.Iters ;
 
+// TODO : fully removing a key (or its values) in one of the wrapping iterators returned by this set should result in the key/set pair being removed from the underlying map.
+// could do this by writing a specialised "expanding" iterator which expands some iterator (via some function) into the concatenation of multiple iterators (rather than using Iters.concat(Functions.apply())
+// so that this iterator could know that apply remove completely to an expanded iterator results in a remove being applied to the previous super iterator's record. This approach would only work in a serial
+// environment
 public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<K, V> {
 
 	private static final long serialVersionUID = -6962291049889502542L;
@@ -484,7 +488,7 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 
 		@Override
 		public Iterator<Entry<K, V>> iterator() {
-			return NestedSetMap.this.entries().iterator() ;
+			return Iters.concat(Functions.apply(new MultiEntryMaker<K, V>(), map.entries())).iterator() ;
 		}
 		
 		@Override
@@ -582,6 +586,27 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 		}
 	}
 
+	protected static final class UpdateableEntryMaker<K, V> implements Function<V, Entry<K, V>> {
+		private static final long serialVersionUID = -965724235732791909L;
+		private K key ;
+		public void update(K key) { this.key = key ; }
+		@Override
+		public Entry<K, V> apply(V value) {
+			return new ImmutableMapEntry<K, V>(key, value) ;
+		}
+	}
+	
+	private static final class MultiEntryMaker<K, V> implements Function<Entry<K, ? extends Iterable<V>>, Iterable<Entry<K, V>>> {
+		private static final long serialVersionUID = -965724235732791909L;
+		private final UpdateableEntryMaker<K, V> f = new UpdateableEntryMaker<K, V>() ;
+		@Override
+		public Iterable<Entry<K, V>> apply(Entry<K, ? extends Iterable<V>> entry) {
+			f.update(entry.getKey()) ;
+			return Functions.apply(f, entry.getValue()) ;
+		}
+
+	}
+	
 	@SuppressWarnings("unchecked")
 	private static final KeyRepeater KEY_REPEATER = new KeyRepeater() ;
 	@SuppressWarnings("unchecked")

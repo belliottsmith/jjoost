@@ -1,6 +1,7 @@
 package org.jjoost.collections.sets.wrappers;
 
 import org.jjoost.collections.MultiSet;
+import org.jjoost.collections.Set;
 
 public class SynchronizedMultiSet<V> extends SynchronizedArbitrarySet<V, MultiSet<V>> implements MultiSet<V> {
 	
@@ -16,6 +17,11 @@ public class SynchronizedMultiSet<V> extends SynchronizedArbitrarySet<V, MultiSe
 
 	@Override public synchronized void put(V val, int numberOfTimes) {
 		delegate.put(val, numberOfTimes) ;
+	}
+
+	@Override
+	public synchronized Set<V> unique() {
+		return wrap(delegate.unique()) ;
 	}
 	
 }

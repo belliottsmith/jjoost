@@ -1,12 +1,14 @@
 package org.jjoost.collections.sets.serial;
 
 import java.util.ArrayList ;
+import java.util.Iterator;
 import java.util.List ;
 
 import org.jjoost.collections.AnySet;
 import org.jjoost.collections.MultiSet ;
 import org.jjoost.collections.Set;
 import org.jjoost.collections.sets.base.AbstractArraySet ;
+import org.jjoost.collections.sets.base.AbstractUniqueSetAdapter;
 import org.jjoost.util.Equality ;
 import org.jjoost.util.Filters ;
 import org.jjoost.util.Iters ;
@@ -78,12 +80,24 @@ public class MultiArraySet<V> extends AbstractArraySet<V> implements MultiSet<V>
 
 	@Override
 	public Set<V> unique() {
-		return Filters.apply(Filters.unique(valEq), this) ;
+		return new UniqueSet() ;
 	}
 
 	@Override
 	public int uniqueCount() {
 		return Iters.count(unique()) ;
+	}
+	
+	private final class UniqueSet extends AbstractUniqueSetAdapter<V> {
+		private static final long serialVersionUID = -7222841189073398910L;
+		@Override
+		protected AnySet<V> set() {
+			return MultiArraySet.this ;
+		}
+		@Override
+		public Iterator<V> iterator() {
+			return Filters.apply(Filters.unique(valEq), MultiArraySet.this.iterator()) ;
+		}		
 	}
 	
 }
