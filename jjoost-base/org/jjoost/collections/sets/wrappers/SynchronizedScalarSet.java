@@ -10,6 +10,9 @@ public class SynchronizedScalarSet<V> extends SynchronizedArbitrarySet<V, Set<V>
 		super(delegate) ;
 	}
 	
+	@Override public synchronized Set<V> unique() {
+		return delegate.unique();
+	}
 	@Override public synchronized Set<V> copy() {
 		return new SynchronizedScalarSet<V>(delegate.copy()) ;
 	}

@@ -1,16 +1,14 @@
 package org.jjoost.collections.maps.serial;
 
-import java.util.Map.Entry ;
+import java.util.Map.Entry;
 
-import org.jjoost.collections.Map ;
-import org.jjoost.collections.base.SerialHashStore ;
-import org.jjoost.collections.base.SerialHashStore.SerialHashNode ;
-import org.jjoost.collections.maps.base.HashMapNodeFactory ;
-import org.jjoost.collections.maps.base.ScalarHashMap ;
+import org.jjoost.collections.Map;
+import org.jjoost.collections.base.SerialHashStore;
+import org.jjoost.collections.base.SerialHashStore.SerialHashNode;
+import org.jjoost.collections.maps.base.HashMapNodeFactory;
+import org.jjoost.collections.maps.base.ScalarHashMap;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
-import org.jjoost.util.Hasher;
-import org.jjoost.util.Hashers;
 import org.jjoost.util.Rehasher;
 
 public class SerialScalarHashMap<K, V> extends ScalarHashMap<K, V, SerialScalarHashMap.SerialScalarHashMapNode<K, V>>{
@@ -21,14 +19,14 @@ public class SerialScalarHashMap<K, V> extends ScalarHashMap<K, V, SerialScalarH
 		this(16, 0.75f) ;
 	}
 	public SerialScalarHashMap(int minimumInitialCapacity, float loadFactor) {
-		this(minimumInitialCapacity, loadFactor, Hashers.object(), SerialHashStore.defaultRehasher(), Equalities.object(), Equalities.object()) ;
+		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object(), Equalities.object()) ;
 	}
 	
 	public SerialScalarHashMap( 
-			int minimumInitialCapacity, float loadFactor, Hasher<? super K> keyHasher, 
+			int minimumInitialCapacity, float loadFactor, 
 			Rehasher rehasher, Equality<? super K> keyEquality, Equality<? super V> valEquality) 
 	{
-		super(keyHasher, rehasher, new KeyEquality<K, V>(keyEquality), new EntryEquality<K, V>(keyEquality, valEquality),
+		super(rehasher, new KeyEquality<K, V>(keyEquality), new EntryEquality<K, V>(keyEquality, valEquality),
 			SerialScalarHashMap.<K, V>serialNodeFactory(), 
 			new SerialHashStore<SerialScalarHashMapNode<K, V>>(minimumInitialCapacity, loadFactor)) ;
 	}
@@ -90,15 +88,9 @@ public class SerialScalarHashMap<K, V> extends ScalarHashMap<K, V, SerialScalarH
 			super(keyEq, valEq) ;
 		}
 		@Override
-		public boolean equates(SerialScalarHashMapNode<K, V> a, SerialScalarHashMapNode<K, V> b) {
-			return keyEq.equates(a.key, b.key) && valEq.equates(a.value, b.value) ;
-		}
-
-		@Override
 		public boolean prefixMatch(Entry<K, V> cmp, SerialScalarHashMapNode<K, V> n) {
 			return keyEq.equates(cmp.getKey(), n.key) ;
 		}
-
 		@Override
 		public boolean suffixMatch(Entry<K, V> cmp, SerialScalarHashMapNode<K, V> n) {
 			return valEq.equates(cmp.getValue(), n.value) ;

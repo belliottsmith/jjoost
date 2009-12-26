@@ -5,8 +5,6 @@ import org.jjoost.collections.sets.base.AbstractHashSet ;
 import org.jjoost.collections.sets.base.ScalarHashSet ;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
-import org.jjoost.util.Hasher;
-import org.jjoost.util.Hashers;
 import org.jjoost.util.Rehasher;
 
 public class SerialScalarHashSet<V> extends ScalarHashSet<V, AbstractHashSet.SerialHashSetNode<V>>{
@@ -17,22 +15,22 @@ public class SerialScalarHashSet<V> extends ScalarHashSet<V, AbstractHashSet.Ser
 		this(16, 0.75f) ;
 	}
 	public SerialScalarHashSet(int minimumInitialCapacity, float loadFactor) {
-		this(minimumInitialCapacity, loadFactor, Hashers.object(), SerialHashStore.defaultRehasher(), Equalities.object()) ;
+		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object()) ;
 	}
 	
-	public SerialScalarHashSet(Hasher<? super V> keyHasher, Equality<? super V> keyEquality) {
-		this(keyHasher, SerialHashStore.defaultRehasher(), keyEquality) ;
+	public SerialScalarHashSet(Equality<? super V> keyEquality) {
+		this(SerialHashStore.defaultRehasher(), keyEquality) ;
 	}
 	
-	public SerialScalarHashSet(Hasher<? super V> keyHasher, Rehasher rehasher, Equality<? super V> keyEquality) { 
-		this(16, 0.75f, keyHasher, rehasher, keyEquality) ;
+	public SerialScalarHashSet(Rehasher rehasher, Equality<? super V> keyEquality) { 
+		this(16, 0.75f, rehasher, keyEquality) ;
 	}
 	
 	public SerialScalarHashSet( 
-			int minimumInitialCapacity, float loadFactor, Hasher<? super V> keyHasher, 
+			int minimumInitialCapacity, float loadFactor, 
 			Rehasher rehasher, Equality<? super V> keyEquality) 
 	{
-		super(keyHasher, rehasher, keyEquality, 
+		super(rehasher, keyEquality, 
 			AbstractHashSet.<V>serialNodeFactory(), 
 			new SerialHashStore<SerialHashSetNode<V>>(minimumInitialCapacity, loadFactor)) ;
 	}

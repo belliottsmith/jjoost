@@ -11,17 +11,16 @@ import org.jjoost.collections.base.HashStore ;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Factory;
 import org.jjoost.util.Function;
-import org.jjoost.util.Hasher;
 import org.jjoost.util.Rehasher;
 
 public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends AbstractHashMap<K, V, N> implements Map<K, V> {
 
 	protected ScalarHashMap(
-			Hasher<? super K> keyHasher, Rehasher rehasher, 
+			Rehasher rehasher, 
 			AbstractHashMap.KeyEquality<K, V, N> keyEquality, 
 			AbstractHashMap.NodeEquality<K, V, N> entryEquality,
 			HashMapNodeFactory<K, V, N> nodeFactory, HashStore<N> table) {
-		super(keyHasher, rehasher, keyEquality, entryEquality, nodeFactory, table) ;
+		super(rehasher, keyEquality, entryEquality, nodeFactory, table) ;
 	}
 	
 	private static final long serialVersionUID = -6385620376018172675L;
@@ -133,6 +132,10 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 		public UnitarySet<V> copy() {
 			throw new UnsupportedOperationException() ;
 		}
+		@Override
+		public UnitarySet<V> unique() {
+			return this ;
+		}
 	}
 	
 	final class KeySet extends AbstractKeySet implements Set<K> {
@@ -148,6 +151,10 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 		@Override
 		public Set<K> copy() {
 			throw new UnsupportedOperationException() ;
+		}
+		@Override
+		public Set<K> unique() {
+			return this ;
 		}
 	}
 
@@ -172,18 +179,22 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 		public Set<Entry<K, V>> copy() {
 			throw new UnsupportedOperationException() ;
 		}
+		@Override
+		public Set<Entry<K, V>> unique() {
+			return this ;
+		}
 	}
 
 	@Override
 	public Map<K, V> copy() {
-		return new ScalarHashMap<K, V, N>(keyHasher, rehasher, keyEq, nodeEq, nodeFactory, store.copy(nodeProj(), nodeEq)) ;
+		return new ScalarHashMap<K, V, N>(rehasher, keyEq, nodeEq, nodeFactory, store.copy(nodeProj(), nodeEq)) ;
 	}
 
 	// **********************************
 	// EQUALITY
 	// **********************************
 	
-	protected static abstract class NodeEquality<K, V, N> extends  AbstractHashMap.NodeEquality<K, V, N> {
+	protected static abstract class NodeEquality<K, V, N extends HashNode<N> & Entry<K, V>> extends  AbstractHashMap.NodeEquality<K, V, N> {
 		private static final long serialVersionUID = -4970889935020537472L ;
 		public NodeEquality(Equality<? super K> keyEq, Equality<? super V> valEq) {
 			super(keyEq, valEq) ;

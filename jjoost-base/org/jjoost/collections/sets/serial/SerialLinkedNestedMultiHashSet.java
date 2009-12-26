@@ -1,20 +1,18 @@
 package org.jjoost.collections.sets.serial;
 
-import java.util.Arrays ;
-import java.util.Iterator ;
-import java.util.List ;
-import java.util.NoSuchElementException ;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 
-import org.jjoost.collections.base.HashNodeFactory ;
-import org.jjoost.collections.base.SerialHashStore ;
-import org.jjoost.collections.base.SerialLinkedHashStore ;
-import org.jjoost.collections.base.SerialLinkedHashStore.SerialLinkedHashNode ;
-import org.jjoost.collections.sets.base.NestedMultiHashSet ;
-import org.jjoost.util.Counters ;
+import org.jjoost.collections.base.HashNodeFactory;
+import org.jjoost.collections.base.SerialHashStore;
+import org.jjoost.collections.base.SerialLinkedHashStore;
+import org.jjoost.collections.base.SerialLinkedHashStore.SerialLinkedHashNode;
+import org.jjoost.collections.sets.base.NestedMultiHashSet;
+import org.jjoost.util.Counters;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
-import org.jjoost.util.Hasher;
-import org.jjoost.util.Hashers;
 import org.jjoost.util.Rehasher;
 
 public class SerialLinkedNestedMultiHashSet<V> extends NestedMultiHashSet<V, SerialLinkedNestedMultiHashSet.Node<V>>{
@@ -25,14 +23,14 @@ public class SerialLinkedNestedMultiHashSet<V> extends NestedMultiHashSet<V, Ser
 		this(16, 0.75f) ;
 	}
 	public SerialLinkedNestedMultiHashSet(int minimumInitialCapacity, float loadFactor) {
-		this(minimumInitialCapacity, loadFactor, Hashers.object(), SerialHashStore.defaultRehasher(), Equalities.object()) ;
+		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object()) ;
 	}
 	
 	public SerialLinkedNestedMultiHashSet( 
-			int minimumInitialCapacity, float loadFactor, Hasher<? super V> keyHasher, 
+			int minimumInitialCapacity, float loadFactor, 
 			Rehasher rehasher, Equality<? super V> keyEquality) 
 	{
-		super(Counters.newCounter(), keyHasher, rehasher, 
+		super(Counters.newCounter(), rehasher, 
 			new ValueEquality<V, Node<V>>(keyEquality), 
 			SerialLinkedNestedMultiHashSet.<V>factory(), 
 			new SerialLinkedHashStore<Node<V>>(minimumInitialCapacity, loadFactor)) ;

@@ -1,21 +1,19 @@
 package org.jjoost.collections.sets.concurrent;
 
-import java.util.Iterator ;
-import java.util.List ;
-import java.util.NoSuchElementException ;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 
-import org.jjoost.collections.base.HashNodeFactory ;
-import org.jjoost.collections.base.LockFreeLinkedHashStore ;
-import org.jjoost.collections.base.SerialHashStore ;
-import org.jjoost.collections.base.LockFreeHashStore.Counting ;
-import org.jjoost.collections.base.LockFreeLinkedHashStore.LockFreeLinkedHashNode ;
-import org.jjoost.collections.lists.UniformList ;
-import org.jjoost.collections.sets.base.NestedMultiHashSet ;
-import org.jjoost.util.Counters ;
+import org.jjoost.collections.base.HashNodeFactory;
+import org.jjoost.collections.base.LockFreeLinkedHashStore;
+import org.jjoost.collections.base.SerialHashStore;
+import org.jjoost.collections.base.LockFreeHashStore.Counting;
+import org.jjoost.collections.base.LockFreeLinkedHashStore.LockFreeLinkedHashNode;
+import org.jjoost.collections.lists.UniformList;
+import org.jjoost.collections.sets.base.NestedMultiHashSet;
+import org.jjoost.util.Counters;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
-import org.jjoost.util.Hasher;
-import org.jjoost.util.Hashers;
 import org.jjoost.util.Rehasher;
 
 public class LockFreeLinkedCountingMultiHashSet<V> extends NestedMultiHashSet<V, LockFreeLinkedCountingMultiHashSet.Node<V>>{
@@ -26,14 +24,14 @@ public class LockFreeLinkedCountingMultiHashSet<V> extends NestedMultiHashSet<V,
 		this(16, 0.75f) ;
 	}
 	public LockFreeLinkedCountingMultiHashSet(int minimumInitialCapacity, float loadFactor) {
-		this(minimumInitialCapacity, loadFactor, Hashers.object(), SerialHashStore.defaultRehasher(), Equalities.object()) ;
+		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object()) ;
 	}
 	
 	public LockFreeLinkedCountingMultiHashSet( 
-			int minimumInitialCapacity, float loadFactor, Hasher<? super V> keyHasher, 
+			int minimumInitialCapacity, float loadFactor, 
 			Rehasher rehasher, Equality<? super V> keyEquality) 
 	{
-		super(Counters.newCounter(), keyHasher, rehasher, 
+		super(Counters.newCounter(), rehasher, 
 			new NestedMultiHashSet.ValueEquality<V, LockFreeLinkedCountingMultiHashSet.Node<V>>(keyEquality), 
 			LockFreeLinkedCountingMultiHashSet.<V>factory(), 
 			new LockFreeLinkedHashStore<Node<V>>(minimumInitialCapacity, loadFactor, Counting.PRECISE, Counting.OFF)) ;

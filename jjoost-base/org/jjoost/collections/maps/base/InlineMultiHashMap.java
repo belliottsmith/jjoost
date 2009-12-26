@@ -1,24 +1,26 @@
 package org.jjoost.collections.maps.base;
 
+import java.util.Iterator;
 import java.util.Map.Entry;
 
+import org.jjoost.collections.AnySet;
 import org.jjoost.collections.MultiSet ;
 import org.jjoost.collections.MultiMap;
 import org.jjoost.collections.Set ;
 import org.jjoost.collections.base.HashNode ;
 import org.jjoost.collections.base.HashStore ;
+import org.jjoost.collections.sets.base.AbstractUniqueSetAdapter;
 import org.jjoost.util.Equality;
-import org.jjoost.util.Hasher;
 import org.jjoost.util.Rehasher;
 
 public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends AbstractHashMap<K, V, N> implements MultiMap<K, V> {
 
 	protected InlineMultiHashMap(
-			Hasher<? super K> keyHasher, Rehasher rehasher, 
+			Rehasher rehasher, 
 			AbstractHashMap.KeyEquality<K, V, N> keyEquality, 
 			AbstractHashMap.NodeEquality<K, V, N> entryEquality,
 			HashMapNodeFactory<K, V, N> nodeFactory, HashStore<N> table) {
-		super(keyHasher, rehasher, keyEquality, entryEquality, nodeFactory, table) ;
+		super(rehasher, keyEquality, entryEquality, nodeFactory, table) ;
 	}
 	
 	private static final long serialVersionUID = -6385620376018172675L;
@@ -78,7 +80,7 @@ public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> exten
 	
 	@Override
 	public MultiMap<K, V> copy() {
-		return new InlineMultiHashMap<K, V, N>(keyHasher, rehasher, keyEq, nodeEq, nodeFactory, store.copy(nodeProj(), nodeEq)) ;
+		return new InlineMultiHashMap<K, V, N>(rehasher, keyEq, nodeEq, nodeFactory, store.copy(nodeProj(), nodeEq)) ;
 	}
 
 	final class KeyValueSet extends AbstractKeyValueSet implements Set<V> {
@@ -98,10 +100,17 @@ public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> exten
 		public int size() {
 			return totalCount() ;
 		}
+		@Override
+		public Set<V> unique() {
+			return this ;
+		}
 	}
 	
 	final class KeySet extends AbstractKeySet implements MultiSet<K> {
+
 		private static final long serialVersionUID = 2741936401896784235L;
+		private UniqueKeySet unique ;
+		
 		@Override
 		public MultiSet<K> copy() {
 			throw new UnsupportedOperationException() ;
@@ -109,6 +118,25 @@ public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> exten
 		@Override
 		public void put(K val, int numberOfTimes) {
 			throw new UnsupportedOperationException() ;
+		}
+		
+		@Override 
+		public Set<K> unique() {
+			if (unique == null)
+				unique = new UniqueKeySet() ;
+			return unique ;
+		}
+		
+		private final class UniqueKeySet extends AbstractUniqueSetAdapter<K> {
+			private static final long serialVersionUID = 686867617922872433L;
+			@Override
+			protected AnySet<K> set() {
+				return KeySet.this ;
+			}
+			@Override
+			public Iterator<K> iterator() {
+				return store.unique(keyProj(), keyEq.keyEq, nodeProj(), nodeEq, keyProj()) ;
+			}
 		}
 	}
 
@@ -139,6 +167,10 @@ public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> exten
 		public Set<Entry<K, V>> copy() {
 			throw new UnsupportedOperationException() ;
 		}
+		@Override
+		public Set<Entry<K, V>> unique() {
+			return this ;
+		}
 	}
 
 	// *****************************************
@@ -146,7 +178,7 @@ public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> exten
 	// *****************************************
 	
 
-	protected static abstract class NodeEquality<K, V, N> extends AbstractHashMap.NodeEquality<K, V, N> {
+	protected static abstract class NodeEquality<K, V, N extends HashNode<N> & Entry<K, V>> extends AbstractHashMap.NodeEquality<K, V, N> {
 		private static final long serialVersionUID = -5082864991691726065L ;
 		public NodeEquality(Equality<? super K> keyEq, Equality<? super V> valEq) {
 			super(keyEq, valEq) ;

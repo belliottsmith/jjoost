@@ -1,29 +1,27 @@
 package org.jjoost.collections;
 
-import org.jjoost.collections.base.HashStoreType ;
-import org.jjoost.collections.maps.concurrent.LockFreeInlineListHashMap ;
-import org.jjoost.collections.maps.concurrent.LockFreeInlineMultiHashMap ;
-import org.jjoost.collections.maps.concurrent.LockFreeLinkedInlineListHashMap ;
-import org.jjoost.collections.maps.concurrent.LockFreeLinkedInlineMultiHashMap ;
-import org.jjoost.collections.maps.concurrent.LockFreeLinkedScalarHashMap ;
-import org.jjoost.collections.maps.concurrent.LockFreeScalarHashMap ;
-import org.jjoost.collections.maps.nested.NestedSetListMap ;
-import org.jjoost.collections.maps.nested.NestedSetMultiMap ;
-import org.jjoost.collections.maps.serial.SerialInlineListHashMap ;
-import org.jjoost.collections.maps.serial.SerialInlineMultiHashMap ;
-import org.jjoost.collections.maps.serial.SerialLinkedInlineListHashMap ;
-import org.jjoost.collections.maps.serial.SerialLinkedInlineMultiHashMap ;
-import org.jjoost.collections.maps.serial.SerialLinkedScalarHashMap ;
-import org.jjoost.collections.maps.serial.SerialScalarHashMap ;
-import org.jjoost.collections.maps.wrappers.SynchronizedListMap ;
-import org.jjoost.collections.maps.wrappers.SynchronizedMultiMap ;
-import org.jjoost.collections.maps.wrappers.SynchronizedScalarMap ;
+import org.jjoost.collections.base.HashStoreType;
+import org.jjoost.collections.maps.concurrent.LockFreeInlineListHashMap;
+import org.jjoost.collections.maps.concurrent.LockFreeInlineMultiHashMap;
+import org.jjoost.collections.maps.concurrent.LockFreeLinkedInlineListHashMap;
+import org.jjoost.collections.maps.concurrent.LockFreeLinkedInlineMultiHashMap;
+import org.jjoost.collections.maps.concurrent.LockFreeLinkedScalarHashMap;
+import org.jjoost.collections.maps.concurrent.LockFreeScalarHashMap;
+import org.jjoost.collections.maps.nested.NestedSetListMap;
+import org.jjoost.collections.maps.nested.NestedSetMultiMap;
+import org.jjoost.collections.maps.serial.SerialInlineListHashMap;
+import org.jjoost.collections.maps.serial.SerialInlineMultiHashMap;
+import org.jjoost.collections.maps.serial.SerialLinkedInlineListHashMap;
+import org.jjoost.collections.maps.serial.SerialLinkedInlineMultiHashMap;
+import org.jjoost.collections.maps.serial.SerialLinkedScalarHashMap;
+import org.jjoost.collections.maps.serial.SerialScalarHashMap;
+import org.jjoost.collections.maps.wrappers.SynchronizedListMap;
+import org.jjoost.collections.maps.wrappers.SynchronizedMultiMap;
+import org.jjoost.collections.maps.wrappers.SynchronizedScalarMap;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Factory;
 import org.jjoost.util.Function;
-import org.jjoost.util.Hasher;
-import org.jjoost.util.Hashers;
 import org.jjoost.util.Rehasher;
 import org.jjoost.util.Rehashers;
 
@@ -58,7 +56,6 @@ public class MapMaker {
 	}
 	
 	public static class HashMapMaker<K, V> extends AbstractMapMaker<K, V> {
-		private Hasher<? super K> keyHasher = Hashers.object() ;
 		private Rehasher rehasher = null ;
 		private Equality<? super K> keyEquality = Equalities.object() ;
 		private Equality<? super V> valEquality = Equalities.object() ;
@@ -68,14 +65,13 @@ public class MapMaker {
 		private Function<K, V> factoryFunction ;
 		private Factory<V> factory ;
 		public HashMapMaker() { }
-		private HashMapMaker(Hasher<? super K> keyHasher, Rehasher rehasher,
+		private HashMapMaker(Rehasher rehasher,
 				Equality<? super K> keyEquality,
 				Equality<? super V> valEquality, HashStoreType type,
 				int initialCapacity, float loadFactor,
 				Function<K, V> factoryFunction,
 				Factory<V> factory) {
 			super();
-			this.keyHasher = keyHasher;
 			this.rehasher = rehasher;
 			this.keyEquality = keyEquality;
 			this.valEquality = valEquality;
@@ -85,7 +81,6 @@ public class MapMaker {
 			this.factoryFunction = factoryFunction;
 			this.factory = factory;
 		}
-		public HashMapMaker<K, V> hasher(Hasher<? super K> hasher) { this.keyHasher = hasher ; return this ; }
 		public HashMapMaker<K, V> rehasher(Rehasher rehasher) { this.rehasher = rehasher ; return this ; }
 		public HashMapMaker<K, V> keyEq(Equality<? super K> eq) { this.keyEquality = eq ; return this ; }
 		public HashMapMaker<K, V> valEq(Equality<? super V> eq) { this.valEquality = eq ; return this ; }
@@ -98,29 +93,29 @@ public class MapMaker {
 			switch(type.type()) {
 			case SERIAL:
 				return new SerialScalarHashMap<K, V>(
-					initialCapacity, loadFactor, keyHasher, 
+					initialCapacity, loadFactor,  
 					rehasher(), keyEquality, valEquality) ;
 			case SYNCHRONIZED:
 				return new SynchronizedScalarMap<K, V>(
 					new SerialScalarHashMap<K, V>(
-						initialCapacity, loadFactor, keyHasher, 
+						initialCapacity, loadFactor,  
 						rehasher(), keyEquality, valEquality)) ;
 			case LINKED_SERIAL:
 				return new SerialLinkedScalarHashMap<K, V>(
-					initialCapacity, loadFactor, keyHasher, 
+					initialCapacity, loadFactor, 
 					rehasher(), keyEquality, valEquality) ;
 			case LINKED_SYNCHRONIZED:
 				return new SynchronizedScalarMap<K, V>(
 					new SerialLinkedScalarHashMap<K, V>(
-						initialCapacity, loadFactor, keyHasher, 
+						initialCapacity, loadFactor,  
 						rehasher(), keyEquality, valEquality)) ;
 			case LOCK_FREE:
 				return new LockFreeScalarHashMap<K, V>(
-					initialCapacity, loadFactor, keyHasher, 
+					initialCapacity, loadFactor,  
 					rehasher(), keyEquality, valEquality) ;
 			case LINKED_LOCK_FREE:
 				return new LockFreeLinkedScalarHashMap<K, V>(
-					initialCapacity, loadFactor, keyHasher, 
+					initialCapacity, loadFactor,  
 					rehasher(), keyEquality, valEquality) ;
 			default:
 				throw new UnsupportedOperationException() ;
@@ -134,29 +129,29 @@ public class MapMaker {
 				switch(type.type()) {
 				case SERIAL:
 					return new SerialInlineMultiHashMap<K, V>(
-						initialCapacity, loadFactor, keyHasher, 
+						initialCapacity, loadFactor, 
 						rehasher(), keyEquality, valEquality) ;
 				case SYNCHRONIZED:
 					return new SynchronizedMultiMap<K, V>(
 						new SerialInlineMultiHashMap<K, V>(
-							initialCapacity, loadFactor, keyHasher, 
+							initialCapacity, loadFactor, 
 							rehasher(), keyEquality, valEquality)) ;
 				case LINKED_SERIAL:
 					return new SerialLinkedInlineMultiHashMap<K, V>(
-						initialCapacity, loadFactor, keyHasher, 
+						initialCapacity, loadFactor, 
 						rehasher(), keyEquality, valEquality) ;
 				case LINKED_SYNCHRONIZED:
 					return new SynchronizedMultiMap<K, V>(
 						new SerialLinkedInlineMultiHashMap<K, V>(
-							initialCapacity, loadFactor, keyHasher, 
+							initialCapacity, loadFactor, 
 							rehasher(), keyEquality, valEquality)) ;
 				case LOCK_FREE:
 					return new LockFreeInlineMultiHashMap<K, V>(
-						initialCapacity, loadFactor, keyHasher, 
+						initialCapacity, loadFactor, 
 						rehasher(), keyEquality, valEquality) ;
 				case LINKED_LOCK_FREE:
 					return new LockFreeLinkedInlineMultiHashMap<K, V>(
-						initialCapacity, loadFactor, keyHasher, 
+						initialCapacity, loadFactor, 
 						rehasher(), keyEquality, valEquality) ;
 				default:
 					throw new UnsupportedOperationException() ;
@@ -164,11 +159,12 @@ public class MapMaker {
 			case NESTED:
 				switch (type.type()) {
 				case SERIAL: case LINKED_SERIAL: case LINKED_SYNCHRONIZED: case SYNCHRONIZED:
+					// TODO : valueEquality used in this context is erroneous, as we do not 
+					// in fact know what value equality is being used by the sets provided by the factory
 					return new NestedSetMultiMap<K, V>(
 							MapMaker.<K, Set<V>>hash()
 								.initialCapacity(initialCapacity)
 								.loadFactor(loadFactor)
-								.hasher(keyHasher)
 								.keyEq(keyEquality)
 								.rehasher(rehasher)
 								.type(type)
@@ -191,30 +187,30 @@ public class MapMaker {
 				switch(type.type()) {
 				case SERIAL:
 					return new SerialInlineListHashMap<K, V>(
-						initialCapacity, loadFactor, keyHasher, 
+						initialCapacity, loadFactor, 
 						rehasher(),  keyEquality, valEquality) ;
 				case SYNCHRONIZED:
 					// TODO : SynchronizedHashStore class so that we need fewer wrapping classes
 					return new SynchronizedListMap<K, V>(
 						new SerialInlineListHashMap<K, V>(
-							initialCapacity, loadFactor, keyHasher, 
+							initialCapacity, loadFactor, 
 							rehasher(),  keyEquality, valEquality)) ;
 				case LINKED_SERIAL:
 					return new SerialLinkedInlineListHashMap<K, V>(
-						initialCapacity, loadFactor, keyHasher, 
+						initialCapacity, loadFactor, 
 						rehasher(),  keyEquality, valEquality) ;
 				case LINKED_SYNCHRONIZED:
 					return new SynchronizedListMap<K, V>(
 						new SerialLinkedInlineListHashMap<K, V>(
-							initialCapacity, loadFactor, keyHasher, 
+							initialCapacity, loadFactor, 
 							rehasher(),  keyEquality, valEquality)) ;
 				case LOCK_FREE:
 					return new LockFreeInlineListHashMap<K, V>(
-						initialCapacity, loadFactor, keyHasher, 
+						initialCapacity, loadFactor, 
 						rehasher(),  keyEquality, valEquality) ;
 				case LINKED_LOCK_FREE:
 					return new LockFreeLinkedInlineListHashMap<K, V>(
-						initialCapacity, loadFactor, keyHasher, 
+						initialCapacity, loadFactor, 
 						rehasher(),  keyEquality, valEquality) ;
 				default:
 					throw new UnsupportedOperationException() ;
@@ -225,7 +221,6 @@ public class MapMaker {
 					return new NestedSetListMap<K, V>(MapMaker.<K, MultiSet<V>>hash()
 						.initialCapacity(initialCapacity)
 						.loadFactor(loadFactor)
-						.hasher(keyHasher)
 						.keyEq(keyEquality)
 						.rehasher(rehasher)
 						.type(type)
@@ -252,7 +247,7 @@ public class MapMaker {
 			}
 		}
 		public HashMapMaker<K, V> copy() {
-			return new HashMapMaker<K, V>(keyHasher, rehasher, keyEquality,
+			return new HashMapMaker<K, V>(rehasher, keyEquality,
 					valEquality, type, initialCapacity, loadFactor,
 					factoryFunction, factory) ;
 		}		

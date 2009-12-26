@@ -45,4 +45,11 @@ public interface Set<V> extends AnySet<V> {
 	 */
 	@Override public Set<V> copy() ;
 	
+	/**
+	 * Returns <code>this</code>
+	 * 
+	 * @return <code>this</code>
+	 */
+	public Set<V> unique() ;
+
 }

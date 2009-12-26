@@ -361,7 +361,7 @@ public class AdapterFromJDKMap<K, V> implements Map<K, V> {
 			return AdapterFromJDKMap.this.count(key) ;
 		}
 		@Override
-		public Iterable<V> unique() {
+		public UnitarySet<V> unique() {
 			return this ;
 		}
 		@Override

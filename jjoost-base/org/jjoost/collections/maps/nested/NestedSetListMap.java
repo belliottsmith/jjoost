@@ -1,13 +1,18 @@
 package org.jjoost.collections.maps.nested;
 
+import java.util.Iterator;
 import java.util.Map.Entry;
 
+import org.jjoost.collections.AnySet;
 import org.jjoost.collections.ListMap;
-import org.jjoost.collections.MultiSet;
 import org.jjoost.collections.Map;
-import org.jjoost.collections.maps.ImmutableMapEntry ;
+import org.jjoost.collections.MultiSet;
+import org.jjoost.collections.Set;
+import org.jjoost.collections.maps.ImmutableMapEntry;
+import org.jjoost.collections.sets.base.AbstractUniqueSetAdapter;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Factory;
+import org.jjoost.util.Functions;
 
 public class NestedSetListMap<K, V> extends NestedSetMap<K, V, MultiSet<V>> implements ListMap<K, V> {
 
@@ -43,19 +48,15 @@ public class NestedSetListMap<K, V> extends NestedSetMap<K, V, MultiSet<V>> impl
 	protected final class EntrySet extends AbstractEntrySet implements MultiSet<Entry<K, V>> {
 
 		private static final long serialVersionUID = 8122351713234623044L;
-
+		private UniqueEntrySet unique ;
+		
 		@Override
 		public Entry<K, V> put(Entry<K, V> entry) {
 			NestedSetListMap.this.put(entry.getKey(), entry.getValue()) ;
 			return null ;
 		}
 
-		@Override
-		public Iterable<Entry<K, V>> unique() {
-			return this ;
-		}
-
-		@Override
+				@Override
 		public Entry<K, V> putIfAbsent(Entry<K, V> entry) {
 			final V r = NestedSetListMap.this.put(entry.getKey(), entry.getValue()) ;
 			return r == null ? null : new ImmutableMapEntry<K, V>(entry.getKey(), r) ;
@@ -77,6 +78,24 @@ public class NestedSetListMap<K, V> extends NestedSetMap<K, V, MultiSet<V>> impl
 				NestedSetListMap.this.put(entry.getKey(), entry.getValue()) ;
 		}
 		
-	}
+		public Set<Entry<K, V>> unique() {
+			if (unique == null)
+				unique = new UniqueEntrySet() ;
+			return unique ;
+		}
 
+		private final class UniqueEntrySet extends AbstractUniqueSetAdapter<Entry<K, V>> {
+			private static final long serialVersionUID = 686867617922872433L;
+			@Override
+			protected AnySet<Entry<K, V>> set() {
+				return EntrySet.this ;
+			}
+			@Override
+			public Iterator<Entry<K, V>> iterator() {
+				
+			}
+		}
+		
+	}
+	
 }

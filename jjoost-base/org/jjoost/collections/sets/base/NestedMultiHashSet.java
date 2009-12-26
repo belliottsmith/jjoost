@@ -4,7 +4,9 @@ import java.util.Collections ;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jjoost.collections.AnySet;
 import org.jjoost.collections.MultiSet;
+import org.jjoost.collections.Set;
 import org.jjoost.collections.base.HashNode ;
 import org.jjoost.collections.base.HashNodeEquality ;
 import org.jjoost.collections.base.HashNodeFactory ;
@@ -14,7 +16,6 @@ import org.jjoost.util.Counter;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Function;
 import org.jjoost.util.Functions;
-import org.jjoost.util.Hasher;
 import org.jjoost.util.Iters ;
 import org.jjoost.util.Rehasher;
 import org.jjoost.util.tuples.Value;
@@ -24,16 +25,15 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	private static final long serialVersionUID = 3187373892419456381L;
 	
 	protected final HashStore<N> table ;
-	protected final Hasher<? super V> valHasher ;
 	protected final Rehasher rehasher ;
 	protected final HashNodeFactory<V, N> nodeFactory ;
 	protected final ValueEquality<V, N> valEq ;
 	protected final Counter totalCount ;
+	private UniqueSet unique ;
 	
-	protected NestedMultiHashSet(Counter counter, Hasher<? super V> valHasher, Rehasher rehasher, ValueEquality<V, N> equality, HashNodeFactory<V, N> nodeFactory, HashStore<N> table) {
+	protected NestedMultiHashSet(Counter counter, Rehasher rehasher, ValueEquality<V, N> equality, HashNodeFactory<V, N> nodeFactory, HashStore<N> table) {
 		this.table = table ;
 		this.totalCount = counter ;
-		this.valHasher = valHasher ;
 		this.rehasher = rehasher ;
 		this.nodeFactory = nodeFactory ;
 		this.valEq = equality ;
@@ -48,7 +48,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	}
 	
 	final int hash(V key) {
-		return rehasher.hash(valHasher.hash(key)) ;
+		return rehasher.hash(valEq.valEq.hash(key)) ;
 	}
 	
 	protected static <V, N extends HashNode<N> & INode<V, N>> boolean removeNode(NestedMultiHashSet<V, N> set, N node) {
@@ -291,16 +291,29 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	}
 
 	@Override
-	public Iterable<V> unique() {
-		return new Iterable<V>() {
-			@Override
-			public Iterator<V> iterator() {
-				final NodeContentsIterator<V, N> f = new NodeContentsIterator<V, N>() ;
-				final Iterator<Iterator<V>> iters = table.unique(valProj(), valEq.getEquality(), valProj(), valEq, f) ;
-				f.superIter = iters ;
-				return Iters.concat(iters) ;
-			}
-		} ;
+	public Set<V> unique() {
+		if (unique == null)
+			unique = new UniqueSet() ;
+		return unique ;
+	}
+	
+	private final class UniqueSet extends AbstractUniqueSetAdapter<V> {
+		
+		private static final long serialVersionUID = -1106116714278629141L;
+
+		@Override
+		protected AnySet<V> set() {
+			return NestedMultiHashSet.this ;
+		}
+
+		@Override
+		public Iterator<V> iterator() {
+			final NodeContentsIterator<V, N> f = new NodeContentsIterator<V, N>() ;
+			final Iterator<Iterator<V>> iters = table.unique(valProj(), valEq.getEquality(), valProj(), valEq, f) ;
+			f.superIter = iters ;
+			return Iters.concat(iters) ;
+		}
+		
 	}
 
 	@Override

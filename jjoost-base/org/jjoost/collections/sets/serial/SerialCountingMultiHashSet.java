@@ -1,19 +1,17 @@
 package org.jjoost.collections.sets.serial;
 
-import java.util.Iterator ;
-import java.util.List ;
-import java.util.NoSuchElementException ;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 
-import org.jjoost.collections.base.HashNodeFactory ;
-import org.jjoost.collections.base.SerialHashStore ;
-import org.jjoost.collections.base.SerialHashStore.SerialHashNode ;
-import org.jjoost.collections.lists.UniformList ;
-import org.jjoost.collections.sets.base.NestedMultiHashSet ;
-import org.jjoost.util.Counters ;
+import org.jjoost.collections.base.HashNodeFactory;
+import org.jjoost.collections.base.SerialHashStore;
+import org.jjoost.collections.base.SerialHashStore.SerialHashNode;
+import org.jjoost.collections.lists.UniformList;
+import org.jjoost.collections.sets.base.NestedMultiHashSet;
+import org.jjoost.util.Counters;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
-import org.jjoost.util.Hasher;
-import org.jjoost.util.Hashers;
 import org.jjoost.util.Rehasher;
 
 public class SerialCountingMultiHashSet<V> extends NestedMultiHashSet<V, SerialCountingMultiHashSet.Node<V>>{
@@ -24,14 +22,14 @@ public class SerialCountingMultiHashSet<V> extends NestedMultiHashSet<V, SerialC
 		this(16, 0.75f) ;
 	}
 	public SerialCountingMultiHashSet(int minimumInitialCapacity, float loadFactor) {
-		this(minimumInitialCapacity, loadFactor, Hashers.object(), SerialHashStore.defaultRehasher(), Equalities.object()) ;
+		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object()) ;
 	}
 	
 	public SerialCountingMultiHashSet( 
-			int minimumInitialCapacity, float loadFactor, Hasher<? super V> keyHasher, 
+			int minimumInitialCapacity, float loadFactor, 
 			Rehasher rehasher, Equality<? super V> keyEquality) 
 	{
-		super(Counters.newCounter(), keyHasher, rehasher, 
+		super(Counters.newCounter(), rehasher, 
 			new NestedMultiHashSet.ValueEquality<V, SerialCountingMultiHashSet.Node<V>>(keyEquality), 
 			SerialCountingMultiHashSet.<V>serialNodeFactory(), 
 			new SerialHashStore<Node<V>>(minimumInitialCapacity, loadFactor)) ;

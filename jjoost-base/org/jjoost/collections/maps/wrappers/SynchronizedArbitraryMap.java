@@ -194,7 +194,7 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends AnyMap<K, V>> ext
 					return delegate.totalCount() ;
 				}
 			}
-			@Override public Iterable<V> unique() {
+			@Override public AnySet<V> unique() {
 				synchronized(SynchronizedArbitraryMap.this) {
 					return wrap(delegate.unique()) ;
 				}
@@ -333,7 +333,7 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends AnyMap<K, V>> ext
 					return delegate.totalCount() ;
 				}
 			}
-			@Override public Iterable<V> unique() {
+			@Override public UnitarySet<V> unique() {
 				synchronized(SynchronizedArbitraryMap.this) {
 					return wrap(delegate.unique()) ;
 				}
@@ -478,7 +478,7 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends AnyMap<K, V>> ext
 					return delegate.totalCount() ;
 				}
 			}
-			@Override public Iterable<V> unique() {
+			@Override public Set<V> unique() {
 				synchronized(SynchronizedArbitraryMap.this) {
 					return wrap(delegate.unique()) ;
 				}
@@ -633,7 +633,7 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends AnyMap<K, V>> ext
 					return delegate.totalCount() ;
 				}
 			}
-			@Override public Iterable<V> unique() {
+			@Override public Set<V> unique() {
 				synchronized(SynchronizedArbitraryMap.this) {
 					return wrap(delegate.unique()) ;
 				}

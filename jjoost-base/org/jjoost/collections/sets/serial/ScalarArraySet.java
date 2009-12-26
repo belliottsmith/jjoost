@@ -92,7 +92,7 @@ public class ScalarArraySet<V> extends AbstractArraySet<V> implements Set<V> {
 	}
 
 	@Override
-	public Iterable<V> unique() {
+	public Set<V> unique() {
 		return this ;
 	}
 

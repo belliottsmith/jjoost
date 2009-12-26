@@ -15,7 +15,6 @@ import org.jjoost.collections.base.SerialLinkedHashStore.SerialLinkedHashNode ;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Function ;
 import org.jjoost.util.Functions;
-import org.jjoost.util.Hasher;
 import org.jjoost.util.Rehasher;
 import org.jjoost.util.tuples.Value;
 
@@ -24,21 +23,19 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> imple
 	private static final long serialVersionUID = 3187373892419456381L;
 	
 	protected final HashStore<N> store ;
-	protected final Hasher<? super V> valHasher ;
 	protected final Rehasher rehasher ;
 	protected final HashNodeFactory<V, N> nodeFactory ;
 	protected final ValueEquality<V> valEq ;
 	
-	protected AbstractHashSet(Hasher<? super V> valHasher, Rehasher rehasher, ValueEquality<V> equality, HashNodeFactory<V, N> nodeFactory, HashStore<N> table) {
+	protected AbstractHashSet(Rehasher rehasher, ValueEquality<V> equality, HashNodeFactory<V, N> nodeFactory, HashStore<N> table) {
 		this.store = table ;
-		this.valHasher = valHasher ;
 		this.rehasher = rehasher ;
 		this.valEq = equality ;
 		this.nodeFactory = nodeFactory ;
 	}
 
 	protected final int hash(V key) {
-		return rehasher.hash(valHasher.hash(key)) ;
+		return rehasher.hash(valEq.valEq.hash(key)) ;
 	}
 	
 	protected final Function<Value<V>, V> valProj() {
@@ -157,7 +154,7 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> imple
 	// **********************************
 	
 	protected static abstract class ValueEquality<V> implements HashNodeEquality<V, Value<V>> {
-		final Equality<? super V> valEq ;
+		protected final Equality<? super V> valEq ;
 		public ValueEquality(Equality<? super V> valEq) { this.valEq = valEq ; }
 		@Override 
 		public boolean suffixMatch(V n1, Value<V> n2) { 

@@ -5,7 +5,6 @@ import org.jjoost.collections.base.HashNode ;
 import org.jjoost.collections.base.HashNodeFactory ;
 import org.jjoost.collections.base.HashStore ;
 import org.jjoost.util.Equality ;
-import org.jjoost.util.Hasher;
 import org.jjoost.util.Rehasher;
 import org.jjoost.util.tuples.Value;
 
@@ -13,12 +12,12 @@ public class ScalarHashSet<V, N extends HashNode<N> & Value<V>> extends Abstract
 
 	private static final long serialVersionUID = -6385620376018172675L;
 
-	public ScalarHashSet(Hasher<? super V> valHasher, Rehasher rehasher, Equality<? super V> equality, HashNodeFactory<V, N> nodeFactory, HashStore<N> table) {
-		super(valHasher, rehasher, new ValueEquality<V>(equality), nodeFactory, table) ;
+	public ScalarHashSet(Rehasher rehasher, Equality<? super V> equality, HashNodeFactory<V, N> nodeFactory, HashStore<N> table) {
+		super(rehasher, new ValueEquality<V>(equality), nodeFactory, table) ;
 	}
 	
-	private ScalarHashSet(Hasher<? super V> valHasher, Rehasher rehasher, AbstractHashSet.ValueEquality<V> equality, HashNodeFactory<V, N> nodeFactory, HashStore<N> table) {
-		super(valHasher, rehasher, equality, nodeFactory, table) ;
+	private ScalarHashSet(Rehasher rehasher, AbstractHashSet.ValueEquality<V> equality, HashNodeFactory<V, N> nodeFactory, HashStore<N> table) {
+		super(rehasher, equality, nodeFactory, table) ;
 	}
 	
 	@Override
@@ -33,7 +32,7 @@ public class ScalarHashSet<V, N extends HashNode<N> & Value<V>> extends Abstract
 
 	@Override
 	public Set<V> copy() {
-		return new ScalarHashSet<V, N>(valHasher, rehasher, valEq, nodeFactory, store.copy(valProj(), valEq)) ;
+		return new ScalarHashSet<V, N>(rehasher, valEq, nodeFactory, store.copy(valProj(), valEq)) ;
 	}
 
 	@Override
@@ -42,7 +41,7 @@ public class ScalarHashSet<V, N extends HashNode<N> & Value<V>> extends Abstract
 	}
 
 	@Override
-	public Iterable<V> unique() {
+	public Set<V> unique() {
 		return this ;
 	}
 

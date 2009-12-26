@@ -40,5 +40,14 @@ public interface MultiSet<V> extends AnySet<V> {
 	 * called on, however must return a <code>MultiSet</code>
 	 */
 	@Override public MultiSet<V> copy() ;
-	
+
+	/**
+	 * Returns a <code>Set</code> representing only the unique values present in this set. 
+	 * Changes to each set should be reflected in the other, however put() operations on the unique()
+	 * set are not supported.
+	 * 
+	 * @return unique values
+	 */
+	public Set<V> unique() ;
+
 }

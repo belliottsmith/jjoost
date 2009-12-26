@@ -20,5 +20,7 @@ public interface Equality<E> extends Serializable {
 	 * @return true if this equality equates the two arguments 
 	 */
     public boolean equates(E a, E b) ;
+    
+    public int hash(E o) ;
 
 }

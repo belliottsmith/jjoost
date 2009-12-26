@@ -1,7 +1,7 @@
 package org.jjoost.collections;
 
+import org.jjoost.util.Equalities;
 import org.jjoost.util.Factory;
-import org.jjoost.util.Hashers;
 import org.jjoost.util.Rehashers;
 
 public class MultiMapNesting<V> {
@@ -39,8 +39,8 @@ public class MultiMapNesting<V> {
 		return MultiMapNesting.nested(
 				SetMaker.<V>hash()
 					.initialCapacity(2)
-					.hasher(Hashers.rehashing(
-						Hashers.object(), 
+					.equality(Equalities.rehashing(
+						Equalities.object(), 
 						Rehashers.jdkConcurrentHashmapRehasher())
 				).newScalarSetFactory()) ;
 	}

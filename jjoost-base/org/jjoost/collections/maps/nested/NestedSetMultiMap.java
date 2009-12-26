@@ -50,7 +50,7 @@ public class NestedSetMultiMap<K, V> extends NestedSetMap<K, V, Set<V>> implemen
 		}
 
 		@Override
-		public Iterable<Entry<K, V>> unique() {
+		public Set<Entry<K, V>> unique() {
 			return this ;
 		}
 		

@@ -10,6 +10,7 @@ import org.jjoost.collections.AnyMap;
 import org.jjoost.collections.AnySet;
 import org.jjoost.collections.MultiSet ;
 import org.jjoost.collections.Map;
+import org.jjoost.collections.Set;
 import org.jjoost.collections.lists.UniformList;
 import org.jjoost.collections.maps.ImmutableMapEntry ;
 import org.jjoost.collections.sets.base.IterableSet;
@@ -301,7 +302,7 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 		}
 
 		@Override
-		public Iterable<K> unique() {
+		public Set<K> unique() {
 			return map.keys().unique() ;
 		}
 
@@ -564,7 +565,7 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 
 		@Override
 		public Equality<? super Entry<K, V>> equality() {
-			return Equalities.forMapEntries(map.keys().equality(), factory.create().equality()) ;
+			return Equalities.forMapEntries(map.keys().equality(), valueEq) ;
 		}
 
 	}

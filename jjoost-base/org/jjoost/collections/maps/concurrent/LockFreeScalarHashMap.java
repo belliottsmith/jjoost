@@ -8,8 +8,6 @@ import org.jjoost.collections.maps.base.HashMapNodeFactory ;
 import org.jjoost.collections.maps.base.ScalarHashMap ;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
-import org.jjoost.util.Hasher;
-import org.jjoost.util.Hashers;
 import org.jjoost.util.Rehasher;
 
 public class LockFreeScalarHashMap<K, V> extends ScalarHashMap<K, V, LockFreeScalarHashMap.Node<K, V>>{
@@ -20,14 +18,14 @@ public class LockFreeScalarHashMap<K, V> extends ScalarHashMap<K, V, LockFreeSca
 		this(16, 0.75f) ;
 	}
 	public LockFreeScalarHashMap(int minimumInitialCapacity, float loadFactor) {
-		this(minimumInitialCapacity, loadFactor, Hashers.object(), SerialHashStore.defaultRehasher(), Equalities.object(), Equalities.object()) ;
+		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object(), Equalities.object()) ;
 	}
 	
 	public LockFreeScalarHashMap( 
-			int minimumInitialCapacity, float loadFactor, Hasher<? super K> keyHasher, 
+			int minimumInitialCapacity, float loadFactor,
 			Rehasher rehasher, Equality<? super K> keyEquality, Equality<? super V> valEquality) 
 	{
-		super(keyHasher, rehasher, new KeyEquality<K, V>(keyEquality), new NodeEquality<K, V>(keyEquality, valEquality),
+		super(rehasher, new KeyEquality<K, V>(keyEquality), new NodeEquality<K, V>(keyEquality, valEquality),
 			LockFreeScalarHashMap.<K, V>factory(), 
 			new LockFreeHashStore<Node<K, V>>(minimumInitialCapacity, loadFactor, LockFreeHashStore.Counting.PRECISE, LockFreeHashStore.Counting.OFF)) ;
 	}
@@ -76,11 +74,6 @@ public class LockFreeScalarHashMap<K, V> extends ScalarHashMap<K, V, LockFreeSca
 		public NodeEquality(Equality<? super K> keyEq, Equality<? super V> valEq) {
 			super(keyEq, valEq) ;
 		}
-		@Override
-		public boolean equates(Node<K, V> a, Node<K, V> b) {
-			return keyEq.equates(a.key, b.key) && valEq.equates(a.value, b.value) ;
-		}
-
 		@Override
 		public boolean prefixMatch(Entry<K, V> cmp, Node<K, V> n) {
 			return keyEq.equates(cmp.getKey(), n.key) ;

@@ -119,8 +119,8 @@ public class AdapterFromJDKSet<V> implements Set<V> {
 		return set.size() ;
 	}
 	@Override
-	public Iterable<V> unique() {
-		return set ;
+	public Set<V> unique() {
+		return this ;
 	}
 	@Override
 	public int uniqueCount() {

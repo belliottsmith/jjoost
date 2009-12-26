@@ -76,7 +76,7 @@ public class SynchronizedArbitrarySet<V, S extends AnySet<V>> extends Synchroniz
 	@Override public synchronized int totalCount() {
 		return delegate.totalCount();
 	}
-	@Override public synchronized Iterable<V> unique() {
+	@Override public synchronized AnySet<V> unique() {
 		return delegate.unique();
 	}
 	@Override public synchronized int uniqueCount() {

@@ -12,8 +12,6 @@ import org.jjoost.collections.sets.base.NestedMultiHashSet ;
 import org.jjoost.util.Counters ;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
-import org.jjoost.util.Hasher;
-import org.jjoost.util.Hashers;
 import org.jjoost.util.Rehasher;
 
 public class SerialNestedMultiHashSet<V> extends NestedMultiHashSet<V, SerialNestedMultiHashSet.Node<V>>{
@@ -24,14 +22,14 @@ public class SerialNestedMultiHashSet<V> extends NestedMultiHashSet<V, SerialNes
 		this(16, 0.75f) ;
 	}
 	public SerialNestedMultiHashSet(int minimumInitialCapacity, float loadFactor) {
-		this(minimumInitialCapacity, loadFactor, Hashers.object(), SerialHashStore.defaultRehasher(), Equalities.object()) ;
+		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object()) ;
 	}
 	
 	public SerialNestedMultiHashSet( 
-			int minimumInitialCapacity, float loadFactor, Hasher<? super V> keyHasher, 
+			int minimumInitialCapacity, float loadFactor, 
 			Rehasher rehasher, Equality<? super V> keyEquality) 
 	{
-		super(Counters.newCounter(), keyHasher, rehasher, 
+		super(Counters.newCounter(), rehasher, 
 			new ValueEquality<V, Node<V>>(keyEquality), 
 			SerialNestedMultiHashSet.<V>factory(), 
 			new SerialHashStore<Node<V>>(minimumInitialCapacity, loadFactor)) ;

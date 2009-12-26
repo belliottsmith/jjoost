@@ -143,6 +143,16 @@ public interface AnySet<V> extends AnyReadSet<V> {
 	public Iterator<V> clearAndReturn() ;
 	
 	/**
+	 * Returns an <code>AnySet</code> (usually a <code>Set</code>) representing only the unique values 
+	 * present in this set; if this set is already unique this method should return the set itself. 
+	 * Changes to each set should be reflected in the other, however put() operations on the unique()
+	 * set will not be supported if the underlying set is not itself unique.
+	 * 
+	 * @return unique values
+	 */
+	public AnySet<V> unique() ;
+	
+	/**
 	 * This method attempts to minimise the resource utilisation of the set. It may be a no-op.
 	 */
 	public void shrink() ;	

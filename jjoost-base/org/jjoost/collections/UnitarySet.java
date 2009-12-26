@@ -1,9 +1,9 @@
 package org.jjoost.collections;
 
 /**
- * This set represents the rather dubiously concept of a set consistent
- * of precisely one item. This set is particularly of note for the map
- * method <code>values(key)</code> on regular (scalar) maps.
+ * This interface represents the rather dubious concept of a set that may
+ * contain at most one item. This set is primarily intended for use by
+ * the method <code>values(key)</code> on regular (scalar) maps.
  * 
  * @author b.elliottsmith
  *
@@ -33,4 +33,11 @@ public interface UnitarySet<V> extends AnySet<V> {
 	 */
 	@Override public UnitarySet<V> copy() ;
 	
+	/**
+	 * Returns <code>this</code>
+	 * 
+	 * @return <code>this</code>
+	 */
+	public UnitarySet<V> unique() ;
+
 }

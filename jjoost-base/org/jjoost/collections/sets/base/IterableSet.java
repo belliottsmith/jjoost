@@ -3,7 +3,9 @@ package org.jjoost.collections.sets.base;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jjoost.collections.AnySet;
 import org.jjoost.collections.MultiSet;
+import org.jjoost.collections.Set;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Filters;
 import org.jjoost.util.Iters;
@@ -14,6 +16,8 @@ public abstract class IterableSet<V> implements MultiSet<V> {
 
 	public abstract Equality<? super V> equality() ;
 	public abstract Iterator<V> iterator() ;
+	
+	private UniqueIterableSet unique ;
 
 	@Override
 	public Boolean apply(V v) {
@@ -34,7 +38,12 @@ public abstract class IterableSet<V> implements MultiSet<V> {
 	public MultiSet<V> copy() {
 		throw new UnsupportedOperationException() ;
 	}
-
+	
+	@Override
+	public void put(V val, int numberOfTimes) {
+		throw new UnsupportedOperationException() ;
+	}
+	
 	@Override
 	public V put(V val) {
 		throw new UnsupportedOperationException() ;
@@ -50,11 +59,6 @@ public abstract class IterableSet<V> implements MultiSet<V> {
 		throw new UnsupportedOperationException() ;
 	}
 	
-	@Override
-	public void put(V val, int numberOfTimes) {
-		throw new UnsupportedOperationException() ;
-	}
-
 	@Override
 	public int remove(V value, int removeAtMost) {
 		return Filters.remove(Filters.isEqualTo(value, equality()), removeAtMost, iterator()) ;
@@ -131,8 +135,11 @@ public abstract class IterableSet<V> implements MultiSet<V> {
 	}
 
 	@Override
-	public Iterable<V> unique() {
-		return Filters.apply(Filters.unique(equality()), this) ;
+	public Set<V> unique() {
+		if (unique == null) {
+			unique = new UniqueIterableSet() ;
+		}
+		return unique ;
 	}
 
 	@Override
@@ -140,4 +147,20 @@ public abstract class IterableSet<V> implements MultiSet<V> {
 		return Iters.count(unique()) ;
 	}
 
+	private final class UniqueIterableSet extends AbstractUniqueSetAdapter<V> implements Set<V> {
+
+		private static final long serialVersionUID = -8170697306505507966L;
+
+		@Override
+		protected AnySet<V> set() {
+			return IterableSet.this ;
+		}
+
+		@Override
+		public Iterator<V> iterator() {
+			return Filters.apply(Filters.unique(equality()), IterableSet.this.iterator()) ;
+		}
+		
+	}
+	
 }

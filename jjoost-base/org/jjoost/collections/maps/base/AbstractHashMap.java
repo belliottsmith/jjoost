@@ -19,28 +19,30 @@ import org.jjoost.util.Equality ;
 import org.jjoost.util.Filters ;
 import org.jjoost.util.Function ;
 import org.jjoost.util.Functions;
-import org.jjoost.util.Hasher;
 import org.jjoost.util.Iters ;
 import org.jjoost.util.Rehasher;
 
 public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K, V>> implements AnyMap<K, V> {
 
-	protected static abstract class NodeEquality<K, V, N> implements HashNodeEquality<Entry<K, V>, N>, Equality<N> {
+	protected static abstract class NodeEquality<K, V, N extends HashNode<N> & Map.Entry<K, V>> implements HashNodeEquality<Entry<K, V>, N>, Equality<Entry<K, V>> {
 		private static final long serialVersionUID = -4970889935020537472L ;
-		protected final Equality<? super K> keyEq ;
-		protected final Equality<? super V> valEq ;
-		public NodeEquality(Equality<? super K> keyEq, Equality<? super V> valEq) { this.keyEq = keyEq ; this.valEq = valEq ; }
-		public Equality<? super K> getKeyEquality() { return keyEq ; }
-		public Equality<? super V> getValueEquality() { return valEq ; }		
-		public Equality<Entry<K, V>> toEntryEquality() {
-			return new Equality<Entry<K, V>>() {
-				private static final long serialVersionUID = -329456579708625460L;
-				@Override
-				public boolean equates(Entry<K, V> a, Entry<K, V> b) {
-					return keyEq.equates(a.getKey(), b.getKey()) && valEq.equates(a.getValue(), b.getValue()) ;
-				}
-			} ;
+    	protected final Equality<? super K> keyEq ;
+    	protected final Equality<? super V> valEq ;
+		public NodeEquality(Equality<? super K> keyEq,
+				Equality<? super V> valEq) {
+			this.keyEq = keyEq;
+			this.valEq = valEq;
 		}
+		@Override
+		public boolean equates(Entry<K, V> a, Entry<K, V> b) {
+			return keyEq.equates(a.getKey(), b.getKey()) && valEq.equates(a.getValue(), b.getValue()) ;
+		}
+		@Override
+		public int hash(Entry<K, V> o) {
+			// TODO : implement
+			throw new UnsupportedOperationException() ;
+		}
+		
 	}
 	
 	protected static abstract class KeyEquality<K, V, N> implements HashNodeEquality<K, N> {
@@ -48,13 +50,12 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		public KeyEquality(Equality<? super K> keyEq) { this.keyEq = keyEq ; }
 		@Override 
 		public boolean suffixMatch(K key, N n) { return true ; }
-		public Equality<? super K> getKeyEquality() { return keyEq ; }		
+		public Equality<? super K> getKeyEquality() { return keyEq ; }
 	}	
 
 	private static final long serialVersionUID = 3187373892419456381L;
 	
 	protected final HashStore<N> store ;
-	protected final Hasher<? super K> keyHasher ;
 	protected final Rehasher rehasher ;
 	protected final KeyEquality<K, V, N> keyEq ;
 	protected final NodeEquality<K, V, N> nodeEq ;
@@ -62,13 +63,12 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 	protected IterableSet<V> valueSet ;
 	
 	protected AbstractHashMap(
-			Hasher<? super K> keyHasher, Rehasher rehasher, 
+			Rehasher rehasher, 
 			KeyEquality<K, V, N> keyEquality, 
 			NodeEquality<K, V, N> entryEquality, 
 			HashMapNodeFactory<K, V, N> nodeFactory, 
 			HashStore<N> table) {
 		this.store = table ;
-		this.keyHasher = keyHasher ;
 		this.rehasher = rehasher ;
 		this.keyEq = keyEquality ;		
 		this.nodeEq = entryEquality ;
@@ -96,7 +96,7 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 	}
 	
 	protected final int hash(K key) {
-		return rehasher.hash(keyHasher.hash(key)) ;
+		return rehasher.hash(keyEq.keyEq.hash(key)) ;
 	}
 	
 	@Override
@@ -187,7 +187,7 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		throw new UnsupportedOperationException() ;
 	}
 	
-	protected final class ValueSet extends IterableSet<V> {
+	protected final class ValueSet extends IterableSet<V> implements MultiSet<V> {
 		private static final long serialVersionUID = -1124458438016390808L;
 		@Override
 		public Iterator<V> iterator() {
@@ -196,6 +196,10 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		@Override
 		public Equality<? super V> equality() {
 			return nodeEq.valEq  ;
+		}
+		@Override
+		public void put(V val, int numberOfTimes) {
+			throw new UnsupportedOperationException() ;
 		}
 	} ;
 
@@ -293,13 +297,6 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		}
 		
 		@Override
-		public Iterable<V> unique() {
-			if (nodeEq.isUnique())
-				return this ;
-			return Filters.apply(Filters.unique(nodeEq.valEq), this) ;
-		}
-		
-		@Override
 		public final V put(V val) {
 			if (keyEq.isUnique())
 				throw new UnsupportedOperationException() ;
@@ -355,18 +352,6 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 	protected abstract class AbstractKeySet implements AnySet<K> {
 		
 		private static final long serialVersionUID = 1461826147890179114L ;
-
-		@Override 
-		public Iterable<K> unique() {
-			if (keyEq.isUnique())
-				return this ;
-			return new AbstractIterable<K>() {
-				@Override
-				public Iterator<K> iterator() {
-					return store.unique(keyProj(), keyEq.getKeyEquality(), nodeProj(), nodeEq, keyProj()) ;
-				}
-			} ;
-		}
 
 		@Override
 		public Equality<? super K> equality() {
@@ -502,22 +487,10 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 	protected abstract class AbstractEntrySet implements AnySet<Entry<K, V>> {
 		
 		private static final long serialVersionUID = 4037233101289518536L ;
-
-		@Override 
-		public Iterable<Entry<K, V>> unique() {
-			if (nodeEq.isUnique())
-				return this ;
-			return new Iterable<Entry<K, V>>() {
-				@Override
-				public Iterator<Entry<K, V>> iterator() {
-					return store.unique(nodeProj(), nodeEq, nodeProj(), nodeEq, entryProj()) ;
-				}
-			};
-		}
 		
 		@Override
 		public Equality<? super Entry<K, V>> equality() {
-			return nodeEq.toEntryEquality() ;
+			return nodeEq ;
 		}
 		
 		@Override

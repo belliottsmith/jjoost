@@ -117,6 +117,11 @@ public interface AnyReadMap<K, V> extends Serializable {
 	 * this set should behave exactly as a regular set does. The key equality used
 	 * by this map can be obtained from this set.
 	 * <p>
+	 * Depending on the implementation of map, this key set may contain
+	 * every occurrence of equal keys provided to the map, or may contain a subset
+	 * thereof with repetitions to bring the number of occurrences in line with the
+	 * number provided.
+	 * <p>
 	 * Note that the <code>put()</code> methods on this set will always fail,
 	 * because no value can be provided to update the map with.
 	 * 

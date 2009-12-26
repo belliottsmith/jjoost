@@ -3,7 +3,9 @@ package org.jjoost.collections.sets.serial;
 import java.util.ArrayList ;
 import java.util.List ;
 
+import org.jjoost.collections.AnySet;
 import org.jjoost.collections.MultiSet ;
+import org.jjoost.collections.Set;
 import org.jjoost.collections.sets.base.AbstractArraySet ;
 import org.jjoost.util.Equality ;
 import org.jjoost.util.Filters ;
@@ -75,7 +77,7 @@ public class MultiArraySet<V> extends AbstractArraySet<V> implements MultiSet<V>
 	}
 
 	@Override
-	public Iterable<V> unique() {
+	public Set<V> unique() {
 		return Filters.apply(Filters.unique(valEq), this) ;
 	}
 

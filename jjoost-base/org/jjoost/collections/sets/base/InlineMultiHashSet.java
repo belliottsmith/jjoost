@@ -2,15 +2,15 @@ package org.jjoost.collections.sets.base;
 
 import java.util.Iterator;
 
+import org.jjoost.collections.AnySet;
 import org.jjoost.collections.MultiSet;
+import org.jjoost.collections.Set;
 
 import org.jjoost.collections.base.HashNode ;
 import org.jjoost.collections.base.HashNodeEquality ;
 import org.jjoost.collections.base.HashNodeFactory ;
 import org.jjoost.collections.base.HashStore ;
-import org.jjoost.collections.iters.AbstractIterable ;
 import org.jjoost.util.Equality;
-import org.jjoost.util.Hasher;
 import org.jjoost.util.Rehasher;
 import org.jjoost.util.tuples.Value;
 
@@ -18,17 +18,18 @@ public class InlineMultiHashSet<V, N extends HashNode<N> & Value<V>> extends Abs
 
 	private static final long serialVersionUID = -6385620376018172675L;
 
-	public InlineMultiHashSet(Hasher<? super V> valHasher, Rehasher rehasher, Equality<? super V> equality, HashNodeFactory<V, N> nodeFactory, HashStore<N> table) {
-		super(valHasher, rehasher, new ValueEquality<V>(equality), nodeFactory, table) ;
+	public InlineMultiHashSet(Rehasher rehasher, Equality<? super V> equality, HashNodeFactory<V, N> nodeFactory, HashStore<N> table) {
+		super(rehasher, new ValueEquality<V>(equality), nodeFactory, table) ;
 		this.putEq = new PutEquality<V>(equality) ;
 	}
 	
-	private InlineMultiHashSet(Hasher<? super V> valHasher, Rehasher rehasher, AbstractHashSet.ValueEquality<V> equality, HashNodeFactory<V, N> nodeFactory, PutEquality<V> putEq, HashStore<N> table) {
-		super(valHasher, rehasher, equality, nodeFactory, table) ;
+	private InlineMultiHashSet(Rehasher rehasher, AbstractHashSet.ValueEquality<V> equality, HashNodeFactory<V, N> nodeFactory, PutEquality<V> putEq, HashStore<N> table) {
+		super(rehasher, equality, nodeFactory, table) ;
 		this.putEq = putEq ;
 	}
 	
 	private final PutEquality<V> putEq ;
+	private UniqueSet unique ;
 	
 	@Override
 	public V put(V val) {
@@ -44,7 +45,7 @@ public class InlineMultiHashSet<V, N extends HashNode<N> & Value<V>> extends Abs
 	
 	@Override
 	public MultiSet<V> copy() {
-		return new InlineMultiHashSet<V, N>(valHasher, rehasher, valEq, nodeFactory, putEq, store.copy(valProj(), valEq)) ;
+		return new InlineMultiHashSet<V, N>(rehasher, valEq, nodeFactory, putEq, store.copy(valProj(), valEq)) ;
 	}
 
 	@Override
@@ -57,13 +58,26 @@ public class InlineMultiHashSet<V, N extends HashNode<N> & Value<V>> extends Abs
 	}
 
 	@Override
-	public Iterable<V> unique() {
-		return new AbstractIterable<V>() {
-			@Override
-			public Iterator<V> iterator() {
-				return store.unique(valProj(), valEq.getValueEquality(), valProj(), valEq, valProj()) ;
-			}
-		} ;
+	public Set<V> unique() {
+		if (unique == null)
+			unique = new UniqueSet() ;
+		return unique ;
+	}
+	
+	private final class UniqueSet extends AbstractUniqueSetAdapter<V> {
+		
+		private static final long serialVersionUID = -1106116714278629141L;
+
+		@Override
+		protected AnySet<V> set() {
+			return InlineMultiHashSet.this ;
+		}
+
+		@Override
+		public Iterator<V> iterator() {
+			return store.unique(valProj(), valEq.getValueEquality(), valProj(), valEq, valProj()) ;
+		}
+		
 	}
 
 	private static final class ValueEquality<V> extends AbstractHashSet.ValueEquality<V> {
