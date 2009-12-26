@@ -91,44 +91,4 @@ public class HashIter32Bit {
 		return Integer.reverse(currentHighBits) | currentLowBits ;
 	}
 	
-	public static void main(String[] args) {
-		final HashIter32Bit iter = new HashIter32Bit(4, 8) ;
-		boolean[] visited = new boolean[256] ;
-		boolean cont = true ;
-		int c = 0 ;
-		try {
-			while (cont) {
-				System.out.println(String.format("%32s  %4s %10s %b", Integer.toBinaryString(iter.currentHighBits), Integer.toBinaryString(iter.currentLowBits), Integer.toBinaryString(iter.current()), iter.safe())) ;
-				if (iter.haveVisitedAlready(iter.current()))
-					System.out.println("visited") ;				
-				visited[iter.current()] = true ;
-				c++ ;
-				switch(c) {
-				case 29:				
-					iter.resize(7) ;
-					System.out.println("resize to 7") ;
-					break ;
-				case 31:
-					iter.resize(10) ;
-					System.out.println("resize to 10") ;
-					break ;
-				case 32:
-					iter.resize(8) ;
-					System.out.println("resize to 8") ;
-					break ;
-				default :
-					cont = iter.next() ;
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace(System.out) ;
-		}
-		System.out.println(c) ;
-		for (int i = 0 ; i != visited.length ; i++) {
-			if (!visited[i]) {
-				System.out.println(String.format("%10s", Integer.toBinaryString(i))) ;
-			}
-		}
-	}
-	
 }
