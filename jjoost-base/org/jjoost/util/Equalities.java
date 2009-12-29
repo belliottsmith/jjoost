@@ -24,6 +24,22 @@ public class Equalities {
     } ;
     
     /**
+     * case insensitive String equality (a.equalsIgnoreCase(b))
+     * hash() is expensive to compute() as it converts the string
+     * to lower case and calls hashCode(); a faster implementation will be provided
+     * that computes an ASCII/UTF-7 only lower case hash in the near future.
+     * 
+     * @return Equality
+     */
+    public static Equality<String> caseInsensitive() { return CASE_INSENSITIVE ; } 
+    private static final Equality<String> CASE_INSENSITIVE = new CaseInsensitiveEquality() ;
+    public static class CaseInsensitiveEquality implements Equality<String> {
+    	private static final long serialVersionUID = -6611748225612686746L ;
+    	public final boolean equates(String a, String b) { return a.equalsIgnoreCase(b) ; }
+    	public final int hash(String k) { return k.toLowerCase().hashCode() ; }
+    } ;
+    
+    /**
      * identity equality (a == b)
      */
 	public static Equality<Object> identity() { return IDENTITY ; } 

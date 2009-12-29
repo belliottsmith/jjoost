@@ -41,12 +41,18 @@ public interface AnyMap<K, V> extends AnyReadMap<K, V> {
 	public V put(K key, V val) ;
 	
 	/**
-	 * Put if absent.
+	 * Attempts to bind the provided key to the provided value. If the key does not occur
+	 * in the map then the value will be associated with it and null returned. If the key
+	 * occurs in the map and is bound to a different value then a <code>Map</code> will return
+	 * this value, whereas both <code>MultiMap</code> and <code>ListMap</code> will insert the
+	 * new pair and return null. If the key->value pair is present in the map then all maps
+	 * will return a value already associated with the key (in both <code>Map</code> and 
+	 * <code>MultiMap</code> there will be precisely one such value)
 	 * 
 	 * @param key the key
 	 * @param val the val
 	 * 
-	 * @return the v
+	 * @return implementation dependent
 	 */
 	public V putIfAbsent(K key, V val) ;
 	
@@ -56,49 +62,54 @@ public interface AnyMap<K, V> extends AnyReadMap<K, V> {
 	@Override public AnySet<V> values(K key) ;
 	
 	/**
-	 * Removes the.
+	 * Removes all occurrences of the provided key from domain of the map,
+	 * returning an integer representing the total number of items removed
 	 * 
-	 * @param key the key
+	 * @param key remove
 	 * 
-	 * @return the int
+	 * @return the number removed
 	 */
 	public int remove(K key) ;	
 	
 	/**
-	 * Removes the.
+	 * Removes all occurrences of the provided key->value pair from the map,
+	 * returning an integer representing the total number of items removed
 	 * 
 	 * @param key the key
 	 * @param val the val
 	 * 
-	 * @return the int
+	 * @return the number removed
 	 */
 	public int remove(K key, V val) ;
 	
 	/**
-	 * Removes the and return.
+	 * Removes all occurrences of the provided key from domain of the map,
+	 * returning the entries removed
 	 * 
-	 * @param key the key
+	 * @param key key to remove
 	 * 
-	 * @return the iterable< entry< k, v>>
+	 * @return entries removed
 	 */
 	public Iterable<Entry<K, V>> removeAndReturn(K key) ;	
 	
 	/**
-	 * Removes the and return.
+	 * Removes all occurrences of the provided key->value pair from the map,
+	 * returning the entries removed
 	 * 
-	 * @param key the key
-	 * @param val the val
+	 * @param key key to remove
+	 * @param val value to remove
 	 * 
-	 * @return the iterable< entry< k, v>>
+	 * @return entries removed
 	 */
 	public Iterable<Entry<K, V>> removeAndReturn(K key, V val) ;
 	
 	/**
-	 * Removes the and return first.
+	 * Removes all occurrences of the provided key from domain of the map,
+	 * returning the first such value removed, or null if none
 	 * 
-	 * @param key the key
+	 * @param key the key to remove
 	 * 
-	 * @return the v
+	 * @return the value associated with the first key removed, or null if none
 	 */
 	public V removeAndReturnFirst(K key) ;	
 	
@@ -113,35 +124,45 @@ public interface AnyMap<K, V> extends AnyReadMap<K, V> {
 	@Override public AnySet<Entry<K, V>> entries() ;
 
 	/**
-	 * Clear.
+	 * Clears the map, returning the number of elements removed from it. In a concurrent map, whilst there
+	 * is no guarantee that the map will be empty when this method returns if it is being concurrently modified,
+	 * the number will accurately convey the number of items removed.
 	 * 
 	 * @return the int
 	 */
 	public int clear() ;
 	
 	/**
-	 * Clear and return.
+	 * Clears the map, returning the entries removed from it. In a concurrent map the <code>Iterator</code> will accurately
+	 * represent the elements that are removed from the map; <b>however</b> the <code>Iterator</code> must be exhausted for
+	 * the clear operation to be guaranteed to have completed.
 	 * 
 	 * @return the iterator< entry< k, v>>
 	 */
 	public Iterator<Entry<K, V>> clearAndReturn() ;
 
 	/**
-	 * Shrink.
+	 * Attempts to make the map use less memory, if possible.
 	 */
 	public void shrink() ;
 	
 	/**
-	 * Copy.
+	 * Returns a copy of the map. Note that this method may not necessarily return an object of the same
+	 * class as the one it is called upon, but will return one indistinguishable from it with respect
+	 * to all method calls.
 	 * 
 	 * @return the any map< k, v>
 	 */
 	public AnyMap<K, V> copy() ;
 	
 	/**
-	 * Inverse.
+	 * Returns a map representing the inverse function of this map. This
+	 * operation will typically be expensive unless the map is a BiMap in
+	 * which case the action is trivial. The method may not return a map
+	 * of the same type as the one it is called on (although typically this
+	 * will be the case, and should happen wherever possible).
 	 * 
-	 * @return the any map< v, k>
+	 * @return the inverse map/function of the one called upon
 	 */
 	public AnyMap<V, K> inverse() ;
 

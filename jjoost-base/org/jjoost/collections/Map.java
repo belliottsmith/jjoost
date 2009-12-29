@@ -6,75 +6,118 @@ import org.jjoost.util.Factory;
 import org.jjoost.util.Function;
 
 /**
- * A Map permits at most one value for each possible key, much like the java.util.Map
- * 
- * @author b.elliottsmith
- *
- * @param <K>
- * @param <V>
+ * This interface is the 
  */
 public interface Map<K, V> extends AnyMap<K, V>, Function<K, V> {
 
 	/**
-	 * put the provided (key, value) pair into the map, returning the value previously associated with the key 
+	 * Ensures that the provided key binds to the provided value, removing and
+	 * returning the value currently associated with the key, or null if none.
 	 * 
-	 * @param key
-	 * @param val
-	 * @return
+	 * @param key the key
+	 * @param val the val
+	 * 
+	 * @return the value of any maplet removed as a result of this action
 	 */
 	public V put(K key, V val) ;
 	
 	/**
-	 * put the provided (key, value) pair into the map IFF the key does not already map to a value; returns the existing value or null if none.
+	 * Attempts to bind the provided key to the provided value. If the key does not occur
+	 * in the map then the value will be associated with it and null returned. If the key
+	 * occurs in the map and is bound to a different value then this existing value will 
+	 * be returned
 	 * 
-	 * @param key
-	 * @param val
-	 * @return
+	 * @param key the key
+	 * @param val the val
+	 * 
+	 * @return the value already associated with the key in the map, or null if none
 	 */
 	public V putIfAbsent(K key, V val) ;
 	
 	/**
-	 * put the provided (key, value) pair into the map IFF there is no such (key, value) pair already; return true if we added something
+	 * Equivalent to <code>putIfAbsent(key, putIfNotPresent.create())</code>, except that 
+	 * <code>putIfNotPresent.create()</code> is only executed if there is no key associated
+	 * with the value. In concurrent maps this is not a guarantee, but a best effort,
+	 * as it is possible for another thread to set a value for the key after this has executed
+	 * but before the record can be inserted.
 	 * 
-	 * @param key
-	 * @param val
-	 * @return
+	 * @param key the key
+	 * @param putIfNotPresent the put if not present
+	 * 
+	 * @return the value associated with the provided key pre method
 	 */
 	public V putIfAbsent(K key, Function<? super K, ? extends V> putIfNotPresent) ;
 	
 	/**
-	 * retrieve the value associated with the key, or if there is no such value then produce one from the provided factory and add it to the map before returning it.
-	 * the factory method is guaranteed NOT to be called if there is an existing record with the provided key. 
+	 * Equivalent to putIfAbsent(key, putIfNotPresent), except that instead of returning
+	 * the value previously associated with the key, returns the value associated with the
+	 * key as the method is exiting; i.e. if a new value is associated with the key as a
+	 * result of this method, this new value will be returned, otherwise the existing value
+	 * will be
 	 * 
-	 * @param key
-	 * @param val
-	 * @return
+	 * @param key the key
+	 * @param putIfNotPresent the put if not present
+	 * 
+	 * @return the value associated with the provided key post method
 	 */
 	public V ensureAndGet(K key, Factory<? extends V> putIfNotPresent) ;
 	
 	/**
-	 * retrieve the value associated with the key, or if there is no such value then produce one from the provided factory and add it to the map before returning it.
-	 * the factory method is guaranteed NOT to be called if there is an existing record with the provided key. 
+	 * Equivalent to putIfAbsent(key, putIfNotPresent.create(key)), except that <br />
 	 * 
-	 * @param key
-	 * @param val
-	 * @return
+	 * <ol>
+	 * <li><code>putIfNotPresent.create()</code> is only executed if there is no
+	 * key associated with the value. In concurrent maps this is not a
+	 * guarantee, but a best effort, as it is possible for another thread to set
+	 * a value for the key after this has executed but before the record can be
+	 * inserted</li>
+	 * <li>instead of returning the value previously associated with the key,
+	 * returns the value associated with the key as the method is exiting; i.e.
+	 * if a new value is associated with the key as a result of this method,
+	 * this new value will be returned, otherwise the existing value will be
+	 * <p></li>
+	 * </ol>
+	 * 
+	 * @param key the key
+	 * @param putIfNotPresent put if not present
+	 * @return the value associated with the key post method
 	 */
 	public V ensureAndGet(K key, Function<? super K, ? extends V> putIfNotPresent) ;
+	
+	/**
+	 * A convenience method, equivalent to first(key)
+	 * 
+	 * @param key the key
+	 * 
+	 * @return the value associated with the key, or null if none
+	 */
 	public V get(K key) ;
 
-
 	/**
-	 * 	convenience method; for ScalarMap <code>totalCount() == uniqueKeyCount() == size()</code>
+	 * A convenience method, equivalent to both <code>totalCount()</code> and <code>uniqueKeyCount()</code>
 	 * 
-	 * @return
+	 * @return the int
 	 */
 	public int size() ;
 	
+	/* (non-Javadoc)
+	 * @see org.jjoost.collections.AnyMap#values(java.lang.Object)
+	 */
 	@Override public UnitarySet<V> values(K key) ;
 
+	/* (non-Javadoc)
+	 * @see org.jjoost.collections.AnyMap#copy()
+	 */
 	@Override public Map<K, V> copy() ;
+	
+	/* (non-Javadoc)
+	 * @see org.jjoost.collections.AnyMap#entries()
+	 */
 	@Override public Set<Entry<K, V>> entries() ;
+	
+	/* (non-Javadoc)
+	 * @see org.jjoost.collections.AnyMap#keys()
+	 */
 	@Override public Set<K> keys() ;
 	
 }

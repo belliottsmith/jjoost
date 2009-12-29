@@ -21,10 +21,6 @@ import org.jjoost.util.Function;
 import org.jjoost.util.Functions;
 import org.jjoost.util.Iters ;
 
-// TODO : fully removing a key (or its values) in one of the wrapping iterators returned by this set should result in the key/set pair being removed from the underlying map.
-// could do this by writing a specialised "expanding" iterator which expands some iterator (via some function) into the concatenation of multiple iterators (rather than using Iters.concat(Functions.apply())
-// so that this iterator could know that apply remove completely to an expanded iterator results in a remove being applied to the previous super iterator's record. This approach would only work in a serial
-// environment
 public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<K, V> {
 
 	private static final long serialVersionUID = -6962291049889502542L;
