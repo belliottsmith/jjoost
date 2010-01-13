@@ -6,7 +6,9 @@ import org.jjoost.util.Factory;
 import org.jjoost.util.Function;
 
 /**
- * This interface is the 
+ * This interface declares a map that permits each key to map to at most one value
+ * 
+ * @author b.elliottsmith
  */
 public interface Map<K, V> extends AnyMap<K, V>, Function<K, V> {
 

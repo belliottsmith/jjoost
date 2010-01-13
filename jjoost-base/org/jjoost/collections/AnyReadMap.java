@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 /**
- * This is the common super interface for all Jjoost maps.
+ * This interface is the common ancestor of all Jjoost maps.
  * <p>
  * The methods declared here make no assumptions about the number of occurences
  * of a given key or key->value pair, and declare no actions that may modify the

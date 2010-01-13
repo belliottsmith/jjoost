@@ -1,39 +1,39 @@
-package org.jjoost.collections.maps.serial;
+package org.jjoost.collections.maps.concurrent;
 
-import java.util.Map.Entry;
+import java.util.Map.Entry ;
 
-import org.jjoost.collections.Map;
-import org.jjoost.collections.base.SerialHashStore;
-import org.jjoost.collections.base.SerialLinkedHashStore;
-import org.jjoost.collections.base.SerialLinkedHashStore.SerialLinkedHashNode;
-import org.jjoost.collections.maps.base.HashMapNodeFactory;
-import org.jjoost.collections.maps.base.ScalarHashMap;
+import org.jjoost.collections.base.LockFreeLinkedHashStore ;
+import org.jjoost.collections.base.SerialHashStore ;
+import org.jjoost.collections.base.LockFreeHashStore.Counting ;
+import org.jjoost.collections.base.LockFreeLinkedHashStore.LockFreeLinkedHashNode ;
+import org.jjoost.collections.maps.base.HashMapNodeFactory ;
+import org.jjoost.collections.maps.base.ScalarHashMap ;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Rehasher;
 
-public class SerialLinkedScalarHashMap<K, V> extends ScalarHashMap<K, V, SerialLinkedScalarHashMap.Node<K, V>>{
+public class LockFreeLinkedHashMap<K, V> extends ScalarHashMap<K, V, LockFreeLinkedHashMap.Node<K, V>>{
 
 	private static final long serialVersionUID = 1051610520557989640L;
 
-	public SerialLinkedScalarHashMap() {
+	public LockFreeLinkedHashMap() {
 		this(16, 0.75f) ;
 	}
 	
-	public SerialLinkedScalarHashMap(int minimumInitialCapacity, float loadFactor) {
+	public LockFreeLinkedHashMap(int minimumInitialCapacity, float loadFactor) {
 		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object(), Equalities.object()) ;
 	}
 	
-	public SerialLinkedScalarHashMap( 
+	public LockFreeLinkedHashMap( 
 			int minimumInitialCapacity, float loadFactor, 
 			Rehasher rehasher, Equality<? super K> keyEquality, Equality<? super V> valEquality) 
 	{
-		super(rehasher, new KeyEquality<K, V>(keyEquality), new EntryEquality<K, V>(keyEquality, valEquality),
-			SerialLinkedScalarHashMap.<K, V>factory(), 
-			new SerialLinkedHashStore<Node<K, V>>(minimumInitialCapacity, loadFactor)) ;
+		super(rehasher, new KeyEquality<K, V>(keyEquality), new NodeEquality<K, V>(keyEquality, valEquality),
+			LockFreeLinkedHashMap.<K, V>factory(), 
+			new LockFreeLinkedHashStore<Node<K, V>>(minimumInitialCapacity, loadFactor, Counting.PRECISE, Counting.OFF)) ;
 	}
 
-	public static final class Node<K, V> extends SerialLinkedHashNode<Node<K, V>> implements Entry<K, V> {
+	protected static final class Node<K, V> extends LockFreeLinkedHashNode<Node<K, V>> implements Entry<K, V> {
 		private static final long serialVersionUID = -5766263745864028747L;
 		public Node(int hash, K key, V value) {
 			super(hash);
@@ -54,26 +54,14 @@ public class SerialLinkedScalarHashMap<K, V> extends ScalarHashMap<K, V, SerialL
 	public static <K, V> NodeFactory<K, V> factory() {
 		return FACTORY ;
 	}
-	public static final class NodeFactory<K, V> implements HashMapNodeFactory<K, V, Node<K, V>> {
+	protected static final class NodeFactory<K, V> implements HashMapNodeFactory<K, V, Node<K, V>> {
 		@Override
 		public final Node<K, V> makeNode(final int hash, final K key, final V value) {
 			return new Node<K, V>(hash, key, value) ;
 		}
 	}
 
-	public static void main(String[] args) {
-		Map<Integer, Integer> map = new SerialLinkedScalarHashMap<Integer, Integer>() ;
-		for (int i = 0 ; i != 100 ; i++) {
-			map.put(i, i) ;
-			map.put(i, i + 1) ;
-			map.put(i, i) ;
-		}
-		for (Integer i : map.values()) {
-			System.out.println(i) ;
-		}
-	}
-
-	public static final class KeyEquality<K, V> extends ScalarHashMap.KeyEquality<K, V, Node<K, V>> {
+	protected static final class KeyEquality<K, V> extends ScalarHashMap.KeyEquality<K, V, Node<K, V>> {
 		public KeyEquality(Equality<? super K> keyEq) {
 			super(keyEq) ;
 		}
@@ -83,10 +71,10 @@ public class SerialLinkedScalarHashMap<K, V> extends ScalarHashMap<K, V, SerialL
 		}
 	}
 
-	public static final class EntryEquality<K, V> extends ScalarHashMap.NodeEquality<K, V, Node<K, V>> {
+	protected static final class NodeEquality<K, V> extends ScalarHashMap.NodeEquality<K, V, Node<K, V>> {
 		private static final long serialVersionUID = -8668943955126687051L ;
 
-		public EntryEquality(Equality<? super K> keyEq, Equality<? super V> valEq) {
+		public NodeEquality(Equality<? super K> keyEq, Equality<? super V> valEq) {
 			super(keyEq, valEq) ;
 		}
 		@Override

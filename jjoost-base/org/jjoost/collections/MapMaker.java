@@ -5,19 +5,21 @@ import org.jjoost.collections.maps.concurrent.LockFreeInlineListHashMap;
 import org.jjoost.collections.maps.concurrent.LockFreeInlineMultiHashMap;
 import org.jjoost.collections.maps.concurrent.LockFreeLinkedInlineListHashMap;
 import org.jjoost.collections.maps.concurrent.LockFreeLinkedInlineMultiHashMap;
-import org.jjoost.collections.maps.concurrent.LockFreeLinkedScalarHashMap;
-import org.jjoost.collections.maps.concurrent.LockFreeScalarHashMap;
+import org.jjoost.collections.maps.concurrent.LockFreeLinkedHashMap;
+import org.jjoost.collections.maps.concurrent.LockFreeHashMap;
 import org.jjoost.collections.maps.nested.NestedSetListMap;
 import org.jjoost.collections.maps.nested.NestedSetMultiMap;
 import org.jjoost.collections.maps.serial.SerialInlineListHashMap;
 import org.jjoost.collections.maps.serial.SerialInlineMultiHashMap;
 import org.jjoost.collections.maps.serial.SerialLinkedInlineListHashMap;
 import org.jjoost.collections.maps.serial.SerialLinkedInlineMultiHashMap;
-import org.jjoost.collections.maps.serial.SerialLinkedScalarHashMap;
-import org.jjoost.collections.maps.serial.SerialScalarHashMap;
+import org.jjoost.collections.maps.serial.SerialLinkedHashMap;
+import org.jjoost.collections.maps.serial.SerialHashMap;
+import org.jjoost.collections.maps.wrappers.DefaultFactoryMap ;
+import org.jjoost.collections.maps.wrappers.DefaultFunctionMap ;
 import org.jjoost.collections.maps.wrappers.SynchronizedListMap;
 import org.jjoost.collections.maps.wrappers.SynchronizedMultiMap;
-import org.jjoost.collections.maps.wrappers.SynchronizedScalarMap;
+import org.jjoost.collections.maps.wrappers.SynchronizedMap;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Factory;
@@ -25,37 +27,120 @@ import org.jjoost.util.Function;
 import org.jjoost.util.Rehasher;
 import org.jjoost.util.Rehashers;
 
-public class MapMaker {
+/**
+ * This abstract class defines methods which can be used to construct a <code>Map<code>,
+ * <code>MultiMap<code> or <code>ListMap<code>. Also defined are various concrete implementations
+ * of <code>MapMaker</code>, such as a <code>HashMapMaker</code> which define specific options
+ * available for that kind of map.
+ * 
+ * @author b.elliottsmith
+ */
+public abstract class MapMaker<K, V> {
 
+	/**
+	 * Construct and return a new scalar map
+	 * 
+	 * @return
+	 */
+	public abstract Map<K, V> newMap() ;
+	/**
+	 * Construct and return a new list map with the provided nesting settings
+	 * 
+	 * @param nesting
+	 * @return
+	 */
+	public abstract ListMap<K, V> newListMap(ListMapNesting<V> nesting) ;
+	/**
+	 * Construct and return a new multi map with the provided nesting settings
+	 * 
+	 * @param nesting
+	 * @return
+	 */
+	public abstract MultiMap<K, V> newMultiMap(MultiMapNesting<V> nesting) ;
+
+	/**
+	 * Return a new <code>MapMaker</code> with the same properties as this one
+	 * 
+	 * @param nesting
+	 * @return
+	 */
+	protected abstract MapMaker<K, V> copy() ;
+	
+	/**
+	 * Return a new list map with inline nesting
+	 * 
+	 * @return
+	 */
+	public ListMap<K, V> newListMap() {
+		return newListMap(ListMapNesting.<V>inline()) ;
+	}
+	/**
+	 * Return a new multi map with inline nesting
+	 * @return
+	 */
+	public MultiMap<K, V> newMultiMap() {
+		return newMultiMap(MultiMapNesting.<V>inline()) ;			
+	}
+	/**
+	 * Return a new <code>Factory<code> whose create() method
+	 * returns the result of <code>this.newMap()</code>.
+	 * Changes to this <code>MapMaker</code> after the construction
+	 * of this factory will not affect the result of its <code>create()<code>
+	 * method.
+	 * 
+	 * @return
+	 */
+	public Factory<Map<K, V>> newMapFactory() {
+		return new ScalarMapFactory<K, V>(this) ;
+	}
+	/**
+	 * Return a new <code>Factory<code> whose create() method
+	 * returns the result of <code>this.newListMap(nesting)</code>.
+	 * Changes to this <code>MapMaker</code> after the construction
+	 * of this factory will not affect the result of its <code>create()<code>
+	 * method.
+	 * 
+	 * @param nesting
+	 * @return
+	 */
+	public Factory<ListMap<K, V>> newListMapFactory(ListMapNesting<V> nesting) {
+		return new ListMapFactory<K, V>(this, nesting) ;
+	}
+	/**
+	 * Return a new <code>Factory<code> whose create() method
+	 * returns the result of <code>this.newMultiMap(nesting)</code>.
+	 * Changes to this <code>MapMaker</code> after the construction
+	 * of this factory will not affect the result of its <code>create()<code>
+	 * method.
+	 * @param nesting
+	 * @return
+	 */
+	public Factory<MultiMap<K, V>> newMultiMapFactory(MultiMapNesting<V> nesting) {
+		return new MultiMapFactory<K, V>(this, nesting) ;
+	}
+		
+	/**
+	 * Returns a <code>new HashMapMaker</code>
+	 * 
+	 * @param <K>
+	 * @param <V>
+	 * @return <code>HashMapMaker</code>
+	 */
 	public static <K, V> HashMapMaker<K, V> hash() {
 		return new HashMapMaker<K, V>() ;
 	}
 	
-	public static abstract class AbstractMapMaker<K, V> {
-		
-		public abstract Map<K, V> newScalarMap() ;
-		public abstract ListMap<K, V> newListMap(ListMapNesting<V> nesting) ;
-		public abstract MultiMap<K, V> newMultiMap(MultiMapNesting<V> nesting) ;
-		protected abstract AbstractMapMaker<K, V> copy() ;
-		
-		public ListMap<K, V> newListMap() {
-			return newListMap(ListMapNesting.<V>inline()) ;
-		}
-		public MultiMap<K, V> newMultiMap() {
-			return newMultiMap(MultiMapNesting.<V>inline()) ;			
-		}
-		public Factory<Map<K, V>> newScalarMapFactory() {
-			return new ScalarMapFactory<K, V>(this) ;
-		}
-		public Factory<ListMap<K, V>> newListMapFactory(ListMapNesting<V> nesting) {
-			return new ListMapFactory<K, V>(this, nesting) ;
-		}
-		public Factory<MultiMap<K, V>> newMultiMapFactory(MultiMapNesting<V> nesting) {
-			return new MultiMapFactory<K, V>(this, nesting) ;
-		}
-	}
-	
-	public static class HashMapMaker<K, V> extends AbstractMapMaker<K, V> {
+	/**
+	 * This class provides a user friendly means of constructing
+	 * a variety of hash maps. Almost all hash based map options
+	 * are exposed by this class.
+	 * 
+	 * @author b.elliottsmith
+	 *
+	 * @param <K>
+	 * @param <V>
+	 */
+	public static class HashMapMaker<K, V> extends MapMaker<K, V> {
 		private Rehasher rehasher = null ;
 		private Equality<? super K> keyEquality = Equalities.object() ;
 		private Equality<? super V> valEquality = Equalities.object() ;
@@ -81,45 +166,130 @@ public class MapMaker {
 			this.factoryFunction = factoryFunction;
 			this.factory = factory;
 		}
+		/**
+		 * Set the <code>Rehasher</code> used by maps constructed by this <code>MapMaker</code>.
+		 * All hashes are passed through the rehasher before being used; it is the rehasher's job 
+		 * to prevent unfortunate inputs/hash functions causing the hash map to perform poorly. 
+		 * The default differs depending on the <code>HashStoreType</code>.
+		 * 
+		 * @param rehasher
+		 * @return
+		 */
 		public HashMapMaker<K, V> rehasher(Rehasher rehasher) { this.rehasher = rehasher ; return this ; }
+		/**
+		 * Set the key equality used by maps constructed by this <code>MapMaker</code>. The <code>Equality</code> 
+		 * defines both the hash and equality implementations to use instead of the objects' hashCode() and equals()
+		 * methods. The default is <code>Equalities.object()</code> which does use the objects' hashCode() and equals()
+		 * methods, however <code>Equalities.identity()</code> causes hash maps created by this <code>MapMaker</code> 
+		 * to behave like an <code>IdentityHashMap</code> (regarding equality).
+		 * 
+		 * @param eq
+		 * @return
+		 */
 		public HashMapMaker<K, V> keyEq(Equality<? super K> eq) { this.keyEquality = eq ; return this ; }
+		/**
+		 * Set the equality used for value matching. This is used less commonly than the key equality, however is still
+		 * necessary. All methods that accept a value will use this <code>Equality</code> to determine equality of the value
+		 * against those present in the map. This is particularly important for a <code>MultiMap</code> and <code>ListMap</code>
+		 * with INLINE nesting, as it will be used to determine equality for the value portion of each entry, and
+		 * calls to <code>values().unique()</code> are quite likely to construct a secondary hash map 
+		 * using the hash defined by this <code>Equality</code>. If the nesting type is NESTED then this options is ignored, 
+		 * as the nested set will have its own equality defined. 
+		 * 
+		 * @param eq
+		 * @return
+		 */
 		public HashMapMaker<K, V> valEq(Equality<? super V> eq) { this.valEquality = eq ; return this ; }
+		/**
+		 * Set the type of hash map to construct; this will affect performance and concurrency characteristics, primarily,
+		 * but should have no impact on the basic functionality.
+		 * 
+		 * @param type
+		 * @return
+		 */
 		public HashMapMaker<K, V> type(HashStoreType type) { this.type = type ; return this ; }
+		/**
+		 * Specify the minimum initial capacity a map should have on construction
+		 * @param initialCapacity
+		 * @return
+		 */
 		public HashMapMaker<K, V> initialCapacity(int initialCapacity) { this.initialCapacity = initialCapacity ; return this ; }
+		/**
+		 * Define the load factor all maps should be constructed with. This parameter is used to decide when to enlarge a hash map,
+		 * and will greatly affect both the size and speed of the map. The smaller this value (less than 1) it is, the more space the
+		 * map will waste but the better it will cope with poor distribution of elements. A perfect hash would need a value of 1 
+		 * to perform optimally, but since most hash functions are not perfect, a value below 1 is usually best. A value above 1 will
+		 * begin to save space at the expense of extra overhead maintaining and querying the map. If the size of the map is expected to
+		 * stay <b>relatively</b> static, with the occasional peaks and troughs, however, a high load factor may avoid expensive and 
+		 * unnecessary grow operations.
+		 * 
+		 * @param loadFactor
+		 * @return
+		 */
 		public HashMapMaker<K, V> loadFactor(float loadFactor) { this.loadFactor = loadFactor ; return this ; }
+		/**
+		 * This options is only available for the construction of a regular <code>Map</code>. If this property is set
+		 * then any call to <code>get(k)</code> on the map where the key does not exist has the key inserted into the
+		 * map with a value provided by the factory. The effect is that <code>ensureAndGet(k, factory)</code> is called
+		 * instead of <code>get(k)</code>
+		 * 
+		 * @param factory
+		 * @return
+		 */
 		public HashMapMaker<K, V> defaultsTo(Factory<V> factory) { this.factory = factory ; this.factoryFunction = null ; return this ; }
+		/**
+		 * This options is only available for the construction of a regular <code>Map</code>. If this property is set
+		 * then any call to <code>get(k)</code> on the map where the key does not exist has the key inserted into the
+		 * map with a value provided by the function. The effect is that <code>ensureAndGet(k, function)</code> is called
+		 * instead of <code>get(k)</code>
+		 * 
+		 * @param factory
+		 * @return
+		 */
 		public HashMapMaker<K, V> defaultsTo(Function<K, V> function) { this.factoryFunction = function ; this.factory = null ; return this ; }
-		public Map<K, V> newScalarMap() {
+		public Map<K, V> newMap() {
+			final Map<K, V> r ;
 			switch(type.type()) {
 			case SERIAL:
-				return new SerialScalarHashMap<K, V>(
+				r = new SerialHashMap<K, V>(
 					initialCapacity, loadFactor,  
 					rehasher(), keyEquality, valEquality) ;
+				break ;
 			case SYNCHRONIZED:
-				return new SynchronizedScalarMap<K, V>(
-					new SerialScalarHashMap<K, V>(
+				r = new SynchronizedMap<K, V>(
+					new SerialHashMap<K, V>(
 						initialCapacity, loadFactor,  
 						rehasher(), keyEquality, valEquality)) ;
+				break ;
 			case LINKED_SERIAL:
-				return new SerialLinkedScalarHashMap<K, V>(
+				r = new SerialLinkedHashMap<K, V>(
 					initialCapacity, loadFactor, 
 					rehasher(), keyEquality, valEquality) ;
+				break ;
 			case LINKED_SYNCHRONIZED:
-				return new SynchronizedScalarMap<K, V>(
-					new SerialLinkedScalarHashMap<K, V>(
+				r = new SynchronizedMap<K, V>(
+					new SerialLinkedHashMap<K, V>(
 						initialCapacity, loadFactor,  
 						rehasher(), keyEquality, valEquality)) ;
+				break ;
 			case LOCK_FREE:
-				return new LockFreeScalarHashMap<K, V>(
+				r = new LockFreeHashMap<K, V>(
 					initialCapacity, loadFactor,  
 					rehasher(), keyEquality, valEquality) ;
+				break ;
 			case LINKED_LOCK_FREE:
-				return new LockFreeLinkedScalarHashMap<K, V>(
+				r = new LockFreeLinkedHashMap<K, V>(
 					initialCapacity, loadFactor,  
 					rehasher(), keyEquality, valEquality) ;
+				break ;
 			default:
 				throw new UnsupportedOperationException() ;
 			}
+			if (factory != null)
+				return new DefaultFactoryMap<K, V>(r, factory) ;
+			if (factoryFunction != null)
+				return new DefaultFunctionMap<K, V>(r, factoryFunction) ;
+			return r ;
 		}
 		public MultiMap<K, V> newMultiMap(MultiMapNesting<V> nesting) {
 			if (factory != null || factoryFunction != null)
@@ -168,7 +338,7 @@ public class MapMaker {
 								.keyEq(keyEquality)
 								.rehasher(rehasher)
 								.type(type)
-								.newScalarMap(), 
+								.newMap(), 
 								valEquality, 
 								nesting.factory()) ;
 				default:
@@ -224,7 +394,7 @@ public class MapMaker {
 						.keyEq(keyEquality)
 						.rehasher(rehasher)
 						.type(type)
-						.newScalarMap(),
+						.newMap(),
 						valEquality,
 						nesting.factory()) ;
 				default:
@@ -255,9 +425,9 @@ public class MapMaker {
 
 	private static final class ListMapFactory<K, V> implements Factory<ListMap<K, V>> {
 		private static final long serialVersionUID = 475702452749567764L;
-		private final AbstractMapMaker<K, V> maker ;
+		private final MapMaker<K, V> maker ;
 		private final ListMapNesting<V> type ;
-		public ListMapFactory(AbstractMapMaker<K, V> maker, ListMapNesting<V> type) {
+		public ListMapFactory(MapMaker<K, V> maker, ListMapNesting<V> type) {
 			this.maker = maker.copy() ;
 			this.type = type ;
 		}
@@ -269,21 +439,21 @@ public class MapMaker {
 	
 	private static final class ScalarMapFactory<K, V> implements Factory<Map<K, V>> {
 		private static final long serialVersionUID = 475702452749567764L;
-		private final AbstractMapMaker<K, V> maker ;
-		public ScalarMapFactory(AbstractMapMaker<K, V> maker) {
+		private final MapMaker<K, V> maker ;
+		public ScalarMapFactory(MapMaker<K, V> maker) {
 			this.maker = maker.copy() ;
 		}
 		@Override
 		public Map<K, V> create() {
-			return maker.newScalarMap() ;
+			return maker.newMap() ;
 		}
 	}
 	
 	private static final class MultiMapFactory<K, V> implements Factory<MultiMap<K, V>> {
 		private static final long serialVersionUID = 475702452749567764L;
-		private final AbstractMapMaker<K, V> maker ;
+		private final MapMaker<K, V> maker ;
 		private final MultiMapNesting<V> type ;
-		public MultiMapFactory(AbstractMapMaker<K, V> maker, MultiMapNesting<V> type) {
+		public MultiMapFactory(MapMaker<K, V> maker, MultiMapNesting<V> type) {
 			this.maker = maker.copy() ;
 			this.type = type ;
 		}

@@ -3,7 +3,7 @@ package org.jjoost.util;
 import java.util.Comparator;
 
 /**
- * Defines a some simple utility methods for Objects, such as equating them (accounting for nulls, and equating elements of arrays), performing the min/max on Comparable objects, and converting them to a String
+ * Defines a some simple utility methods for Objects
  * 
  * @author b.elliottsmith
  */

@@ -38,7 +38,7 @@ public class LockFreeLinkedCountingMultiHashSet<V> extends NestedMultiHashSet<V,
 	}
 
 	// this implementation has no concurrency guarantees
-	public static final class Node<V> extends LockFreeLinkedHashNode<Node<V>> implements INode<V, Node<V>> {
+	public static final class Node<V> extends LockFreeLinkedHashNode<Node<V>> implements NestedMultiHashSet.INode<V, Node<V>> {
 		
 		private static final long serialVersionUID = -5766263745864028747L;
 		

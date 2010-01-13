@@ -14,18 +14,25 @@ import org.jjoost.collections.sets.serial.SerialInlineMultiHashSet;
 import org.jjoost.collections.sets.serial.SerialLinkedCountingMultiHashSet;
 import org.jjoost.collections.sets.serial.SerialLinkedInlineMultiHashSet;
 import org.jjoost.collections.sets.serial.SerialLinkedNestedMultiHashSet;
-import org.jjoost.collections.sets.serial.SerialLinkedScalarHashSet;
+import org.jjoost.collections.sets.serial.SerialLinkedHashSet;
 import org.jjoost.collections.sets.serial.SerialNestedMultiHashSet;
-import org.jjoost.collections.sets.serial.SerialScalarHashSet;
+import org.jjoost.collections.sets.serial.SerialHashSet;
 import org.jjoost.collections.sets.wrappers.SynchronizedMultiSet;
-import org.jjoost.collections.sets.wrappers.SynchronizedScalarSet;
+import org.jjoost.collections.sets.wrappers.SynchronizedSet;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Factory;
 import org.jjoost.util.Rehasher;
 import org.jjoost.util.Rehashers;
 
-public class SetMaker {
+/**
+ * 
+ * @author b.elliottsmith
+ *
+ */
+public final class SetMaker {
+	
+	private SetMaker() {}
 
 	public static <V> HashSetMaker<V> hash() {
 		return new HashSetMaker<V>() ;
@@ -33,14 +40,14 @@ public class SetMaker {
 	
 	public static abstract class AbstractSetMaker<V> {
 		
-		public abstract Set<V> newScalarSet() ;
+		public abstract Set<V> newSet() ;
 		public abstract MultiSet<V> newMultiSet(MultiSetNesting<V> nesting) ;
 		protected abstract AbstractSetMaker<V> copy() ;
 		
 		public MultiSet<V> newMultiSet() {
 			return newMultiSet(MultiSetNesting.<V>inline()) ;
 		}
-		public Factory<Set<V>> newScalarSetFactory() {
+		public Factory<Set<V>> newSetFactory() {
 			return new ScalarSetFactory<V>(this) ;
 		}
 		public Factory<MultiSet<V>> newMultiSetFactory(MultiSetNesting<V> nesting) {
@@ -70,24 +77,24 @@ public class SetMaker {
 		public HashSetMaker<V> type(HashStoreType type) { this.type = type ; return this ; }
 		public HashSetMaker<V> initialCapacity(int initialCapacity) { this.initialCapacity = initialCapacity ; return this ; }
 		public HashSetMaker<V> loadFactor(float loadFactor) { this.loadFactor = loadFactor ; return this ; }
-		public Set<V> newScalarSet() {
+		public Set<V> newSet() {
 			switch(type.type()) {
 			case SERIAL:
-				return new SerialScalarHashSet<V>(
+				return new SerialHashSet<V>(
 					initialCapacity, loadFactor, 
 					rehasher(), eq) ;
 			case SYNCHRONIZED:
-				return new SynchronizedScalarSet<V>(
-					new SerialScalarHashSet<V>(
+				return new SynchronizedSet<V>(
+					new SerialHashSet<V>(
 						initialCapacity, loadFactor, 
 						rehasher(), eq)) ;
 			case LINKED_SERIAL:
-				return new SerialLinkedScalarHashSet<V>(
+				return new SerialLinkedHashSet<V>(
 					initialCapacity, loadFactor, 
 					rehasher(), eq) ;
 			case LINKED_SYNCHRONIZED:
-				return new SynchronizedScalarSet<V>(
-					new SerialLinkedScalarHashSet<V>(
+				return new SynchronizedSet<V>(
+					new SerialLinkedHashSet<V>(
 						initialCapacity, loadFactor, 
 						rehasher(), eq)) ;
 			case LOCK_FREE:
@@ -239,7 +246,7 @@ public class SetMaker {
 		}
 		@Override
 		public Set<V> create() {
-			return maker.newScalarSet() ;
+			return maker.newSet() ;
 		}
 	}
 

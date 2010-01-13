@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 
 /**
- * This is the common super interface to all modifiable Jjoost maps. The methods 
+ * This interface is the common ancestor of all modifiable Jjoost maps. The methods 
  * declared here make no assumptions about the number of occurrences
  * of a given key or key->value pair.
  * <p>

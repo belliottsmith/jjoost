@@ -1,7 +1,7 @@
 package org.jjoost.collections;
 
 /**
- * <p> This interface declares that a set supports multiple occurrences of each value
+ * This interface declares a set that supports multiple occurrences of each value
  * 
  * <p>Note that the <code>iterator()</code> method will return an <code>Iterator</code> that 
  * <i>enumerates <b>every occurence</b> of every value</i>. If you want

@@ -7,7 +7,7 @@ import org.jjoost.util.Equality;
 import org.jjoost.util.Function;
 
 /**
- * <p> This is the common interface for all Jjoost sets. 
+ * <p> This interface is the common ancestor of all Jjoost sets. 
  * <p> The methods declared here make no assumptions about the number of occurences of a given value 
  * and declare no actions that may modify the set, so is the most general form of set. No
  * concrete class should implement this interface directly.

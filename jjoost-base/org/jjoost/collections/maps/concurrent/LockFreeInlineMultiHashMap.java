@@ -33,7 +33,7 @@ public class LockFreeInlineMultiHashMap<K, V> extends InlineMultiHashMap<K, V, L
 			new LockFreeHashStore<Node<K, V>>(minimumInitialCapacity, loadFactor, Counting.PRECISE, Counting.PRECISE)) ;
 	}
 
-	public static final class Node<K, V> extends LockFreeHashNode<Node<K, V>> implements Entry<K, V> {
+	protected static final class Node<K, V> extends LockFreeHashNode<Node<K, V>> implements Entry<K, V> {
 		private static final long serialVersionUID = -5766263745864028747L;
 		public Node(int hash, K key, V value) {
 			super(hash);
@@ -56,14 +56,14 @@ public class LockFreeInlineMultiHashMap<K, V> extends InlineMultiHashMap<K, V, L
 		return FACTORY ;
 	}
 	
-	public static final class NodeFactory<K, V> implements HashMapNodeFactory<K, V, Node<K, V>> {
+	protected static final class NodeFactory<K, V> implements HashMapNodeFactory<K, V, Node<K, V>> {
 		@Override
 		public final Node<K, V> makeNode(final int hash, final K key, final V value) {
 			return new Node<K, V>(hash, key, value) ;
 		}
 	}
 	
-	public static final class KeyEquality<K, V> extends InlineMultiHashMap.KeyEquality<K, V, Node<K, V>> {
+	protected static final class KeyEquality<K, V> extends InlineMultiHashMap.KeyEquality<K, V, Node<K, V>> {
 		public KeyEquality(Equality<? super K> keyEq) {
 			super(keyEq) ;
 		}
@@ -73,7 +73,7 @@ public class LockFreeInlineMultiHashMap<K, V> extends InlineMultiHashMap<K, V, L
 		}
 	}
 
-	public static final class NodeEquality<K, V> extends InlineMultiHashMap.NodeEquality<K, V, Node<K, V>> {
+	protected static final class NodeEquality<K, V> extends InlineMultiHashMap.NodeEquality<K, V, Node<K, V>> {
 		private static final long serialVersionUID = -8668943955126687051L ;
 
 		public NodeEquality(Equality<? super K> keyEq, Equality<? super V> valEq) {

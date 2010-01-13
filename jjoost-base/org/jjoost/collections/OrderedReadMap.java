@@ -7,6 +7,12 @@ import org.jjoost.util.tuples.Pair;
 
 // all methods accepting total order filters ensure that the filter's accept() method is always called in strictly the specified ascending or descending order (ascending if none is specified)
 
+/**
+ * The Ordered* interfaces are not finalised, nor are any implementing classes yet provided. 
+ * Javadoc will be provided once they are settled and made available.
+ * 
+ * @author b.elliottsmith
+ */
 public interface OrderedReadMap<K, V> extends AnyReadMap<K, V> {
 
 	public V last(K key) ;

@@ -1,7 +1,7 @@
 package org.jjoost.util.filters ;
 
 import org.jjoost.collections.Set ;
-import org.jjoost.collections.sets.serial.SerialScalarHashSet ;
+import org.jjoost.collections.sets.serial.SerialHashSet ;
 import org.jjoost.util.Equality ;
 import org.jjoost.util.Filter ;
 
@@ -14,7 +14,7 @@ public class AcceptUnique<V> implements Filter<V> {
 	private final Set<V> seen ;
 
 	public AcceptUnique() {
-		this(new SerialScalarHashSet<V>(8, 0.75f)) ;
+		this(new SerialHashSet<V>(8, 0.75f)) ;
 	}
 	public AcceptUnique(Set<V> set) {
 		this.seen = set ;
@@ -41,7 +41,7 @@ public class AcceptUnique<V> implements Filter<V> {
 	}
 	
 	public static <V> AcceptUnique<V> get(Equality<? super V> eq) {
-		return get(new SerialScalarHashSet<V>(eq)) ;
+		return get(new SerialHashSet<V>(eq)) ;
 	}
 	
 	public static <V> AcceptUnique<V> get(Set<V> set) {

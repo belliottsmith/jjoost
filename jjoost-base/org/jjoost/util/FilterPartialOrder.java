@@ -2,19 +2,18 @@ package org.jjoost.util ;
 
 import java.util.Comparator;
 
-// TODO: Auto-generated Javadoc
 /**
- * This interface is used to define an abstract filter over a dataset whose datatype is known but whose
+ * This interface is used to define an abstract filter over a data set whose type is known but whose
  * ordering may not be. With a provided <code>Comparator</code> instances of this interface should be able to
- * indicate whether or not a range bounds a value that the filter accepts
- * <p>This class must treat null as both plus <b>and</b> minus infinity.
+ * indicate whether or not a range bounds a value that the filter accepts. Null values cannot be part of the
+ * ordering, as they indicate +/- infinite to the <code>mayAcceptBetween()</code> method
  * 
  * @author b.elliottsmith
  */
 public interface FilterPartialOrder<P> {
 
 	/**
-     * Return true if this filter and comparator combination accept the provided value
+     * Return true iff this filter and comparator combination accept the provided value
      * 
      * @param v the value to check
      * @param cmp the partial order
@@ -24,6 +23,11 @@ public interface FilterPartialOrder<P> {
     boolean accept(P v, Comparator<? super P> cmp) ;
     
     /**
+     * Returns true if there exists (in the total order defined by the comparator, not necessarily in any concrete 
+     * data set this is being applied to) a value between <code>lb</code> and <code>ub</code> that this filter may accept.
+     * This method may return true if there is no such value, at the cost of more expensive execution but valid behaviour,
+     * however it cannot return false if there <b>is</b> such a value without breaking functionality.
+     * 
      * null values should be seen as both +/- infinity, i.e.
      * containsBetween(null, o) should return containsBefore(o) and
      * containsBetween(o, null) should return containsAfter(o)

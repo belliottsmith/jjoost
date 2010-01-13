@@ -4,6 +4,15 @@ import java.util.Map.Entry ;
 
 import org.jjoost.util.FilterPartialOrder;
 
+/**
+ * The Ordered* interfaces are not finalised, nor are any implementing classes yet provided. 
+ * Javadoc will be provided once they are settled and made available.
+ * 
+ * @author b.elliottsmith
+ *
+ * @param <K>
+ * @param <V>
+ */
 public interface OrderedMap<K, V> extends AnyMap<K, V>, OrderedReadMap<K, V> {
 
 	public int remove(FilterPartialOrder<K> filter) ;

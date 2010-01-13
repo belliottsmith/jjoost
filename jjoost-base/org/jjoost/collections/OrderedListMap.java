@@ -5,6 +5,15 @@ import java.util.Map.Entry ;
 
 import org.jjoost.util.FilterPartialOrder ;
 
+/**
+ * The Ordered* interfaces are not finalised, nor are any implementing classes yet provided. 
+ * Javadoc will be provided once they are settled and made available.
+ *   
+ * @author b.elliottsmith
+ *
+ * @param <K>
+ * @param <V>
+ */
 public interface OrderedListMap<K, V> extends ListMap<K, V>, OrderedMap<K, V> {
 
 	@Override public OrderedListMap<K, V> copy() ;

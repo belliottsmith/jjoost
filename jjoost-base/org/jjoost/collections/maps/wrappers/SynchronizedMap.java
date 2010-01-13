@@ -8,10 +8,10 @@ import org.jjoost.collections.UnitarySet;
 import org.jjoost.util.Factory;
 import org.jjoost.util.Function;
 
-public class SynchronizedScalarMap<K, V> extends SynchronizedArbitraryMap<K, V, Map<K, V>> implements Map<K, V> {
+public class SynchronizedMap<K, V> extends SynchronizedArbitraryMap<K, V, Map<K, V>> implements Map<K, V> {
 	
 	private static final long serialVersionUID = 2692454383540344975L;
-	public SynchronizedScalarMap(Map<K, V> delegate) {
+	public SynchronizedMap(Map<K, V> delegate) {
 		super(delegate) ;
 	}
 	
@@ -51,7 +51,7 @@ public class SynchronizedScalarMap<K, V> extends SynchronizedArbitraryMap<K, V, 
 
 	@Override
 	public Map<K, V> copy() {
-		return new SynchronizedScalarMap<K, V>(delegate.copy()) ;
+		return new SynchronizedMap<K, V>(delegate.copy()) ;
 	}
 	@Override public synchronized UnitarySet<V> values(K key) {
 		return wrap(delegate.values(key)) ;

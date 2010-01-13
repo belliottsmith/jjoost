@@ -96,7 +96,7 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 	}
 	
 	protected final int hash(K key) {
-		return rehasher.hash(keyEq.keyEq.hash(key)) ;
+		return rehasher.rehash(keyEq.keyEq.hash(key)) ;
 	}
 	
 	@Override

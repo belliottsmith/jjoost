@@ -48,7 +48,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	}
 	
 	final int hash(V key) {
-		return rehasher.hash(valEq.valEq.hash(key)) ;
+		return rehasher.rehash(valEq.valEq.hash(key)) ;
 	}
 	
 	protected static <V, N extends HashNode<N> & INode<V, N>> boolean removeNode(NestedMultiHashSet<V, N> set, N node) {
@@ -343,7 +343,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	// INTERFACES
 	// **********************************
 	
-	protected static interface INode<V, N extends HashNode<N> & INode<V, N>> extends Value<V> {
+	public static interface INode<V, N extends HashNode<N> & INode<V, N>> extends Value<V> {
 		public boolean put(V v, int count) ;
 		public boolean put(V v) ;
 		public boolean valid() ;
@@ -354,7 +354,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 		public Iterator<V> iterator(NestedMultiHashSet<V, N> set) ;		
 	}
 
-	protected static final class ValueEquality<V, N extends HashNode<N> & INode<V, N>> implements HashNodeEquality<V, N> {
+	public static final class ValueEquality<V, N extends HashNode<N> & INode<V, N>> implements HashNodeEquality<V, N> {
 		protected final Equality<? super V> valEq ;
 		public ValueEquality(Equality<? super V> valEq) {
 			this.valEq = valEq ;

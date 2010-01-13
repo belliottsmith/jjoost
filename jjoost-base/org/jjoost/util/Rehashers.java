@@ -12,7 +12,7 @@ public class Rehashers {
 	private static final class JDKHashMapRehasher implements Rehasher {
 		private static final long serialVersionUID = 6015257664082605934L;
 		@Override
-		public final int hash(int h) {
+		public final int rehash(int h) {
 	        h ^= (h >>> 20) ^ (h >>> 12);
 	        return h ^ (h >>> 7) ^ (h >>> 4);
 		}
@@ -23,7 +23,7 @@ public class Rehashers {
 	private static final class JDKConcurrentHashMapRehasher implements Rehasher {
 		private static final long serialVersionUID = 6015257664082605934L;
 		@Override
-		public final int hash(int h) {
+		public final int rehash(int h) {
 	        h += (h <<  15) ^ 0xffffcd7d;
 	        h ^= (h >>> 10);
 	        h += (h <<   3);
@@ -38,7 +38,7 @@ public class Rehashers {
 	private static final class IdentityRehasher implements Rehasher {
 		private static final long serialVersionUID = 4870639315784742277L ;
 		@Override
-		public final int hash(final int h) {
+		public final int rehash(final int h) {
 	        return h ; 
 		}
 	}
@@ -48,7 +48,7 @@ public class Rehashers {
 	private static final class FlipHalfBytesRehasher implements Rehasher {
 		private static final long serialVersionUID = -4332293538549708634L ;
 		@Override
-		public final int hash(int h) {
+		public final int rehash(int h) {
 			h = Integer.reverse(Integer.reverseBytes(h)) ;
 			return ((h >> 4) & 0x0F0F0F0F) | ((h << 4) & 0xF0F0F0F0);
 		}
@@ -59,7 +59,7 @@ public class Rehashers {
 	private static final class FlipRehasher implements Rehasher {
 		private static final long serialVersionUID = 3842239312530302269L ;
 		@Override
-		public final int hash(int h) {
+		public final int rehash(int h) {
 			return Integer.reverse(h) ;
 		}
 	}
@@ -74,8 +74,8 @@ public class Rehashers {
 			this.applyFirst = applyFirst ;
 		}
 		@Override
-		public final int hash(final int h) {
-			return applySecond.hash(applyFirst.hash(h)) ;
+		public final int rehash(final int h) {
+			return applySecond.rehash(applyFirst.rehash(h)) ;
 		}
 	}
 	

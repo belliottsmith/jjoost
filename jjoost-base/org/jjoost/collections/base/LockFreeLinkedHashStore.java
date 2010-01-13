@@ -9,6 +9,7 @@ import java.util.concurrent.locks.LockSupport ;
 import org.jjoost.util.Equality ;
 import org.jjoost.util.Function ;
 
+@SuppressWarnings("restriction")
 public class LockFreeLinkedHashStore<N extends LockFreeLinkedHashStore.LockFreeLinkedHashNode<N>> extends LockFreeHashStore<N> {
 
 	private static final long serialVersionUID = 5364765360666482653L ;

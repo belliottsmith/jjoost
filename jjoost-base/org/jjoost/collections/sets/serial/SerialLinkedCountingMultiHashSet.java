@@ -37,7 +37,7 @@ public class SerialLinkedCountingMultiHashSet<V> extends NestedMultiHashSet<V, S
 	}
 
 	// this implementation has no concurrency guarantees
-	public static final class Node<V> extends SerialLinkedHashNode<Node<V>> implements INode<V, Node<V>> {
+	public static final class Node<V> extends SerialLinkedHashNode<Node<V>> implements NestedMultiHashSet.INode<V, Node<V>> {
 		
 		private static final long serialVersionUID = -5766263745864028747L;
 		

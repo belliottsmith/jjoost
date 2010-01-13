@@ -149,7 +149,7 @@ public class Equalities {
 
 		@Override
 		public int hash(V o) {
-			return rehasher.hash(delegate.hash(o));
+			return rehasher.rehash(delegate.hash(o));
 		}
 
 		@Override

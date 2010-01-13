@@ -39,7 +39,7 @@ public class LockFreeNestedMultiHashSet<V> extends NestedMultiHashSet<V, LockFre
 
 	// this implementation makes absolutely no concurrency guarantees
 	@SuppressWarnings("unchecked")
-	public static final class Node<V> extends LockFreeHashNode<Node<V>> implements INode<V, Node<V>> {
+	public static final class Node<V> extends LockFreeHashNode<Node<V>> implements NestedMultiHashSet.INode<V, Node<V>> {
 		private static final long serialVersionUID = -5766263745864028747L;
 
 		private V[] values = (V[]) new Object[4] ;

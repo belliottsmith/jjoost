@@ -3,6 +3,14 @@ package org.jjoost.collections;
 import org.jjoost.util.FilterPartialOrder;
 import org.jjoost.util.tuples.Pair;
 
+/**
+ * The Ordered* interfaces are not finalised, nor are any implementing classes yet provided. 
+ * Javadoc will be provided once they are settled and made available.
+ * 
+ * @author b.elliottsmith
+ *
+ * @param <V>
+ */
 public interface OrderedReadSet<V> extends AnyReadSet<V> {
 
 	public V first() ;

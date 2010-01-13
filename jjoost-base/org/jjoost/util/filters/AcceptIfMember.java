@@ -32,13 +32,13 @@ public class AcceptIfMember<E> implements Filter<E> {
 	}
 
 	public AcceptIfMember(E... members) {
-		this.members = SetMaker.<E> hash().newScalarSet() ;
+		this.members = SetMaker.<E> hash().newSet() ;
 		for (E member : members)
 			this.members.put(member) ;
 	}
 
 	public AcceptIfMember(Iterable<E> members) {
-		this.members = SetMaker.<E> hash().newScalarSet() ;
+		this.members = SetMaker.<E> hash().newSet() ;
 		for (E member : members)
 			this.members.put(member) ;
 	}

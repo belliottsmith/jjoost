@@ -29,7 +29,7 @@ public class SerialInlineListHashMap<K, V> extends InlineListHashMap<K, V, Seria
 	}
 
 	
-	public static final class Node<K, V> extends SerialHashNode<Node<K, V>> implements Entry<K, V> {
+	protected static final class Node<K, V> extends SerialHashNode<Node<K, V>> implements Entry<K, V> {
 		private static final long serialVersionUID = -5766263745864028747L;
 		public Node(int hash, K key, V value) {
 			super(hash);
@@ -52,14 +52,14 @@ public class SerialInlineListHashMap<K, V> extends InlineListHashMap<K, V, Seria
 		return FACTORY ;
 	}
 	
-	public static final class NodeFactory<K, V> implements HashMapNodeFactory<K, V, Node<K, V>> {
+	protected static final class NodeFactory<K, V> implements HashMapNodeFactory<K, V, Node<K, V>> {
 		@Override
 		public final Node<K, V> makeNode(final int hash, final K key, final V value) {
 			return new Node<K, V>(hash, key, value) ;
 		}
 	}
 	
-	public static final class KeyEquality<K, V> extends InlineListHashMap.KeyEquality<K, V, Node<K, V>> {
+	protected static final class KeyEquality<K, V> extends InlineListHashMap.KeyEquality<K, V, Node<K, V>> {
 		public KeyEquality(Equality<? super K> keyEq) {
 			super(keyEq) ;
 		}
@@ -69,7 +69,7 @@ public class SerialInlineListHashMap<K, V> extends InlineListHashMap<K, V, Seria
 		}
 	}
 
-	public static final class EntryEquality<K, V> extends InlineListHashMap.NodeEquality<K, V, Node<K, V>> {
+	protected static final class EntryEquality<K, V> extends InlineListHashMap.NodeEquality<K, V, Node<K, V>> {
 		private static final long serialVersionUID = -8668943955126687051L ;
 
 		public EntryEquality(Equality<? super K> keyEq, Equality<? super V> valEq) {

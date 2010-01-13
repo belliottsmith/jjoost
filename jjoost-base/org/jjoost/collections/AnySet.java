@@ -3,8 +3,8 @@ package org.jjoost.collections;
 import java.util.Iterator;
 
 /**
- * <p> This is the common interface for all modifiable Jjoost sets. The methods declared here make no assumptions 
- * about the number of occurences of a given value.
+ * <p> This interface is the common ancestor of all modifiable Jjoost sets. 
+ * The methods declared here make no assumptions about the number of occurences of a given value.
  * 
  * <p>WARNING: Note that in a MultiSet the <code>iterator()</code> method will
  * return an <code>Iterator</code> that <i>enumerates <b>every occurence</b> of every value</i>. If you want

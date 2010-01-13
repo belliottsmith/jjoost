@@ -35,7 +35,7 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> imple
 	}
 
 	protected final int hash(V key) {
-		return rehasher.hash(valEq.valEq.hash(key)) ;
+		return rehasher.rehash(valEq.valEq.hash(key)) ;
 	}
 	
 	protected final Function<Value<V>, V> valProj() {

@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.Queue;
 
 import org.jjoost.collections.Set ;
-import org.jjoost.collections.sets.serial.SerialScalarHashSet ;
+import org.jjoost.collections.sets.serial.SerialHashSet ;
 import org.jjoost.util.Function;
 import org.jjoost.util.Iters ;
 
@@ -14,7 +14,7 @@ public class TransitiveClosureIterator<E> implements Iterator<E> {
 	private final Function<E, ? extends Iterator<E>> function ;
     private final Queue<E> results = new ArrayDeque<E>() ;
     private final Queue<E> lookup = new ArrayDeque<E>() ;
-    private final Set<E> visited = new SerialScalarHashSet<E>() ;
+    private final Set<E> visited = new SerialHashSet<E>() ;
     private final boolean graph ;
 
     public TransitiveClosureIterator(Function<E, ? extends Iterator<E>> function, E start) {

@@ -12,21 +12,21 @@ import org.jjoost.collections.UnitarySet;
 import org.jjoost.util.Factory;
 import org.jjoost.util.Function;
 
-public class DefaultFactoryScalarMap<K, V> implements Map<K, V> {
+public class DefaultFunctionMap<K, V> implements Map<K, V> {
 
 	private static final long serialVersionUID = 7778573411318310241L;
 	private final Map<K, V> delegate ;
-	private final Factory<V> defaultFactory ;
+	private final Function<K, V> defaultFunction ;
 
-	public DefaultFactoryScalarMap(Map<K, V> delegate,
-			Factory<V> defaultFactory) {
+	public DefaultFunctionMap(Map<K, V> delegate,
+			Function<K, V> defaultFunction) {
 		super();
 		this.delegate = delegate;
-		this.defaultFactory = defaultFactory;
+		this.defaultFunction = defaultFunction;
 	}
 
 	public V apply(K v) {
-		return delegate.ensureAndGet(v, defaultFactory) ;
+		return delegate.ensureAndGet(v, defaultFunction) ;
 	}
 
 	public int clear() {
@@ -75,7 +75,7 @@ public class DefaultFactoryScalarMap<K, V> implements Map<K, V> {
 	}
 
 	public V get(K key) {
-		return delegate.ensureAndGet(key, defaultFactory);
+		return delegate.ensureAndGet(key, defaultFunction);
 	}
 
 	public AnyMap<V, K> inverse() {
@@ -156,7 +156,7 @@ public class DefaultFactoryScalarMap<K, V> implements Map<K, V> {
 
 	@Override
 	public V first(K key) {
-		return delegate.ensureAndGet(key, defaultFactory);
+		return delegate.ensureAndGet(key, defaultFunction);
 	}
-
+	
 }
