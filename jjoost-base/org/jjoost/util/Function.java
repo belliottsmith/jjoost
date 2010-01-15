@@ -6,8 +6,6 @@ import java.io.Serializable;
  * The interface declares a method defining a function from domain <code>X</code> to range <code>Y</code>
  * 
  * @author b.elliottsmith
- * @param <X>
- * @param <Y>
  */
 public interface Function<X, Y> extends Serializable {
     

@@ -44,9 +44,15 @@ public class NestedSetMultiMap<K, V> extends NestedSetMap<K, V, Set<V>> implemen
 		private static final long serialVersionUID = 8122351713234623044L;
 
 		@Override
+		public boolean add(Entry<K, V> entry) {
+			return NestedSetMultiMap.this.add(entry.getKey(), entry.getValue()) ;
+		}
+		
+		@Override
 		public Entry<K, V> put(Entry<K, V> entry) {
-			final V r = NestedSetMultiMap.this.put(entry.getKey(), entry.getValue()) ;
-			return r == null ? null : new ImmutableMapEntry<K, V>(entry.getKey(), r) ;
+			if (add(entry))
+				return null ;
+			return get(entry) ;
 		}
 
 		@Override

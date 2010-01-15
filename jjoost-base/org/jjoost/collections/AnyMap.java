@@ -26,6 +26,22 @@ import java.util.Map.Entry;
 public interface AnyMap<K, V> extends AnyReadMap<K, V> {
 
 	/**
+	 * Attempt to add the pair to the map, returning <code>false</code> if it could not be added, and <code>true</code> otherwise. In a
+	 * <code>ListMap</code> the return value will always be <code>true</code>; however in a <code>MultiMap</code> it will be
+	 * <code>false</code>, and hence the map remain unmodified, if a pair whose key and value are both equal to the ones provided (as
+	 * determined by the map's definitions of equality) is already present; and in a <code>Map</code> it will be <code>false</code> if a
+	 * pair whose key is equal to the one provided is already present. When the value of the pair is inequal to <code>null</code>, this is
+	 * equivalent to <code>put(key, value) == null</code><br />
+	 * 
+	 * @param key
+	 *            key to insert
+	 * @param value
+	 *            value to insert
+	 * @return <code>true</code> if the map was modified, <code>false</code> otherwise
+	 */
+	public boolean add(K key, V value) ;	
+	
+	/**
 	 * Ensures that the provided key binds to the provided value at least once;
 	 * depending on the underlying implementation this may remove any existing 
 	 * key->value pairs where the key is equal to the one provided (<code>Map</code>),

@@ -94,19 +94,6 @@ public class Equalities {
 		public final int hash(Object[] k) { return Arrays.hashCode(k) ; }
     } ;
     
-//    /**
-//     * Comparator equality
-//     */
-//    public static <E> Equality<E> forComparator(Comparator<E> cmp) { return new ComparatorEquality<E>(cmp) ; } 
-//    public static class ComparatorEquality<E> implements Equality<E> {
-//    	private static final long serialVersionUID = -6611748225612686746L ;
-//    	private final Comparator<E> cmp ;
-//    	public ComparatorEquality(Comparator<E> cmp) {
-//			this.cmp = cmp;
-//		}
-//		public final boolean equates(E a, E b) { return cmp.compare(a, b) == 0 ; }
-//    } ;
-//    
     /**
      * Entry equality
      */

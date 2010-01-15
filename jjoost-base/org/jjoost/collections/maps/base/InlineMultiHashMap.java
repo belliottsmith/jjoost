@@ -62,6 +62,12 @@ public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> exten
 	}
 
 	@Override
+	public boolean add(K key, V val) {
+		final N n = nodeFactory.makeNode(hash(key), key, val) ;
+		return store.putIfAbsent(n, n, nodeEq, nodeProj()) == null ;
+	}
+	
+	@Override
 	public V put(K key, V val) {
 		final N n = nodeFactory.makeNode(hash(key), key, val) ;
 		return store.put(n, n, nodeEq, valProj()) ;

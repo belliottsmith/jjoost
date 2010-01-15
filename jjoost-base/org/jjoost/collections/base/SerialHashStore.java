@@ -98,7 +98,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	
 	@Override
 	public String toString() {
-		return Iters.toString(all(null, null, Functions.<N>toString())) ;
+		return Iters.toString(all(null, null, Functions.<N>toString(true))) ;
 	}
 
 	// **************************************************

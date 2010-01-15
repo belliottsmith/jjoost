@@ -12,7 +12,7 @@ public class Counters {
 
 	/**
 	 * Returns a new thread safe <code>Counter</code> which uses compare and set operations to modify its value
-	 * @return
+	 * @return a new thread safe <code>Counter</code> which uses compare and set operations to modify its value
 	 */
 	public static Counter newThreadSafeCounter() {
 		return new ThreadSafeCounter() ;
@@ -20,15 +20,15 @@ public class Counters {
 	
 	/**
 	 * Returns a <code>Counter</code> which ignores all updates to its value and always returns a value less than zero.
-	 * @return
+	 * @return a <code>Counter</code> which ignores all updates to its value and always returns a value less than zero.
 	 */
 	public static Counter newDoNothingCounter() {
 		return new DontCounter() ;
 	}
 	
 	/**
-	 * Returns a regular <code>Counter</code> which performs ordinary addition with no concurrent guarantees
-	 * @return
+	 * Returns a regular <code>Counter</code> which performs ordinary addition with no concurrency guarantees
+	 * @return a regular <code>Counter</code> which performs ordinary addition with no concurrency guarantees
 	 */
 	public static Counter newCounter() {
 		return new SerialCounter() ;

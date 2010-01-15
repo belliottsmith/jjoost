@@ -19,22 +19,14 @@ public class AdapterToJDKSet<V> implements java.util.Set<V> {
 
 	@Override
 	public boolean add(V v) {
-		if (v == null) {
-			if (set.contains(null))
-				return false ; 
-			set.put(null) ;
-			return true ;
-		} else {
-			final V e = set.put(v) ;
-			return e == null ;
-		}
+		return set.add(v) ;
 	}
 
 	@Override
 	public boolean addAll(Collection<? extends V> c) {
 		boolean r = false ;
 		for (V v : c) {
-			r |= add(v) ;
+			r |= set.add(v) ;
 		}
 		return r ;
 	}

@@ -20,7 +20,16 @@ public class MultiMapNesting<V> {
 	 * An enumeration of the nesting types for MultiMap
 	 */
 	public static enum Type {
-		INLINE, NESTED ;
+		/**
+		 * Store the values for duplicates keys simply as extra entries using the same mechanism as an equivalent Map would use to
+		 * store its values. Typically this will be more efficient than <code>NESTED</code> for small numbers of duplicate keys.
+		 */
+		INLINE, 
+		/**
+		 * Store the values for duplicates keys in a nested <code>Set</code>. Typically this will be more efficient than
+		 * <code>INLINE</code> for moderate to large average numbers of duplicate keys. 
+		 */
+		NESTED ;
 	}
 	
 	/**
@@ -39,7 +48,7 @@ public class MultiMapNesting<V> {
 	private final Type type ;
 	private final Factory<Set<V>> factory ;
 	
-	protected MultiMapNesting(Factory<Set<V>> factory, Type type) {
+	MultiMapNesting(Factory<Set<V>> factory, Type type) {
 		super();
 		this.factory = factory;
 		this.type = type ;
@@ -71,6 +80,10 @@ public class MultiMapNesting<V> {
 		return new MultiMapNesting<V>(factory, Type.NESTED) ;
 	}
 	
+	/**
+	 * Return a MultiMapNesting of type NESTED, that uses hash sets for the nesting
+	 * @return a MultiMapNesting of type NESTED, that uses hash sets for the nesting
+	 */
 	public static <V> MultiMapNesting<V> nestedHash() {
 		return MultiMapNesting.nested(
 				SetMaker.<V>hash()

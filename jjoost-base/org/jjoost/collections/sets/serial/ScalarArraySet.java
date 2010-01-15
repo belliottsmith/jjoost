@@ -37,6 +37,17 @@ public class ScalarArraySet<V> extends AbstractArraySet<V> implements Set<V> {
 	}
 
 	@Override
+	public boolean add(V v) {
+		final int i = indexOf(v) ;
+		if (i == count) {
+			ensureIndex(i) ;
+			vals[i] = v ;
+			count = i + 1 ;
+			return true ;
+		} else return false ;
+	}
+	
+	@Override
 	public V put(V v) {
 		final int i = indexOf(v) ;
 		if (i == count) {

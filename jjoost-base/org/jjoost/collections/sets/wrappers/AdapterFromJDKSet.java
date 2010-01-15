@@ -29,6 +29,10 @@ public class AdapterFromJDKSet<V> implements Set<V> {
 		return set.contains(key) ? key : null ;
 	}
 	@Override
+	public boolean add(V val) {
+		return set.add(val) ;
+	}
+	@Override
 	public V put(V val) {
 		return set.add(val) ? null : val ;
 	}

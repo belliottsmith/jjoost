@@ -54,6 +54,9 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends AnyMap<K, V>> ext
 	@Override public synchronized boolean permitsDuplicateKeys() {
 		return delegate.permitsDuplicateKeys();
 	}
+	@Override public synchronized boolean add(K key, V val) {
+		return delegate.add(key, val);
+	}
 	@Override public synchronized V put(K key, V val) {
 		return delegate.put(key, val);
 	}

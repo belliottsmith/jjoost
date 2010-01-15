@@ -10,7 +10,7 @@ import java.io.Serializable;
 public interface Rehasher extends Serializable {
 	
 	/**
-	 * @param a hash
+	 * @param hash a hash
 	 * @return the re-hash of the provided hash
 	 */
     public int rehash(int hash) ;

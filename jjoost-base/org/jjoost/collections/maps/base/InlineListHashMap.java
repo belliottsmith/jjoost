@@ -48,6 +48,12 @@ public class InlineListHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extend
 	}
 
 	@Override
+	public boolean add(K key, V val) {
+		put(key, val) ;
+		return true ;
+	}
+	
+	@Override
 	public V put(K key, V val) {
 		final N n = nodeFactory.makeNode(hash(key), key, val) ;
 		return store.put(n, n, nodeEq, valProj()) ;

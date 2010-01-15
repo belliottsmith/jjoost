@@ -181,6 +181,12 @@ public abstract class SynchronizedDelegator {
 					return delegate.equality() ;
 				}
 			}
+			@Override
+			public boolean add(V value) {
+				synchronized(SynchronizedDelegator.this) {
+					return delegate.add(value) ;
+				}
+			}
 		} ;
 	}
 	
@@ -323,6 +329,12 @@ public abstract class SynchronizedDelegator {
 			public V get() {
 				synchronized(SynchronizedDelegator.this) {
 					return delegate.get() ;
+				}
+			}
+			@Override
+			public boolean add(V value) {
+				synchronized(SynchronizedDelegator.this) {
+					return delegate.add(value) ;
 				}
 			}
 		} ;
@@ -474,6 +486,12 @@ public abstract class SynchronizedDelegator {
 					return delegate.equality() ;
 				}
 			}
+			@Override
+			public boolean add(V value) {
+				synchronized(SynchronizedDelegator.this) {
+					return delegate.add(value) ;
+				}
+			}
 		} ;
 	}
 	
@@ -615,6 +633,12 @@ public abstract class SynchronizedDelegator {
 			public Equality<? super V> equality() {
 				synchronized(SynchronizedDelegator.this) {
 					return delegate.equality() ;
+				}
+			}
+			@Override
+			public boolean add(V value) {
+				synchronized(SynchronizedDelegator.this) {
+					return delegate.add(value) ;
 				}
 			}
 		} ;

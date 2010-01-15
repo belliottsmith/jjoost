@@ -17,14 +17,31 @@ public class MultiSetNesting<V> {
 	 * 
 	 * @author b.elliottsmith
 	 */
-	public static enum Type {
-		
-		INLINE, COUNTING, NESTED ;
+	public static enum Type {		
+		/**
+		 * Store duplicate values merely as an integer against the first such value encountered
+		 * This is the most efficient means of storing duplicate values.
+		 */
+		COUNTING, 
+		/**
+		 * Store duplicate values "inline" - i.e. in the same structure as we would store unique values
+		 * Typically this will be more efficient than <code>NESTED</code> for very small numbers of duplicates
+		 */
+		INLINE,
+		/**
+		 * Store duplicate values in a nested set or list. 
+		 * Typically this will be more efficient than <code>INLINE</code> for moderate to large numbers of duplicates (e.g. above 3 on average)
+		 */
+		NESTED ;
 	}
 	
+	/**
+	 * Return the MultiSetNesting.Type type of this MultiSetNesting
+	 * @return the MultiSetNesting.Type type of this MultiSetNesting
+	 */
 	public Type type() { return type ; }
 	private final Type type ;
-	public MultiSetNesting(Type type) {
+	MultiSetNesting(Type type) {
 		super();
 		this.type = type;
 	}
@@ -38,16 +55,28 @@ public class MultiSetNesting<V> {
 	@SuppressWarnings("unchecked")
 	private static final MultiSetNesting NESTED = new MultiSetNesting(Type.NESTED) ;
 	
+	/**
+	 * Return a MultiSetNesting whose type is INLINE
+	 * @return a MultiSetNesting whose type is INLINE
+	 */
 	@SuppressWarnings("unchecked")
 	public static <V> MultiSetNesting<V> inline() {
 		return INLINE ;
 	}
-	
+
+	/**
+	 * Return a MultiSetNesting whose type is COUNTING
+	 * @return a MultiSetNesting whose type is COUNTING
+	 */
 	@SuppressWarnings("unchecked")
 	public static <V> MultiSetNesting<V> counting() {
 		return COUNTING ;
 	}
 	
+	/**
+	 * Return a MultiSetNesting whose type is NESTED
+	 * @return a MultiSetNesting whose type is NESTED
+	 */
 	@SuppressWarnings("unchecked")
 	public static <V> MultiSetNesting<V> nested() {
 		return NESTED ;

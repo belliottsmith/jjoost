@@ -32,6 +32,12 @@ public class InlineMultiHashSet<V, N extends HashNode<N> & Value<V>> extends Abs
 	private UniqueSet unique ;
 	
 	@Override
+	public boolean add(V val) {
+		put(val) ;
+		return true ;
+	}
+	
+	@Override
 	public V put(V val) {
 		return store.put(val, nodeFactory.makeNode(hash(val), val), putEq, valProj()) ;
 	}

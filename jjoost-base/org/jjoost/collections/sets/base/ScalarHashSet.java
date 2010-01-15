@@ -21,6 +21,11 @@ public class ScalarHashSet<V, N extends HashNode<N> & Value<V>> extends Abstract
 	}
 	
 	@Override
+	public boolean add(V val) {
+		return store.putIfAbsent(val, nodeFactory.makeNode(hash(val), val), valEq, nodeProj()) == null ;
+	}
+	
+	@Override
 	public V put(V val) {
 		return store.put(val, nodeFactory.makeNode(hash(val), val), valEq, valProj()) ;
 	}

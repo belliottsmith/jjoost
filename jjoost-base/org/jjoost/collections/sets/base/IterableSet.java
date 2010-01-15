@@ -21,7 +21,7 @@ public abstract class IterableSet<V> implements MultiSet<V> {
 
 	@Override
 	public Boolean apply(V v) {
-		return Iters.contains(v, equality(), iterator()) ;
+		return Iters.contains(equality(), v, iterator()) ;
 	}
 
 	@Override
@@ -41,6 +41,11 @@ public abstract class IterableSet<V> implements MultiSet<V> {
 	
 	@Override
 	public void put(V val, int numberOfTimes) {
+		throw new UnsupportedOperationException() ;
+	}
+	
+	@Override
+	public boolean add(V val) {
 		throw new UnsupportedOperationException() ;
 	}
 	
@@ -100,12 +105,12 @@ public abstract class IterableSet<V> implements MultiSet<V> {
 
 	@Override
 	public boolean contains(V value) {
-		return Iters.contains(value, equality(), iterator()) ;
+		return Iters.contains(equality(), value, iterator()) ;
 	}
 
 	@Override
 	public int count(V value) {
-		return Iters.count(value, equality(), iterator()) ;
+		return Iters.count(equality(), value, iterator()) ;
 	}
 
 	@Override

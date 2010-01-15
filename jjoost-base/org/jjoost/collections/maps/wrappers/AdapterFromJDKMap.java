@@ -61,6 +61,13 @@ public class AdapterFromJDKMap<K, V> implements Map<K, V> {
 		return map.get(key) ;
 	}
 	@Override
+	public boolean add(K key, V val) {
+		if (map.containsKey(key))
+			return false ;
+		map.put(key, val) ;
+		return true ;
+	}
+	@Override
 	public V put(K key, V val) {
 		return map.put(key, val) ;
 	}
@@ -256,6 +263,10 @@ public class AdapterFromJDKMap<K, V> implements Map<K, V> {
 		}
 		@Override
 		public int putAll(Iterable<V> val) {
+			throw new UnsupportedOperationException() ;
+		}
+		@Override
+		public boolean add(V val) {
 			throw new UnsupportedOperationException() ;
 		}
 		@Override

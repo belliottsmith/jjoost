@@ -13,24 +13,24 @@ package org.jjoost.collections;
 public interface Set<V> extends AnySet<V> {
 
 	/**
-	 * Insert the parameter into the set, removing and returning any value equal to the
-	 * parameter that was already present, as determined by the set's definition of equality.
+	 * Insert the parameter into the set, removing and returning any value equal to the parameter that was already present, as determined by
+	 * the set's definition of equality.
 	 * 
-	 * @param value to insert
+	 * @param value
+	 *            value to insert
 	 * @return value that was evicted from the set as a result of the action
 	 */
-	@Override public V put(V val) ;
+	@Override public V put(V value) ;
 	
 	/**
-	 * Returns the value stored in the set that is equal to the provided value, as determined by
-	 * any provided <code>Equality</code> or <code>Comparator</code>. Returns null if no
-	 * matching item is stored in the set. Equivalent to <code>first(key)</code>
+	 * Returns the value stored in the set that is equal to the provided value, as determined by any provided <code>Equality</code> or
+	 * <code>Comparator</code>. Returns null if no matching item is stored in the set. Equivalent to <code>first(key)</code>
 	 * 
 	 * @param find
-	 * 
+	 *            value to find
 	 * @return first matching value
 	 */
-	public V get(V key) ;
+	public V get(V find) ;
 
 	/**
 	 * A convenience method returning the size of the set; this is equivalent to

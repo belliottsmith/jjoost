@@ -20,105 +20,112 @@ import java.util.Iterator;
 public interface AnySet<V> extends AnyReadSet<V> {
 
 	/**
-	 * Insert the value into the set, returning any value that was evicted as a result
-	 * or null if none (note that if the value to insert is null, the null returned 
-	 * cannot be used to determine if any action was taken on the set). In a <code>Set</code>
-	 * any pre-existing value that is equal to the parameter as determined by the set's
-	 * definition of equality will be removed from the set and returned. In a <code>MultiSet</code>
-	 * the return value will always be <code>null</code>
+	 * Attempt to add the value to the set, returning <code>false</code> if the value could not be added, and <code>true</code> if it was.
+	 * In a <code>MultiSet</code> the return value will always be <code>true</code>, however in a <code>Set</code> it will be
+	 * <code>false</code> if a value equal to the one provided (as determined by the set's definition of equality) was already present. For
+	 * values inequal to <code>null</code>, this is equivalent to <code>put(value) == null</code>
 	 * 
-	 * @param value to insert
+	 * @param value
+	 *            value to insert
+	 * @return <code>true</code> if the set was modified, <code>false</code> otherwise
+	 */
+	public boolean add(V value) ;	
+	
+	/**
+	 * Insert the value into the set, returning any value that was evicted as a result or null if none (note that if the value to insert is
+	 * null, the null returned cannot be used to determine if any action was taken on the set). In a <code>Set</code> any pre-existing value
+	 * that is equal to the parameter as determined by the set's definition of equality will be removed from the set and returned. In a
+	 * <code>MultiSet</code> the return value will always be <code>null</code>
 	 * 
+	 * @param value
+	 *            value to insert
 	 * @return value that was evicted from the set as a result of the action
 	 */
-	public V put(V val) ;	
+	public V put(V value) ;	
 	
 	/**
-	 * Performs the equivalent of a <code>put()</code> operation for every value provided,
-	 * returning an int representing the total number of values that did not displace existing
-	 * values. In a <code>MultiSet</code> this will always be equal to the number of values provided, however
-	 * in a <code>Set</code> it may be fewer.
+	 * Performs the equivalent of a <code>put()</code> operation for every value provided, returning an int representing the total number of
+	 * values that did not displace existing values. In a <code>MultiSet</code> this will always be equal to the number of values provided,
+	 * however in a <code>Set</code> it may be fewer.
 	 * 
-	 * @param values to insert
-	 * 
+	 * @param values
+	 *            values to insert
 	 * @return number that did not displace existing values
 	 */
-	public int putAll(Iterable<V> vals) ;	
+	public int putAll(Iterable<V> values) ;	
 	
 	/**
-	 * Inserts the value and returns <code>null</code> if an equal value does not already occur in the set; 
-	 * otherwise returns the first such value encountered
+	 * Inserts the value and returns <code>null</code> if an equal value does not already occur in the set; otherwise returns the first such
+	 * value encountered
 	 * 
-	 * @param value to insert
-	 * 
+	 * @param value
+	 *            value to insert
 	 * @return existing value, or null if none
 	 */
-	public V putIfAbsent(V val) ;
+	public V putIfAbsent(V value) ;
 	
 	/**
-	 * Removes <b>all occurrences</b> of values equal to the parameter from the set,
-	 * as determined by the set's definition of equality and returns the number of values
-	 * that were removed from the set. Equivalent to <code>remove(value, Integer.MAX_VALUE)</code>. 
+	 * Removes <b>all occurrences</b> of values equal to the parameter from the set, as determined by the set's definition of equality and
+	 * returns the number of values that were removed from the set. Equivalent to <code>remove(value, Integer.MAX_VALUE)</code>.
 	 * 
-	 * @param value remove equal to
-	 * 
+	 * @param value
+	 *            remove equal to
 	 * @return number removed
 	 */
 	public int remove(V value) ;
 	
 	/**
-	 * Removes at most the prescribed number of values equal to the parameter
-	 * from the set; which values are removed is implementation specific, and may be arbitrary.
-	 * Returns the number of values actually removed as a result of the action.
+	 * Removes at most the prescribed number of values equal to the parameter from the set; which values are removed is implementation
+	 * specific, and may be arbitrary. Returns the number of values actually removed as a result of the action.
 	 * 
-	 * @param remove remove equal to
-	 * @param removeAtMost remove at most
-	 * 
+	 * @param value
+	 *            remove equal to
+	 * @param removeAtMost
+	 *            remove at most
 	 * @return the number removed
 	 */
 	public int remove(V value, int removeAtMost) ;	
 	
 	/**
-	 * Removes all occurrences of values equal to the parameter and returns an <code>Iterable</code>
-	 * of the values removed. Equivalent to <code>removeAndReturn(value, Integer.MAX_VALUE)</code>.
+	 * Removes all occurrences of values equal to the parameter and returns an <code>Iterable</code> of the values removed. Equivalent to
+	 * <code>removeAndReturn(value, Integer.MAX_VALUE)</code>.
 	 * 
-	 * @param value remove equal to
-	 * 
+	 * @param value
+	 *            remove equal to
 	 * @return values removed
 	 */
 	public Iterable<V> removeAndReturn(V value) ;	
 	
 	/**
-	 * Removes at most the prescribed number of values equal to the parameter
-	 * from the set and returns them to the user; which values are removed is implementation specific, 
-	 * and may be arbitrary.
+	 * Removes at most the prescribed number of values equal to the parameter from the set and returns them to the user; which values are
+	 * removed is implementation specific, and may be arbitrary.
 	 * 
-	 * @param value the value
-	 * @param removeAtMost remove at most
-	 * 
+	 * @param value
+	 *            the value
+	 * @param removeAtMost
+	 *            remove at most
 	 * @return values removed
 	 */
 	public Iterable<V> removeAndReturn(V value, int removeAtMost) ;	
 	
 	/**
-	 * Removes <b>all occurrences</b> of values equal to the parameter from the set,
-	 * as determined by the set's definition of equality, and returns the first value encountered
-	 * or null if none. Equivalent to <code>removeAndReturnFirst(value, Integer.MAX_VALUE)</code>.
+	 * Removes <b>all occurrences</b> of values equal to the parameter from the set, as determined by the set's definition of equality, and
+	 * returns the first value encountered or null if none. Equivalent to <code>removeAndReturnFirst(value, Integer.MAX_VALUE)</code>.
 	 * 
-	 * @param value remove
-	 * 
+	 * @param value
+	 *            remove
 	 * @return first value removed
 	 */
 	public V removeAndReturnFirst(V value) ;	
 	
 	/**
-	 * Removes at most the prescribed number of values equal to the parameter from the 
-	 * set and returns the first one encountered to the user, or null if none; 
-	 * which values are removed is implementation specific, and may be arbitrary.
+	 * Removes at most the prescribed number of values equal to the parameter from the set and returns the first one encountered to the
+	 * user, or null if none; which values are removed is implementation specific, and may be arbitrary.
 	 * 
-	 * @param value remove
-	 * @param removeAtMost remove at most
-	 * 
+	 * @param value
+	 *            remove
+	 * @param removeAtMost
+	 *            remove at most
 	 * @return first value removed
 	 */
 	public V removeAndReturnFirst(V value, int removeAtMost) ;

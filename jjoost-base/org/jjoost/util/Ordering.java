@@ -18,10 +18,9 @@ public class Ordering<E> {
      * assumes the range is sorted in ascending order (and, crucially, that it supports random access - do not use on LinkedList!); a result of fromIndex - 1 indicates nothing less than or equal to the key exists in the range
      * 
      * @param a array
-     * @param key
-     * @param c comparator
+     * @param key find
      * @param fromIndex
-     * @param toIndex
+     * @param toIndex 
      * @return
      */
     public int floor(final List<? extends E> a, final E key, final int fromIndex, final int toIndex) {
@@ -282,30 +281,30 @@ public class Ordering<E> {
     	return min ;
     }
     
-    public E max(E a, E b, int treatNullAsCompareResultIfOnLeft) {
-    	final int c ;
-    	if (a == null) c = treatNullAsCompareResultIfOnLeft ;
-    	else if (b == null) c = -treatNullAsCompareResultIfOnLeft ;
-    	else c = cmp.compare(a, b) ;
-    	return c > 0 ? b : a ;
-    }
-    
-    public E min(E a, E b, int treatNullAsCompareResultIfOnLeft) {
-    	final int c ;
-    	if (a == null) c = treatNullAsCompareResultIfOnLeft ;
-    	else if (b == null) c = -treatNullAsCompareResultIfOnLeft ;
-    	else c = cmp.compare(a, b) ;
-    	return c < 0 ? b : a ;
-    }
-    
-    public E min(E a, E b, boolean treatNullAsPositiveInfinity) {
-    	return min(a, b, -1) ;
-    }
-    
-    public E max(E a, E b, boolean treatNullAsNegativeInfinity) {
-    	return max(a, b, 1) ;
-    }
-    
+//    public E max(E a, E b, int treatNullAsCompareResultIfOnLeft) {
+//    	final int c ;
+//    	if (a == null) c = treatNullAsCompareResultIfOnLeft ;
+//    	else if (b == null) c = -treatNullAsCompareResultIfOnLeft ;
+//    	else c = cmp.compare(a, b) ;
+//    	return c > 0 ? b : a ;
+//    }
+//    
+//    public E min(E a, E b, int treatNullAsCompareResultIfOnLeft) {
+//    	final int c ;
+//    	if (a == null) c = treatNullAsCompareResultIfOnLeft ;
+//    	else if (b == null) c = -treatNullAsCompareResultIfOnLeft ;
+//    	else c = cmp.compare(a, b) ;
+//    	return c < 0 ? b : a ;
+//    }
+//    
+//    public E min(E a, E b, boolean treatNullAsPositiveInfinity) {
+//    	return min(a, b, -1) ;
+//    }
+//    
+//    public E max(E a, E b, boolean treatNullAsNegativeInfinity) {
+//    	return max(a, b, 1) ;
+//    }
+//    
     public boolean isOrdered(Iterator<E> iter) {
     	if (!iter.hasNext())
     		return true ;
@@ -366,7 +365,7 @@ public class Ordering<E> {
     	return true ;
     }
     
-    public Comparator<E> cmp() {
+    public Comparator<E> getComparator() {
     	return cmp ;
     }
     

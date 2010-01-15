@@ -23,6 +23,12 @@ public final class ArrayIterable<E> implements Iterable<E> {
     }
     
 	public ArrayIterable(E[] vals, int lb, int ub) {
+		if (lb > ub)
+			throw new IllegalArgumentException(String.format("The provided lower bound (%d) is greater than the provided upper bound (%d)", lb, ub)) ;
+		if (ub > vals.length)
+			throw new IllegalArgumentException(String.format("The provided upper bound (%d) is greater than the length of the array (%d)", ub, vals.length)) ;
+		if (lb < 0)
+			throw new IllegalArgumentException(String.format("The provided lower bound (%d) is less than zero", lb)) ;
         this.vals = vals ;
         this.lb = lb ;
         this.ub = ub ; 

@@ -6,16 +6,16 @@ import java.io.Serializable;
  * Defines a simple filter over objects
  * 
  * @author b.elliottsmith
- * @param <E>
  */
 public interface Filter<E> extends Serializable {
 
     /**
-     * Returns true if the filter accepts the parameter and false otherwise
-     * 
-     * @param test
-     * @return true if the filter accepts test; false otherwise
-     */
+	 * Returns <code>true</code> if the <code>Filter</code> accepts the parameter and <code>false</code> otherwise
+	 * 
+	 * @param test
+	 *            value <code>to</code> test
+	 * @return <code>true</code> if the filter accepts <code>test</code>; <code>false</code> otherwise
+	 */
     public boolean accept(E test) ;
 
 }

@@ -57,6 +57,12 @@ public class NestedSetListMap<K, V> extends NestedSetMap<K, V, MultiSet<V>> impl
 			NestedSetListMap.this.put(entry.getKey(), entry.getValue()) ;
 			return null ;
 		}
+		
+		@Override
+		public boolean add(Entry<K, V> entry) {
+			NestedSetListMap.this.put(entry.getKey(), entry.getValue()) ;
+			return true ;
+		}
 
 				@Override
 		public Entry<K, V> putIfAbsent(Entry<K, V> entry) {

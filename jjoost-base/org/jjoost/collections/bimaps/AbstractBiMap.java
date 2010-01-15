@@ -38,8 +38,19 @@ implements AnyMap<K, V> {
 	public AnyMap<V, K> inverse() {
 		return partner() ;
 	}
+	private void check(K key, V val) {
+		if (key == null)
+			throw new IllegalArgumentException("Key cannot be null in a BiMap") ;
+		if (val == null)
+			throw new IllegalArgumentException("Value cannot be null in a BiMap") ;
+	}
+	@Override
+	public boolean add(K key, V val) {
+		return put(key, val) != null ;
+	}
 	@Override
 	public V put(K key, V val) {
+		check(key, val) ;
 		final V v = map.put(key, val) ;
 		if (v != null)
 			partner().map.remove(v, key) ;
@@ -50,6 +61,7 @@ implements AnyMap<K, V> {
 	}
 	@Override
 	public V putIfAbsent(K key, V val) {
+		check(key, val) ;
 		final V v = map.putIfAbsent(key, val) ;
 		if (v != null)
 			return v ;
@@ -62,6 +74,7 @@ implements AnyMap<K, V> {
 	}
 	@Override
 	public int remove(K key, V val) {
+		check(key, val) ;
 		partner().map.remove(val, key) ;
 		return map.remove(key, val) ;
 	}

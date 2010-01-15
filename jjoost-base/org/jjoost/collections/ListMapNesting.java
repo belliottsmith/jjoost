@@ -18,7 +18,16 @@ public class ListMapNesting<V> {
 	 * An enumeration of the nesting types for ListMap
 	 */
 	public static enum Type {
-		INLINE , NESTED ;
+		/**
+		 * Store the values for duplicates keys simply as extra entries using the same mechanism as an equivalent Map would use to
+		 * store its values. Typically this will be more efficient than <code>NESTED</code> for small numbers of duplicate keys.
+		 */
+		INLINE,
+		/**
+		 * Store the values for duplicates keys in a nested <code>MultiSet</code>. Typically this will be more efficient than
+		 * <code>INLINE</code> for moderate to large average numbers of duplicate keys. 
+		 */
+		NESTED ;
 	}
 	
 	/**

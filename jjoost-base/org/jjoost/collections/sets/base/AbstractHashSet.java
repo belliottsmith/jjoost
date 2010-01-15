@@ -39,7 +39,11 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> imple
 	}
 	
 	protected final Function<Value<V>, V> valProj() {
-		return Functions.<V>getAbstractValueContentsProjection() ;
+		return Functions.<V>getValueContentsProjection() ;
+	}
+	
+	protected final Function<N, N> nodeProj() {
+		return Functions.<N>identity() ;
 	}
 	
 	@Override
@@ -67,7 +71,7 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> imple
 	
 	@Override
 	public Iterator<V> clearAndReturn() {
-		return store.clearAndReturn(Functions.<V>getAbstractValueContentsProjection());
+		return store.clearAndReturn(Functions.<V>getValueContentsProjection());
 	}
 
 	@Override

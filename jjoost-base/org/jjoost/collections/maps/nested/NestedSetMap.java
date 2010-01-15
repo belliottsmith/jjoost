@@ -103,18 +103,27 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 		return set == null ? null : set ;
 	}
 	@Override
-	public V put(K key, V val) {
-		final V r = map.ensureAndGet(key, factory).put(val) ;
-		if (r == null)
+	public boolean add(K key, V val) {
+		if (map.ensureAndGet(key, factory).add(val)) {
 			totalCountUpdater.incrementAndGet(this) ;
-		return r ;
+			return true ;
+		}
+		return false ;
+	}
+	@Override
+	public V put(K key, V val) {
+		final S set = map.ensureAndGet(key, factory) ;
+		if (set.contains(val))
+			return set.put(val) ;
+		totalCountUpdater.incrementAndGet(this) ;
+		return set.put(val) ;
 	}
 	@Override
 	public V putIfAbsent(K key, V val) {
-		final V r = map.ensureAndGet(key, factory).putIfAbsent(val) ;
-		if (r == null)
-			totalCountUpdater.incrementAndGet(this) ;
-		return r ;
+		final S set = map.ensureAndGet(key, factory) ;
+		if (set.contains(val))
+			return set.put(val) ;
+		return set.first(val) ;
 	}
 	
 	@Override
@@ -296,6 +305,11 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 			return NestedSetMap.this.uniqueKeyCount() ;
 		}
 
+		@Override
+		public final boolean add(K val) {
+			throw new UnsupportedOperationException() ;
+		}
+		
 		@Override
 		public final K put(K val) {
 			throw new UnsupportedOperationException() ;

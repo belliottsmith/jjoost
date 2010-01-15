@@ -26,61 +26,60 @@ import org.jjoost.util.Function;
 public interface AnyReadSet<V> extends Iterable<V>, Function<V, Boolean>, Serializable {
 
 	/**
-	 * The first value stored in the set that is equal to the provided value, as determined by
-	 * any provided <code>Equality</code> or <code>Comparator</code>. Returns null if no
-	 * matching item is stored in the set.
+	 * The first value stored in the set that is equal to the provided value, as determined by any provided <code>Equality</code> or
+	 * <code>Comparator</code>. Returns <code>null</code> if no matching item is stored in the set.
 	 * 
 	 * @param find
-	 * 
+	 *            value to look for
 	 * @return first matching value
 	 */
-	public V first(V value) ;
+	public V first(V find) ;
 	
 	/**
-	 * Returns an <code>Iterable</code> of all values contained in the set which are equal 
-	 * to the parameter, as determined by the set's definition of equality. <p>Changes to the 
-	 * set that happen prior to retrieving an <code>Iterator</code> from the <code>Iterable</code>
-	 * should be reflected in the resulting <code>Iterator</code>. Changes to the
-	 * set once an <code>Iterator</code> has been obtained may or may not be reflected in the 
-	 * <code>Iterator</code> at the discretion of the implementing class. <p>In a concurrent 
-	 * set it is acceptable for values to occur extra times if they are deleted and re-inserted
-	 * in between method calls on the <code>Iterator</code>.
+	 * Returns an <code>Iterable</code> of all values contained in the set which are equal to the parameter, as determined by the set's
+	 * definition of equality.
+	 * <p>
+	 * Changes to the set that happen prior to retrieving an <code>Iterator</code> from the <code>Iterable</code> should be reflected in the
+	 * resulting <code>Iterator</code>. Changes to the set once an <code>Iterator</code> has been obtained may or may not be reflected in
+	 * the <code>Iterator</code> at the discretion of the implementing class.
+	 * <p>
+	 * In a concurrent set it is acceptable for values to occur extra times if they are deleted and re-inserted in between method calls on
+	 * the <code>Iterator</code>.
 	 * 
 	 * @param find
-	 * 
+	 *            value to look for
 	 * @return matching values
 	 */
-	public Iterable<V> all(V value) ;
+	public Iterable<V> all(V find) ;
 	
 	/**
-	 * Returns a <code>List</code> of all values contained in the set which are equal
-	 * to the parameter, as determined by the set's definition of equality. This list
-	 * should be constructed "eagerly" and should be a consistent snapshot of 
-	 * the values valid at some point between the method being called and it returning.
+	 * Returns a <code>List</code> of all values contained in the set which are equal to the parameter, as determined by the set's
+	 * definition of equality. This list should be constructed "eagerly" and should be a consistent snapshot of the values valid at some
+	 * point between the method being called and it returning.
 	 * 
 	 * @param find
-	 * 
+	 *            value to look for
 	 * @return matching values
 	 */
-	public List<V> list(V value) ;
+	public List<V> list(V find) ;
 	
 	/**
-	 * Returns a boolean indicating if the parameter occurs in the set at least once.
+	 * Returns a <code>boolean</code> indicating if the parameter occurs in the set at least once.
 	 * 
 	 * @param find
-	 * 
-	 * @return true, if present
+	 *            value to look for
+	 * @return <code>true</code>, if present
 	 */
-	public boolean contains(V value) ;
+	public boolean contains(V find) ;
 	
 	/**
 	 * Returns an integer representing the number of occurrences of the value in the set
 	 * 
 	 * @param find
-	 * 
+	 *            value to look for
 	 * @return number of occurrences
 	 */
-	public int count(V value) ;
+	public int count(V find) ;
 	
 	/**
 	 * Returns an <code>Iterable</code> of only unique values in the set, as determined by

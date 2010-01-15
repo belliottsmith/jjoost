@@ -52,6 +52,9 @@ public class SynchronizedArbitrarySet<V, S extends AnySet<V>> extends Synchroniz
 	@Override public synchronized boolean permitsDuplicates() {
 		return delegate.permitsDuplicates();
 	}
+	@Override public synchronized boolean add(V val) {
+		return delegate.add(val);
+	}
 	@Override public synchronized V put(V val) {
 		return delegate.put(val);
 	}

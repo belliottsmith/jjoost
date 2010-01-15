@@ -24,6 +24,12 @@ public final class ArrayIterator<E> implements Iterator<E> {
     }
 
 	public ArrayIterator(E[] vals, int lb, int ub) {
+		if (lb > ub)
+			throw new IllegalArgumentException(String.format("The provided lower bound (%d) is greater than the provided upper bound (%d)", lb, ub)) ;
+		if (ub > vals.length)
+			throw new IllegalArgumentException(String.format("The provided upper bound (%d) is greater than the length of the array (%d)", ub, vals.length)) ;
+		if (lb < 0)
+			throw new IllegalArgumentException(String.format("The provided lower bound (%d) is less than zero", lb)) ;
         this.vals = vals ;
         p = lb ;
         this.ub = ub ; 

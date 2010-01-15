@@ -98,6 +98,10 @@ public class DefaultFactoryMap<K, V> implements Map<K, V> {
 		return delegate.permitsDuplicateKeys();
 	}
 
+	public boolean add(K key, V val) {
+		return delegate.add(key, val);
+	}
+	
 	public V put(K key, V val) {
 		return delegate.put(key, val);
 	}

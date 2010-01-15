@@ -38,6 +38,11 @@ public abstract class AbstractUniqueSetAdapter<V> implements Set<V> {
 	}
 
 	@Override
+	public boolean add(V val) {
+		throw new UnsupportedOperationException() ;
+	}
+	
+	@Override
 	public V put(V val) {
 		throw new UnsupportedOperationException() ;
 	}

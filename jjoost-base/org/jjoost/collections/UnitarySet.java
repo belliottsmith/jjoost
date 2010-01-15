@@ -6,19 +6,17 @@ package org.jjoost.collections;
  * the method <code>values(key)</code> on regular (scalar) maps.
  * 
  * @author b.elliottsmith
- *
- * @param <V>
  */
 public interface UnitarySet<V> extends AnySet<V> {
 
 	/**
-	 * Insert the parameter into the set, removing and returning the currently value
-	 * that exists in the set, if any
+	 * Insert the parameter into the set, removing and returning the currently value that exists in the set, if any
 	 * 
-	 * @param value to insert
+	 * @param value
+	 *            value to insert
 	 * @return set's previous value, if any
 	 */
-	@Override public V put(V val) ;
+	@Override public V put(V value) ;
 	
 	/**
 	 * Returns the set's only value, if any

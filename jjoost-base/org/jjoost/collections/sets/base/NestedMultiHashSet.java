@@ -44,7 +44,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	}
 	
 	protected Function<Value<V>, V> valProj() {
-		return Functions.<V>getAbstractValueContentsProjection() ;
+		return Functions.<V>getValueContentsProjection() ;
 	}
 	
 	final int hash(V key) {
@@ -65,6 +65,12 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 		return true ;
 	}
 
+	@Override
+	public boolean add(V val) {
+		put(val) ;
+		return true ;
+	}
+	
 	@Override
 	public V put(V val) {
 		final int hash = hash(val) ;

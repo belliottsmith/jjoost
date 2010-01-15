@@ -297,6 +297,14 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		}
 		
 		@Override
+		public final boolean add(V val) {
+			if (keyEq.isUnique())
+				throw new UnsupportedOperationException() ;
+			final N insert = nodeFactory.makeNode(hash, key, val) ;
+			return store.putIfAbsent(insert, insert, nodeEq, entryProj()) == null ;
+		}
+		
+		@Override
 		public final V put(V val) {
 			if (keyEq.isUnique())
 				throw new UnsupportedOperationException() ;
@@ -434,6 +442,11 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		}
 
 		@Override
+		public final boolean add(K val) {
+			throw new UnsupportedOperationException() ;
+		}
+		
+		@Override
 		public final K put(K val) {
 			throw new UnsupportedOperationException() ;
 		}
@@ -491,6 +504,11 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		@Override
 		public Equality<? super Entry<K, V>> equality() {
 			return nodeEq ;
+		}
+		
+		@Override
+		public boolean add(Entry<K, V> entry) {
+			return put(entry) == null ;
 		}
 		
 		@Override

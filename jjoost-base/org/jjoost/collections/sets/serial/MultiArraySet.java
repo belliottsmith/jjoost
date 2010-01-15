@@ -35,6 +35,12 @@ public class MultiArraySet<V> extends AbstractArraySet<V> implements MultiSet<V>
 	}
 
 	@Override
+	public boolean add(V v) {
+		put(v) ;
+		return true ;
+	}
+	
+	@Override
 	public V put(V v) {
 		ensureIndex(count) ;
 		vals[count++] = v ;
