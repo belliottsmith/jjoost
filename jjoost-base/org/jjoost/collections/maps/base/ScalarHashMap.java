@@ -166,10 +166,6 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 	final class EntrySet extends AbstractEntrySet implements Set<Entry<K, V>> {
 		private static final long serialVersionUID = 2741936401896784235L;
 		@Override
-		public boolean add(Entry<K, V> entry) {
-			throw new UnsupportedOperationException() ;
-		}
-		@Override
 		public Entry<K, V> put(Entry<K, V> entry) {
 			throw new UnsupportedOperationException() ;
 		}

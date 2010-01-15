@@ -5,7 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 
 /**
- * A class providing simple default factories and methods that act upon them
+ * A class providing methods acting on factories, and default factory implementations
  * 
  * @author b.elliottsmith
  */

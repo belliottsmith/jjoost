@@ -49,9 +49,8 @@ public class NestedSetMultiMap<K, V> extends NestedSetMap<K, V, Set<V>> implemen
 		}
 		
 		@Override
-		public Entry<K, V> put(Entry<K, V> entry) {
-			if (add(entry))
-				return null ;
+		public Entry<K, V> put(Entry<K, V> entry) {			
+			NestedSetMultiMap.this.put(entry.getKey(), entry.getValue()) ;
 			return get(entry) ;
 		}
 

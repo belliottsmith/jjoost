@@ -3,11 +3,6 @@ package org.jjoost.collections.iters;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-/**
- * @author b.elliottsmith
- *
- * @param <E>
- */
 public class HeadIterator<E> implements Iterator<E> {
 
 	final Iterator<E> iterator ;
@@ -15,6 +10,8 @@ public class HeadIterator<E> implements Iterator<E> {
 	private int count ;
 	
 	public HeadIterator(Iterator<E> iterator, int take) {
+		if (take < 0)
+			throw new IllegalArgumentException(String.format("HeadIterator cannot limit itself to fewer than zero items (%d requested)", take)) ;
 		this.iterator = iterator ;
 		this.take = take ;
 	}

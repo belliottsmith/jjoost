@@ -34,6 +34,11 @@ public class Counters {
 		return new SerialCounter() ;
 	}
 	
+	/**
+	 * a thread safe <code>Counter</code> which uses compare and set operations to modify its value
+	 * 
+	 * @author b.elliottsmith
+	 */
 	public static class ThreadSafeCounter implements Counter {
 
 		private volatile int count ;
@@ -63,6 +68,11 @@ public class Counters {
 
 	}
 	
+	/**
+	 * Returns a regular <code>Counter</code> which performs ordinary addition with no concurrency guarantees
+	 * 
+	 * @author b.elliottsmith
+	 */
 	public static class SerialCounter implements Counter {
 
 		private int count ;
@@ -89,6 +99,11 @@ public class Counters {
 		
 	}
 	
+	/**
+	 * a <code>Counter</code> which ignores all updates to its value and always returns a value less than zero.
+	 * 
+	 * @author b.elliottsmith
+	 */
 	public static class DontCounter implements Counter {
 		@Override
 		public boolean add(int i) {

@@ -15,6 +15,12 @@ import org.jjoost.collections.iters.FilteredClosableIterator ;
 import org.jjoost.collections.iters.FilteredIterable ;
 import org.jjoost.collections.iters.FilteredIterator ;
 
+/**
+ * A class providing methods acting on filters, and default filter implementations 
+ * 
+ * @author b.elliottsmith
+ *
+ */
 public class Filters {
 
 	/**
@@ -593,103 +599,131 @@ public class Filters {
     }
 
 	/**
-	 * Filter the supplied collection through the supplied filter, returning the result as a list
+	 * Returns a new <code>ArrayList</code> representing the items from the provided Collection that when passed to the provided filter's
+	 * <code>accept()</code> method, returned <code>true</code>. Equivalent to <code>apply(filter, coll)</code>.
 	 * 
-	 * @param <E>
-	 * @param list
+	 * @param coll
+	 *            the collection to be filtered
 	 * @param filter
-	 * @return
+	 *            the filter to apply
+	 * @return an eagerly filtered copy of the provided collection
 	 */
-    public static <E> List<E> apply(Collection<E> list, Filter<? super E> filter) {
-        return apply(filter, list) ;
+    public static <E> List<E> apply(Collection<E> coll, Filter<? super E> filter) {
+        return apply(filter, coll) ;
     }
 
 	/**
-	 * lazily filter the supplied iterable through the supplied filter
+	 * Returns an <code>Iterable</code> whose <code>iterator()</code> method will yield a lazily filtered <code>Iterator</code> wrapping the
+	 * one returned by the Iterable provided to this method, filtered by the provided filter. Equivalent to <code>apply(filter, iter)</code>.
 	 * 
-	 * @param <E>
-	 * @param list
+	 * @param iter
+	 *            <code>Iterable</code> to filter
 	 * @param filter
-	 * @return
+	 *            the filter to apply
+	 * @return a filtering <code>Iterable</code>
 	 */
     public static <E> FilteredIterable<E> apply(Iterable<E> iter, Filter<? super E> filter) {
         return apply(filter, iter) ;
     }
     
     /**
-     * lazily filter the supplied iterator through the supplied filter
-     * 
-     * @param <E>
-     * @param iter
-     * @param filter
-     * @return
-     */
+	 * Returns an <code>Iterator</code> wrapping the one provided and lazily filtering its contents by the provided filter. Equivalent to
+	 * <code>apply(filter, iter)</code>.
+	 * 
+	 * @param iter
+	 *            the <code>Iterator</code> to filter
+	 * @param filter
+	 *            the filter to apply
+	 * @return a filtered <code>Iterator</code>
+	 */
     public static <E> FilteredIterator<E> apply(Iterator<E> iter, Filter<? super E> filter) {
         return apply(filter, iter) ;
     }
     
     /**
-     * lazily filter the supplied closable iterator through the supplied filter
-     * 
-     * @param <E>
-     * @param iter
-     * @param filter
-     * @return
-     */
+	 * Returns a <code>ClosableIterator</code> wrapping the one provided and lazily filtering its contents by the provided filter
+	 * 
+	 * @param iter
+	 *            the <code>ClosableIterator</code> to filter
+	 * @param filter
+	 *            the filter to apply
+	 * @return a filtered <code>ClosableIterator</code>
+	 */
     public static <E> FilteredClosableIterator<E> apply(ClosableIterator<E> iter, Filter<? super E> filter) {
         return apply(filter, iter) ;
     }
 
-    /**
-     * Filter the supplied collection through the supplied filter, returning the result as a list
-     * 
-     * @param <E>
-     * @param list
-     * @param filter
-     * @return
-     */
-    public static <E> List<E> apply(Filter<? super E> filter, Collection<E> list) {
-    	List<E> ret = new ArrayList<E>(list.size()) ;
-    	for (E e : list) if (filter.accept(e)) ret.add(e) ;
+	/**
+	 * Returns a new <code>ArrayList</code> representing the items from the provided Collection that when passed to the provided filter's
+	 * <code>accept()</code> method, returned <code>true</code>. Equivalent to <code>apply(coll, filter)</code>.
+	 * 
+	 * @param coll
+	 *            the collection to be filtered
+	 * @param filter
+	 *            the filter to apply
+	 * @return an eagerly filtered copy of the provided collection
+	 */
+    public static <E> List<E> apply(Filter<? super E> filter, Collection<E> coll) {
+    	List<E> ret = new ArrayList<E>(coll.size()) ;
+    	for (E e : coll) if (filter.accept(e)) ret.add(e) ;
     	return ret ;
     }
     
-    /**
-     * lazily filter the supplied iterable through the supplied filter
-     * 
-     * @param <E>
-     * @param list
-     * @param filter
-     * @return
-     */
+	/**
+	 * Returns an <code>Iterable</code> whose <code>iterator()</code> method will yield a lazily filtered <code>Iterator</code> wrapping the
+	 * one returned by the Iterable provided to this method, filtered by the provided filter. Equivalent to <code>apply(iter, filter)</code>.
+	 * 
+	 * @param iter
+	 *            <code>Iterable</code> to filter
+	 * @param filter
+	 *            the filter to apply
+	 * @return a filtering <code>Iterable</code>
+	 */
     public static <E> FilteredIterable<E> apply(Filter<? super E> filter, Iterable<E> iter) {
     	return new FilteredIterable<E>(iter, filter) ;
     }
     
     /**
-     * lazily filter the supplied iterator through the supplied filter
-     * 
-     * @param <E>
-     * @param iter
-     * @param filter
-     * @return
-     */
+	 * Returns an <code>Iterator</code> wrapping the one provided and lazily filtering its contents by the provided filter. Equivalent to
+	 * <code>apply(filter, iter)</code>.
+	 * 
+	 * @param iter
+	 *            the <code>Iterator</code> to filter
+	 * @param filter
+	 *            the filter to apply
+	 * @return a filtered <code>Iterator</code>
+	 */
     public static <E> FilteredIterator<E> apply(Filter<? super E> filter, Iterator<E> iter) {
     	return new FilteredIterator<E>(iter, filter) ;
     }
     
     /**
-     * lazily filter the supplied closeable iterator through the supplied filter
-     * 
-     * @param <E>
-     * @param iter
-     * @param filter
-     * @return
-     */
+	 * Returns an <code>ClosableIterator</code> wrapping the one provided and lazily filtering its contents by the provided filter. Equivalent to
+	 * <code>apply(filter, iter)</code>.
+	 * 
+	 * @param iter
+	 *            the <code>ClosableIterator</code> to filter
+	 * @param filter
+	 *            the filter to apply
+	 * @return a filtered <code>ClosableIterator</code>
+	 */
     public static <E> FilteredClosableIterator<E> apply(Filter<? super E> filter, ClosableIterator<E> iter) {
     	return new FilteredClosableIterator<E>(iter, filter) ;
     }
     
+	/**
+	 * Visits the elements in the provided <code>Iterator</code>, executing <code>remove()</code> on any that <b>match</b> the provided
+	 * filter (i.e. where the <code>accept()</code> method returns <code>true</code>). Once <code>removeAtMost</code> matches have been
+	 * encountered and removed, or the end of the <code>Iterator</code> is reached, the method returns the number of items removed.
+	 * 
+	 * @param removeMatches
+	 *            filter to apply as removals
+	 * @param removeAtMost
+	 *            maximum number of removals to perform
+	 * @param iter
+	 *            iterator to remove from
+	 * @return the number of matching values found and removed
+	 */
 	public static <V> int remove(Filter<? super V> removeMatches, int removeAtMost, Iterator<V> iter) {
 		if (removeAtMost < 0)
 			throw new IllegalArgumentException("Cannot remove fewer than zero elements") ;
@@ -703,6 +737,20 @@ public class Filters {
 		return c ;
 	}
 
+	/**
+	 * Visits the elements in the provided <code>Iterator</code>, executing <code>remove()</code> on any that <b>match</b> the provided
+	 * filter (i.e. where the <code>accept()</code> method returns <code>true</code>). Once <code>removeAtMost</code> matches have been
+	 * encountered and removed, or the end of the <code>Iterator</code> is reached, the method returns the first value it encountered
+	 * and removed.
+	 * 
+	 * @param removeMatches
+	 *            filter to apply as removals
+	 * @param removeAtMost
+	 *            maximum number of removals to perform
+	 * @param iter
+	 *            iterator to remove from
+	 * @return the first matching value found and removed
+	 */
 	public static <V> V removeAndReturnFirst(Filter<? super V> removeMatches, int removeAtMost, Iterator<V> iter) {
 		if (removeAtMost < 0)
 			throw new IllegalArgumentException("Cannot remove fewer than zero elements") ;
@@ -720,6 +768,18 @@ public class Filters {
 		return r ;
 	}
 	
+	/**
+	 * Returns a new <code>Iterator</code> which visits the first <code>removeAtMost</code> items from the provided <code>Iterator</code>
+	 * matching the provided <code>Filter</code>, removing them from the provided <code>Filter</code> <i>as they are visited</i>.
+	 * 
+	 * @param removeMatches
+	 *            filter to apply as removals
+	 * @param removeAtMost
+	 *            maximum number of removals to perform
+	 * @param iter
+	 *            iterator to remove from
+	 * @return the values matching the provided filter, which are removed as they are visited
+	 */
 	public static <V> Iterator<V> removeAndReturn(Filter<? super V> removeMatches, int removeAtMost, Iterator<V> iter) {
 		if (removeAtMost < 0)
 			throw new IllegalArgumentException("Cannot remove fewer than zero elements") ;
