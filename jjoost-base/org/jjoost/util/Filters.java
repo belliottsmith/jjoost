@@ -50,7 +50,8 @@ public class Filters {
     }
 
     /**
-	 * Returns the negation of the supplied partial order filter
+	 * Returns the negation of the supplied partial order filter. Users should be aware that filters that do not accurately implement
+	 * <code>mayAcceptBetween</code> may break on negation.
 	 * 
 	 * @param filter filter to negate
 	 * @return negation of the supplied partial order filter
@@ -60,7 +61,8 @@ public class Filters {
     }
 
     /**
-	 * Returns the negation of the supplied filter implementing both <code>Filter</code> and <code>PartialOrder</code>
+	 * Returns the negation of the supplied filter implementing both <code>Filter</code> and <code>PartialOrder</code>.
+	 * Users should be aware that filters that do not accurately implement <code>mayAcceptBetween</code> may break on negation.
 	 * 
 	 * @param filter
 	 *            filter to negate
@@ -71,165 +73,165 @@ public class Filters {
     }
     
     /**
-     * Returns the conjunction of the supplied filters; filters are evaluated in the order they are provided (left-to-right) and are evaluated iff previous filters passed
+     * Returns the conjunction (i.e. "and") of the supplied filters; filters are evaluated in the order they are provided (left-to-right) and are evaluated if and only if previous filters passed
      * 
      * @param a filter to apply first
      * @param b filter to apply second
-     * @return conjunction of a and b
+     * @return conjunction (i.e. "and") of a and b
      */
     public static <E> Filter<E> and(Filter<? super E> a, Filter<? super E> b) {
     	return FilterAnd.get(a, b) ;
     }
     
     /**
-     * Returns the conjunction of the supplied filters; filters are evaluated in the order they are provided (left-to-right) and are evaluated iff previous filters passed
+     * Returns the conjunction (i.e. "and") of the supplied filters; filters are evaluated in the order they are provided (left-to-right) and are evaluated if and only if previous filters passed
      * 
      * @param filters filters to apply
-     * @return conjunction of provided filters
+     * @return conjunction (i.e. "and") of provided filters
      */
     public static <E> Filter<E> and(Filter<? super E> ... filters) {
         return FilterMultiAnd.get(filters) ;
     }
     
     /**
-     * Returns the conjunction of the supplied filters; filters are evaluated in the order they are provided (left-to-right) and are evaluated iff previous filters passed
+     * Returns the conjunction (i.e. "and") of the supplied filters. The filters are evaluated in the order they are provided (left-to-right) and are evaluated if and only if previous filters passed
      * 
      * @param filters filters to apply
-     * @return conjunction of provided filters
+     * @return conjunction (i.e. "and") of provided filters
      */
     public static <E> Filter<E> and(Iterable<Filter<? super E>> filters) {
         return FilterMultiAnd.get(filters) ;
     }
 
     /**
-     * Returns the conjunction of the supplied partial order filters; filters are evaluated in the order they are provided (left-to-right) and are evaluated iff previous filters passed
+     * Returns the conjunction (i.e. "and") of the supplied partial order filters; filters are evaluated in the order they are provided (left-to-right) and are evaluated if and only if previous filters passed
      * 
      * @param a filter to apply first
      * @param b filter to apply second
-     * @return conjunction of a and b
+     * @return conjunction (i.e. "and") of a and b
      */
     public static <E> FilterPartialOrder<E> and(FilterPartialOrder<E> a, FilterPartialOrder<E> b) {
         return PartialOrderAnd.get(a, b) ;
     }
     
     /**
-     * Returns the conjunction of the supplied partial order filters; filters are evaluated in the order they are provided (left-to-right) and are evaluated iff previous filters passed
+     * Returns the conjunction (i.e. "and") of the supplied partial order filters; filters are evaluated in the order they are provided (left-to-right) and are evaluated if and only if previous filters passed
      * 
      * @param filters filters to apply
-     * @return conjunction of provided filters
+     * @return conjunction (i.e. "and") of provided filters
      */
     public static <E> FilterPartialOrder<E> and(FilterPartialOrder<E> ... filters) {
     	return PartialOrderMultiAnd.get(filters) ;
     }
     
     /**
-     * Returns the conjunction of the supplied partial order filters; filters are evaluated in the order they are provided (left-to-right) and are evaluated iff previous filters passed
+     * Returns the conjunction (i.e. "and") of the supplied partial order filters; filters are evaluated in the order they are provided (left-to-right) and are evaluated if and only if previous filters passed
      * 
      * @param filters filters to apply
-     * @return conjunction of provided filters
+     * @return conjunction (i.e. "and") of provided filters
      */
     public static <E> FilterPartialOrder<E> and(Iterable<? extends FilterPartialOrder<E>> filters) {
         return PartialOrderMultiAnd.get(filters) ;
     }
 
     /**
-	 * Returns the conjunction of the supplied filters implementing both <code>Filter</code> and <code>FilterPartialOrder</code>; filters
-	 * are evaluated in the order they are provided (left-to-right) and are evaluated iff previous filters passed
+	 * Returns the conjunction (i.e. "and") of the supplied filters implementing both <code>Filter</code> and <code>FilterPartialOrder</code>; filters
+	 * are evaluated in the order they are provided (left-to-right) and are evaluated if and only if previous filters passed
 	 * 
 	 * @param a
 	 *            filter to apply first
 	 * @param b
 	 *            filter to apply second
-	 * @return conjunction of a and b
+	 * @return conjunction (i.e. "and") of a and b
 	 */
     public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> and(F a, F b) {
     	return BothFilterAnd.get(a, b) ;
     }
     
     /**
-	 * Returns the conjunction of the supplied filters implementing both <code>Filter</code> and <code>FilterPartialOrder</code>; filters
-	 * are evaluated in the order they are provided (left-to-right) and are evaluated iff previous filters passed
+	 * Returns the conjunction (i.e. "and") of the supplied filters implementing both <code>Filter</code> and <code>FilterPartialOrder</code>; filters
+	 * are evaluated in the order they are provided (left-to-right) and are evaluated if and only if previous filters passed
      * 
      * @param filters filters to apply
-     * @return conjunction of provided filters
+     * @return conjunction (i.e. "and") of provided filters
      */
     public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> and(F ... filters) {
         return BothFilterMultiAnd.get(filters) ;
     }
     
     /**
-	 * Returns the conjunction of the supplied filters implementing both <code>Filter</code> and <code>FilterPartialOrder</code>; filters
-	 * are evaluated in the order they are provided (left-to-right) and are evaluated iff previous filters passed
+	 * Returns the conjunction (i.e. "and") of the supplied filters implementing both <code>Filter</code> and <code>FilterPartialOrder</code>; filters
+	 * are evaluated in the order they are provided (left-to-right) and are evaluated if and only if previous filters passed
      * 
      * @param filters filters to apply
-     * @return conjunction of provided filters
+     * @return conjunction (i.e. "and") of provided filters
      */
     public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> and(Iterable<? extends F> filters) {
         return BothFilterMultiAnd.get(filters) ;
     }
 
     /**
-     * Returns the disjunction of the supplied filters; filters are evaluated in the order they are provided (left-to-right) and are evaluated iff previous filters passed
+     * Returns the disjunction (i.e. "or") of the supplied filters; filters are evaluated in the order they are provided (left-to-right) and are evaluated if and only if previous filters passed
      * 
      * @param a filter to apply first
      * @param b filter to apply second
-     * @return disjunction of a and b
+     * @return disjunction (i.e. "or") of a and b
      */
     public static <E> Filter<E> or(Filter<? super E> a, Filter<? super E> b) {
     	return FilterOr.get(a, b) ;
     }
     
     /**
-     * Returns the disjunction of the supplied filters; filters are evaluated in the order they are provided (left-to-right) and are evaluated iff previous filters passed
+     * Returns the disjunction (i.e. "or") of the supplied filters; filters are evaluated in the order they are provided (left-to-right) and are evaluated if and only if previous filters passed
      * 
      * @param filters filters to apply
-     * @return disjunction of provided filters
+     * @return disjunction (i.e. "or") of provided filters
      */
     public static <E> Filter<E> or(Filter<? super E> ... filters) {
         return FilterMultiOr.get(filters) ;
     }
     
     /**
-     * Returns the disjunction of the supplied filters; filters are evaluated in the order they are provided (left-to-right) and are evaluated iff previous filters passed
+     * Returns the disjunction (i.e. "or") of the supplied filters; filters are evaluated in the order they are provided (left-to-right) and are evaluated if and only if previous filters passed
      * 
      * @param filters filters to apply
-     * @return disjunction of provided filters
+     * @return disjunction (i.e. "or") of provided filters
      */
     public static <E> Filter<E> or(Iterable<? extends Filter<? super E>> filters) {
         return FilterMultiOr.get(filters) ;
     }
 
     /**
-	 * Returns the disjunction of the supplied partial order filters; filters are evaluated in the order they are provided (left-to-right)
-	 * and are evaluated iff previous filters passed
+	 * Returns the disjunction (i.e. "or") of the supplied partial order filters; filters are evaluated in the order they are provided (left-to-right)
+	 * and are evaluated if and only if previous filters passed
 	 * 
 	 * @param a
 	 *            filter to apply first
 	 * @param b
 	 *            filter to apply second
-	 * @return disjunction of a and b
+	 * @return disjunction (i.e. "or") of a and b
      */
     public static <E> FilterPartialOrder<E> or(FilterPartialOrder<E> a, FilterPartialOrder<E> b) {
     	return PartialOrderOr.get(a, b) ;
     }
     
     /**
-	 * Returns the disjunction of the supplied partial order filters; filters are evaluated in the order they are provided (left-to-right)
-	 * and are evaluated iff previous filters passed
+	 * Returns the disjunction (i.e. "or") of the supplied partial order filters; filters are evaluated in the order they are provided (left-to-right)
+	 * and are evaluated if and only if previous filters passed
 	 * 
      * @param filters filters to apply
-     * @return disjunction of provided filters
+     * @return disjunction (i.e. "or") of provided filters
 	 */
     public static <E> FilterPartialOrder<E> or(FilterPartialOrder<E> ... filters) {
         return PartialOrderMultiOr.get(filters) ;
     }
     
     /**
-	 * Returns the disjunction of the supplied partial order filters; filters are evaluated in the order they are provided (left-to-right)
-	 * and are evaluated iff previous filters passed
+	 * Returns the disjunction (i.e. "or") of the supplied partial order filters; filters are evaluated in the order they are provided (left-to-right)
+	 * and are evaluated if and only if previous filters passed
 	 * 
      * @param filters filters to apply
-     * @return disjunction of provided filters
+     * @return disjunction (i.e. "or") of provided filters
      */
     public static <E> FilterPartialOrder<E> or(Iterable<? extends FilterPartialOrder<E>> filters) {
         return PartialOrderMultiOr.get(filters) ;
@@ -237,36 +239,36 @@ public class Filters {
 
 
     /**
-	 * Returns the disjunction of the supplied filters that implement <code>Filter</code> and <code>FilterPartialOrder</code>; filters are
-	 * evaluated in the order they are provided (left-to-right) and are evaluated iff previous filters passed
+	 * Returns the disjunction (i.e. "or") of the supplied filters that implement <code>Filter</code> and <code>FilterPartialOrder</code>; filters are
+	 * evaluated in the order they are provided (left-to-right) and are evaluated if and only if previous filters passed
 	 * 
 	 * @param a
 	 *            filter to apply first
 	 * @param b
 	 *            filter to apply second
-	 * @return disjunction of a and b
+	 * @return disjunction (i.e. "or") of a and b
 	 */
     public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> or(F a, F b) {
     	return BothFilterOr.get(a, b) ;
     }
     
     /**
-	 * Returns the disjunction of the supplied filters that implement <code>Filter</code> and <code>FilterPartialOrder</code>; filters are
-	 * evaluated in the order they are provided (left-to-right) and are evaluated iff previous filters passed
+	 * Returns the disjunction (i.e. "or") of the supplied filters that implement <code>Filter</code> and <code>FilterPartialOrder</code>; filters are
+	 * evaluated in the order they are provided (left-to-right) and are evaluated if and only if previous filters passed
 	 * 
      * @param filters filters to apply
-     * @return disjunction of provided filters
+     * @return disjunction (i.e. "or") of provided filters
      */
     public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> or(F ... filters) {
         return BothFilterMultiOr.get(filters) ;
     }
     
     /**
-	 * Returns the disjunction of the supplied filters that implement <code>Filter</code> and <code>FilterPartialOrder</code>; filters are
-	 * evaluated in the order they are provided (left-to-right) and are evaluated iff previous filters passed
+	 * Returns the disjunction (i.e. "or") of the supplied filters that implement <code>Filter</code> and <code>FilterPartialOrder</code>; filters are
+	 * evaluated in the order they are provided (left-to-right) and are evaluated if and only if previous filters passed
 	 * 
      * @param filters filters to apply
-     * @return disjunction of provided filters
+     * @return disjunction (i.e. "or") of provided filters
      */
     public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> or(Iterable<? extends F> filters) {
         return BothFilterMultiOr.get(filters) ;
@@ -356,7 +358,7 @@ public class Filters {
 	 * provided to its methods by utilising classes
 	 * 
 	 * @param val
-	 *            exclusive upper limit of acceptable values
+	 *            exclusive lower limit of acceptable values
 	 * @return a partial order filter that accepts everything greater than the provided value
 	 */
     public static <E> FilterPartialOrder<E> isGreater(E val) {
@@ -372,7 +374,7 @@ public class Filters {
 	 * methods utilise the provided comparators
 	 * 
 	 * @param val
-	 *            exclusive upper limit of acceptable values
+	 *            exclusive lower limit of acceptable values
 	 * @return a filter that accepts everything greater than the provided value
 	 */
     public static <E extends Comparable<? super E>> BothFilter<E> isGreater(E val) {
@@ -384,7 +386,7 @@ public class Filters {
 	 * <code>Comparator</code> provided to its methods by utilising classes
 	 * 
 	 * @param val
-	 *            inclusive upper limit of acceptable values
+	 *            inclusive lower limit of acceptable values
 	 * @return a partial order filter that accepts everything greater than or equal to the provided value
 	 */
     public static <E> FilterPartialOrder<E> isGreaterEq(E val) {
@@ -400,7 +402,7 @@ public class Filters {
 	 * methods utilise the provided comparators
 	 * 
 	 * @param val
-	 *            exclusive upper limit of acceptable values
+	 *            inclusive lower limit of acceptable values
 	 * @return a filter that accepts everything greater than or equal to the provided value
 	 */
     public static <E extends Comparable<? super E>> BothFilter<E> isGreaterEq(E val) {
@@ -422,6 +424,25 @@ public class Filters {
     	return PartialOrderAcceptBetween.get(lb, ub) ;
     }
     
+    
+    /**
+     * Returns a filter that accepts everything between the provided lower and upper bounds, as determined by the <code>Comparator</code> provided to its methods. 
+     * Each bound can be specified as inclusive or exclusive
+     * 
+     * @param lb
+     *            lower limit of acceptable values
+     * @param lbIsInclusive
+     *            <code>true</code> if lb should be inclusive, <code>false</code> if exclusive
+     * @param ub
+     *            exclusive upper limit of acceptable values
+     * @param ubIsInclusive
+     *            <code>true</code> if <code>ub</code> should be inclusive, <code>false</code> if exclusive
+     * @return a filter that accepts everything in the range <code>[lb...ub)</code>
+     */
+    public static <E> FilterPartialOrder<E> isBetween(E lb, boolean lbIsInclusive, E ub, boolean ubIsInclusive) {
+    	return PartialOrderAcceptBetween.get(lb, lbIsInclusive, ub, ubIsInclusive) ;
+    }
+    
     /**
 	 * Returns a filter that accepts everything greater than or equal to the provided lower bound (first argument) and everything strictly
 	 * less than the provided upper bound (second argument), as determined by the <code>Comparator</code> provided to its methods by
@@ -439,6 +460,28 @@ public class Filters {
 	 */
     public static <E extends Comparable<? super E>> BothFilter<E> isBetween(E lb, E ub) {
     	return AcceptBetween.get(lb, ub) ;
+    }
+    
+    /**
+     * Returns a filter that accepts everything between the provided lower and upper bounds, as determined by the <code>Comparator</code> provided to its methods. 
+     * Each bound can be specified as inclusive or exclusive
+     * <p>
+     * Returns an object implementing both <code>Filter</code> and <code>FilterPartialOrder</code>; the <code>Filter</code>
+     * <code>accept()</code>method delegates to the object's <code>compareTo()</code> method, whereas the <code>FilterPartialOrder</code>
+     * methods utilise the provided comparators
+     * 
+     * @param lb
+     *            lower limit of acceptable values
+     * @param lbIsInclusive
+     *            <code>true</code> if lb should be inclusive, <code>false</code> if exclusive
+     * @param ub
+     *            exclusive upper limit of acceptable values
+     * @param ubIsInclusive
+     *            <code>true</code> if <code>ub</code> should be inclusive, <code>false</code> if exclusive
+     * @return a filter that accepts everything in the range <code>[lb...ub)</code>
+     */
+    public static <E extends Comparable<? super E>> BothFilter<E> isBetween(E lb, boolean lbIsInclusive, E ub, boolean ubIsInclusive) {
+    	return AcceptBetween.get(lb, lbIsInclusive, ub, ubIsInclusive) ;
     }
     
     /**
@@ -476,7 +519,27 @@ public class Filters {
     }
     
     /**
-	 * Returns a <code>Filter</code> which returns <code>true</code> iff it has never seen the value being tested before, using regular
+     * Returns a <code>Filter</code> which returns <code>true</code> if and only if the previously tested value is not equal to the value
+     * being tested, using regular object equality.
+     * 
+     * @return a filter rejecting any values equal to their predecessor
+     */
+    public static final <E> Filter<E> uniqueSeq() {
+    	return AcceptUniqueSequence.<E>get() ;
+    }
+    
+    /**
+     * Returns a <code>Filter</code> which returns <code>true</code> if and only if the previously tested value is not equal to the value
+     * being tested, using the provided definition of equality.
+     * 
+     * @return a filter rejecting any values equal to their predecessor
+     */
+    public static final <E> Filter<E> uniqueSeq(Equality<? super E> eq) {
+    	return AcceptUniqueSequence.<E>get(eq) ;
+    }
+    
+    /**
+	 * Returns a <code>Filter</code> which returns <code>true</code> if and only if it has never seen the value being tested before, using regular
 	 * object equality. It maintains a set of all visited values and therefore can be expensive with respect to memory utilisation.
 	 * 
 	 * @return a filter accepting only unique values
@@ -486,7 +549,7 @@ public class Filters {
     }
     
     /**
-	 * Returns a <code>Filter</code> which returns <code>true</code> iff it has never seen the value being tested before, using the provided
+	 * Returns a <code>Filter</code> which returns <code>true</code> if and only if it has never seen the value being tested before, using the provided
 	 * equality. It maintains a set of all visited values and therefore can be expensive with respect to memory utilisation.
 	 * 
 	 * @param eq the equality determining uniqueness
@@ -497,7 +560,7 @@ public class Filters {
     }
     
     /**
-	 * Returns a <code>Filter</code> which returns <code>true</code> iff it has never seen the value being tested before, using the provided
+	 * Returns a <code>Filter</code> which returns <code>true</code> if and only if it has never seen the value being tested before, using the provided
 	 * set to maintain all visited values, and hence the set's definition of equality. This can be expensive with respect to memory utilisation.
 	 * 
 	 * @param set the set to store visited values in
@@ -534,7 +597,7 @@ public class Filters {
      * @return a filter accepting everything that is not null
      */    
 	public static <E> Filter<E> notNull() {
-    	return new AcceptIfNotNull<E>() ;
+    	return AcceptIfNotNull.get() ;
     }
 
     /**
@@ -542,7 +605,7 @@ public class Filters {
      * @return a filter accepting only values that are null
      */
 	public static <E> Filter<E> isNull() {
-    	return new AcceptIfNull<E>() ;
+    	return AcceptIfNull.get() ;
     }
 
     /**
@@ -553,14 +616,14 @@ public class Filters {
      * @return a filter that applies the provided function to its input before delegating to the provided filter
      */
     public static <X, Y> MappedFilter<X, Y> mapped(Function<X, Y> mapping, Filter<Y> filter) {
-        return new MappedFilter<X, Y>(mapping, filter) ;
+    	return MappedFilter.get(mapping, filter) ;
     }
     
     /**
-     * Returns a filter accepting strings that match the supplied pattern
+     * Returns a filter accepting strings that match the provided pattern
      * 
      * @param pattern the pattern to filter by
-     * @return a filter accepting strings that match the supplied pattern
+     * @return a filter accepting strings that match the provided pattern
      */
     public static Filter<String> matches(Pattern pattern) {
     	return new FilterPattern(pattern) ;

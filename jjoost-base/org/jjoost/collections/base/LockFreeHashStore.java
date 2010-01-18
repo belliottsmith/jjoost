@@ -2591,7 +2591,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			return count << 4 ;
 		}
 		public void increment(int hash) {
-			if ((hash + System.nanoTime() & 15) != 0)
+			if ((hash + System.nanoTime() & 31) != 0)
 				return ;
 			{
 				final int count = this.count ;
@@ -2605,7 +2605,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			}
 		}
 		public void decrement(int hash) {
-			if ((hash + System.nanoTime() & 15) != 0)
+			if ((hash + System.nanoTime() & 31) != 0)
 				return ;
 			{
 				final int count = this.count ;

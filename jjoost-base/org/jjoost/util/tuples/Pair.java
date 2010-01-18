@@ -4,6 +4,12 @@ import java.io.Serializable;
 
 import org.jjoost.util.Objects;
 
+/**
+ * @author b.elliottsmith
+ *
+ * @param <A>
+ * @param <B>
+ */
 public class Pair<A, B> implements Serializable {
 
 	private static final long serialVersionUID = 4885537229275773557L ;

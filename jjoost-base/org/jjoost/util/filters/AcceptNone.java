@@ -3,10 +3,10 @@ package org.jjoost.util.filters ;
 import java.util.Comparator ;
 
 /**
- * A simple filter that accepts everything
+ * A filter that accepts nothing (i.e. returns false for all input).
+ * Implements both <code>Filter</code> and <code>FilterPartialOrder</code>.
  * 
  * @author b.elliottsmith
- * @param <E>
  */
 public class AcceptNone<E> implements BothFilter<E> {
 
@@ -15,6 +15,10 @@ public class AcceptNone<E> implements BothFilter<E> {
 	@SuppressWarnings("unchecked")
 	private static final AcceptNone INSTANCE = new AcceptNone() ;
 
+	/**
+	 * Return the global instance of this filter
+	 * @return the global instance of AcceptNone
+	 */
 	@SuppressWarnings("unchecked")
 	public static <E> AcceptNone<E> get() {
 		return INSTANCE ;
@@ -35,4 +39,9 @@ public class AcceptNone<E> implements BothFilter<E> {
 		return false ;
 	}
 
+	@Override
+	public boolean mayRejectBetween(E lb, boolean lbInclusive, E ub, boolean ubInclusive, Comparator<? super E> cmp) {
+		return true ;
+	}
+	
 }

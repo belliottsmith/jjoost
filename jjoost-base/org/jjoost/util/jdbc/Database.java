@@ -36,10 +36,6 @@ import java.util.concurrent.TimeoutException;
  */
 public class Database {
 
-	public static enum ConnectionType {
-		MS2000, MS2005, JTDS
-	}
-
 	/**
 	 * A simple method to safely create and execute an SQL statement with the supplied data source
 	 *  

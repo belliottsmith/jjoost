@@ -1,22 +1,30 @@
 package org.jjoost.util.filters ;
 
-import java.util.Comparator ;
-
 import org.jjoost.util.Equalities ;
 import org.jjoost.util.Equality ;
+import org.jjoost.util.Filter ;
 
 /**
- * Keeps only the first in a sequence of duplicates
+ * A <code>Filter</code> which returns <code>true</code> if and only if the previously tested value is not equal to the value
+ * being tested, using the provided definition of equality.
  */
-public class AcceptUniqueSequence<V> implements BothFilter<V> {
+public class AcceptUniqueSequence<V> implements Filter<V> {
 
 	private static final long serialVersionUID = 4135610622081116945L ;
 	private final Equality<? super V> eq ;
 
+    /**
+     * Construct a new <code>Filter</code> which returns <code>true</code> if and only if the previously tested value is not equal to the value
+     * being tested, using regular object equality.
+     */
 	public AcceptUniqueSequence() {
 		this(Equalities.object()) ;
 	}
 
+    /**
+     * Construct a new <code>Filter</code> which returns <code>true</code> if and only if the previously tested value is not equal to the value
+     * being tested, using the provided definition of equality.
+     */
 	public AcceptUniqueSequence(Equality<? super V> eq) {
 		this.eq = eq ;
 	}
@@ -28,22 +36,28 @@ public class AcceptUniqueSequence<V> implements BothFilter<V> {
 		return r ;
 	}
 	
-	@Override
-	public boolean accept(V next, Comparator<? super V> cmp) {
-		final boolean r = cmp.compare(prev, next) != 0 ;
-		prev = next ;
-		return r ;
-	}
-
-	// would be cheaper constant factor to just return TRUE here, however for a set of repeated values this would cause every element to be visited rather than just a handful
-	@Override
-	public boolean mayAcceptBetween(V lb, boolean lbInclusive, V ub, boolean ubInclusive, Comparator<? super V> cmp) {
-		return 	(prev == null | lb == null | ub == null | !lbInclusive | !ubInclusive) 
-		||  	cmp.compare(lb, prev) != 0 || cmp.compare(ub, prev) != 0 ;
-	}
-
 	public String toString() {
 		return "is not preceded by itself" ;
 	}
 
+    /**
+     * Returns a <code>Filter</code> which returns <code>true</code> if and only if the previously tested value is not equal to the value
+     * being tested, using regular object equality.
+     * 
+     * @return a filter rejecting any values equal to their predecessor
+     */
+	public static <V> AcceptUniqueSequence<V> get() {
+		return new AcceptUniqueSequence<V>() ;
+	}
+	
+	/**
+	 * Returns a <code>Filter</code> which returns <code>true</code> if and only if the previously tested value is not equal to the value
+	 * being tested, using the provided definition of equality.
+	 * 
+	 * @return a filter rejecting any values equal to their predecessor
+	 */
+	public static <V> AcceptUniqueSequence<V> get(Equality<? super V> eq) {
+		return new AcceptUniqueSequence<V>(eq) ;
+	}
+	
 }

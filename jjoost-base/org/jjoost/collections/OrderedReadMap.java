@@ -66,9 +66,6 @@ public interface OrderedReadMap<K, V> extends AnyReadMap<K, V> {
 	public OrderedReadMap<K, V> filterCopyByKey(FilterPartialOrder<K> filter) ;
 	public OrderedReadMap<K, V> filterCopyByEntry(FilterPartialOrder<Entry<K, V>> filter) ;
 
-	// javac cannot handle the following methods; they "conflict" in OrderedMap where ArbitraryMap declares an entries() and keys() method that have differing descendents of ArbitraryReadOnlySet defined. 
-	// this isn't actually a conflict as we simply need something that implements BOTH of these, which we define in OrderedMap. The Eclipse Java compiler is less flumoxed. 
-
 	public OrderedReadSet<K> keys() ;
 	public OrderedReadMapEntrySet<K, V> entries() ;
 	

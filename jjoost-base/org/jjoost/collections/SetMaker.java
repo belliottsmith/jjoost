@@ -30,37 +30,88 @@ import org.jjoost.util.Rehashers;
  * @author b.elliottsmith
  *
  */
-public final class SetMaker {
+public abstract class SetMaker<V> {
 	
 	private SetMaker() {}
 
+	/**
+	 * Construct and return a new <code>Set</code>
+	 * 
+	 * @return a new <code>Set</code>
+	 */
+	public abstract Set<V> newSet() ;
+	
+	/**
+	 * Construct and return a new <code>MultiSet</code> with <code>INLINE</code> nesting
+	 * 
+	 * @return a new <code>MultiSet</code> with <code>INLINE</code> nesting
+	 */
+	public MultiSet<V> newMultiSet() {
+		return newMultiSet(MultiSetNesting.<V>inline()) ;
+	}
+	
+	/**
+	 * Construct and return a new <code>MultiSet</code> with the provided nesting settings
+	 * 
+	 * @param nesting
+	 *            nesting
+	 * @return a new <code>MultiSet</code> with the provided nesting settings
+	 */
+	public abstract MultiSet<V> newMultiSet(MultiSetNesting<V> nesting) ;
+	
+	/**
+	 * Return a new <code>SetMaker</code> with the same properties as this one
+	 * 
+	 * @return a copy of this <code>SetMaker</code>
+	 */
+	protected abstract SetMaker<V> copy() ;
+	
+	/**
+	 * Return a new <code>Factory</code> whose <code>create()</code> method returns the result of <code>this.newSet()</code>. Changes to
+	 * this <code>SetMaker</code> after the construction of this factory will not affect the result of calls to the factory's
+	 * <code>create()</code> method.
+	 * 
+	 * @return a factory of type <code>Set</code>
+	 */
+	public Factory<Set<V>> newSetFactory() {
+		return new ScalarSetFactory<V>(this) ;
+	}
+	
+	/**
+	 * Return a new <code>Factory</code> whose <code>create()</code> method returns the result of <code>this.newMultiSet(nesting)</code>.
+	 * Changes to this <code>SetMaker</code> after the construction of this factory will not affect the result of calls to the factory's
+	 * <code>create()</code> method.
+	 * 
+	 * @return a factory of type <code>MultiSet</code>
+	 */
+	public Factory<MultiSet<V>> newMultiSetFactory(MultiSetNesting<V> nesting) {
+		return new MultiSetFactory<V>(this, nesting) ;
+	}
+	
+	/**
+	 * Returns a <code>new HashSetMaker</code> for building hash sets
+	 * @return <code>HashSetMaker</code>
+	 */
 	public static <V> HashSetMaker<V> hash() {
 		return new HashSetMaker<V>() ;
 	}
 	
-	public static abstract class AbstractSetMaker<V> {
-		
-		public abstract Set<V> newSet() ;
-		public abstract MultiSet<V> newMultiSet(MultiSetNesting<V> nesting) ;
-		protected abstract AbstractSetMaker<V> copy() ;
-		
-		public MultiSet<V> newMultiSet() {
-			return newMultiSet(MultiSetNesting.<V>inline()) ;
-		}
-		public Factory<Set<V>> newSetFactory() {
-			return new ScalarSetFactory<V>(this) ;
-		}
-		public Factory<MultiSet<V>> newMultiSetFactory(MultiSetNesting<V> nesting) {
-			return new MultiSetFactory<V>(this, nesting) ;
-		}
-	}
-	
-	public static class HashSetMaker<V> extends AbstractSetMaker<V> {
+	/**
+	 * This class provides a user friendly means of constructing
+	 * a variety of hash sets. Almost all hash based set options
+	 * are exposed by this class.
+	 * 
+	 * @author b.elliottsmith
+	 */
+	public static class HashSetMaker<V> extends SetMaker<V> {
 		private Rehasher rehasher = null ;
 		private Equality<? super V> eq = Equalities.object() ;
 		private HashStoreType type = HashStoreType.serial() ;
 		private int initialCapacity = 16 ;
 		private float loadFactor = 0.75f ;
+		/**
+		 * create a new HashSetMaker
+		 */
 		public HashSetMaker() { }
 		private HashSetMaker(Rehasher rehasher,
 				Equality<? super V> eq, HashStoreType type,
@@ -72,10 +123,57 @@ public final class SetMaker {
 			this.initialCapacity = initialCapacity;
 			this.loadFactor = loadFactor;
 		}
+		/**
+		 * Set the <code>Rehasher</code> used by sets constructed by this <code>SetMaker</code>. All hashes are passed through the rehasher
+		 * before being used; it is the rehasher's job to prevent unfortunate inputs/hash functions causing the set to perform poorly.
+		 * The default differs depending on the <code>HashStoreType</code>.
+		 * 
+		 * @param rehasher
+		 *            the Rehasher
+		 * @return <code>this</code>
+		 */
 		public HashSetMaker<V> rehasher(Rehasher rehasher) { this.rehasher = rehasher ; return this ; }
+		/**
+		 * Set the definition of equality used by sets constructed by this <code>SetMaker</code>. The <code>Equality</code> defines both the
+		 * hash and equality implementations to use instead of the default <code>Object.hashCode()</code> and <code>Object.equals()</code>
+		 * methods. The default is <code>Equalities.object()</code> which delegates to these methods, however
+		 * <code>Equalities.identity()</code> causes sets created by this <code>SetMaker</code> to behave like an
+		 * <code>IdentityHashMap</code> (regarding key equality).
+		 * 
+		 * @param eq
+		 *            the key <code>Equality</code>
+		 * @return <code>this</code>
+		 */
 		public HashSetMaker<V> equality(Equality<? super V> eq) { this.eq = eq ; return this ; }
+		/**
+		 * Set the type of hash structure to back the set by; this will affect performance and concurrency characteristics, primarily,
+		 * but should have no impact on the basic functionality.
+		 * 
+		 * @param type
+		 *            the hash store type
+		 * @return <code>this</code>
+		 */
 		public HashSetMaker<V> type(HashStoreType type) { this.type = type ; return this ; }
+		/**
+		 * Specify the minimum initial capacity a set should have on construction
+		 * 
+		 * @param initialCapacity
+		 *            the minimum initial capacity of the set constructed
+		 * @return <code>this</code>
+		 */
 		public HashSetMaker<V> initialCapacity(int initialCapacity) { this.initialCapacity = initialCapacity ; return this ; }
+		/**
+		 * Define the load factor all sets should be constructed with. This parameter is used to decide when to enlarge a hash structure, and will
+		 * affect both the size and speed of the map. The smaller this value (less than 1) it is, the more space the map will waste
+		 * but the better it will cope with poor distribution of elements. A perfect hash would need a value of 1 to perform optimally, but
+		 * since most hash functions are not perfect, a value below 1 is usually best. A value above 1 will begin to save space at the
+		 * expense of extra overhead maintaining and querying the map. If the size of the map is expected to stay <b>relatively</b> static,
+		 * with the occasional peaks and troughs, however, a high load factor may avoid expensive and unnecessary grow operations.
+		 * 
+		 * @param loadFactor
+		 *            the load factory of the map constructed
+		 * @return <code>this</code>
+		 */
 		public HashSetMaker<V> loadFactor(float loadFactor) { this.loadFactor = loadFactor ; return this ; }
 		public Set<V> newSet() {
 			switch(type.type()) {
@@ -207,6 +305,10 @@ public final class SetMaker {
 			}
 			throw new IllegalArgumentException() ;
 		}
+		/**
+		 * @return the rehasher to use for the set we are constructing; if the rehasher field is not null, it should return the value of
+		 *         this field, but otherwise should pick the default rehasher for the hash structure type being created
+		 */
 		protected Rehasher rehasher() {
 			if (rehasher != null)
 				return rehasher ;
@@ -226,9 +328,9 @@ public final class SetMaker {
 
 	private static final class MultiSetFactory<V> implements Factory<MultiSet<V>> {
 		private static final long serialVersionUID = 475702452749567764L;
-		private final AbstractSetMaker<V> maker ;
+		private final SetMaker<V> maker ;
 		private final MultiSetNesting<V> type ;
-		public MultiSetFactory(AbstractSetMaker<V> maker, MultiSetNesting<V> type) {
+		public MultiSetFactory(SetMaker<V> maker, MultiSetNesting<V> type) {
 			this.maker = maker.copy() ;
 			this.type = type ;
 		}
@@ -240,8 +342,8 @@ public final class SetMaker {
 	
 	private static final class ScalarSetFactory<V> implements Factory<Set<V>> {
 		private static final long serialVersionUID = 475702452749567764L;
-		private final AbstractSetMaker<V> maker ;
-		public ScalarSetFactory(AbstractSetMaker<V> maker) {
+		private final SetMaker<V> maker ;
+		public ScalarSetFactory(SetMaker<V> maker) {
 			this.maker = maker.copy() ;
 		}
 		@Override

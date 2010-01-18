@@ -43,6 +43,16 @@ public abstract class MapMaker<K, V> {
 	 * @return a new <code>Map</code>
 	 */
 	public abstract Map<K, V> newMap() ;
+	
+	/**
+	 * Return a new <code>ListMap</code> with <code>INLINE</code> nesting
+	 * 
+	 * @return a new <code>ListMap</code>
+	 */
+	public ListMap<K, V> newListMap() {
+		return newListMap(ListMapNesting.<V>inline()) ;
+	}
+	
 	/**
 	 * Construct and return a new <code>ListMap</code> with the provided nesting settings
 	 * 
@@ -51,6 +61,16 @@ public abstract class MapMaker<K, V> {
 	 * @return a new <code>ListMap</code> with the provided nesting settings
 	 */
 	public abstract ListMap<K, V> newListMap(ListMapNesting<V> nesting) ;
+	
+	/**
+	 * Return a new <code>MultiMap</code> with <code>INLINE</code> nesting
+	 * 
+	 * @return a new <code>MultiMap</code> with <code>INLINE</code> nesting
+	 */
+	public MultiMap<K, V> newMultiMap() {
+		return newMultiMap(MultiMapNesting.<V>inline()) ;			
+	}
+	
 	/**
 	 * Construct and return a new <code>MultiMap</code> with the provided nesting settings
 	 * 
@@ -67,22 +87,6 @@ public abstract class MapMaker<K, V> {
 	 */
 	protected abstract MapMaker<K, V> copy() ;
 	
-	/**
-	 * Return a new <code>ListMap</code> with <code>INLINE</code> nesting
-	 * 
-	 * @return a new <code>ListMap</code>
-	 */
-	public ListMap<K, V> newListMap() {
-		return newListMap(ListMapNesting.<V>inline()) ;
-	}
-	/**
-	 * Return a new <code>MultiMap</code> with <code>INLINE</code> nesting
-	 * 
-	 * @return a new <code>MultiMap</code> with <code>INLINE</code> nesting
-	 */
-	public MultiMap<K, V> newMultiMap() {
-		return newMultiMap(MultiMapNesting.<V>inline()) ;			
-	}
 	/**
 	 * Return a new <code>Factory</code> whose create() method returns the result of <code>this.newMap()</code>. Changes to this
 	 * <code>MapMaker</code> after the construction of this factory will not affect the result of its <code>create()</code> method.
@@ -162,7 +166,7 @@ public abstract class MapMaker<K, V> {
 		}
 		/**
 		 * Set the <code>Rehasher</code> used by maps constructed by this <code>MapMaker</code>. All hashes are passed through the rehasher
-		 * before being used; it is the rehasher's job to prevent unfortunate inputs/hash functions causing the hash map to perform poorly.
+		 * before being used; it is the rehasher's job to prevent unfortunate inputs/hash functions causing the map to perform poorly.
 		 * The default differs depending on the <code>HashStoreType</code>.
 		 * 
 		 * @param rehasher
@@ -172,10 +176,9 @@ public abstract class MapMaker<K, V> {
 		public HashMapMaker<K, V> rehasher(Rehasher rehasher) { this.rehasher = rehasher ; return this ; }
 		/**
 		 * Set the key equality used by maps constructed by this <code>MapMaker</code>. The <code>Equality</code> defines both the hash and
-		 * equality implementations to use instead of the objects' hashCode() and equals() methods. The default is
-		 * <code>Equalities.object()</code> which does use the objects' hashCode() and equals() methods, however
-		 * <code>Equalities.identity()</code> causes hash maps created by this <code>MapMaker</code> to behave like an
-		 * <code>IdentityHashMap</code> (regarding equality).
+		 * equality implementations to use instead of the default <code>Object.hashCode()</code> and <code>Object.equals()</code> methods.
+		 * The default is <code>Equalities.object()</code> which delegates to these methods, however <code>Equalities.identity()</code>
+		 * causes maps created by this <code>MapMaker</code> to behave like an <code>IdentityHashMap</code> (regarding key equality).
 		 * 
 		 * @param eq
 		 *            the key <code>Equality</code>
@@ -197,7 +200,7 @@ public abstract class MapMaker<K, V> {
 		 */
 		public HashMapMaker<K, V> valEq(Equality<? super V> eq) { this.valEquality = eq ; return this ; }
 		/**
-		 * Set the type of hash map to construct; this will affect performance and concurrency characteristics, primarily,
+		 * Set the type of hash store to back the map by; this will affect performance and concurrency characteristics, primarily,
 		 * but should have no impact on the basic functionality.
 		 * 
 		 * @param type
@@ -214,7 +217,7 @@ public abstract class MapMaker<K, V> {
 		 */
 		public HashMapMaker<K, V> initialCapacity(int initialCapacity) { this.initialCapacity = initialCapacity ; return this ; }
 		/**
-		 * Define the load factor all maps should be constructed with. This parameter is used to decide when to enlarge a hash map, and will
+		 * Define the load factor all maps should be constructed with. This parameter is used to decide when to enlarge a hash structure, and will
 		 * greatly affect both the size and speed of the map. The smaller this value (less than 1) it is, the more space the map will waste
 		 * but the better it will cope with poor distribution of elements. A perfect hash would need a value of 1 to perform optimally, but
 		 * since most hash functions are not perfect, a value below 1 is usually best. A value above 1 will begin to save space at the
@@ -407,7 +410,7 @@ public abstract class MapMaker<K, V> {
 		}
 		/**
 		 * @return the rehasher to use for the map we are constructing; if the rehasher field is not null, it should return the value of
-		 *         this field, but otherwise should pick the default rehasher for the map type being created
+		 *         this field, but otherwise should pick the default rehasher for the hash structure type being created
 		 */
 		protected Rehasher rehasher() {
 			if (rehasher != null)
