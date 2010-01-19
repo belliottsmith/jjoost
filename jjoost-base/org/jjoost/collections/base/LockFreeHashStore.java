@@ -2491,8 +2491,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 					next = next.next ;
 				}
 			}
-		}
-		protected void remove() { super.remove() ; } 
+		} 
 	}
 	
 	protected static final class WaitingOnNode<N> extends ThreadQueue<WaitingOnNode<N>> {
@@ -2512,8 +2511,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 					next = next.next ;
 				}
 			}
-		}
-		protected void remove() { super.remove() ; } 
+		}		 
 	}
 
 	

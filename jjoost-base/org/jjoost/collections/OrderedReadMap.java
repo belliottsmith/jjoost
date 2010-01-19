@@ -5,7 +5,7 @@ import java.util.Map.Entry ;
 import org.jjoost.util.FilterPartialOrder;
 import org.jjoost.util.tuples.Pair;
 
-// all methods accepting total order filters ensure that the filter's accept() method is always called in strictly the specified ascending or descending order (ascending if none is specified)
+// all methods accepting partial order filters ensure that the filter's accept() method is always called in strictly the specified ascending or descending order (ascending if none is specified)
 
 /**
  * The Ordered* interfaces are not finalised, nor are any implementing classes yet provided. 
