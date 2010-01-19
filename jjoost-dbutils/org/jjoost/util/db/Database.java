@@ -1,4 +1,4 @@
-package org.jjoost.util.jdbc ;
+package org.jjoost.util.db ;
 
 import javax.sql.DataSource;
 
