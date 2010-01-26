@@ -18,10 +18,18 @@ public class LockFreeInlineMultiHashMap<K, V> extends InlineMultiHashMap<K, V, L
 
 	public LockFreeInlineMultiHashMap() {
 		this(16, 0.75f) ;
-	}
-	
+	}	
 	public LockFreeInlineMultiHashMap(int minimumInitialCapacity, float loadFactor) {
 		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object(), Equalities.object()) ;
+	}
+	public LockFreeInlineMultiHashMap(Equality<? super K> keyEquality) {
+		this(LockFreeHashStore.defaultRehasher(), keyEquality) ;
+	}	
+	public LockFreeInlineMultiHashMap(Rehasher rehasher, Equality<? super K> keyEquality) { 
+		this(16, 0.75f, rehasher, keyEquality, Equalities.object()) ;
+	}	
+	public LockFreeInlineMultiHashMap(Rehasher rehasher, Equality<? super K> keyEquality, Equality<? super V> valEquality) { 
+		this(16, 0.75f, rehasher, keyEquality, valEquality) ;
 	}
 	
 	public LockFreeInlineMultiHashMap( 

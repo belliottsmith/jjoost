@@ -15,6 +15,8 @@ import org.jjoost.util.Equality ;
 import org.jjoost.util.Function ;
 import org.jjoost.util.Functions ;
 import org.jjoost.util.Iters ;
+import org.jjoost.util.Rehasher ;
+import org.jjoost.util.Rehashers ;
 import org.jjoost.util.concurrent.ThreadQueue ;
 
 import sun.misc.Unsafe;
@@ -2771,5 +2773,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	private static final <N extends LockFreeHashNode<N>> N getNodeVolatile(final N[] arr, final int i) {
 		return (N) unsafe.getObjectVolatile(arr, nodeArrayIndexBaseOffset + (nodeArrayIndexScale * i)) ;
 	}
-	
+
+	public static Rehasher defaultRehasher() {
+		return Rehashers.jdkHashmapRehasher() ;
+	}
+
 }

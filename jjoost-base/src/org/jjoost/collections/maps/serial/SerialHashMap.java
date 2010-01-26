@@ -19,6 +19,15 @@ public class SerialHashMap<K, V> extends HashMap<K, V, SerialHashMap.SerialScala
 	}
 	public SerialHashMap(int minimumInitialCapacity, float loadFactor) {
 		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object(), Equalities.object()) ;
+	}	
+	public SerialHashMap(Equality<? super K> keyEquality) {
+		this(SerialHashStore.defaultRehasher(), keyEquality) ;
+	}	
+	public SerialHashMap(Rehasher rehasher, Equality<? super K> keyEquality) { 
+		this(16, 0.75f, rehasher, keyEquality, Equalities.object()) ;
+	}	
+	public SerialHashMap(Rehasher rehasher, Equality<? super K> keyEquality, Equality<? super V> valEquality) { 
+		this(16, 0.75f, rehasher, keyEquality, valEquality) ;
 	}
 	
 	public SerialHashMap( 

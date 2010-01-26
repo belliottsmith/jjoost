@@ -95,6 +95,14 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		return Functions.<Entry<K, V>>identity() ;
 	}
 	
+	public int capacity() {
+		return store.capacity() ;
+	}
+	
+	public void resize(int capacity) {
+		store.resize(capacity) ;
+	}
+	
 	protected final int hash(K key) {
 		return rehasher.rehash(keyEq.keyEq.hash(key)) ;
 	}
@@ -237,6 +245,11 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		@Override
 		public int totalCount() {
 			return store.count(hash, key, keyEq) ;
+		}
+		
+		@Override
+		public String toString() {
+			return "{" + Iters.toString(this, ", ") + "}" ;
 		}
 		
 		@Override
@@ -492,7 +505,7 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		}
 		
 		public String toString() {
-			return Iters.toString(this) ;
+			return "{" + Iters.toString(this, ", ") + "}" ;
 		}
 		
 	}
@@ -629,7 +642,7 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		}
 		
 		public String toString() {
-			return Iters.toString(this) ;
+			return "{" + Iters.toString(this, ", ") + "}" ;
 		}
 		
 	}

@@ -2,6 +2,7 @@ package org.jjoost.collections.maps.concurrent;
 
 import java.util.Map.Entry ;
 
+import org.jjoost.collections.base.LockFreeHashStore ;
 import org.jjoost.collections.base.LockFreeLinkedHashStore ;
 import org.jjoost.collections.base.SerialHashStore ;
 import org.jjoost.collections.base.LockFreeHashStore.Counting ;
@@ -18,10 +19,18 @@ public class LockFreeLinkedHashMap<K, V> extends HashMap<K, V, LockFreeLinkedHas
 
 	public LockFreeLinkedHashMap() {
 		this(16, 0.75f) ;
-	}
-	
+	}	
 	public LockFreeLinkedHashMap(int minimumInitialCapacity, float loadFactor) {
 		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object(), Equalities.object()) ;
+	}
+	public LockFreeLinkedHashMap(Equality<? super K> keyEquality) {
+		this(LockFreeHashStore.defaultRehasher(), keyEquality) ;
+	}	
+	public LockFreeLinkedHashMap(Rehasher rehasher, Equality<? super K> keyEquality) { 
+		this(16, 0.75f, rehasher, keyEquality, Equalities.object()) ;
+	}	
+	public LockFreeLinkedHashMap(Rehasher rehasher, Equality<? super K> keyEquality, Equality<? super V> valEquality) { 
+		this(16, 0.75f, rehasher, keyEquality, valEquality) ;
 	}
 	
 	public LockFreeLinkedHashMap( 

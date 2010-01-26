@@ -22,6 +22,16 @@ public class LockFreeInlineListHashMap<K, V> extends InlineListHashMap<K, V, Loc
 	public LockFreeInlineListHashMap(int minimumInitialCapacity, float loadFactor) {
 		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object(), Equalities.object()) ;
 	}
+	public LockFreeInlineListHashMap(Equality<? super K> keyEquality) {
+		this(LockFreeHashStore.defaultRehasher(), keyEquality) ;
+	}	
+	public LockFreeInlineListHashMap(Rehasher rehasher, Equality<? super K> keyEquality) { 
+		this(16, 0.75f, rehasher, keyEquality, Equalities.object()) ;
+	}	
+	public LockFreeInlineListHashMap(Rehasher rehasher, Equality<? super K> keyEquality, Equality<? super V> valEquality) { 
+		this(16, 0.75f, rehasher, keyEquality, valEquality) ;
+	}
+
 	public LockFreeInlineListHashMap(
 			int minimumInitialCapacity, float loadFactor,
 			Rehasher rehasher, Equality<? super K> keyEquality, Equality<? super V> valEquality) {

@@ -20,6 +20,16 @@ public class SerialInlineListHashMap<K, V> extends InlineListHashMap<K, V, Seria
 	public SerialInlineListHashMap(int minimumInitialCapacity, float loadFactor) {
 		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object(), Equalities.object()) ;
 	}
+	public SerialInlineListHashMap(Equality<? super K> keyEquality) {
+		this(SerialHashStore.defaultRehasher(), keyEquality) ;
+	}
+	public SerialInlineListHashMap(Rehasher rehasher, Equality<? super K> keyEquality) { 
+		this(16, 0.75f, rehasher, keyEquality, Equalities.object()) ;
+	}
+	public SerialInlineListHashMap(Rehasher rehasher, Equality<? super K> keyEquality, Equality<? super V> valEquality) { 
+		this(16, 0.75f, rehasher, keyEquality, valEquality) ;
+	}
+
 	public SerialInlineListHashMap(
 			int minimumInitialCapacity, float loadFactor, 
 			Rehasher rehasher, Equality<? super K> keyEquality, Equality<? super V> valEquality) {

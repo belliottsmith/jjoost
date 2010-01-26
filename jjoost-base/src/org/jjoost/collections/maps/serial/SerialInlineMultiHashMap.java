@@ -16,12 +16,20 @@ public class SerialInlineMultiHashMap<K, V> extends InlineMultiHashMap<K, V, Ser
 
 	public SerialInlineMultiHashMap() {
 		this(16, 0.75f) ;
-	}
-	
+	}	
 	public SerialInlineMultiHashMap(int minimumInitialCapacity, float loadFactor) {
 		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object(), Equalities.object()) ;
 	}
-	
+	public SerialInlineMultiHashMap(Equality<? super K> keyEquality) {
+		this(SerialHashStore.defaultRehasher(), keyEquality) ;
+	}	
+	public SerialInlineMultiHashMap(Rehasher rehasher, Equality<? super K> keyEquality) { 
+		this(16, 0.75f, rehasher, keyEquality, Equalities.object()) ;
+	}	
+	public SerialInlineMultiHashMap(Rehasher rehasher, Equality<? super K> keyEquality, Equality<? super V> valEquality) { 
+		this(16, 0.75f, rehasher, keyEquality, valEquality) ;
+	}
+
 	public SerialInlineMultiHashMap( 
 			int minimumInitialCapacity, float loadFactor, 
 			Rehasher rehasher, Equality<? super K> keyEquality, Equality<? super V> valEquality) 
