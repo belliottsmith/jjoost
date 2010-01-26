@@ -110,7 +110,7 @@ public abstract class HashSetTest extends AbstractTest {
 		put("q") ;
 		put(null) ;
 		// also perform removes just to test the no-op remove() on this Iterator
-		checkIteratorContents(Arrays.asList(null, "a", "q").iterator(), Iters.destroyAsConsumed(set.clearAndReturn()), keepsOrdering) ;
+		checkIteratorContents(Arrays.asList(null, "a", "q").iterator(), Iters.destroyAsConsumed(set.clearAndReturn()), true) ;
 		checkAndClear(0) ;
 	}
 	
@@ -553,7 +553,7 @@ public abstract class HashSetTest extends AbstractTest {
 		put("b") ;
 		put("c") ;
 		put("q") ;
-		checkIteratorContents(Arrays.asList(null, "a", "q", "b", "c").iterator(), set.iterator(), keepsOrdering) ;
+		checkIteratorContents(Arrays.asList(null, "a", "q", "b", "c").iterator(), set.iterator(), true) ;
 		checkAndClear(5) ;
 	}
 	
@@ -566,7 +566,7 @@ public abstract class HashSetTest extends AbstractTest {
 		put("b") ;
 		put("c") ;
 		put("q") ;
-		checkIteratorContents(Arrays.asList(null, "a", "q", "b", "c").iterator(), Iters.destroyAsConsumed(set.iterator()), keepsOrdering) ;
+		checkIteratorContents(Arrays.asList(null, "a", "q", "b", "c").iterator(), Iters.destroyAsConsumed(set.iterator()), true) ;
 		assertFalse(set.contains(null)) ;
 		assertFalse(set.contains("a")) ;
 		assertFalse(set.contains("b")) ;
@@ -583,9 +583,7 @@ public abstract class HashSetTest extends AbstractTest {
 		while (expect.hasNext() && actual.hasNext()) {
 			final String e = expect.next() ;
 			final String a = actual.next() ;
-			if (keepsOrdering) {
-				assertSame(e, a) ;
-			}
+			assertSame(e, a) ;
 			if (a != null && a.equals("a"))
 				actual.remove() ;
 		}
