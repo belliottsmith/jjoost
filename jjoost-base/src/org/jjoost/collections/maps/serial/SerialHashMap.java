@@ -5,12 +5,12 @@ import java.util.Map.Entry;
 import org.jjoost.collections.base.SerialHashStore;
 import org.jjoost.collections.base.SerialHashStore.SerialHashNode;
 import org.jjoost.collections.maps.base.HashMapNodeFactory;
-import org.jjoost.collections.maps.base.ScalarHashMap;
+import org.jjoost.collections.maps.base.HashMap;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Rehasher;
 
-public class SerialHashMap<K, V> extends ScalarHashMap<K, V, SerialHashMap.SerialScalarHashMapNode<K, V>>{
+public class SerialHashMap<K, V> extends HashMap<K, V, SerialHashMap.SerialScalarHashMapNode<K, V>>{
 
 	private static final long serialVersionUID = 1051610520557989640L;
 
@@ -58,7 +58,7 @@ public class SerialHashMap<K, V> extends ScalarHashMap<K, V, SerialHashMap.Seria
 		}
 	}
 
-	protected static final class KeyEquality<K, V> extends ScalarHashMap.KeyEquality<K, V, SerialScalarHashMapNode<K, V>> {
+	protected static final class KeyEquality<K, V> extends HashMap.KeyEquality<K, V, SerialScalarHashMapNode<K, V>> {
 		public KeyEquality(Equality<? super K> keyEq) {
 			super(keyEq) ;
 		}
@@ -68,7 +68,7 @@ public class SerialHashMap<K, V> extends ScalarHashMap<K, V, SerialHashMap.Seria
 		}
 	}
 
-	protected static final class EntryEquality<K, V> extends ScalarHashMap.NodeEquality<K, V, SerialScalarHashMapNode<K, V>> {
+	protected static final class EntryEquality<K, V> extends HashMap.NodeEquality<K, V, SerialScalarHashMapNode<K, V>> {
 		private static final long serialVersionUID = -8668943955126687051L ;
 
 		public EntryEquality(Equality<? super K> keyEq, Equality<? super V> valEq) {

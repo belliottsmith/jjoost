@@ -175,4 +175,8 @@ public class AdapterFromJDKSet<V> implements Set<V> {
 		return Equalities.object() ;
 	}
 
+	public String toString() {
+		return set.toString() ;
+	}
+	
 }

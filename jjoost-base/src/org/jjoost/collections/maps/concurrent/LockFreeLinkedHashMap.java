@@ -7,12 +7,12 @@ import org.jjoost.collections.base.SerialHashStore ;
 import org.jjoost.collections.base.LockFreeHashStore.Counting ;
 import org.jjoost.collections.base.LockFreeLinkedHashStore.LockFreeLinkedHashNode ;
 import org.jjoost.collections.maps.base.HashMapNodeFactory ;
-import org.jjoost.collections.maps.base.ScalarHashMap ;
+import org.jjoost.collections.maps.base.HashMap ;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Rehasher;
 
-public class LockFreeLinkedHashMap<K, V> extends ScalarHashMap<K, V, LockFreeLinkedHashMap.Node<K, V>>{
+public class LockFreeLinkedHashMap<K, V> extends HashMap<K, V, LockFreeLinkedHashMap.Node<K, V>>{
 
 	private static final long serialVersionUID = 1051610520557989640L;
 
@@ -61,7 +61,7 @@ public class LockFreeLinkedHashMap<K, V> extends ScalarHashMap<K, V, LockFreeLin
 		}
 	}
 
-	protected static final class KeyEquality<K, V> extends ScalarHashMap.KeyEquality<K, V, Node<K, V>> {
+	protected static final class KeyEquality<K, V> extends HashMap.KeyEquality<K, V, Node<K, V>> {
 		public KeyEquality(Equality<? super K> keyEq) {
 			super(keyEq) ;
 		}
@@ -71,7 +71,7 @@ public class LockFreeLinkedHashMap<K, V> extends ScalarHashMap<K, V, LockFreeLin
 		}
 	}
 
-	protected static final class NodeEquality<K, V> extends ScalarHashMap.NodeEquality<K, V, Node<K, V>> {
+	protected static final class NodeEquality<K, V> extends HashMap.NodeEquality<K, V, Node<K, V>> {
 		private static final long serialVersionUID = -8668943955126687051L ;
 
 		public NodeEquality(Equality<? super K> keyEq, Equality<? super V> valEq) {

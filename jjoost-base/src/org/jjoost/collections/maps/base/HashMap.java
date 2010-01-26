@@ -13,9 +13,9 @@ import org.jjoost.util.Factory;
 import org.jjoost.util.Function;
 import org.jjoost.util.Rehasher;
 
-public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends AbstractHashMap<K, V, N> implements Map<K, V> {
+public class HashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends AbstractHashMap<K, V, N> implements Map<K, V> {
 
-	protected ScalarHashMap(
+	protected HashMap(
 			Rehasher rehasher, 
 			AbstractHashMap.KeyEquality<K, V, N> keyEquality, 
 			AbstractHashMap.NodeEquality<K, V, N> entryEquality,
@@ -131,7 +131,7 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 		}
 		@Override
 		public V get() {
-			return ScalarHashMap.this.first(key) ;
+			return HashMap.this.first(key) ;
 		}
 		@Override
 		public UnitarySet<V> copy() {
@@ -192,7 +192,7 @@ public class ScalarHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Ab
 
 	@Override
 	public Map<K, V> copy() {
-		return new ScalarHashMap<K, V, N>(rehasher, keyEq, nodeEq, nodeFactory, store.copy(nodeProj(), nodeEq)) ;
+		return new HashMap<K, V, N>(rehasher, keyEq, nodeEq, nodeFactory, store.copy(nodeProj(), nodeEq)) ;
 	}
 
 	// **********************************

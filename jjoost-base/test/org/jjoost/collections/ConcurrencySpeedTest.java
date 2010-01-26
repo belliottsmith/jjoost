@@ -1,4 +1,4 @@
-package org.jjoost.collections ;
+//package org.jjoost.collections ;
 //package org.joost.collections;
 //
 //import java.util.ArrayList;
@@ -14,7 +14,7 @@ package org.jjoost.collections ;
 //import java.util.concurrent.TimeUnit;
 //import java.util.concurrent.atomic.AtomicIntegerArray;
 //
-//import org.jjoost.collections.maps.concurrent.LockFreeScalarHashMap ;
+//import org.jjoost.collections.maps.concurrent.LockFreeHashMap ;
 //
 //public class ConcurrencySpeedTest {
 //
@@ -81,7 +81,7 @@ package org.jjoost.collections ;
 //
 //	public static long doJjoost(ExecutorCompletionService<String> exec, final int run, final int itemCount, final int threadCount, final int bucketCount, final float loadFactor) throws InterruptedException, ExecutionException {
 //		final long start = System.currentTimeMillis() ;
-//		final LockFreeScalarHashMap<Long, Long> map = new LockFreeScalarHashMap<Long, Long>(bucketCount, loadFactor) ;
+//		final LockFreeHashMap<Long, Long> map = new LockFreeHashMap<Long, Long>(bucketCount, loadFactor) ;
 //		final List<Future<String>> results = new ArrayList<Future<String>>() ;
 //		final AtomicIntegerArray putLimit = new AtomicIntegerArray(threadCount) ;
 //		for (int i = 0 ; i != threadCount ; i++) {
