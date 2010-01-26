@@ -7,8 +7,6 @@ import java.util.* ;
  * A cheap (memory-wise) way of representing a list with precisely one distinct kind of element in it (which may be null).
  * 
  * @author b.elliottsmith
- * 
- * @param <E>
  */
 public class UniformList<E> implements List<E>, Serializable {
 
@@ -48,6 +46,8 @@ public class UniformList<E> implements List<E>, Serializable {
 			}
 
 			public E next() {
+				if (i >= size)
+					throw new NoSuchElementException() ;
 				i++ ;
 				return element ;
 			}

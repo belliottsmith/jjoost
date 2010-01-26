@@ -4,7 +4,6 @@ import java.io.Serializable ;
 import java.lang.reflect.Field;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList ;
-import java.util.Collections ;
 import java.util.Iterator ;
 import java.util.List ;
 import java.util.NoSuchElementException ;
@@ -82,7 +81,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	public <NCmp, V> V put(NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
 		grow() ;
 		
-		final boolean replace = !eq.isUnique() ;		
+		final boolean replace = eq.isUnique() ;		
 		final int hash = put.hash ;
 		N prev = null, prev2 = null ;
 		N node = getTableUnsafe().writerGetStale(hash) ;
@@ -209,7 +208,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 						node = getTableUnsafe().writerGetFresh(hash) ;						
 						continue ;
 					} else {
-						if (prev.casNext(next, put)) {
+						if (prev.casNext(node, put)) {
 							inserted(put) ;
 							removed(node) ;
 							return ret.apply(node) ;
@@ -859,7 +858,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	public <NCmp, V> Iterable<V> removeAndReturn(int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
 		if (removeAtMost < 1) {
 			if (removeAtMost == 0)
-				return Collections.emptyList() ;
+				return Iters.emptyIterable() ;
 			throw new IllegalArgumentException("Cannot remove less than zero elements") ;
 		}
 		
@@ -874,7 +873,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			
 			if (node == null) {
 				
-				if (!keptNeighbours && r.size() > 0)
+				if (r == null || r.size() == 0)
+					return Iters.emptyIterable() ;
+				if (!keptNeighbours)
 					uniquePrefixCounter.decrement(hash) ;
 				return r ;
 				
@@ -1366,7 +1367,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			} else {
 				final BlockingTable<N> tmp = new BlockingTable<N>() ;
 				if (casTable(table, tmp)) {
-					final Table<N> newTable = new RegularTable<N>((N[]) new LockFreeHashNode[table.length()], (int) loadFactor * table.length()) ;
+					final Table<N> newTable = new RegularTable<N>((N[]) new LockFreeHashNode[table.length()], (int) (loadFactor * table.length())) ;
 					if (casTable(tmp, newTable)) {
 						tmp.wake(newTable) ;
 						if (table instanceof RegularTable) {
@@ -1400,7 +1401,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			tc++ ;
 		}
 		int minCap = (int)(tc / loadFactor) ;
-		int cap = 1 ;
+		int cap = 8 ;
 		while (cap < minCap)
 			cap <<= 1 ;
 		final N[] table = (N[]) new LockFreeHashNode[cap] ;
@@ -1412,25 +1413,32 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 		N batchTail = null , batchHead = null ;
 		int batchBucket = -1 ;
 		final int mask = table.length - 1 ;
-		while (tail != null) {
-			final N next = tail ;
-			final int nextBucket = next.hash & mask ;
-			if (batchTail == null) {
-				batchHead = batchTail = next ;
-				batchBucket = nextBucket ;
-			} else if (batchBucket != nextBucket) {
-				batchTail.nextPtr = table[batchBucket] ;
-				table[batchBucket] = batchHead ;				
-			} else {
-				batchTail = batchTail.nextPtr = next ;
+		if (tail != null) {
+			batchHead = batchTail = tail ;
+			batchBucket = tail.hash & mask ;
+			tail = tail.nextPtr ;
+			while (tail != null) {
+				final N next = tail ;
+				tail = tail.nextPtr ;
+				final int nextBucket = next.hash & mask ;
+				if (batchBucket != nextBucket) {
+					batchTail.nextPtr = table[batchBucket] ;
+					table[batchBucket] = batchHead ;
+					batchHead = batchTail = next ;
+					batchBucket = nextBucket ;
+				} else {
+					batchTail = batchTail.nextPtr = next ;
+				}
 			}
-			tail = next.nextPtr ;
-		}
-		if (batchTail != null) {
 			batchTail.nextPtr = table[batchBucket] ;
 			table[batchBucket] = batchHead ;
 		}
 		return new LockFreeHashStore<N>(loadFactor, totalCounter.newInstance(tc), uniquePrefixCounter.newInstance(uc), table) ;
+	}
+
+	@Override
+	public String toString() {
+		return "{" + Iters.toString(all(null, null, Functions.<N>toString(true)), ", ") + "}" ;
 	}
 
 	@Override
@@ -1447,6 +1455,11 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 		return getTableFresh().isEmpty() ;
 	}
 
+	@Override
+	public int capacity() {
+		return getTableFresh().length() ;
+	}
+	
 	@Override
 	public int totalCount() {
 		return totalCounter.getSafe() ;
@@ -1615,7 +1628,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 				node = getTableUnsafe().readerGetFresh(hash) ;
 			} else {
 				partial = true ;
-				node.getNextStale() ;
+				node = node.getNextStale() ;
 			}
 			while (node != null) {
 				
@@ -1863,6 +1876,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 		
 		final HashIter32Bit indexIter ;
 		Table<N> tableCache = getTableUnsafe() ;
+		final List<N> list = new ArrayList<N>() ;
 		Iterator<N> current ;
 		
 		public EagerAllIterator(Function<? super N, ? extends NCmp> nodeEqualityProj, 
@@ -1872,6 +1886,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			tableCache = getTableUnsafe() ;
 			final int bits = Integer.bitCount(tableCache.length() - 1) ;
 			indexIter = new HashIter32Bit(bits > 4 ? 4 : 1, bits) ;
+			moveNext() ;
 		}
 		
 		@Override
@@ -1885,28 +1900,21 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 		}
 		
 		private void moveNext() {
-			if (current == null | !current.hasNext()) {
+			if (current == null || !current.hasNext()) {
 				
-				final List<N> list = new ArrayList<N>() ;
+				final List<N> list = this.list ;
+				list.clear() ;
 				N prev2 = null, prev = null ;
-				N node = null ;
-				
+				N node ;
+				if (current == null) 
+					node = tableCache.writerGetStale(indexIter.current()) ;
+				else node = null ;
+
 				while (true) {
 					
-					if (node == REHASHING_FLAG | node == DELETED_FLAG | node == DELETING_FLAG) {
+					if (node == REHASHING_FLAG | node == DELETED_FLAG | node == DELETING_FLAG | node == null) {
 						
-						if (node == REHASHING_FLAG) {
-							
-							// this bucket is being rehashed, so we need to start from the head again. since we visit an entire bucket in one go
-							// we do not need to save previously visited nodes; the indexIter ensures we do not look at any hash that occured in 
-							// a previously visited bucket
-							list.clear() ;
-							tableCache = getTableFresh() ;
-							indexIter.resize(Integer.bitCount(tableCache.length() - 1)) ;
-							prev2 = prev = null ;
-							node = tableCache.writerGetFresh(indexIter.current()) ;
-							
-						} else {
+						if (node == DELETING_FLAG | node == DELETED_FLAG) {
 							
 							// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the most recent non-deleted visited node
 							waitOnDelete(prev) ;
@@ -1923,23 +1931,37 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 								
 							}
 							
-						}
-						
-					} else if (node == null) {
-						
-						if (list.size() != 0) {
-							current = list.iterator() ;
-							this.nextPred = this.nextNode ;
-							this.nextNode = current.next() ;
-						}
-						if (!indexIter.next()) {
-							this.nextNode = null ;
-							this.nextPred = null ;
-							return ;
-						}						
-						node = tableCache.writerGetStale(indexIter.current()) ;
+						} else if (node == null) {
+							
+							if (list.size() != 0) {
+								current = list.iterator() ;
+								this.nextPred = null ;
+								this.nextNode = current.next() ;
+								return ;
+							}
+							if (!indexIter.next()) {
+								this.nextNode = null ;
+								this.nextPred = null ;
+								return ;
+							}
+							node = tableCache.writerGetStale(indexIter.current()) ;
+							
+						} else {
+							
+							// this bucket is being rehashed, so we need to start from the head again. since we visit an entire bucket in one go
+							// we do not need to save previously visited nodes; the indexIter ensures we do not look at any hash that occured in 
+							// a previously visited bucket
+							list.clear() ;
+							tableCache = getTableFresh() ;
+							indexIter.resize(Integer.bitCount(tableCache.length() - 1)) ;
+							prev2 = prev = null ;
+							node = tableCache.writerGetFresh(indexIter.current()) ;
+							
+						} 
 						
 					} else {
+						
+						// regular case: we have a non-null node to yield, so simply decide if we have seen it before or not...
 						
 						if (!indexIter.haveVisitedAlready(node.hash)) {
 							list.add(node) ;
@@ -1964,7 +1986,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 		
 		final Function<? super N, ? extends V> ret ;
 		final N[] table ;
-		int i = 0 ;
+		int i = -1 ;
 		Iterator<N> current ;
 		
 		public DestroyingIterator(N[] table, Function<? super N, ? extends V> ret) {
@@ -1987,22 +2009,32 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 				} else if (node == null) {
 					
 					if (list.size() != 0) {
+						
 						current = list.iterator() ;
-					}
-					if (i == table.length) {
-						current = null ;
-					}
-					i += 1 ;
-					node = table[i] ;
-					while (!casNodeArray(table, i, node, REHASHING_FLAG)) {
-						node = table[i] ;
+						break ;
+						
+					} else {
+						
+						i += 1 ;
+						if (i >= table.length) {
+							current = null ;
+							break ;
+						} else {
+							node = table[i] ;
+							while (!casNodeArray(table, i, node, REHASHING_FLAG)) {
+								node = table[i] ;
+							}
+						}
+						
 					}
 					
 				} else {
 					
 					final N next = node.getNextFresh() ;
 					if (next == DELETING_FLAG) {
-						waitOnDelete(node) ;							
+						waitOnDelete(node) ;	
+					} else if (next == DELETED_FLAG) {
+						node = next ;
 					} else if (node.oneStepDelete(next)) {
 						list.add(node) ;
 						node = next ;
@@ -2019,7 +2051,10 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 		public V next() {
 			if (current == null)
 				throw new NoSuchElementException() ;
-			return ret.apply(current.next()) ;
+			final V r = ret.apply(current.next()) ;
+			if (!current.hasNext())
+				nextIterator() ;
+			return r ;
 		}
 
 		@Override

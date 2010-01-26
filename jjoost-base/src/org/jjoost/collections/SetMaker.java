@@ -8,7 +8,7 @@ import org.jjoost.collections.sets.concurrent.LockFreeLinkedInlineMultiHashSet;
 import org.jjoost.collections.sets.concurrent.LockFreeLinkedNestedMultiHashSet;
 import org.jjoost.collections.sets.concurrent.LockFreeLinkedScalarHashSet;
 import org.jjoost.collections.sets.concurrent.LockFreeNestedMultiHashSet;
-import org.jjoost.collections.sets.concurrent.LockFreeScalarHashSet;
+import org.jjoost.collections.sets.concurrent.LockFreeHashSet;
 import org.jjoost.collections.sets.serial.SerialCountingMultiHashSet;
 import org.jjoost.collections.sets.serial.SerialInlineMultiHashSet;
 import org.jjoost.collections.sets.serial.SerialLinkedCountingMultiHashSet;
@@ -196,7 +196,7 @@ public abstract class SetMaker<V> {
 						initialCapacity, loadFactor, 
 						rehasher(), eq)) ;
 			case LOCK_FREE:
-				return new LockFreeScalarHashSet<V>(
+				return new LockFreeHashSet<V>(
 					initialCapacity, loadFactor, 
 					rehasher(), eq) ;
 			case LINKED_LOCK_FREE:

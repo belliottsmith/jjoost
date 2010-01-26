@@ -8,19 +8,19 @@ import org.jjoost.collections.sets.base.AbstractArraySet ;
 import org.jjoost.util.Equality ;
 import org.jjoost.util.Iters ;
 
-public class ScalarArraySet<V> extends AbstractArraySet<V> implements Set<V> {
+public class ArraySet<V> extends AbstractArraySet<V> implements Set<V> {
 
 	private static final long serialVersionUID = 7815149592942049121L ;
 
-	public ScalarArraySet(int initialCapacity) {
+	public ArraySet(int initialCapacity) {
 		super(initialCapacity) ;
 	}
 	
-	public ScalarArraySet(int initialCapacity, Equality<? super V> valEq) {
+	public ArraySet(int initialCapacity, Equality<? super V> valEq) {
 		super(initialCapacity, valEq) ;
 	}
 
-	protected ScalarArraySet(V[] vals, int count, Equality<? super V> valEq) {
+	protected ArraySet(V[] vals, int count, Equality<? super V> valEq) {
 		super(vals, count, valEq) ;
 	}
 
@@ -33,7 +33,7 @@ public class ScalarArraySet<V> extends AbstractArraySet<V> implements Set<V> {
 
 	@Override
 	public Set<V> copy() {
-		return new ScalarArraySet<V>(vals.clone(), count, valEq) ;
+		return new ArraySet<V>(vals.clone(), count, valEq) ;
 	}
 
 	@Override

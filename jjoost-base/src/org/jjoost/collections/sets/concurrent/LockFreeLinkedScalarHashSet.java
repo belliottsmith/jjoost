@@ -4,12 +4,12 @@ import org.jjoost.collections.base.LockFreeLinkedHashStore;
 import org.jjoost.collections.base.SerialHashStore;
 import org.jjoost.collections.base.LockFreeHashStore.Counting;
 import org.jjoost.collections.sets.base.AbstractHashSet;
-import org.jjoost.collections.sets.base.ScalarHashSet;
+import org.jjoost.collections.sets.base.HashSet;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Rehasher;
 
-public class LockFreeLinkedScalarHashSet<V> extends ScalarHashSet<V, AbstractHashSet.LockFreeLinkedHashSetNode<V>>{
+public class LockFreeLinkedScalarHashSet<V> extends HashSet<V, AbstractHashSet.LockFreeLinkedHashSetNode<V>>{
 
 	private static final long serialVersionUID = 1051610520557989640L;
 

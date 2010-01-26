@@ -1,3 +1,4 @@
+package org.jjoost.collections ;
 //package org.joost.collections;
 //
 //import java.util.ArrayList;

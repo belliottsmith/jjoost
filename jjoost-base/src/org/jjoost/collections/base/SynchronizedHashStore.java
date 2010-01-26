@@ -89,6 +89,9 @@ public class SynchronizedHashStore<N extends HashNode<N>> implements HashStore<N
 	public synchronized int totalCount() {
 		return delegate.totalCount() ;
 	}
+	public synchronized int capacity() {
+		return delegate.capacity() ;
+	}
 	public synchronized <NCmp, NCmp2, V> Iterator<V> unique(Function<? super N, ? extends NCmp> uniquenessEqualityProj,
 		Equality<? super NCmp> uniquenessEquality, Function<? super N, ? extends NCmp2> nodeEqualityProj,
 		HashNodeEquality<? super NCmp2, ? super N> nodeEquality, Function<? super N, ? extends V> ret) {

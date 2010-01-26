@@ -72,7 +72,7 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 	public Iterable<Entry<K, V>> entries(K key) {
 		final S set = map.get(key) ;
 		if (set == null) 
-			return java.util.Collections.emptyList() ;
+			return Iters.emptyIterable() ;
 		return Functions.apply(new EntryMaker<K, V>(key), set) ;
 	}
 	@Override
@@ -175,7 +175,7 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 	public Iterable<Entry<K, V>> removeAndReturn(K key, V value) {
 		final S set = map.get(key) ;
 		if (set == null)
-			return java.util.Collections.emptyList() ;
+			return Iters.emptyIterable() ;
 		final Iterable<V> r = set.removeAndReturn(value) ;
 		{	final Iterator<?> iter = r.iterator() ;
 			if (iter.hasNext())
@@ -382,7 +382,7 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 			if (removeAtMost < 1) {
 				if (removeAtMost < 0)
 					throw new IllegalArgumentException("Cannot remove fewer than zero elements") ;
-				return Collections.emptyList() ;
+				return Iters.emptyIterable() ;
 			}
 			final S set = map.first(key) ;
 			final Iterator<?> iter = set.iterator() ;
@@ -476,7 +476,7 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 			final V value = entry.getValue() ;
 			final S set = map.get(key) ;
 			if (set == null) 
-				return java.util.Collections.emptyList() ;
+				return Iters.emptyIterable() ;
 			return Functions.apply(new EntryMaker<K, V>(key), set.all(value)) ;
 		}
 
@@ -549,7 +549,7 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 		public Iterable<Entry<K, V>> removeAndReturn(Entry<K, V> entry, int removeAtMost) {
 			final S set = map.get(entry.getKey()) ;
 			if (set == null)
-				return Collections.emptyList() ;
+				return Iters.emptyIterable() ;
 			final Iterable<V> iter = set.removeAndReturn(entry.getValue(), removeAtMost) ;
 			final int r = Iters.count(iter) ;			
 			if (r != 0) {
@@ -558,7 +558,7 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 					map.remove(entry.getKey()) ;
 				return Functions.apply(new EntryMaker<K, V>(entry.getKey()), iter) ;
 			}
-			return Collections.emptyList() ;
+			return Iters.emptyIterable() ;
 		}
 
 		@Override

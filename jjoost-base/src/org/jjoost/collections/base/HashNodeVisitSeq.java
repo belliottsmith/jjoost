@@ -7,7 +7,7 @@ import org.jjoost.util.Function ;
 @SuppressWarnings("unchecked")
 final class HashNodeVisitSeq<N extends HashNode<N>, NCmp> extends HashNodeVisits<N, NCmp> {
 	
-	private N[] nodes = (N[]) new Object[4] ;
+	private N[] nodes = (N[]) new HashNode[4] ;
 	private int count = 0 ;
 	private int i = 0 ;
 	

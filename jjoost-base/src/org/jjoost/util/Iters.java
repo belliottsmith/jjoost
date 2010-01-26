@@ -13,6 +13,7 @@ import org.jjoost.collections.iters.ConcatIterable ;
 import org.jjoost.collections.iters.ConcatIterator ;
 import org.jjoost.collections.iters.DestructiveIterator;
 import org.jjoost.collections.iters.DropIterable ;
+import org.jjoost.collections.iters.EmptyIterable ;
 import org.jjoost.collections.iters.EmptyIterator;
 import org.jjoost.collections.iters.EnumerationIterator ;
 import org.jjoost.collections.iters.HeadClosableIterator ;
@@ -32,8 +33,17 @@ public class Iters {
 	 * 
 	 * @return an <code>Iterator</code> which contains no values
 	 */
-	public static <E> Iterator<E> empty() {
+	public static <E> Iterator<E> emptyIterator() {
 		return EmptyIterator.<E>get() ;
+	}
+	
+	/**
+	 * Return an <code>Iterator</code> which contains no values
+	 * 
+	 * @return an <code>Iterator</code> which contains no values
+	 */
+	public static <E> Iterable<E> emptyIterable() {
+		return EmptyIterable.<E>get() ;
 	}
 	
 	/**
@@ -705,7 +715,7 @@ public class Iters {
 	 */
 	public static <E> List<E> toList(Iterator<E> iter) {
 		List<E> result = new ArrayList<E>() ;
-		toList(result) ;
+		toList(iter, result) ;
 		return result ;
 	}
 	

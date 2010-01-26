@@ -9,6 +9,7 @@ import org.jjoost.collections.Set ;
 import org.jjoost.collections.lists.UniformList ;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
+import org.jjoost.util.Iters ;
 
 public class AdapterFromJDKSet<V> implements Set<V> {
 	
@@ -77,7 +78,7 @@ public class AdapterFromJDKSet<V> implements Set<V> {
 	public Iterable<V> removeAndReturn(V value) {
 		if (set.remove(value))
 			return new UniformList<V>(value, 1) ;
-		return Collections.emptyList() ;
+		return Iters.emptyIterable() ;
 	}
 	@Override
 	public V removeAndReturnFirst(V value) {
@@ -90,7 +91,7 @@ public class AdapterFromJDKSet<V> implements Set<V> {
 	public Iterable<V> all(V value) {
 		if (set.contains(value))
 			return new UniformList<V>(value, 1) ;
-		return Collections.emptyList() ;
+		return Iters.emptyIterable() ;
 	}
 	@Override
 	public boolean contains(V value) {
@@ -154,7 +155,7 @@ public class AdapterFromJDKSet<V> implements Set<V> {
 		if (removeAtMost < 1) {
 			if (removeAtMost < 0)
 				throw new IllegalArgumentException("Cannot remove less than zero items") ;
-			return Collections.emptyList() ;
+			return Iters.emptyIterable() ;
 		}
 		return removeAndReturn(val) ;
 	}

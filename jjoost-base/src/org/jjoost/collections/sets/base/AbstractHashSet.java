@@ -15,10 +15,11 @@ import org.jjoost.collections.base.SerialLinkedHashStore.SerialLinkedHashNode ;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Function ;
 import org.jjoost.util.Functions;
+import org.jjoost.util.Objects ;
 import org.jjoost.util.Rehasher;
 import org.jjoost.util.tuples.Value;
 
-public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> implements AnySet<V> {
+public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> extends AbstractSet<V> implements AnySet<V> {
 
 	private static final long serialVersionUID = 3187373892419456381L;
 	
@@ -33,7 +34,15 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> imple
 		this.valEq = equality ;
 		this.nodeFactory = nodeFactory ;
 	}
-
+	
+	public int capacity() {
+		return store.capacity() ;
+	}
+	
+	public void resize(int capacity) {
+		store.resize(capacity) ;
+	}
+	
 	protected final int hash(V key) {
 		return rehasher.rehash(valEq.valEq.hash(key)) ;
 	}
@@ -78,7 +87,7 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> imple
 	public int putAll(Iterable<V> vals) {
 		int c = 0 ;
 		for (V val : vals) {
-			if (put(val) == null)
+			if (store.put(val, nodeFactory.makeNode(hash(val), val), valEq, nodeProj()) == null)
 				c++ ;
 		}
 		return c ;
@@ -153,7 +162,7 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> imple
 		return valEq.valEq ;
 	}
 	
-	// **********************************
+ 	// **********************************
 	// EQUALITY
 	// **********************************
 	
@@ -186,6 +195,7 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> imple
 		private V value ;		
 		@Override public V getValue() { return value ; }
 		@Override public SerialHashSetNode<V> copy() { return new SerialHashSetNode<V>(hash, value) ; }
+		@Override public String toString() { return Objects.toString(value) ; }
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -210,6 +220,7 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> imple
 		private V value ;		
 		@Override public V getValue() { return value ; }
 		@Override public SerialLinkedHashSetNode<V> copy() { return new SerialLinkedHashSetNode<V>(hash, value) ; }
+		@Override public String toString() { return Objects.toString(value) ; }
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -234,6 +245,7 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> imple
 		private V value ;		
 		@Override public V getValue() { return value ; }
 		@Override public LockFreeHashSetNode<V> copy() { return new LockFreeHashSetNode<V>(hash, value) ; }
+		@Override public String toString() { return Objects.toString(value) ; }
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -258,6 +270,7 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> imple
 		private V value ;		
 		@Override public V getValue() { return value ; }
 		@Override public LockFreeLinkedHashSetNode<V> copy() { return new LockFreeLinkedHashSetNode<V>(hash, value) ; }
+		@Override public String toString() { return Objects.toString(value) ; }
 	}
 	
 	@SuppressWarnings("unchecked")

@@ -4,31 +4,31 @@ import org.jjoost.collections.base.LockFreeHashStore;
 import org.jjoost.collections.base.SerialHashStore;
 import org.jjoost.collections.base.LockFreeHashStore.Counting;
 import org.jjoost.collections.sets.base.AbstractHashSet;
-import org.jjoost.collections.sets.base.ScalarHashSet;
+import org.jjoost.collections.sets.base.HashSet;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Rehasher;
 
-public class LockFreeScalarHashSet<V> extends ScalarHashSet<V, AbstractHashSet.LockFreeHashSetNode<V>>{
+public class LockFreeHashSet<V> extends HashSet<V, AbstractHashSet.LockFreeHashSetNode<V>>{
 
 	private static final long serialVersionUID = 1051610520557989640L;
 
-	public LockFreeScalarHashSet() {
+	public LockFreeHashSet() {
 		this(16, 0.75f) ;
 	}
-	public LockFreeScalarHashSet(int minimumInitialCapacity, float loadFactor) {
+	public LockFreeHashSet(int minimumInitialCapacity, float loadFactor) {
 		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object()) ;
 	}
 	
-	public LockFreeScalarHashSet(Equality<? super V> keyEquality) {
+	public LockFreeHashSet(Equality<? super V> keyEquality) {
 		this(SerialHashStore.defaultRehasher(), keyEquality) ;
 	}
 	
-	public LockFreeScalarHashSet(Rehasher rehasher, Equality<? super V> keyEquality) { 
+	public LockFreeHashSet(Rehasher rehasher, Equality<? super V> keyEquality) { 
 		this(16, 0.75f, rehasher, keyEquality) ;
 	}
 	
-	public LockFreeScalarHashSet( 
+	public LockFreeHashSet( 
 			int minimumInitialCapacity, float loadFactor, 
 			Rehasher rehasher, Equality<? super V> keyEquality) 
 	{

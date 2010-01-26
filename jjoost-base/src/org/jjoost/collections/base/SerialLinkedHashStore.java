@@ -39,23 +39,25 @@ public class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedH
 		super(size, loadFactor);
 	}
 
-	public SerialLinkedHashStore(float loadFactor, N[] table, int size) {
-		super(loadFactor, table, size);
+	public SerialLinkedHashStore(float loadFactor, N[] table, int totalNodeCount, int uniquePrefixCount) {
+		super(loadFactor, table, totalNodeCount, uniquePrefixCount) ;
 	}
 
 	private final N head = newHead() ;
 	
 	@Override
 	protected void inserted(N n) {
+		super.inserted(n) ;
 		N tail = head.linkPrev ;
 		n.linkPrev = tail ;
 		n.linkNext = head ;
 		tail.linkNext = n ;
-		head.linkPrev = n ;
+		head.linkPrev = n ;		
 	}
 
 	@Override
 	protected void removed(N n) {
+		super.removed(n) ;
 		final N next = n.linkNext ;
 		final N prev = n.linkPrev ;
 		next.linkPrev = prev ;

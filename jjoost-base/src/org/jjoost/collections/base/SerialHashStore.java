@@ -34,9 +34,11 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	protected final float loadFactor ;
 	protected transient int modCount = 0 ;	
 	
-	protected void inserted(N n) {		
+	protected void inserted(N n) {
+		modCount++ ;
 	}
-	protected void removed(N n) {		
+	protected void removed(N n) {
+		modCount++ ;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -50,8 +52,9 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		this.loadFactor = loadFactor ;
 	}
 	
-	protected SerialHashStore(float loadFactor, N[] table, int size) {
-		this.totalNodeCount = 0 ;
+	protected SerialHashStore(float loadFactor, N[] table, int totalNodeCount, int uniquePrefixCount) {
+		this.totalNodeCount = totalNodeCount ;
+		this.uniquePrefixCount = uniquePrefixCount ;		
 		this.table = table ;
 		this.loadLimit = (int) (table.length * loadFactor) ;
 		this.loadFactor = loadFactor ;
@@ -60,6 +63,11 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	// **************************************************
 	// PUBLIC METHODS
 	// **************************************************
+	
+	@Override
+	public int capacity() {
+		return table.length ;
+	}
 	
 	@Override
     public int totalCount() {
@@ -98,7 +106,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	
 	@Override
 	public String toString() {
-		return Iters.toString(all(null, null, Functions.<N>toString(true))) ;
+		return "{" + Iters.toString(all(null, null, Functions.<N>toString(true)), ", ") + "}" ;
 	}
 
 	// **************************************************
@@ -109,16 +117,17 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	public <NCmp, V> V put(NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
 		grow() ;
 		
-		final boolean replace = !eq.isUnique() ;
-		final int hash = put.hash & (table.length - 1) ;
-    	N n = table[hash] ;
+		final boolean replace = eq.isUnique() ;
+		final int hash = put.hash ;
+		final int bucket = put.hash & (table.length - 1) ;		
+    	N n = table[bucket] ;
     	if (n == null) {
-    		table[hash] = put ;
+    		table[bucket] = put ;
     	} else {
     		N p = null ;
     		while (n != null) {
     			boolean partial = false ;
-    			if (partial != (n.hash == put.hash && eq.prefixMatch(find, n))) {
+    			if (partial != (n.hash == hash && eq.prefixMatch(find, n))) {
     				if (partial) {
     					// inserting new node grouped with others with same prefix
     					p.next = put ;
@@ -131,7 +140,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
     			if (partial && replace && eq.suffixMatch(find, n)) {
     				// replacing existing node
     				if (p == null) {
-    					table[hash] = put ;
+    					table[bucket] = put ;
     				} else {
     					p.next = put ;
     				}
@@ -157,10 +166,11 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	public <NCmp, V> V putIfAbsent(NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
 		grow() ;
 
-		final int hash = put.hash & (table.length - 1) ;
-    	N n = table[hash] ;
+		final int hash = put.hash ;
+		final int bucket = put.hash & (table.length - 1) ;		
+    	N n = table[bucket] ;
     	if (n == null) {
-    		table[hash] = put ;
+    		table[bucket] = put ;
     	} else {
     		N p = null ;
     		while (n != null) {
@@ -193,13 +203,13 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	}
 
 	@Override
-	public <NCmp, V> V putIfAbsent(int hash, NCmp put, HashNodeEquality<? super NCmp, ? super N> eq, HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret) {
+	public <NCmp, V> V putIfAbsent(final int hash, NCmp put, HashNodeEquality<? super NCmp, ? super N> eq, HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret) {
 		grow() ;
 		
-		hash = hash & (table.length - 1) ;
-    	N n = table[hash] ;
+		final int bucket = hash & (table.length - 1) ;
+    	N n = table[bucket] ;
     	if (n == null) {
-    		table[hash] = factory.makeNode(hash, put) ;
+    		table[bucket] = factory.makeNode(hash, put) ;
     	} else {
     		N p = null ;
     		while (n != null) {
@@ -230,13 +240,13 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	}
 	
 	@Override
-	public <NCmp, V> V ensureAndGet(int hash, NCmp put, HashNodeEquality<? super NCmp, ? super N> eq, HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret) {
+	public <NCmp, V> V ensureAndGet(final int hash, NCmp put, HashNodeEquality<? super NCmp, ? super N> eq, HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret) {
 		grow() ;
 		
-		hash = hash & (table.length - 1) ;
-    	N n = table[hash] ;
+		final int bucket = hash & (table.length - 1) ;
+    	N n = table[bucket] ;
     	if (n == null) {
-    		n = table[hash] = factory.makeNode(hash, put) ;
+    		n = table[bucket] = factory.makeNode(hash, put) ;
     	} else {
     		N p = null ;
     		while (n != null) {
@@ -271,17 +281,17 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	// **************************************************
 	
 	@Override
-	public <NCmp> int remove(int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
+	public <NCmp> int remove(final int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
 		if (removeAtMost < 1) {
 			if (removeAtMost == 0)
 				return 0 ;
 			throw new IllegalArgumentException("Cannot remove less than zero elements") ;
 		}
 		final boolean eqIsUniq = eq.isUnique() ;
+    	final int bucket = hash & (table.length - 1) ;
 		boolean partial = false ;
-    	hash = hash & (table.length - 1) ;
     	N p = null ;
-    	N n = table[hash] ; 
+    	N n = table[bucket] ; 
     	int r = 0 ;
     	boolean keptNeighbours = false ;
     	while (n != null) {
@@ -296,7 +306,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
     			r++ ;
     			final N next = n.next ;
     			if (p == null) {
-    				table[hash] = next ;
+    				table[bucket] = next ;
     			} else {
     				p.next = next ;
     			}
@@ -328,10 +338,10 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 
 	@Override
 	public <NCmp> boolean removeNode(Function<? super N, ? extends NCmp> nodePrefixEqFunc, HashNodeEquality<? super NCmp, ? super N> nodePrefixEq, N n) {
-		final int hash = n.hash & (table.length - 1) ;
-		N p = table[hash] ;
+		final int bucket = n.hash & (table.length - 1) ;
+		N p = table[bucket] ;
 		if (p == n) {
-			table[hash] = p.next ;
+			table[bucket] = p.next ;
 			if (p.next == null || !nodePrefixEq.prefixMatch(nodePrefixEqFunc.apply(n), p.next))
 				uniquePrefixCount -= 1 ;
 		} else {
@@ -357,7 +367,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		final N n = internalRemoveAndReturn(hash, removeAtMost, c, eq) ;
 		return n == null ? null : ret.apply(n) ;
 	}
-	private <NCmp> N internalRemoveAndReturn(int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
+	private <NCmp> N internalRemoveAndReturn(final int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
 		if (removeAtMost < 1) {
 			if (removeAtMost == 0)
 				return null ;
@@ -366,9 +376,9 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		
 		final boolean eqIsUniq = eq.isUnique() ;
 		boolean partial = false ;
-		hash = hash & (table.length - 1) ;
+		final int bucket = hash & (table.length - 1) ;
 		N p = null ;
-		N n = table[hash] ; 
+		N n = table[bucket] ; 
 		boolean keptNeighbours = false ;
 		N removedHead = null, removedTail = null ;
 		int c = 0 ;
@@ -384,7 +394,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 				c++ ;
 				final N next = n.next ;
 				if (p == null) {
-					table[hash] = next ;
+					table[bucket] = next ;
 				} else {
 					p.next = next ;
 				}
@@ -522,7 +532,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		final Function<? super N, ? extends NCmp> nodeEqualityProj ;
 		final HashNodeEquality<? super NCmp, ? super N> nodeEquality ;
 		final Function<? super N, ? extends V> ret ;
-		int curHash , curModCount = modCount ;
+		int curHash, curModCount = modCount ;
 		N curPrev , curNode , nextPrev , nextNode ;
 
 		public GeneralIterator(
@@ -544,7 +554,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 			if (curNode == null)
 				throw new NoSuchElementException("Nothing to remove!") ;
 			if (curPrev == null) {
-				table[curHash] = curNode.next ;
+				table[curHash & (table.length - 1)] = curNode.next ;
 				if (nextNode == null || !nodeEquality.prefixMatch(nodeEqualityProj.apply(curNode), nextNode))
 					uniquePrefixCount -= 1 ;
 			} else {
@@ -554,10 +564,11 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 					uniquePrefixCount -= 1 ;
 			}
 			removed(curNode) ;
+			nextPrev = curPrev ;
 			curPrev = null ;
 			curNode = null ;
 			totalNodeCount -= 1 ;
-			curModCount = modCount++ ;
+			curModCount = ++modCount ;
 		}
 
 	}
@@ -650,12 +661,12 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 				Function<? super N, ? extends V> ret) {
 			super(nodeEqualityProj, nodeEquality, ret) ;
 			this.find = find ;
-			this.curHash = hash & (table.length - 1) ;
-			this.findEquality = findEq ;
-			nextNode = table[curHash] ;
+			this.curHash = hash ;
+			this.findEquality = findEq ;		
+			nextNode = table[curHash & (table.length - 1)] ;
 			boolean partial = false ;
 			while (nextNode != null) {
-				if (partial != (curNode.hash == nextNode.hash && findEq.prefixMatch(find, nextNode))) {
+				if (partial != (hash == nextNode.hash && findEq.prefixMatch(find, nextNode))) {
 					if (partial) {
 						nextNode = null ;
 						nextPrev = null ;
@@ -664,6 +675,8 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 				}
 				if (partial && findEq.suffixMatch(find, nextNode))
 					break ;
+				nextPrev = nextNode ;
+				nextNode = nextNode.next ;
 			}
 		}
 		
@@ -693,14 +706,14 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		
 		final N[] table ;
 		final Function<? super N, ? extends V> f ;
-		int nextHash = - 1 ;
+		int nextBucket = - 1 ;
 		N nextNode ;
 		
 		ClearedIterator(N[] table, Function<? super N, ? extends V> f) {
 			this.table = table ;
 			this.f = f ;
-			while (nextNode == null & nextHash != table.length - 1) {
-				nextNode = table[++nextHash] ;
+			while (nextNode == null & nextBucket != table.length - 1) {
+				nextNode = table[++nextBucket] ;
 			}
 		}
 		
@@ -717,8 +730,8 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 				throw new NoSuchElementException() ;
 			N r = nextNode ;
 			nextNode = nextNode.next ;
-			while (nextNode == null & nextHash != table.length - 1) {
-				nextNode = table[++nextHash] ;
+			while (nextNode == null & (nextBucket != table.length - 1)) {
+				nextNode = table[++nextBucket] ;
 			}
 			return f.apply(r) ;
 		}
@@ -779,10 +792,10 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
     		final int[] extraBitArray = new int[extraBitCount] ;
     		for (int i = 0 ; i != extraBitCount ; i++)
     			extraBitArray[i] = i << extraBitShift ;
-        	for (int i = 0 ; i != oldTable.length ; i++) {
+        	for (int i = 0 ; i != table.length ; i++) {
         		N tail = null ;
         		for (int j = 0 ; j != extraBitCount ; j++) {
-            		N node = oldTable[i | extraBitArray[j]] ;
+            		N node = oldTable[i] ;
             		while (node != null) {
                 		final N next = node.next ;
                 		node.next = null ;
@@ -790,7 +803,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
                     		final int newIndex = node.hash & newTableMask ;
                 			table[newIndex] = tail = node ;
                 		} else {
-                			tail = tail.next = node ;
+                			tail = (tail.next = node) ;
                 		}
             			node = next ;
             		}
@@ -862,7 +875,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 				}
 			}
 		}
-		return new SerialHashStore<N>(loadFactor, table, totalNodeCount) ;
+		return new SerialHashStore<N>(loadFactor, table, totalNodeCount, uniquePrefixCount) ;
 	}
 
 	private static <N extends SerialHashNode<N>, V> Iterable<V> removedNodeIterable(N head, Function<? super N, ? extends V> f) {
@@ -872,7 +885,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		private final N head ;
 		private final Function<? super N, ? extends V> f ;
 		public RemovedNodeIterable(N head, Function<? super N, ? extends V> f) {
-			this.head = head;
+			this.head = head ;
 			this.f = f;
 		}
 		@Override
@@ -896,6 +909,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 			if (cur == null)
 				throw new NoSuchElementException() ;
 			final V r = f.apply(cur) ;
+			cur = cur.next ;
 			return r ;
 		}
 		@Override

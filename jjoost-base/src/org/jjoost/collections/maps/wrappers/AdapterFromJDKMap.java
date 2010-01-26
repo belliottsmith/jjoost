@@ -21,8 +21,9 @@ import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Factory ;
 import org.jjoost.util.Function ;
+import org.jjoost.util.Iters ;
 
-// TODO : this class' methods currently assume keys/values stored in it are non null, which is an invalid assumption
+// TODO : this class' methods currently assume keys/values are all non null, which is an invalid assumption
 public class AdapterFromJDKMap<K, V> implements Map<K, V> {
 	
 	private static final long serialVersionUID = -5498331996410891451L ;
@@ -156,7 +157,7 @@ public class AdapterFromJDKMap<K, V> implements Map<K, V> {
 				return new UniformList<Entry<K, V>>(new ImmutableMapEntry<K, V>(key, e), 1) ;
 			}
 		}
-		return Collections.emptyList() ;
+		return Iters.emptyIterable() ;
 	}
 	@Override
 	public Iterable<Entry<K, V>> removeAndReturn(K key) {
@@ -164,7 +165,7 @@ public class AdapterFromJDKMap<K, V> implements Map<K, V> {
 			final V v = map.remove(key) ;
 			return new UniformList<Entry<K, V>>(new ImmutableMapEntry<K, V>(key, v), 1) ;
 		}
-		return Collections.emptyList() ;
+		return Iters.emptyIterable() ;
 	}
 	@Override
 	public V removeAndReturnFirst(K key) {
@@ -195,7 +196,7 @@ public class AdapterFromJDKMap<K, V> implements Map<K, V> {
 		if (map.containsKey(key)) {
 			return new UniformList<Entry<K, V>>(new ImmutableMapEntry<K, V>(key, map.get(key)), 1) ;
 		}
-		return Collections.emptyList() ;
+		return Iters.emptyIterable() ;
 	}
 	@Override
 	public V first(K key) {
@@ -291,7 +292,7 @@ public class AdapterFromJDKMap<K, V> implements Map<K, V> {
 			if (removeAtMost < 1) {
 				if (removeAtMost < 0)
 					throw new IllegalArgumentException("Cannot remove less than zero items") ;
-				return Collections.emptyList() ;
+				return Iters.emptyIterable() ;
 			}
 			return removeAndReturn(val) ;
 		}
@@ -302,7 +303,7 @@ public class AdapterFromJDKMap<K, V> implements Map<K, V> {
 				map.remove(key) ;
 				return new UniformList<V>(val, 1) ;
 			}
-			return Collections.emptyList() ;
+			return Iters.emptyIterable() ;
 		}
 		@Override
 		public V removeAndReturnFirst(V val, int removeAtMost) {
@@ -329,11 +330,11 @@ public class AdapterFromJDKMap<K, V> implements Map<K, V> {
 		public Iterable<V> all(V value) {
 			final V val = map.get(key) ;
 			if (val == null) {
-				return Collections.emptyList() ;
+				return Iters.emptyIterable() ;
 			}
 			if (value != null && val.equals(value))
 				return new UniformList<V>(val, 1) ;
-			return Collections.emptyList() ;
+			return Iters.emptyIterable() ;
 		}
 		@Override
 		public boolean contains(V val) {

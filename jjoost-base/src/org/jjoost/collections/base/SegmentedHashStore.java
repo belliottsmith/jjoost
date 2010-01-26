@@ -168,6 +168,13 @@ public class SegmentedHashStore<N extends HashNode<N>> implements HashStore<N> {
 		return c ;
 	}
 	@Override
+	public int capacity() {
+		int c = 0 ;
+		for (HashStore<N> segment : segments)
+			c+= segment.capacity() ;
+		return c ;
+	}
+	@Override
 	public <NCmp, V> List<V> findNow(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> findEq,
 			Function<? super N, ? extends V> ret) {
 		return segmentFor(hash).findNow(hash, find, findEq, ret) ;

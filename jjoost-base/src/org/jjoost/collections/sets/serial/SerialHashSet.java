@@ -2,12 +2,12 @@ package org.jjoost.collections.sets.serial;
 
 import org.jjoost.collections.base.SerialHashStore ;
 import org.jjoost.collections.sets.base.AbstractHashSet ;
-import org.jjoost.collections.sets.base.ScalarHashSet ;
+import org.jjoost.collections.sets.base.HashSet ;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Rehasher;
 
-public class SerialHashSet<V> extends ScalarHashSet<V, AbstractHashSet.SerialHashSetNode<V>>{
+public class SerialHashSet<V> extends HashSet<V, AbstractHashSet.SerialHashSetNode<V>>{
 
 	private static final long serialVersionUID = 1051610520557989640L;
 

@@ -153,7 +153,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 		while (true) {
 			final N r = table.removeAndReturnFirst(hash, 1, val, valEq, identity()) ;
 			if (r == null)
-				return Collections.emptyList() ;
+				return Iters.emptyIterable() ;
 			final List<V> removed = r.removeAndReturn(Integer.MAX_VALUE) ;
 			if (removed.size() > 0) {
 				totalCount.add(-removed.size()) ;
@@ -211,13 +211,13 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 		if (atMost < 1) {
 			if (atMost < 0)
 				throw new IllegalArgumentException("Cannot remove less than zero elements") ;
-			return Collections.emptyList() ;
+			return Iters.emptyIterable() ;
 		}
 		final int hash = hash(val) ;
 		while (true) {
 			final N r = table.first(hash, val, valEq, identity()) ;
 			if (r == null)
-				return Collections.emptyList() ;
+				return Iters.emptyIterable() ;
 			final List<V> removed = r.removeAndReturn(atMost) ;
 			if (removed.size() != 0) {
 				if (removed.size() <= atMost)
