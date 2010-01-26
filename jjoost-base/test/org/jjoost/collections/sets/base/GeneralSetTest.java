@@ -1,23 +1,21 @@
-package org.jjoost.collections;
+package org.jjoost.collections.sets.base;
 
 import java.util.Arrays ;
 import java.util.Iterator ;
-import java.util.List ;
-import java.util.NoSuchElementException ;
 
-import org.jjoost.collections.sets.base.HashSet ;
+import org.jjoost.collections.AbstractTest ;
+import org.jjoost.collections.Set ;
 import org.jjoost.util.Iters ;
 
-import junit.framework.TestCase ;
-
-public abstract class HashSetTest extends TestCase {
+public abstract class GeneralSetTest extends AbstractTest {
 	
-	protected final HashSet<String, ?> set = createSet() ;
+	protected final Set<String> set = getSet() ;
 	/**
 	 * @return a hash set using Rehashers.identity() and Equalities.object(), with a table size of 16
 	 */
-	protected abstract HashSet<String, ?> createSet() ;
+	protected abstract Set<String> getSet() ;
 	protected abstract String put(String v) ;
+	protected abstract boolean add(String v) ;
 	
 	protected void checkEmpty() {
 		assertEquals(0, set.size()) ;
@@ -29,32 +27,6 @@ public abstract class HashSetTest extends TestCase {
 	
 	protected void checkAndClear(int expect) {
 		assertEquals(expect, set.clear()) ;
-	}
-	
-	protected void checkListContents(List<?> expect, List<?> actual) {
-		assertEquals(expect.size(), actual.size()) ;
-		for (int i = 0 ; i != expect.size() ; i++)
-			assertSame(expect.get(0), actual.get(0)) ;
-	}
-	
-	protected void checkIterableContents(Iterable<?> expect, Iterable<?> actual) {
-		checkIteratorContents(expect.iterator(), actual.iterator()) ;
-	}
-	
-	protected void checkIteratorContents(Iterator<?> expect, Iterator<?> actual) {
-		while (expect.hasNext() && actual.hasNext())
-			assertEquals(expect.next(), actual.next()) ;
-		assertEquals(expect.hasNext(), actual.hasNext()) ;
-		checkFinishedIterator(actual) ;
-	}
-
-	protected void checkFinishedIterator(Iterator<?> i) {
-		try {
-			assertFalse(i.hasNext()) ;
-			i.next() ;
-			assertTrue(false) ;
-		} catch (NoSuchElementException e) {			
-		}
 	}
 	
 	public void testIsEmpty_whenEmpty() {
@@ -125,23 +97,22 @@ public abstract class HashSetTest extends TestCase {
 	
 	public void testClearAndReturn_whenEmpty() {
 		checkEmpty() ;
-		checkIteratorContents(Iters.emptyIterator(), set.clearAndReturn()) ;
+		checkIteratorContents(Iters.emptyIterator(), set.clearAndReturn(), true) ;
 	}
 	
 	public void testClearAndReturn_whenNotEmpty() {
 		checkEmpty() ;
 		put("a") ;
-		put("q") ;
 		put(null) ;
 		// also perform removes just to test the no-op remove() on this Iterator
-		checkIteratorContents(Arrays.asList(null, "a", "q").iterator(), Iters.destroyAsConsumed(set.clearAndReturn())) ;
+		checkIteratorContents(Arrays.asList(null, "a").iterator(), Iters.destroyAsConsumed(set.clearAndReturn()), false) ;
 		checkAndClear(0) ;
 	}
 	
 	public void testPut_whenNotPresent() {
 		checkEmpty() ;
 		assertEquals(null, put("a")) ;
-		assertEquals(null, put("q")) ;
+		assertEquals(null, put("b")) ;
 		assertEquals(null, put(null)) ;
 		checkAndClear(3) ;
 	}
@@ -150,14 +121,14 @@ public abstract class HashSetTest extends TestCase {
 		checkEmpty() ;
 		final String a1 = "a" ;
 		final String a2 = new String("a") ;
-		final String q1 = "q" ;
-		final String q2 = new String("q") ;
+		final String b1 = "b" ;
+		final String b2 = new String("b") ;
 		put(a1) ;
 		assertSame(a1, put(a2)) ;
 		assertSame(a2, put(a1)) ;
-		put(q1) ;
-		assertSame(q1, put(q2)) ;
-		assertSame(q2, put(q1)) ;
+		put(b1) ;
+		assertSame(b1, put(b2)) ;
+		assertSame(b2, put(b1)) ;
 		put(null) ;
 		assertEquals(null, put(null)) ;
 		checkAndClear(3) ;
@@ -165,9 +136,9 @@ public abstract class HashSetTest extends TestCase {
 	
 	public void testAdd_whenNotPresent() {
 		checkEmpty() ;
-		assertEquals(true, set.add("a")) ;
-		assertEquals(true, set.add("q")) ;
-		assertEquals(true, set.add(null)) ;
+		assertEquals(true, add("a")) ;
+		assertEquals(true, add("b")) ;
+		assertEquals(true, add(null)) ;
 		checkAndClear(3) ;
 	}
 	
@@ -175,21 +146,21 @@ public abstract class HashSetTest extends TestCase {
 		checkEmpty() ;
 		final String a1 = "a" ;
 		final String a2 = new String("a") ;
-		final String q1 = "q" ;
-		final String q2 = new String("q") ;
-		set.add(a1) ;
-		assertEquals(false, set.add(a2)) ;
-		set.add(q1) ;
-		assertEquals(false, set.add(q2)) ;
-		set.add(null) ;
-		assertEquals(false, set.add(null)) ;
+		final String b1 = "b" ;
+		final String b2 = new String("b") ;
+		add(a1) ;
+		assertEquals(false, add(a2)) ;
+		add(b1) ;
+		assertEquals(false, add(b2)) ;
+		add(null) ;
+		assertEquals(false, add(null)) ;
 		checkAndClear(3) ;
 	}
 	
 	public void testPutIfAbsent_whenNotPresent() {
 		checkEmpty() ;
 		assertEquals(null, set.putIfAbsent("a")) ;
-		assertEquals(null, set.putIfAbsent("q")) ;
+		assertEquals(null, set.putIfAbsent("b")) ;
 		assertEquals(null, set.putIfAbsent(null)) ;
 		checkAndClear(3) ;
 	}
@@ -197,29 +168,29 @@ public abstract class HashSetTest extends TestCase {
 	public void testPutIfAbsent_whenPresent() {
 		checkEmpty() ;
 		set.putIfAbsent("a") ;
-		set.putIfAbsent("q") ;
+		set.putIfAbsent("b") ;
 		assertEquals("a", set.putIfAbsent("a")) ;
-		assertEquals("q", set.putIfAbsent("q")) ;
+		assertEquals("b", set.putIfAbsent("b")) ;
 		checkAndClear(2) ;
 	}
 	
 	public void testPutAll_whenNotPresent() {
 		checkEmpty() ;
-		assertEquals(4, set.putAll(Arrays.asList("a", "b", "q", null))) ;
+		assertEquals(4, set.putAll(Arrays.asList("a", "b", "b", null))) ;
 		checkAndClear(4) ;
 	}
 	
 	public void testPutAll_whenPresent() {
 		checkEmpty() ;
-		set.putAll(Arrays.asList("a", "b", "q", null)) ;
-		assertEquals(0, set.putAll(Arrays.asList("a", "b", "q", null))) ;
+		set.putAll(Arrays.asList("a", "b", "b", null)) ;
+		assertEquals(0, set.putAll(Arrays.asList("a", "b", "b", null))) ;
 		checkAndClear(4) ;		
 	}
 	
 	public void testRemoveAll_whenNotPresent() {
 		checkEmpty() ;
 		assertEquals(0, set.remove("a")) ;
-		put("q") ;
+		put("b") ;
 		assertEquals(0, set.remove("a")) ;
 		checkAndClear(1) ;
 	}
@@ -227,12 +198,12 @@ public abstract class HashSetTest extends TestCase {
 	public void testRemoveAll_whenPresent() {
 		checkEmpty() ;
 		put("a") ;
-		put("q") ;
+		put("b") ;
 		assertEquals(1, set.remove("a")) ;
-		assertEquals(1, set.remove("q")) ;
+		assertEquals(1, set.remove("b")) ;
 		put("a") ;
-		put("q") ;
-		assertEquals(1, set.remove("q")) ;
+		put("b") ;
+		assertEquals(1, set.remove("b")) ;
 		assertEquals(1, set.remove("a")) ;
 		checkAndClear(0) ;
 	}
@@ -241,7 +212,7 @@ public abstract class HashSetTest extends TestCase {
 		checkEmpty() ;
 		assertEquals(0, set.remove("a", 0)) ;
 		assertEquals(0, set.remove("a", 1)) ;
-		put("q") ;
+		put("b") ;
 		assertEquals(0, set.remove("a", 1)) ;
 		try {
 			set.remove("a", -1) ;
@@ -254,46 +225,46 @@ public abstract class HashSetTest extends TestCase {
 	public void testRemoveMultiple_whenPresent() {		
 		checkEmpty() ;
 		put("a") ;
-		put("q") ;
+		put("b") ;
 		assertEquals(0, set.remove("a", 0)) ;
-		assertEquals(0, set.remove("q", 0)) ;
+		assertEquals(0, set.remove("b", 0)) ;
 		assertEquals(1, set.remove("a", 100)) ;
-		assertEquals(1, set.remove("q", 100)) ;
+		assertEquals(1, set.remove("b", 100)) ;
 		put("a") ;
-		put("q") ;
-		assertEquals(1, set.remove("q", 100)) ;
+		put("b") ;
+		assertEquals(1, set.remove("b", 100)) ;
 		assertEquals(1, set.remove("a", 100)) ;
 		checkAndClear(0) ;
 	}
 	
 	public void testRemoveAllAndReturn_whenNotPresent() {
 		checkEmpty() ;
-		checkIterableContents(Arrays.asList(), set.removeAndReturn("a")) ;
-		put("q") ;
-		checkIterableContents(Arrays.asList(), set.removeAndReturn("a")) ;
+		checkIterableContents(Arrays.asList(), set.removeAndReturn("a"), true) ;
+		put("b") ;
+		checkIterableContents(Arrays.asList(), set.removeAndReturn("a"), true) ;
 		checkAndClear(1) ;
 	}
 	
 	public void testRemoveAllAndReturn_whenPresent() {
 		checkEmpty() ;
 		put("a") ;
-		put("q") ;
-		checkIterableContents(Arrays.asList("a"), set.removeAndReturn("a")) ;
-		checkIterableContents(Arrays.asList("q"), set.removeAndReturn("q")) ;
+		put("b") ;
+		checkIterableContents(Arrays.asList("a"), set.removeAndReturn("a"), true) ;
+		checkIterableContents(Arrays.asList("b"), set.removeAndReturn("b"), true) ;
 		put("a") ;
-		put("q") ;
-		checkIterableContents(Arrays.asList("q"), set.removeAndReturn("q")) ;
-		checkIterableContents(Arrays.asList("a"), set.removeAndReturn("a")) ;
+		put("b") ;
+		checkIterableContents(Arrays.asList("b"), set.removeAndReturn("b"), true) ;
+		checkIterableContents(Arrays.asList("a"), set.removeAndReturn("a"), true) ;
 		checkAndClear(0) ;
 	}
 	
 	public void testRemoveMultipleAndReturn_whenNotPresent() {
 		checkEmpty() ;
-		checkIterableContents(Arrays.asList(), set.removeAndReturn("a", 0)) ;
-		checkIterableContents(Arrays.asList(), set.removeAndReturn("a", 1)) ;
-		put("q") ;
-		checkIterableContents(Arrays.asList(), set.removeAndReturn("a", 0)) ;
-		checkIterableContents(Arrays.asList(), set.removeAndReturn("a", 1)) ;
+		checkIterableContents(Arrays.asList(), set.removeAndReturn("a", 0), true) ;
+		checkIterableContents(Arrays.asList(), set.removeAndReturn("a", 1), true) ;
+		put("b") ;
+		checkIterableContents(Arrays.asList(), set.removeAndReturn("a", 0), true) ;
+		checkIterableContents(Arrays.asList(), set.removeAndReturn("a", 1), true) ;
 		try {
 			set.removeAndReturn("a", -1) ;
 			assertTrue(false) ;
@@ -305,22 +276,22 @@ public abstract class HashSetTest extends TestCase {
 	public void testRemoveMultipleAndReturn_whenPresent() {
 		checkEmpty() ;
 		put("a") ;
-		put("q") ;
-		checkIterableContents(Arrays.asList(), set.removeAndReturn("a", 0)) ;
-		checkIterableContents(Arrays.asList(), set.removeAndReturn("q", 0)) ;
-		checkIterableContents(Arrays.asList("a"), set.removeAndReturn("a", 1)) ;
-		checkIterableContents(Arrays.asList("q"), set.removeAndReturn("q", 1)) ;
+		put("b") ;
+		checkIterableContents(Arrays.asList(), set.removeAndReturn("a", 0), true) ;
+		checkIterableContents(Arrays.asList(), set.removeAndReturn("b", 0), true) ;
+		checkIterableContents(Arrays.asList("a"), set.removeAndReturn("a", 1), true) ;
+		checkIterableContents(Arrays.asList("b"), set.removeAndReturn("b", 1), true) ;
 		put("a") ;
-		put("q") ;
-		checkIterableContents(Arrays.asList("q"), set.removeAndReturn("q", 1)) ;
-		checkIterableContents(Arrays.asList("a"), set.removeAndReturn("a", 1)) ;
+		put("b") ;
+		checkIterableContents(Arrays.asList("b"), set.removeAndReturn("b", 1), true) ;
+		checkIterableContents(Arrays.asList("a"), set.removeAndReturn("a", 1), true) ;
 		checkAndClear(0) ;
 	}
 	
 	public void testRemoveAllAndReturnFirst_whenNotPresent() {
 		checkEmpty() ;
 		assertEquals(null, set.removeAndReturnFirst("a", 0)) ;
-		put("q") ;
+		put("b") ;
 		assertEquals(null, set.removeAndReturnFirst("a", 0)) ;
 		try {
 			set.removeAndReturnFirst("a", -1) ;
@@ -333,12 +304,12 @@ public abstract class HashSetTest extends TestCase {
 	public void testRemoveAllAndReturnFirst_whenPresent() {
 		checkEmpty() ;
 		put("a") ;
-		put("q") ;
+		put("b") ;
 		assertEquals("a", set.removeAndReturnFirst("a")) ;
-		assertEquals("q", set.removeAndReturnFirst("q")) ;
+		assertEquals("b", set.removeAndReturnFirst("b")) ;
 		put("a") ;
-		put("q") ;
-		assertEquals("q", set.removeAndReturnFirst("q")) ;
+		put("b") ;
+		assertEquals("b", set.removeAndReturnFirst("b")) ;
 		assertEquals("a", set.removeAndReturnFirst("a")) ;
 		checkAndClear(0) ;
 	}
@@ -346,7 +317,7 @@ public abstract class HashSetTest extends TestCase {
 	public void testRemoveMultipleAndReturnFirst_whenNotPresent() {
 		checkEmpty() ;
 		assertEquals(null, set.removeAndReturnFirst("a", 0)) ;
-		put("q") ;
+		put("b") ;
 		assertEquals(null, set.removeAndReturnFirst("a", 0)) ;
 		try {
 			set.removeAndReturnFirst("a", -1) ;
@@ -359,14 +330,14 @@ public abstract class HashSetTest extends TestCase {
 	public void testRemoveMultipleAndReturnFirst_whenPresent() {
 		checkEmpty() ;
 		put("a") ;
-		put("q") ;
+		put("b") ;
 		assertEquals(null, set.removeAndReturnFirst("a", 0)) ;
-		assertEquals(null, set.removeAndReturnFirst("q", 0)) ;
+		assertEquals(null, set.removeAndReturnFirst("b", 0)) ;
 		assertEquals("a", set.removeAndReturnFirst("a", 1)) ;
-		assertEquals("q", set.removeAndReturnFirst("q", 1)) ;
+		assertEquals("b", set.removeAndReturnFirst("b", 1)) ;
 		put("a") ;
-		put("q") ;
-		assertEquals("q", set.removeAndReturnFirst("q", 1)) ;
+		put("b") ;
+		assertEquals("b", set.removeAndReturnFirst("b", 1)) ;
 		assertEquals("a", set.removeAndReturnFirst("a", 1)) ;
 		checkAndClear(0) ;
 	}
@@ -375,7 +346,7 @@ public abstract class HashSetTest extends TestCase {
 		checkEmpty() ;
 		assertEquals(null, set.first("a")) ;
 		put("a") ;
-		assertEquals(null, set.first("q")) ;
+		assertEquals(null, set.first("b")) ;
 		checkAndClear(1) ;
 	}
 	
@@ -383,16 +354,16 @@ public abstract class HashSetTest extends TestCase {
 		checkEmpty() ;
 		final String a1 = "a" ;
 		final String a2 = new String("a") ;
-		final String q1 = "q" ;
-		final String q2 = new String("q") ;
+		final String b1 = "b" ;
+		final String b2 = new String("b") ;
 		put(a1) ;
-		set.add(a2) ; // add should not alter the state of the set, as an equal value is already present
+		add(a2) ; // add should not alter the state of the set, as an equal value is already present
 		assertSame(a1, set.first(a1)) ;
 		put(a2) ; // put with the new equal value should replace the existing value
 		assertSame(a2, set.first(a1)) ;
-		put(q1) ;
-		put(q2) ;
-		assertSame(q2, set.first(q1)) ;
+		put(b1) ;
+		put(b2) ;
+		assertSame(b2, set.first(b1)) ;
 		assertSame(a2, set.first(a1)) ;
 		checkAndClear(2) ;
 	}
@@ -401,7 +372,7 @@ public abstract class HashSetTest extends TestCase {
 		checkEmpty() ;
 		assertEquals(null, set.get("a")) ;
 		put("a") ;
-		assertEquals(null, set.get("q")) ;
+		assertEquals(null, set.get("b")) ;
 		checkAndClear(1) ;
 	}
 	
@@ -409,16 +380,16 @@ public abstract class HashSetTest extends TestCase {
 		checkEmpty() ;
 		final String a1 = "a" ;
 		final String a2 = new String("a") ;
-		final String q1 = "q" ;
-		final String q2 = new String("q") ;
+		final String b1 = "b" ;
+		final String b2 = new String("b") ;
 		put(a1) ;
-		set.add(a2) ; // add should not alter the state of the set, as an equal value is already present
+		add(a2) ; // add should not alter the state of the set, as an equal value is already present
 		assertSame(a1, set.get(a1)) ;
 		put(a2) ; // put with the new equal value should replace the existing value
 		assertSame(a2, set.get(a1)) ;
-		put(q1) ;
-		put(q2) ;
-		assertSame(q2, set.get(q1)) ;
+		put(b1) ;
+		put(b2) ;
+		assertSame(b2, set.get(b1)) ;
 		assertSame(a2, set.get(a1)) ;
 		checkAndClear(2) ;
 	}
@@ -427,48 +398,48 @@ public abstract class HashSetTest extends TestCase {
 		checkEmpty() ;
 		assertFalse(set.apply("a")) ;
 		put("a") ;
-		assertFalse(set.apply("q")) ;
+		assertFalse(set.apply("b")) ;
 		checkAndClear(1) ;
 	}
 	
 	public void testApply_whenPresent() {
 		checkEmpty() ;
 		final String a1 = "a" ;
-		final String q1 = "q" ;
+		final String b1 = "b" ;
 		put(a1) ;
-		put(q1) ;
+		put(b1) ;
 		assertTrue(set.apply(a1)) ;
-		assertTrue(set.apply(q1)) ;
+		assertTrue(set.apply(b1)) ;
 		checkAndClear(2) ;
 	}
 	
 	public void testAll_whenNotPresent() {
 		checkEmpty() ;
 		final String a1 = "a" ;
-		final String q1 = "q" ;
-		checkIterableContents(Arrays.asList(), set.all(a1)) ;
+		final String b1 = "b" ;
+		checkIterableContents(Arrays.asList(), set.all(a1), true) ;
 		put(a1) ;
-		checkIterableContents(Arrays.asList(), set.all(q1)) ;
+		checkIterableContents(Arrays.asList(), set.all(b1), true) ;
 		checkAndClear(1) ;
 	}
 	
 	public void testAll_whenPresent() {
 		checkEmpty() ;
 		final String a1 = "a" ;
-		final String q1 = "q" ;
+		final String b1 = "b" ;
 		put(a1) ;
-		put(q1) ;
-		checkIterableContents(Arrays.asList(a1), set.all(a1)) ;
-		checkIterableContents(Arrays.asList(q1), set.all(q1)) ;
+		put(b1) ;
+		checkIterableContents(Arrays.asList(a1), set.all(a1), true) ;
+		checkIterableContents(Arrays.asList(b1), set.all(b1), true) ;
 		checkAndClear(2) ;
 	}
 	
 	public void testAll_removals() {
 		checkEmpty() ;
 		final String a1 = "a" ;
-		final String q1 = "q" ;
+		final String b1 = "b" ;
 		put(a1) ;
-		put(q1) ;
+		put(b1) ;
 		Iterator<?> iter ;
 		
 		iter = set.all(a1).iterator() ;
@@ -477,26 +448,26 @@ public abstract class HashSetTest extends TestCase {
 		iter.remove() ;
 		assertFalse(iter.hasNext()) ;
 		assertFalse(set.contains(a1)) ;
-		assertTrue(set.contains(q1)) ;
+		assertTrue(set.contains(b1)) ;
 		
-		iter = set.all(q1).iterator() ;
+		iter = set.all(b1).iterator() ;
 		assertTrue(iter.hasNext()) ;
-		assertSame(q1, iter.next()) ;
+		assertSame(b1, iter.next()) ;
 		iter.remove() ;
 		assertFalse(iter.hasNext()) ;
 		assertFalse(set.contains(a1)) ;
-		assertFalse(set.contains(q1)) ;
+		assertFalse(set.contains(b1)) ;
 		
 		put(a1) ;
-		put(q1) ;
+		put(b1) ;
 		
-		iter = set.all(q1).iterator() ;
+		iter = set.all(b1).iterator() ;
 		assertTrue(iter.hasNext()) ;
-		assertSame(q1, iter.next()) ;
+		assertSame(b1, iter.next()) ;
 		iter.remove() ;
 		assertFalse(iter.hasNext()) ;
 		assertTrue(set.contains(a1)) ;
-		assertFalse(set.contains(q1)) ;
+		assertFalse(set.contains(b1)) ;
 		
 		iter = set.all(a1).iterator() ;
 		assertTrue(iter.hasNext()) ;
@@ -504,69 +475,69 @@ public abstract class HashSetTest extends TestCase {
 		iter.remove() ;
 		assertFalse(iter.hasNext()) ;
 		assertFalse(set.contains(a1)) ;
-		assertFalse(set.contains(q1)) ;
+		assertFalse(set.contains(b1)) ;
 	}
 	
 	public void testList_whenNotPresent() {
 		checkEmpty() ;
 		final String a1 = "a" ;
-		final String q1 = "q" ;
-		checkListContents(Arrays.asList(), set.list(a1)) ;
+		final String b1 = "b" ;
+		checkListContents(Arrays.asList(), set.list(a1), true) ;
 		put(a1) ;
-		checkListContents(Arrays.asList(), set.list(q1)) ;
+		checkListContents(Arrays.asList(), set.list(b1), true) ;
 		checkAndClear(1) ;
 	}
 	
 	public void testList_whenPresent() {
 		checkEmpty() ;
 		final String a1 = "a" ;
-		final String q1 = "q" ;
+		final String b1 = "b" ;
 		put(a1) ;
-		put(q1) ;
-		checkListContents(Arrays.asList(a1), set.list(a1)) ;
-		checkListContents(Arrays.asList(q1), set.list(q1)) ;
+		put(b1) ;
+		checkListContents(Arrays.asList(a1), set.list(a1), true) ;
+		checkListContents(Arrays.asList(b1), set.list(b1), true) ;
 		checkAndClear(2) ;
 	}
 	
 	public void testContains() {
 		checkEmpty() ;
 		final String a1 = "a" ;
-		final String q1 = "q" ;
+		final String b1 = "b" ;
 		assertEquals(false, set.contains(a1)) ;
-		assertEquals(false, set.contains(q1)) ;
+		assertEquals(false, set.contains(b1)) ;
 		put(a1) ;
 		assertEquals(true, set.contains(a1)) ;
-		assertEquals(false, set.contains(q1)) ;
-		set.add(q1) ; // add should not alter the state of the set, as an equal value is already present
+		assertEquals(false, set.contains(b1)) ;
+		add(b1) ; // add should not alter the state of the set, as an equal value is already present
 		assertEquals(true, set.contains(a1)) ;
-		assertEquals(true, set.contains(q1)) ;
+		assertEquals(true, set.contains(b1)) ;
 		set.remove(a1) ;
 		assertEquals(false, set.contains(a1)) ;
-		assertEquals(true, set.contains(q1)) ;
-		set.remove(q1) ;
+		assertEquals(true, set.contains(b1)) ;
+		set.remove(b1) ;
 		assertEquals(false, set.contains(a1)) ;
-		assertEquals(false, set.contains(q1)) ;
+		assertEquals(false, set.contains(b1)) ;
 		checkAndClear(0) ;
 	}
 	
 	public void testCount() {		
 		checkEmpty() ;
 		final String a1 = "a" ;
-		final String q1 = "q" ;
+		final String b1 = "b" ;
 		assertEquals(0, set.count(a1)) ;
-		assertEquals(0, set.count(q1)) ;
+		assertEquals(0, set.count(b1)) ;
 		put(a1) ;
 		assertEquals(1, set.count(a1)) ;
-		assertEquals(0, set.count(q1)) ;
-		set.add(q1) ; // add should not alter the state of the set, as an equal value is already present
+		assertEquals(0, set.count(b1)) ;
+		add(b1) ; // add should not alter the state of the set, as an equal value is already present
 		assertEquals(1, set.count(a1)) ;
-		assertEquals(1, set.count(q1)) ;
+		assertEquals(1, set.count(b1)) ;
 		set.remove(a1) ;
 		assertEquals(0, set.count(a1)) ;
-		assertEquals(1, set.count(q1)) ;
-		set.remove(q1) ;
+		assertEquals(1, set.count(b1)) ;
+		set.remove(b1) ;
 		assertEquals(0, set.count(a1)) ;
-		assertEquals(0, set.count(q1)) ;
+		assertEquals(0, set.count(b1)) ;
 		checkAndClear(0) ;
 	}
 	
@@ -576,8 +547,8 @@ public abstract class HashSetTest extends TestCase {
 		put("a") ;
 		put("b") ;
 		put("c") ;
-		put("q") ;
-		checkIteratorContents(Arrays.asList(null, "a", "q", "b", "c").iterator(), set.iterator()) ;
+		put("d") ;
+		checkIteratorContents(Arrays.asList(null, "a", "b", "c", "d").iterator(), set.iterator(), false) ;
 		checkAndClear(5) ;
 	}
 	
@@ -589,36 +560,38 @@ public abstract class HashSetTest extends TestCase {
 		put("a") ;
 		put("b") ;
 		put("c") ;
-		put("q") ;
-		checkIteratorContents(Arrays.asList(null, "a", "q", "b", "c").iterator(), Iters.destroyAsConsumed(set.iterator())) ;
+		put("d") ;
+		checkIteratorContents(Arrays.asList(null, "a", "b", "c", "d").iterator(), Iters.destroyAsConsumed(set.iterator()), false) ;
 		assertFalse(set.contains(null)) ;
 		assertFalse(set.contains("a")) ;
 		assertFalse(set.contains("b")) ;
 		assertFalse(set.contains("c")) ;
-		assertFalse(set.contains("q")) ;
+		assertFalse(set.contains("d")) ;
 		checkAndClear(0) ;
 		put(null) ;
 		put("a") ;
 		put("b") ;
 		put("c") ;
-		put("q") ;
-		final Iterator<String> expect = Arrays.asList(null, "a", "q", "b", "c").iterator() ;
+		put("d") ;
 		final Iterator<String> actual = set.iterator() ;
-		while (expect.hasNext() && actual.hasNext()) {
-			final String e = expect.next() ;
+		int c = 0 ;
+		while (actual.hasNext()) {
 			final String a = actual.next() ;
-			assertSame(e, a) ;
-			if (a != null && a.equals("a"))
+			if (a == null || a.equals("a"))
 				actual.remove() ;
 		}
-		actual.remove() ;
-		assertEquals(expect.hasNext(), actual.hasNext()) ;
+		assertEquals(5, c) ;
+		assertFalse(set.contains(null)) ;
+		assertFalse(set.contains("a")) ;
+		assertTrue(set.contains("b")) ;
+		assertTrue(set.contains("c")) ;
+		assertTrue(set.contains("d")) ;
 		checkAndClear(3) ;
 	}
 	
 	public void testCopy_whenEmpty() {
 		checkEmpty() ;
-		final HashSet<String, ?> copy = set.copy() ;
+		final Set<String> copy = set.copy() ;
 		assertNotSame(copy, set) ;
 		assertEquals(set, copy) ;
 		checkAndClear(0) ;
@@ -627,71 +600,13 @@ public abstract class HashSetTest extends TestCase {
 	public void testCopy_whenNotEmpty() {
 		checkEmpty() ;
 		set.put("a") ;
-		set.put("q") ;
 		set.put("b") ;
+		set.put("c") ;
 		set.put(null) ;
-		final HashSet<String, ?> copy = set.copy() ;
+		final Set<String> copy = set.copy() ;
 		assertNotSame(copy, set) ;
 		assertEquals(set, copy) ;
 		checkAndClear(4) ;
-	}
-	
-	public void testGrowth() {
-		checkEmpty() ;
-		assertEquals(16, set.capacity()) ;
-		final String[] ss = new String[] { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z" } ;
-		for (String s : ss)
-			set.put(s) ;
-		assertEquals(64, set.capacity()) ;
-		for (String s : ss)
-			set.contains(s) ;
-		checkAndClear(26) ;
-	}
-	
-	public void testShrink() {
-		checkEmpty() ;
-		assertEquals(16, set.capacity()) ;
-		final String[] ss = new String[] { "a", "b", "c", "d" } ;
-		for (String s : ss)
-			set.put(s) ;
-		set.shrink() ;
-		assertTrue(16 > set.capacity()) ;
-		checkAndClear(4) ;
-	}
-	
-	public void testResize() {
-		checkEmpty() ;
-		
-		String[] ss = new String[] { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z" } ;
-		for (String s : ss)
-			set.put(s) ;
-		set.resize(8) ;
-		assertEquals(8, set.capacity()) ;
-		for (String s : ss)
-			set.contains(s) ;
-		set.resize(32) ;
-		for (String s : ss)
-			set.contains(s) ;
-		set.resize(16) ;
-		for (String s : ss)
-			set.contains(s) ;
-		checkAndClear(26) ;
-		
-		ss = new String[] { "a", "q" } ;
-		for (String s : ss)
-			set.put(s) ;
-		set.resize(8) ;
-		assertEquals(8, set.capacity()) ;
-		for (String s : ss)
-			set.contains(s) ;
-		set.resize(16) ;
-		assertEquals(16, set.capacity()) ;
-		for (String s : ss)
-			set.contains(s) ;
-		set.resize(64) ;
-		for (String s : ss)
-			set.contains(s) ;
-		checkAndClear(2) ;
 	}
 	
 	public void testEquality() {
@@ -710,8 +625,8 @@ public abstract class HashSetTest extends TestCase {
 		checkEmpty() ;
 		put(null) ;
 		put("a") ;
-		put("q") ;
-		assertEquals("{null, a, q}", set.toString()) ;
+		put("b") ;
+		assertEquals("{null, a, b}", set.toString()) ;
 		checkAndClear(3) ;
 	}
 	
