@@ -1,10 +1,12 @@
 package org.jjoost.collections.base;
 
+import java.util.ConcurrentModificationException ;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import org.jjoost.util.Equality ;
 import org.jjoost.util.Function;
+import org.jjoost.util.Functions ;
 
 @SuppressWarnings("unchecked")
 public class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedHashNode<N>> extends SerialHashStore<N> {
@@ -67,7 +69,7 @@ public class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedH
 	// TODO : is there an efficient way to copy this without temporarily doubling table memory utilisation? 
 	// we could instead iterate over the array twice, first time inserting in opposite order into buckets and on second pass reversing this...
 	@Override
-	public <NCmp> HashStore<N> copy(Function<? super N, ? extends NCmp> nodeEqualityProj,
+	public <NCmp> SerialHashStore<N> copy(Function<? super N, ? extends NCmp> nodeEqualityProj,
 		HashNodeEquality<? super NCmp, ? super N> nodeEquality) {
 		throw new UnsupportedOperationException() ;
 //		final N[] table = (N[]) new SerialLinkedHashNode[this.table.length] ;
@@ -98,7 +100,7 @@ public class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedH
 //				}
 //			}
 //		}
-//		return new SerialHashStore<N>(loadFactor, table, totalNodeCount) ;
+//		return new SerialHashStore<N>(loadFactor, table, totalNodeCount, uniquePrefixCount) ;
 	}
 
 	@Override
@@ -124,6 +126,8 @@ public class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedH
 		private final Function<? super N, ? extends V> ret ;
 		private N prev = null ;
 		private N next = head.linkNext ;
+		private int curModCount = modCount ;
+		
 		public LinkIterator(Function<? super N, ? extends NCmp> nodePrefixEqFunc, HashNodeEquality<? super NCmp, ? super N> nodePrefixEq, Function<? super N, ? extends V> f) {
 			this.nodePrefixEqFunc = nodePrefixEqFunc ;
 			this.nodePrefixEq = nodePrefixEq ;
@@ -139,6 +143,8 @@ public class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedH
 		public V next() {
 			if (next == head)
 				throw new NoSuchElementException() ;
+			if (curModCount != modCount)
+				throw new ConcurrentModificationException() ;
 			prev = next ;
 			next = next.linkNext ;
 			return ret.apply(prev) ;
@@ -148,7 +154,10 @@ public class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedH
 		public void remove() {
 			if (prev == null)
 				throw new NoSuchElementException() ;
+			if (curModCount != modCount)
+				throw new ConcurrentModificationException() ;
 			removeNode(nodePrefixEqFunc, nodePrefixEq, prev) ;
+			curModCount = modCount ;
 			prev = null ;
 		}
 		

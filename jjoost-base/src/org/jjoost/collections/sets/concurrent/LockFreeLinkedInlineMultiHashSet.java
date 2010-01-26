@@ -20,6 +20,14 @@ public class LockFreeLinkedInlineMultiHashSet<V> extends InlineMultiHashSet<V, A
 		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object()) ;
 	}
 	
+	public LockFreeLinkedInlineMultiHashSet(Equality<? super V> keyEquality) {
+		this(SerialHashStore.defaultRehasher(), keyEquality) ;
+	}
+	
+	public LockFreeLinkedInlineMultiHashSet(Rehasher rehasher, Equality<? super V> keyEquality) { 
+		this(16, 0.75f, rehasher, keyEquality) ;
+	}
+	
 	public LockFreeLinkedInlineMultiHashSet( 
 			int minimumInitialCapacity, float loadFactor, 
 			Rehasher rehasher, Equality<? super V> keyEquality) 

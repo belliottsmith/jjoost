@@ -242,7 +242,7 @@ public class Iters {
 	 *            values to look through
 	 * @return an <code>int</code> representing the number of occurrences in the <code>Iterable</code> of the provided value
 	 */
-    public static <E> int count(final E find, final Iterable<E> iter) {
+    public static <E> int count(final E find, final Iterable<? extends E> iter) {
     	return count(find, iter.iterator()) ;
     }
     
@@ -257,7 +257,7 @@ public class Iters {
 	 *            values to look through
 	 * @return an <code>int</code> representing the number of occurrences in the <code>Iterable</code> of the provided value
 	 */
-    public static <E> int count(final E find, final Iterator<E> iter) {
+    public static <E> int count(final E find, final Iterator<? extends E> iter) {
     	return count(Equalities.object(), find, iter) ;
     }    
     /**
@@ -273,7 +273,7 @@ public class Iters {
 	 *            values to look through
 	 * @return an <code>int</code> representing the number of occurrences in the <code>Iterable</code> of the provided value
 	 */
-    public static <E> int count(final Equality<? super E> eq, final E find, final Iterable<E> iter) {
+    public static <E> int count(final Equality<? super E> eq, final E find, final Iterable<? extends E> iter) {
     	return count(eq, find, iter.iterator()) ;
     }
     /**
@@ -289,7 +289,7 @@ public class Iters {
 	 *            values to look through
 	 * @return an <code>int</code> representing the number of occurrences in the <code>Iterable</code> of the provided value
 	 */
-    public static <E> int count(final Equality<? super E> eq, final E find, final Iterator<E> iter) {
+    public static <E> int count(final Equality<? super E> eq, final E find, final Iterator<? extends E> iter) {
     	int c = 0 ;
     	while (iter.hasNext()) {
     		if (eq.equates(find, iter.next()))

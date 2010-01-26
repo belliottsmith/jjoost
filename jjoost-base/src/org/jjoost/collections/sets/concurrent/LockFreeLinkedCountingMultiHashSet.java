@@ -27,6 +27,14 @@ public class LockFreeLinkedCountingMultiHashSet<V> extends NestedMultiHashSet<V,
 		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object()) ;
 	}
 	
+	public LockFreeLinkedCountingMultiHashSet(Equality<? super V> keyEquality) {
+		this(SerialHashStore.defaultRehasher(), keyEquality) ;
+	}
+	
+	public LockFreeLinkedCountingMultiHashSet(Rehasher rehasher, Equality<? super V> keyEquality) { 
+		this(16, 0.75f, rehasher, keyEquality) ;
+	}
+	
 	public LockFreeLinkedCountingMultiHashSet( 
 			int minimumInitialCapacity, float loadFactor, 
 			Rehasher rehasher, Equality<? super V> keyEquality) 

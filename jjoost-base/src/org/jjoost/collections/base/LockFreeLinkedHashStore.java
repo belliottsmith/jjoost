@@ -58,9 +58,9 @@ public class LockFreeLinkedHashStore<N extends LockFreeLinkedHashStore.LockFreeL
 		static {
 			try {
 				Field field ;
-				field = LockFreeHashNode.class.getDeclaredField("linkNextPtr") ;
+				field = LockFreeLinkedHashNode.class.getDeclaredField("linkNextPtr") ;
 				linkNextPtrOffset = unsafe.objectFieldOffset(field) ;
-				field = LockFreeHashNode.class.getDeclaredField("linkPrevPtr") ;
+				field = LockFreeLinkedHashNode.class.getDeclaredField("linkPrevPtr") ;
 				linkPrevPtrOffset = unsafe.objectFieldOffset(field) ;
 			} catch (Exception e) {
 				throw new UndeclaredThrowableException(e) ;

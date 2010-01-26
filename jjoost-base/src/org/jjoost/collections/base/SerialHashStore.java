@@ -355,6 +355,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 				uniquePrefixCount -= 1 ;
 		}
 		removed(n) ;
+		totalNodeCount -= 1 ;
 		return true ;
 	}
 
