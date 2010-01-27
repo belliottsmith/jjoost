@@ -197,10 +197,16 @@ public abstract class AbstractHashStoreBasedScalarCollectionTest extends Abstrac
 	
 	public void testPutIfAbsent_whenPresent() {
 		checkEmpty() ;
-		putIfAbsent("a") ;
-		putIfAbsent("q") ;
-		assertEquals("a", putIfAbsent("a")) ;
-		assertEquals("q", putIfAbsent("q")) ;
+		final String a1 = "a" ;
+		final String a2 = new String("a") ;
+		final String q1 = "q" ;
+		final String q2 = new String("q") ;
+		putIfAbsent(a1) ;
+		putIfAbsent(q1) ;
+		assertSame(a1, putIfAbsent(a2)) ;
+		assertSame(q1, putIfAbsent(q2)) ;
+		assertSame(a1, get(a2)) ;
+		assertSame(q1, get(q2)) ;
 		checkAndClear(2) ;
 	}
 	
@@ -525,13 +531,13 @@ public abstract class AbstractHashStoreBasedScalarCollectionTest extends Abstrac
 		resize(8) ;
 		assertEquals(8, capacity()) ;
 		for (String s : ss)
-			contains(s) ;
+			assertTrue(contains(s)) ;
 		resize(32) ;
 		for (String s : ss)
-			contains(s) ;
+			assertTrue(contains(s)) ;
 		resize(16) ;
 		for (String s : ss)
-			contains(s) ;
+			assertTrue(contains(s)) ;
 		checkAndClear(26) ;
 		
 		ss = new String[] { "a", "q" } ;
@@ -540,14 +546,14 @@ public abstract class AbstractHashStoreBasedScalarCollectionTest extends Abstrac
 		resize(8) ;
 		assertEquals(8, capacity()) ;
 		for (String s : ss)
-			contains(s) ;
+			assertTrue(contains(s)) ;
 		resize(16) ;
 		assertEquals(16, capacity()) ;
 		for (String s : ss)
-			contains(s) ;
+			assertTrue(contains(s)) ;
 		resize(64) ;
 		for (String s : ss)
-			contains(s) ;
+			assertTrue(contains(s)) ;
 		checkAndClear(2) ;
 	}
 	
