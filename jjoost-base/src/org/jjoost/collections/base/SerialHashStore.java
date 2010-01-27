@@ -43,7 +43,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	
 	@SuppressWarnings("unchecked")
 	public SerialHashStore(int size, float loadFactor) {
-        int capacity = 1 ;
+        int capacity = 8 ;
         while (capacity < size)
         	capacity <<= 1 ;
         this.totalNodeCount = 0 ;
@@ -766,7 +766,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	@SuppressWarnings("unchecked")
 	@Override
 	public void resize(int size) {
-        int capacity = 1 ;
+        int capacity = 8 ;
         while (capacity < size)
         	capacity <<= 1 ;
         if (capacity != table.length) {
@@ -788,28 +788,18 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
     	final N[] table = this.table ;
     	if (oldTable.length > table.length) {
     		final int newTableMask = table.length - 1 ;
-    		final int extraBitCount = Integer.bitCount((oldTable.length - 1) - (table.length - 1)) ;
-    		final int extraBitShift = Integer.bitCount(table.length - 1) ;
-    		final int[] extraBitArray = new int[extraBitCount] ;
-    		for (int i = 0 ; i != extraBitCount ; i++)
-    			extraBitArray[i] = i << extraBitShift ;
-        	for (int i = 0 ; i != table.length ; i++) {
-        		N tail = null ;
-        		for (int j = 0 ; j != extraBitCount ; j++) {
-            		N node = oldTable[i] ;
-            		while (node != null) {
-                		final N next = node.next ;
-                		node.next = null ;
-                		if (tail == null) {
-                    		final int newIndex = node.hash & newTableMask ;
-                			table[newIndex] = tail = node ;
-                		} else {
-                			tail = (tail.next = node) ;
-                		}
-            			node = next ;
-            		}
-        		}
-        	}    		
+    		for (int i = 0 ; i != oldTable.length ; i++) {
+    			final int newTableIndex = i & newTableMask ;
+    			final N newHead = oldTable[i] ;
+    			N existingTail = table[newTableIndex] ;
+    			if (existingTail == null) {
+    				table[newTableIndex] = newHead ;
+    			} else if (newHead != null) {
+    				while (existingTail.next != null)
+    					existingTail = existingTail.next ;
+    				existingTail.next = newHead ;
+    			}
+    		}
     	} else if (table.length == oldTable.length << 1) { 
     		int newIndexBit = oldTable.length ;
         	for (int i = 0 ; i != oldTable.length ; i++) {

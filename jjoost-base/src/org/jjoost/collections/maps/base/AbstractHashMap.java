@@ -14,6 +14,7 @@ import org.jjoost.collections.base.HashNodeEquality ;
 import org.jjoost.collections.base.HashStore ;
 import org.jjoost.collections.iters.AbstractIterable ;
 import org.jjoost.collections.maps.ImmutableMapEntry ;
+import org.jjoost.collections.sets.base.AbstractSet;
 import org.jjoost.collections.sets.base.IterableSet;
 import org.jjoost.util.Equality ;
 import org.jjoost.util.Filters ;
@@ -211,7 +212,7 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		}
 	} ;
 
-	protected abstract class AbstractKeyValueSet implements AnySet<V> {
+	protected abstract class AbstractKeyValueSet extends AbstractSet<V> implements AnySet<V> {
 		
 		private static final long serialVersionUID = 1461826147890179114L ;
 		
@@ -370,7 +371,7 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		
 	}
 	
-	protected abstract class AbstractKeySet implements AnySet<K> {
+	protected abstract class AbstractKeySet extends AbstractSet<K> implements AnySet<K> {
 		
 		private static final long serialVersionUID = 1461826147890179114L ;
 
@@ -510,7 +511,7 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		
 	}
 	
-	protected abstract class AbstractEntrySet implements AnySet<Entry<K, V>> {
+	protected abstract class AbstractEntrySet extends AbstractSet<Entry<K, V>> implements AnySet<Entry<K, V>> {
 		
 		private static final long serialVersionUID = 4037233101289518536L ;
 		

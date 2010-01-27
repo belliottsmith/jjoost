@@ -1,6 +1,5 @@
 package org.jjoost.collections.sets.base;
 
-import java.util.Collections ;
 import java.util.Iterator;
 import java.util.List;
 

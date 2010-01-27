@@ -155,7 +155,7 @@ public class HashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Abstract
 		}
 		@Override
 		public Set<K> copy() {
-			throw new UnsupportedOperationException() ;
+			return HashMap.this.copy().keys() ;
 		}
 		@Override
 		public Set<K> unique() {
@@ -182,7 +182,7 @@ public class HashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Abstract
 			return totalCount() ;
 		}
 		public Set<Entry<K, V>> copy() {
-			throw new UnsupportedOperationException() ;
+			return HashMap.this.copy().entries() ;
 		}
 		@Override
 		public Set<Entry<K, V>> unique() {

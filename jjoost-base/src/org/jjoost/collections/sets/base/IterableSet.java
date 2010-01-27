@@ -10,7 +10,7 @@ import org.jjoost.util.Equality;
 import org.jjoost.util.Filters;
 import org.jjoost.util.Iters;
 
-public abstract class IterableSet<V> implements MultiSet<V> {
+public abstract class IterableSet<V> extends AbstractSet<V> implements MultiSet<V> {
 
 	private static final long serialVersionUID = 7475686519443650191L;
 

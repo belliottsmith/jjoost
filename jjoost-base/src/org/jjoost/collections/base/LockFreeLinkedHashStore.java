@@ -245,6 +245,7 @@ public class LockFreeLinkedHashStore<N extends LockFreeLinkedHashStore.LockFreeL
 				next = next.getLinkPrevStale() ;
 				nextNext = next.getLinkNextStale() ;
 			}
+			this.next = next ;
 		}
 
 		@Override

@@ -4,6 +4,9 @@ import org.jjoost.collections.AnySet ;
 
 public abstract class AbstractSet<V> implements AnySet<V> {
 	
+	private static final long serialVersionUID = -2269362435477906614L;
+
+	@SuppressWarnings("unchecked")
 	public boolean equals(Object that) {
 		return this == that || (that instanceof AnySet && equals((AnySet<V>) that)) ;
 	}
@@ -12,6 +15,9 @@ public abstract class AbstractSet<V> implements AnySet<V> {
 		if (that.totalCount() != this.totalCount())
 			return false ;
 		if (that.permitsDuplicates() != this.permitsDuplicates())
+			return false ;
+		// retain some type safety of equals(Object) by confirming equalities are "equal" before comparing sets
+		if (!that.equality().equals(this.equality()))
 			return false ;
 		if (permitsDuplicates()) {
 			for (V v : that) {

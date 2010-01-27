@@ -4,6 +4,7 @@ import java.io.Serializable ;
 import java.lang.reflect.Field;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList ;
+import java.util.Arrays;
 import java.util.Iterator ;
 import java.util.List ;
 import java.util.NoSuchElementException ;
@@ -40,7 +41,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	
 	@SuppressWarnings("unchecked")
 	public LockFreeHashStore(int initialCapacity, float loadFactor, Counting totalCounting, Counting uniquePrefixCounting) {
-        int capacity = 1 ;
+        int capacity = 8 ;
         while (capacity < initialCapacity)
         	capacity <<= 1 ;
         setTable(new RegularTable<N>((N[]) new LockFreeHashNode[capacity], (int) (capacity * loadFactor))) ;
@@ -89,6 +90,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 		N node = getTableUnsafe().writerGetStale(hash) ;
 		boolean partial = false ;
 		while (true) {
+			
 			if (node == null) {
 				
 				// we have not encountered any prior partial or complete node matches, so simply insert the node at the end of the list
@@ -1375,9 +1377,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 						if (table instanceof RegularTable) {
 							return new DestroyingIterator(((RegularTable) table).table, ret) ;
 						} else {
-							GrowingTable gt = (GrowingTable) table ;
+							ResizingTable gt = (ResizingTable) table ;
 							gt.waiting.wakeAll() ;
-							gt.grow(0, false, false, true) ;
+							gt.rehash(0, false, false, true) ;
 							return new DestroyingIterator(gt.newTable, ret) ;
 						}
 					}					
@@ -1472,14 +1474,44 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 		return uniquePrefixCounter.getSafe() ;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void resize(int size) {
-		throw new UnsupportedOperationException() ;
+        int capacity = 8 ;
+        while (capacity < size)
+        	capacity <<= 1 ;
+        while (true) {
+			final Table<N> table = getTableFresh() ;
+        	if (table.length() == capacity)
+        		return ;
+        	if (table instanceof RegularTable) {
+				final BlockingTable<N> tmp = new BlockingTable<N>() ;
+				if (casTable(table, tmp)) {
+					final ResizingTable resizingTable ;
+					if (capacity < table.length()) 
+						resizingTable = new ShrinkingTable((RegularTable<N>) table, capacity) ;
+					else if (capacity == table.length() << 1)
+						resizingTable = new Growing2xTable((RegularTable<N>) table) ;
+					else resizingTable = new Growing2ttpNxTable((RegularTable<N>) table, capacity) ;
+					setTable(resizingTable) ;
+					tmp.wake(resizingTable) ;
+					resizingTable.rehash(0, false, true, false) ;
+				}
+        	} else if (table instanceof BlockingTable) {
+        	} else {
+        		((ResizingTable) table).waitUntilResized() ;
+        	}
+        }
 	}
 
 	@Override
 	public void shrink() {
-		throw new UnsupportedOperationException() ;
+        final int totalCount = totalCounter.getSafe() ;
+        int capacity = 8 ;
+        while ((capacity * loadFactor) < totalCount)
+        	capacity <<= 1 ;
+        if (capacity < getTableFresh().length())
+        	resize(capacity) ;
 	}
 
 	private void waitOnDelete(final N node) {
@@ -1501,15 +1533,15 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			if (table instanceof RegularTable) {
 				final BlockingTable<N> tmp = new BlockingTable<N>() ;
 				if (casTable(table, tmp)) {
-					final GrowingTable growingTable = new GrowingTable((RegularTable<N>) table) ;
+					final Growing2xTable growingTable = new Growing2xTable((RegularTable<N>) table) ;
 					setTable(growingTable) ;
 					tmp.wake(growingTable) ;
-					growingTable.grow(0, false, true, false) ;
+					growingTable.rehash(0, false, true, false) ;
 				}
 			} else if (table instanceof BlockingTable) {
 				((BlockingTable) table).waitForNext() ;
 			} else {
-				((GrowingTable) table).waitUntilGrown() ;
+				((ResizingTable) table).waitUntilResized() ;
 			}
 		}
 	}
@@ -2264,20 +2296,20 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 		}
 	}
 	
-	private final class GrowingTable implements Table<N> {
-		private final N[] oldTable ;
-		private final N[] newTable ;
-		private final int[] migrated ;
-		private final int oldTableMask ;
-		private final int newTableMask ;
-		private final WaitingOnGrow waiting ;
-		private final GrowCompletion completion = new GrowCompletion() ;
-		private final int capacity ;
+	private abstract class ResizingTable implements Table<N> {
+		final N[] oldTable ;
+		final N[] newTable ;
+		final int[] migrated ;
+		final int oldTableMask ;
+		final int newTableMask ;
+		final WaitingOnGrow waiting ;
+		final GrowCompletion completion = new GrowCompletion() ;
+		final int capacity ;
 		@SuppressWarnings("unchecked")
-		public GrowingTable(RegularTable<N> table) {
+		public ResizingTable(RegularTable<N> table, int newLength) {
 			this.oldTable = table.table ;
 			this.oldTableMask = oldTable.length - 1 ;
-			this.newTable = (N[]) new LockFreeHashNode[oldTable.length << 1] ;
+			this.newTable = (N[]) new LockFreeHashNode[newLength] ;
 			this.newTableMask = newTable.length - 1 ;
 			this.migrated = new int[(oldTable.length >> 5) + 1] ;
 			this.waiting = new WaitingOnGrow(null, -1) ;
@@ -2322,7 +2354,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			final int migratedIndex = oldTableIndex >> 5 ;
 			final int migratedBit = 1 << (oldTableIndex & 31) ;
 			if ((migrated[migratedIndex] & migratedBit) == 0) {
-				grow(oldTableIndex, true, false, false) ;
+				rehash(oldTableIndex, true, false, false) ;
 				return getNodeVolatile(newTable, hash & newTableMask) ;
 			}
 			return getNodeVolatile(newTable, hash & newTableMask) ;
@@ -2332,12 +2364,12 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			final int migratedIndex = oldTableIndex >> 5 ;
 			final int migratedBit = 1 << (oldTableIndex & 31) ;
 			if ((migrated[migratedIndex] & migratedBit) == 0) {
-				grow(oldTableIndex, true, false, false) ;
+				rehash(oldTableIndex, true, false, false) ;
 				return newTable[hash & newTableMask] ;
 			}
 			return getNodeVolatile(newTable, hash & newTableMask) ;
 		}
-		private void wait(int oldTableIndex) {
+		void wait(int oldTableIndex) {
 			final int migratedIndex = oldTableIndex >> 5 ;
 			final int migratedBit = 1 << (oldTableIndex & 31) ;
 			final WaitingOnGrow queue = new WaitingOnGrow(Thread.currentThread(), oldTableIndex) ;
@@ -2346,7 +2378,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 				LockSupport.park() ;
 			queue.remove() ;
 		}
-		private void waitUntilGrown() {
+		void waitUntilResized() {
 			// small possibility somebody will get to here before the first grow() is called; this should only happen on small hash maps however
 			if (LockFreeHashStore.this.getTableFresh() != this)
 				return ;
@@ -2369,12 +2401,22 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 				return casNodeArray(newTable, hash & newTableMask, expect, update) ;
 			}
 		}
-		public void grow(int from, boolean needThisIndex, boolean initiator, boolean tryAll) {
+		void rehash(int from, boolean needThisIndex, boolean initiator, boolean tryAll) {
 			if (!completion.startContributing())
 				return ;
-			for (int i = from ; i != oldTable.length ; i++)
-				if (!rehash(i, !(needThisIndex & (from == i))) & !tryAll)
+			boolean returnImmediatelyIfAlreadyHashing = !needThisIndex ;
+			for (int i = from ; i != oldTable.length ; i++) {
+				N head = startBucket(i, returnImmediatelyIfAlreadyHashing) ;
+				if (head != null) {
+					if (head == REHASHING_FLAG)
+						head = null ;
+					doBucket(head, i) ;
+					finishBucket(i) ;
+				} else if (!tryAll) {
 					break ;
+				}
+				returnImmediatelyIfAlreadyHashing = true ;
+			}				
 			if (completion.finishContributing(initiator)) {
 				// perform a CAS rather than a set because a clear() could have already removed this table before grow completion
 				LockFreeHashStore.this.casTable(this, new RegularTable<N>(newTable, capacity)) ;
@@ -2382,24 +2424,62 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			}
 		}
 		@SuppressWarnings("unchecked")
-		private boolean rehash(int oldTableIndex, boolean returnImmediatelyIfAlreadyRehashing) {
+		N startBucket(int oldTableIndex, boolean returnImmediatelyIfAlreadyRehashing) {
+			N cur ;
+			final long directOldTableIndex = directNodeArrayIndex(oldTableIndex) ;
+			while (true) {
+				cur = getNodeVolatileDirect(oldTable, directOldTableIndex) ;
+				final boolean success = casNodeArrayDirect(oldTable, directOldTableIndex, cur, REHASHING_FLAG) ;
+				if (cur == REHASHING_FLAG) {
+					if (!returnImmediatelyIfAlreadyRehashing)
+						wait(oldTableIndex) ;
+					return null ;
+				} 
+				if (success) {
+					if (cur == null)
+						return (N) REHASHING_FLAG ; 
+					return cur ;
+				}
+			}
+		}
+		void finishBucket(int oldTableIndex) {
 			final int migratedIndex = oldTableIndex >> 5 ;
 			final int migratedBit = 1 << (oldTableIndex & 31) ;
-			N cur ;
-			{
-				final long directOldTableIndex = directNodeArrayIndex(oldTableIndex) ;
+			// flag as migrated
+			final long directMigratedIndex = directIntArrayIndex(migratedIndex) ;
+			int prevMigratedFlags = migrated[migratedIndex] ;
+			if (!casIntArrayDirect(migrated, directMigratedIndex, prevMigratedFlags, prevMigratedFlags | migratedBit)) {
 				while (true) {
-					cur = getNodeVolatileDirect(oldTable, directOldTableIndex) ;
-					final boolean success = casNodeArrayDirect(oldTable, directOldTableIndex, cur, REHASHING_FLAG) ;
-					if (cur == REHASHING_FLAG) {
-						if (!returnImmediatelyIfAlreadyRehashing)
-							wait(oldTableIndex) ;
-						return false ;
-					} 
-					if (success)
+					prevMigratedFlags = getIntVolatileDirect(migrated, directMigratedIndex) ;
+					if (casIntArrayDirect(migrated, directMigratedIndex, prevMigratedFlags, prevMigratedFlags | migratedBit))
 						break ;
 				}
 			}
+			
+			// wake up waiters
+			waiting.wake(oldTableIndex) ;
+		}
+		abstract void doBucket(N head, int oldTableIndex) ;
+		@Override
+		public int maxCapacity() {
+			return capacity ;
+		}
+		@Override
+		public int length() {
+			return newTable.length ;
+		}
+		@Override
+		public boolean isEmpty() {
+			return false ;
+		}
+	}
+	
+	private final class Growing2xTable extends ResizingTable {
+		public Growing2xTable(RegularTable<N> table) {
+			super(table, table.table.length << 1) ;
+		}
+		@Override
+		protected void doBucket(N cur, int oldTableIndex) {
 			final int extrabit = oldTable.length ;
 			N tail1 = null ;
 			N tail2 = null ;
@@ -2446,33 +2526,105 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 					doGetNextSafely = true ;
 				}
 			}
-
-			// flag as migrated
-			final long directMigratedIndex = directIntArrayIndex(migratedIndex) ;
-			int prevMigratedFlags = migrated[migratedIndex] ;
-			if (!casIntArrayDirect(migrated, directMigratedIndex, prevMigratedFlags, prevMigratedFlags | migratedBit)) {
-				while (true) {
-					prevMigratedFlags = getIntVolatileDirect(migrated, directMigratedIndex) ;
-					if (casIntArrayDirect(migrated, directMigratedIndex, prevMigratedFlags, prevMigratedFlags | migratedBit))
-						break ;
+		}
+	}
+	
+	private final class Growing2ttpNxTable extends ResizingTable {
+		@SuppressWarnings("unchecked")
+   		final int tailShift = Integer.bitCount(oldTableMask) ;
+   		final N[] tails = (N[]) new LockFreeHashNode[newTable.length >> tailShift] ;
+		public Growing2ttpNxTable(RegularTable<N> table, int newLength) {
+			super(table, newLength) ;
+		}
+		@Override
+		@SuppressWarnings("unchecked")
+		protected void doBucket(N cur, int oldTableIndex) {
+			final N[] tails = this.tails ;
+			final int tailShift = this.tailShift ;
+			Arrays.fill(tails, null) ;
+			
+			boolean doGetNextSafely = false ;
+			while (cur != null) {
+				final N next = (doGetNextSafely ? cur.getNextFresh() : cur.getNextStale()) ;
+				if (next == DELETING_FLAG) {
+					// cur cannot be actually deleted as CAS operations to the head will fail, and we have set prev's next to RETRY_FLAG,
+					// as such the delete will be aborted by the deleting thread at which point we can continue; however add ourselves to the
+					// waiting queue so as to not spin wastefully
+					waitOnDelete(cur) ;
+					doGetNextSafely = false ;
+					continue ;
+				}
+				if (cur.startRehashing(next)) {
+					
+					final int newTableIndex = cur.hash & newTableMask ;
+					final int tail = newTableIndex >> tailShift ;
+					final N copy = cur.copy() ;
+					if (tails[tail] == null) {
+						lazySetNodeArray(newTable, newTableIndex, copy) ;
+						tails[tail] = copy ;
+					} else {
+						tails[tail].lazySetNext(copy) ;
+						tails[tail] = copy ;
+					}
+					
+					cur = next ;
+					doGetNextSafely = false ;
+				} else {
+					doGetNextSafely = true ;
 				}
 			}
-			
-			// wake up waiters
-			waiting.wake(oldTableIndex) ;
-			return true ;
+		}
+	}
+	
+	private final class ShrinkingTable extends ResizingTable {
+		public ShrinkingTable(RegularTable<N> table, int newLength) {
+			super(table, newLength) ;
 		}
 		@Override
-		public int maxCapacity() {
-			return capacity ;
-		}
-		@Override
-		public int length() {
-			return newTable.length ;
-		}
-		@Override
-		public boolean isEmpty() {
-			return false ;
+		void doBucket(N head, int oldTableIndex) {
+			final int newTableIndex = oldTableIndex & newTableMask ;
+			final long newTableIndexDirect = directNodeArrayIndex(newTableIndex) ;
+			N prev2 = null, prev = null, node = newTable[newTableIndex] ;
+			while (true) {				
+				if (node == null) {		
+					
+					if (prev == null) {						
+						if (casNodeArrayDirect(newTable, newTableIndexDirect, null, head)) {
+							return ;
+						}
+						node = getNodeVolatileDirect(newTable, newTableIndexDirect) ;
+					} else {
+						if (prev.casNext(null, head)) {
+							return ;
+						}
+						node = prev.getNextFresh() ;
+					}
+					
+				} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG) {
+					
+					if (node == REHASHING_FLAG) {
+						throw new IllegalStateException() ;
+					} else {
+						// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
+						waitOnDelete(prev) ;
+						if (prev2 == null) {							
+							prev = null ;						
+							node = getNodeVolatileDirect(newTable, newTableIndexDirect) ;
+						} else {
+							node = prev2.getNextFresh() ;
+							prev = prev2 ;
+							prev2 = null ;
+						}
+					}
+					
+				} else {
+					
+					prev2 = prev ;
+					prev = node ;
+					node = node.getNextStale() ;
+					
+				}
+			}
 		}
 	}
 	
