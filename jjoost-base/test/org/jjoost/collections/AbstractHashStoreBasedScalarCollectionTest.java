@@ -4,9 +4,6 @@ import java.util.Arrays ;
 import java.util.Iterator ;
 import java.util.List ;
 
-import junit.framework.TestCase ;
-
-import org.jjoost.collections.sets.base.HashSet ;
 import org.jjoost.util.Iters ;
 /**
  * This class is the basis for testing all implementations of Set and Map that use a regular HashStore as backing

@@ -2530,14 +2530,13 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	}
 	
 	private final class Growing2ttpNxTable extends ResizingTable {
-		@SuppressWarnings("unchecked")
    		final int tailShift = Integer.bitCount(oldTableMask) ;
+		@SuppressWarnings("unchecked")
    		final N[] tails = (N[]) new LockFreeHashNode[newTable.length >> tailShift] ;
 		public Growing2ttpNxTable(RegularTable<N> table, int newLength) {
 			super(table, newLength) ;
 		}
 		@Override
-		@SuppressWarnings("unchecked")
 		protected void doBucket(N cur, int oldTableIndex) {
 			final N[] tails = this.tails ;
 			final int tailShift = this.tailShift ;

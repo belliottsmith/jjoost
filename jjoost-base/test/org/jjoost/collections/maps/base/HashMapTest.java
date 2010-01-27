@@ -27,12 +27,14 @@ public abstract class HashMapTest extends AbstractHashStoreBasedScalarCollection
 	private final HashMap<String, String, ?> map = createMap() ;
 	protected abstract HashMap<String, String, ?> createMap() ;
 	private static final Function<String, String> function = new Function<String, String>() {
+		private static final long serialVersionUID = 8731482102834376759L;
 		@Override
 		public String apply(String v) {
 			return v ;
 		}
 	} ;
 	private static final class ValueFactory implements Factory<String> {
+		private static final long serialVersionUID = 5487497026936333617L;
 		private int cur = 0 ;
 		@Override
 		public String create() {
@@ -134,6 +136,7 @@ public abstract class HashMapTest extends AbstractHashStoreBasedScalarCollection
 		checkAndClear(0) ;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void testRemoveAndReturnPair_whenNotPresent() {
 		checkEmpty() ;
 		checkIterableContents(Arrays.<ImmutableMapEntry<String, String>>asList(), map.removeAndReturn("a", "a"), true) ;
@@ -144,6 +147,7 @@ public abstract class HashMapTest extends AbstractHashStoreBasedScalarCollection
 		checkAndClear(2) ;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void testRemoveAndReturnPair_whenPresent() {
 		checkEmpty() ;
 		map.put("a", "a") ;

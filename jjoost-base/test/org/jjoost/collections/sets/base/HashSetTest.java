@@ -1,8 +1,6 @@
 package org.jjoost.collections.sets.base;
 
 import java.util.Arrays ;
-import java.util.Iterator ;
-import java.util.List ;
 
 import org.jjoost.collections.AbstractHashStoreBasedScalarCollectionTest ;
 import org.jjoost.collections.Set ;
