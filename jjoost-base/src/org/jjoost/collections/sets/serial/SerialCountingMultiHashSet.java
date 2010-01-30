@@ -73,7 +73,7 @@ public class SerialCountingMultiHashSet<V> extends NestedMultiHashSet<V, SerialC
 			final int newc = count - i ;
 			if (newc <= 0) {
 				final int oldc = count ;
-				count = 0 ;
+				count = -1 ;
 				return oldc ;
 			}
 			count = newc ;
@@ -86,14 +86,14 @@ public class SerialCountingMultiHashSet<V> extends NestedMultiHashSet<V, SerialC
 		}
 
 		@Override public boolean put(V val) {
-			if (count < 1)
+			if (count < 0)
 				return false ;
 			count += 1 ; 
 			return true ;
 		}
 		
 		@Override public boolean put(V val, int c) {
-			if (count < 1)
+			if (count < 0)
 				return false ;
 			count += c ; 
 			return true ;

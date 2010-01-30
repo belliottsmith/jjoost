@@ -45,7 +45,7 @@ public class LockFreeCountingMultiHashSet<V> extends NestedMultiHashSet<V, LockF
 			new LockFreeHashStore<Node<V>>(minimumInitialCapacity, loadFactor, Counting.PRECISE, Counting.OFF)) ;
 	}
 
-	// this implementation has no concurrency guarantees
+	// TODO : this implementation DOES NOT WORK IF USED CONCURRENTLY - WHICH IS ITS WHOLE POINT! SO FIX.
 	public static final class Node<V> extends LockFreeHashNode<Node<V>> implements NestedMultiHashSet.INode<V, Node<V>> {
 		
 		private static final long serialVersionUID = -5766263745864028747L;
@@ -79,7 +79,7 @@ public class LockFreeCountingMultiHashSet<V> extends NestedMultiHashSet<V, LockF
 			final int newc = count - i ;
 			if (newc <= 0) {
 				final int oldc = count ;
-				count = 0 ;
+				count = -1 ;
 				return oldc ;
 			}
 			count = newc ;
@@ -93,23 +93,23 @@ public class LockFreeCountingMultiHashSet<V> extends NestedMultiHashSet<V, LockF
 
 		@Override 
 		public synchronized boolean put(V val) {
-			if (count < 1)
+			if (count < 0)
 				return false ;
 			count += 1 ; 
 			return true ;
 		}
 		
 		@Override 
-		public boolean put(V val, int c) {
-			if (count < 1)
+		public synchronized boolean put(V val, int c) {
+			if (count < 0)
 				return false ;
 			count += c ; 
 			return true ;
 		}
 		
 		@Override 
-		public boolean valid() { 
-			return count > 0 ; 
+		public synchronized boolean valid() { 
+			return count >= 0 ; 
 		}
 		
 		@Override
@@ -124,20 +124,24 @@ public class LockFreeCountingMultiHashSet<V> extends NestedMultiHashSet<V, LockF
 				}
 				@Override
 				public V next() {
-					if (!next)
-						throw new NoSuchElementException() ;
-					c++ ;
-					last = true ;
-					return value ;
+					synchronized (Node.this) {
+						if (!next)
+							throw new NoSuchElementException() ;
+						c++ ;
+						last = true ;
+						return value ;
+					}
 				}
 				@Override
 				public void remove() {
-					if (!last)
-						throw new NoSuchElementException() ;
-					count -= 1 ;
-					if (count <= 0) {
-						count = -1 ;
-						superIter.remove() ;
+					synchronized (Node.this) {
+						if (!last)
+							throw new NoSuchElementException() ;
+						count -= 1 ;
+						if (count <= 0) {
+							count = -1 ;
+							superIter.remove() ;
+						}
 					}
 				}
 			} ;

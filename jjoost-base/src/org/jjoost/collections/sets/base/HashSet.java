@@ -70,8 +70,4 @@ public class HashSet<V, N extends HashNode<N> & Value<V>> extends AbstractHashSe
 		}
 	}
 	
-	public String toString() {
-		return store.toString() ;
-	}
-	
 }

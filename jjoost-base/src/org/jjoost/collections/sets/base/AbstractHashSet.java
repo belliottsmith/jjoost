@@ -162,6 +162,10 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> exten
 		return valEq.valEq ;
 	}
 	
+	public String toString() {
+		return store.toString() ;
+	}
+	
  	// **********************************
 	// EQUALITY
 	// **********************************

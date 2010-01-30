@@ -6,7 +6,7 @@ import java.util.List ;
 import org.jjoost.util.Equality ;
 import org.jjoost.util.Function ;
 
-public class SynchronizedHashStore<N extends HashNode<N>> implements HashStore<N> {
+public class SynchronizedHashStore<N extends HashNode<N>> extends SynchronizedDelegator implements HashStore<N> {
 	
 	private static final long serialVersionUID = 5588736896279488162L ;
 	
@@ -99,41 +99,6 @@ public class SynchronizedHashStore<N extends HashNode<N>> implements HashStore<N
 	}
 	public synchronized int uniquePrefixCount() {
 		return delegate.uniquePrefixCount() ;
-	}
-
-	protected <V> Iterable<V> wrap(final Iterable<V> iter) {
-		return new Iterable<V>() {
-			@Override
-			public Iterator<V> iterator() {
-				synchronized (SynchronizedHashStore.this) {
-					return wrap(iter.iterator()) ;
-				}
-			}
-		} ;
-	}
-	
-	protected <V> Iterator<V> wrap(final Iterator<V> iter) {
-		return new Iterator<V>() {
-			@Override
-			public boolean hasNext() {
-				synchronized (SynchronizedHashStore.this) {
-					return iter.hasNext() ;
-				}
-			}
-			@Override
-			public V next() {
-				synchronized (SynchronizedHashStore.this) {
-					return iter.next() ;
-				}
-			}
-
-			@Override
-			public void remove() {
-				synchronized (SynchronizedHashStore.this) {
-					iter.remove() ;
-				}
-			}
-		} ;
 	}
 
 }

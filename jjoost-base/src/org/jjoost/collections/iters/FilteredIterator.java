@@ -15,7 +15,6 @@ public class FilteredIterator<E> implements Iterator<E> {
     public FilteredIterator(Iterator<? extends E> base, Filter<? super E> filter) {
         this.base = base ;
         this.filter = filter ;
-        next() ;
     }
 
     public boolean hasNext() {

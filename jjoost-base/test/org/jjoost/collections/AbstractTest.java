@@ -26,10 +26,13 @@ public abstract class AbstractTest extends TestCase {
 	}
 	
 	protected void checkIteratorContents(Iterator<?> expect, Iterator<?> actual, boolean expectSameOrder) {
+		int i = 0 ;
 		if (expectSameOrder) {
-			while (expect.hasNext() && actual.hasNext())
-				assertEquals(expect.next(), actual.next()) ;
-			assertEquals(expect.hasNext(), actual.hasNext()) ;
+			while (expect.hasNext() && actual.hasNext()) {
+				assertEquals(Integer.toString(i), expect.next(), actual.next()) ;
+				i++ ;
+			}
+			assertEquals(Integer.toString(i), expect.hasNext(), actual.hasNext()) ;
 			checkFinishedIterator(actual) ;
 		} else {
 			checkListContents(Iters.toList(expect), Iters.toList(actual), false) ;

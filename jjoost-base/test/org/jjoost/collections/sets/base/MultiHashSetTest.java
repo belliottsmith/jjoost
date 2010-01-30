@@ -4,12 +4,12 @@ import java.util.Arrays ;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jjoost.collections.AbstractHashStoreBasedScalarCollectionTest ;
-import org.jjoost.collections.Set ;
+import org.jjoost.collections.AbstractHashStoreBasedMultiCollectionTest;
+import org.jjoost.collections.MultiSet;
 
-public abstract class HashSetTest extends AbstractHashStoreBasedScalarCollectionTest {
+public abstract class MultiHashSetTest extends AbstractHashStoreBasedMultiCollectionTest {
 
-	protected abstract Set<String> getSet() ;
+	protected abstract MultiSet<String> getSet() ;
 	
 	@Override
 	protected String put(String v) {
@@ -47,10 +47,6 @@ public abstract class HashSetTest extends AbstractHashStoreBasedScalarCollection
 
 	protected String first(String value) {
 		return getSet().first(value) ;
-	}
-
-	protected String get(String key) {
-		return getSet().get(key) ;
 	}
 
 	protected boolean isEmpty() {
@@ -101,10 +97,6 @@ public abstract class HashSetTest extends AbstractHashStoreBasedScalarCollection
 		getSet().shrink() ;
 	}
 
-	protected int size() {
-		return getSet().size() ;
-	}
-
 	protected int totalCount() {
 		return getSet().totalCount() ;
 	}
@@ -115,7 +107,7 @@ public abstract class HashSetTest extends AbstractHashStoreBasedScalarCollection
 
 	public void testCopy_whenEmpty() {
 		checkEmpty() ;
-		final Set<String> copy = getSet().copy() ;
+		final MultiSet<String> copy = getSet().copy() ;
 		assertNotSame(copy, getSet()) ;
 		assertEquals(getSet(), copy) ;
 		checkAndClear(0) ;
@@ -124,26 +116,27 @@ public abstract class HashSetTest extends AbstractHashStoreBasedScalarCollection
 	public void testCopy_whenNotEmpty() {
 		checkEmpty() ;
 		put("a") ;
+		put("a") ;
 		put("q") ;
 		put("b") ;
 		put(null) ;
-		final Set<String> copy = getSet().copy() ;
+		final MultiSet<String> copy = getSet().copy() ;
 		assertNotSame(copy, getSet()) ;
 		assertEquals(getSet(), copy) ;
-		checkAndClear(4) ;
+		checkAndClear(5) ;
 	}
 	
 	public void testPutAll_whenNotPresent() {
 		checkEmpty() ;
-		assertEquals(4, putAll(Arrays.asList("a", "b", "q", null))) ;
-		checkAndClear(4) ;
+		assertEquals(5, putAll(Arrays.asList("a", "a", "b", "q", null))) ;
+		checkAndClear(5) ;
 	}
 	
 	public void testPutAll_whenPresent() {
 		checkEmpty() ;
-		putAll(Arrays.asList("a", "b", "q", null)) ;
-		assertEquals(0, putAll(Arrays.asList("a", "b", "q", null))) ;
-		checkAndClear(4) ;		
+		putAll(Arrays.asList("a", "a", "b", "q", null)) ;
+		assertEquals(5, putAll(Arrays.asList("a", "a", "b", "q", null))) ;
+		checkAndClear(10) ;		
 	}
 	
 	public void testRemoveMultiple_whenNotPresent() {		
@@ -163,15 +156,21 @@ public abstract class HashSetTest extends AbstractHashStoreBasedScalarCollection
 	public void testRemoveMultiple_whenPresent() {		
 		checkEmpty() ;
 		put("a") ;
+		put("a") ;
+		put("a") ;
 		put("q") ;
 		assertEquals(0, remove("a", 0)) ;
 		assertEquals(0, remove("q", 0)) ;
-		assertEquals(1, remove("a", 100)) ;
+		assertEquals(1, remove("a", 1)) ;
+		assertEquals(2, remove("a", 100)) ;
 		assertEquals(1, remove("q", 100)) ;
+		put("a") ;
+		put("a") ;
 		put("a") ;
 		put("q") ;
 		assertEquals(1, remove("q", 100)) ;
-		assertEquals(1, remove("a", 100)) ;
+		assertEquals(1, remove("a", 1)) ;
+		assertEquals(2, remove("a", 100)) ;
 		checkAndClear(0) ;
 	}
 	
@@ -193,15 +192,21 @@ public abstract class HashSetTest extends AbstractHashStoreBasedScalarCollection
 	public void testRemoveMultipleAndReturn_whenPresent() {
 		checkEmpty() ;
 		put("a") ;
+		put("a") ;
+		put("a") ;
 		put("q") ;
 		checkIterableContents(Arrays.asList(), removeAndReturn("a", 0), true) ;
 		checkIterableContents(Arrays.asList(), removeAndReturn("q", 0), true) ;
 		checkIterableContents(Arrays.asList("a"), removeAndReturn("a", 1), true) ;
-		checkIterableContents(Arrays.asList("q"), removeAndReturn("q", 1), true) ;
+		checkIterableContents(Arrays.asList("a", "a"), removeAndReturn("a", 100), true) ;
+		checkIterableContents(Arrays.asList("q"), removeAndReturn("q", 100), true) ;
+		put("a") ;
+		put("a") ;
 		put("a") ;
 		put("q") ;
-		checkIterableContents(Arrays.asList("q"), removeAndReturn("q", 1), true) ;
+		checkIterableContents(Arrays.asList("q"), removeAndReturn("q", 100), true) ;
 		checkIterableContents(Arrays.asList("a"), removeAndReturn("a", 1), true) ;
+		checkIterableContents(Arrays.asList("a", "a"), removeAndReturn("a", 100), true) ;
 		checkAndClear(0) ;
 	}
 	
@@ -221,15 +226,21 @@ public abstract class HashSetTest extends AbstractHashStoreBasedScalarCollection
 	public void testRemoveMultipleAndReturnFirst_whenPresent() {
 		checkEmpty() ;
 		put("a") ;
+		put("a") ;
+		put("a") ;
 		put("q") ;
 		assertEquals(null, removeAndReturnFirst("a", 0)) ;
 		assertEquals(null, removeAndReturnFirst("q", 0)) ;
 		assertEquals("a", removeAndReturnFirst("a", 1)) ;
-		assertEquals("q", removeAndReturnFirst("q", 1)) ;
+		assertEquals("a", removeAndReturnFirst("a", 100)) ;
+		assertEquals("q", removeAndReturnFirst("q", 100)) ;
+		put("a") ;
+		put("a") ;
 		put("a") ;
 		put("q") ;
-		assertEquals("q", removeAndReturnFirst("q", 1)) ;
+		assertEquals("q", removeAndReturnFirst("q", 100)) ;
 		assertEquals("a", removeAndReturnFirst("a", 1)) ;
+		assertEquals("a", removeAndReturnFirst("a", 100)) ;
 		checkAndClear(0) ;
 	}
 	
@@ -243,13 +254,12 @@ public abstract class HashSetTest extends AbstractHashStoreBasedScalarCollection
 	
 	public void testApply_whenPresent() {
 		checkEmpty() ;
-		final String a1 = "a" ;
-		final String q1 = "q" ;
-		put(a1) ;
-		put(q1) ;
-		assertTrue(apply(a1)) ;
-		assertTrue(apply(q1)) ;
-		checkAndClear(2) ;
+		put("a") ;
+		put("a") ;
+		put("q") ;
+		assertTrue(apply("a")) ;
+		assertTrue(apply("q")) ;
+		checkAndClear(3) ;
 	}
 	
 	public void testEquality() {
@@ -257,20 +267,22 @@ public abstract class HashSetTest extends AbstractHashStoreBasedScalarCollection
 	}
 
 	public void testUnique() {
-		assertEquals(getSet(), getSet().unique()) ;
+		assertNotSame(getSet(), getSet().unique()) ;
+		assertFalse(getSet().unique().permitsDuplicates()) ;
 	}
 	
 	public void testPermitsDuplicates() {
-		assertFalse(getSet().permitsDuplicates()) ;
+		assertTrue(getSet().permitsDuplicates()) ;
 	}
 	
 	public void testToString() {
 		checkEmpty() ;
 		put(null) ;
 		put("a") ;
+		put("a") ;
 		put("q") ;
-		assertEquals("{null, a, q}", getSet().toString()) ;
-		checkAndClear(3) ;
+		assertEquals("{null, a, a, q}", getSet().toString()) ;
+		checkAndClear(4) ;
 	}
 	
 }

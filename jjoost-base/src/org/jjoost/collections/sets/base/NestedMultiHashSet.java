@@ -23,7 +23,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 
 	private static final long serialVersionUID = 3187373892419456381L;
 	
-	protected final HashStore<N> table ;
+	protected final HashStore<N> store ;
 	protected final Rehasher rehasher ;
 	protected final HashNodeFactory<V, N> nodeFactory ;
 	protected final ValueEquality<V, N> valEq ;
@@ -31,7 +31,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	private UniqueSet unique ;
 	
 	protected NestedMultiHashSet(Counter counter, Rehasher rehasher, ValueEquality<V, N> equality, HashNodeFactory<V, N> nodeFactory, HashStore<N> table) {
-		this.table = table ;
+		this.store = table ;
 		this.totalCount = counter ;
 		this.rehasher = rehasher ;
 		this.nodeFactory = nodeFactory ;
@@ -46,12 +46,20 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 		return Functions.<V>getValueContentsProjection() ;
 	}
 	
+	public int capacity() {
+		return store.capacity() ;
+	}
+	
+	public void resize(int capacity) {
+		store.resize(capacity) ;
+	}
+	
 	final int hash(V key) {
 		return rehasher.rehash(valEq.valEq.hash(key)) ;
 	}
 	
 	protected static <V, N extends HashNode<N> & INode<V, N>> boolean removeNode(NestedMultiHashSet<V, N> set, N node) {
-		return set.table.removeNode(set.valProj(), set.valEq, node) ;
+		return set.store.removeNode(set.valProj(), set.valEq, node) ;
 	}
 	
 	@Override
@@ -74,7 +82,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public V put(V val) {
 		final int hash = hash(val) ;
 		while (true) {
-			final N existing = table.ensureAndGet(hash, val, valEq, nodeFactory, identity()) ;
+			final N existing = store.ensureAndGet(hash, val, valEq, nodeFactory, identity()) ;
 			if (existing.put(val))
 				break ;
 		}
@@ -86,7 +94,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public void put(V val, int count) {
 		final int hash = hash(val) ;
 		while (true) {
-			final N existing = table.ensureAndGet(hash, val, valEq, nodeFactory, identity()) ;
+			final N existing = store.ensureAndGet(hash, val, valEq, nodeFactory, identity()) ;
 			if (existing.put(val, count))
 				break ;
 		}
@@ -106,7 +114,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public V putIfAbsent(V val) {
 		final int hash = hash(val) ;
 		while (true) {
-			final N existing = table.putIfAbsent(hash, val, valEq, nodeFactory, identity()) ;
+			final N existing = store.putIfAbsent(hash, val, valEq, nodeFactory, identity()) ;
 			if (existing == null) {
 				totalCount.add(1) ;
 				return null ;
@@ -119,7 +127,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public int remove(V val) {
 		final int hash = hash(val) ;
 		while (true) {
-			final N r = table.removeAndReturnFirst(hash, 1, val, valEq, identity()) ;
+			final N r = store.removeAndReturnFirst(hash, 1, val, valEq, identity()) ;
 			if (r == null)
 				return 0 ;
 			final int removed = r.remove(Integer.MAX_VALUE) ;
@@ -134,7 +142,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public V removeAndReturnFirst(V val) {
 		final int hash = hash(val) ;
 		while (true) {
-			final N r = table.removeAndReturnFirst(hash, 1, val, valEq, identity()) ;
+			final N r = store.removeAndReturnFirst(hash, 1, val, valEq, identity()) ;
 			if (r == null)
 				return null ;
 			final V v = r.getValue() ; 
@@ -150,7 +158,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public Iterable<V> removeAndReturn(V val) {
 		final int hash = hash(val) ;
 		while (true) {
-			final N r = table.removeAndReturnFirst(hash, 1, val, valEq, identity()) ;
+			final N r = store.removeAndReturnFirst(hash, 1, val, valEq, identity()) ;
 			if (r == null)
 				return Iters.emptyIterable() ;
 			final List<V> removed = r.removeAndReturn(Integer.MAX_VALUE) ;
@@ -170,13 +178,13 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 		}
 		final int hash = hash(val) ;
 		while (true) {
-			final N r = table.first(hash, val, valEq, identity()) ;
+			final N r = store.first(hash, val, valEq, identity()) ;
 			if (r == null)
 				return 0 ;
 			final int removed = r.remove(atMost) ;
 			if (removed != 0) {
-				if (removed <= atMost)
-					table.removeNode(valProj(), valEq, r) ;
+				if (removed < atMost || !r.valid())
+					store.removeNode(valProj(), valEq, r) ;				
 				totalCount.add(-removed) ;
 				return removed ;
 			}
@@ -192,13 +200,13 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 		}
 		final int hash = hash(val) ;
 		while (true) {
-			final N r = table.first(hash, val, valEq, identity()) ;
+			final N r = store.first(hash, val, valEq, identity()) ;
 			if (r == null)
 				return null ;
 			final int removed = r.remove(atMost) ;
 			if (removed != 0) {
 				if (removed <= atMost)
-					table.removeNode(valProj(), valEq, r) ;
+					store.removeNode(valProj(), valEq, r) ;
 				totalCount.add(-removed) ;
 				return r.getValue() ;
 			}
@@ -214,13 +222,13 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 		}
 		final int hash = hash(val) ;
 		while (true) {
-			final N r = table.first(hash, val, valEq, identity()) ;
+			final N r = store.first(hash, val, valEq, identity()) ;
 			if (r == null)
 				return Iters.emptyIterable() ;
 			final List<V> removed = r.removeAndReturn(atMost) ;
 			if (removed.size() != 0) {
 				if (removed.size() <= atMost)
-					table.removeNode(valProj(), valEq, r) ;
+					store.removeNode(valProj(), valEq, r) ;
 				totalCount.add(-removed.size()) ;
 				return removed ;
 			}
@@ -231,7 +239,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public boolean contains(V val) {
 		final int hash = hash(val) ;
 		while (true) {
-			final N r = table.first(hash, val, valEq, identity()) ;
+			final N r = store.first(hash, val, valEq, identity()) ;
 			if (r == null)
 				return false ;
 			if (r.valid())
@@ -242,7 +250,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public int count(V val) {
 		final int hash = hash(val) ;
 		while (true) {
-			final N r = table.first(hash, val, valEq, identity()) ;
+			final N r = store.first(hash, val, valEq, identity()) ;
 			if (r == null)
 				return 0 ;
 			final int c = r.count() ;
@@ -252,11 +260,11 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	}
 	@Override
 	public void shrink() {
-		table.shrink() ;
+		store.shrink() ;
 	}
 	@Override
 	public V first(V val) {
-		return table.first(hash(val), val, valEq, valProj()) ;
+		return store.first(hash(val), val, valEq, valProj()) ;
 	}
 	@Override
 	public List<V> list(V val) {
@@ -268,11 +276,11 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	}
 	@Override
 	public int uniqueCount() {
-		return table.totalCount() ;
+		return store.totalCount() ;
 	}
 	@Override
 	public boolean isEmpty() {
-		return table.isEmpty() ;
+		return store.isEmpty() ;
 	}
 	@Override
 	public Iterable<V> all(final V val) {
@@ -280,7 +288,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 		return new Iterable<V>() {
 			@Override
 			public Iterator<V> iterator() {
-				final N n = table.first(hash, val, valEq, identity()) ;
+				final N n = store.first(hash, val, valEq, identity()) ;
 				if (n == null)
 					return EmptyIterator.<V>get() ;
 				return n.iterator(NestedMultiHashSet.this) ;
@@ -314,7 +322,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 		@Override
 		public Iterator<V> iterator() {
 			final NodeContentsIterator<V, N> f = new NodeContentsIterator<V, N>() ;
-			final Iterator<Iterator<V>> iters = table.unique(valProj(), valEq.getEquality(), valProj(), valEq, f) ;
+			final Iterator<Iterator<V>> iters = store.unique(valProj(), valEq.getEquality(), valProj(), valEq, f) ;
 			f.superIter = iters ;
 			return Iters.concat(iters) ;
 		}
@@ -323,18 +331,21 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 
 	@Override
 	public int clear() {
-		return table.clear() ;
+		store.clear() ;
+		final int r = totalCount.get() ;
+		totalCount.add(-r) ;
+		return r ;
 	}
 
 	@Override
 	public Iterator<V> clearAndReturn() {
-		return Iters.concat(table.clearAndReturn(NestedMultiHashSet.<V, N>destroyer())) ;
+		return Iters.concat(store.clearAndReturn(NestedMultiHashSet.<V, N>destroyer())) ;
 	}
 
 	@Override
 	public Iterator<V> iterator() {
 		final NodeContentsIterator<V, N> f = new NodeContentsIterator<V, N>() ;
-		final Iterator<Iterator<V>> iters = table.all(valProj(), valEq, f) ;
+		final Iterator<Iterator<V>> iters = store.all(valProj(), valEq, f) ;
 		f.superIter = iters ;
 		return Iters.concat(iters) ;
 	}
@@ -342,6 +353,10 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	@Override
 	public Boolean apply(V v) {
 		return contains(v) ;
+	}
+	
+	public String toString() {
+		return store.toString() ;
 	}
 	
 	// **********************************

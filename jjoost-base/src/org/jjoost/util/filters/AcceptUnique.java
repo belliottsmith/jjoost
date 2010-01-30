@@ -31,15 +31,7 @@ public class AcceptUnique<V> implements Filter<V> {
 	}
 
 	public boolean accept(V next) {
-		final boolean r ;
-		if (next != null) {
-			r = seen.put(next) == null ;
-		} else {
-			r = seen.contains(null) ;
-			if (!r)
-				seen.put(null) ;
-		}
-		return r ;
+		return seen.add(next) ;
 	}
 	
 	public String toString() {

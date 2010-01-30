@@ -182,4 +182,8 @@ public abstract class AbstractUniqueSetAdapter<V> implements Set<V> {
 		return set().apply(v) ;
 	}
 	
+	public String toString() {
+		return "{" + Iters.toString(this, ", ") + "}" ;
+	}
+	
 }

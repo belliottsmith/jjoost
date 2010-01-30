@@ -1,9 +1,9 @@
 package org.jjoost.collections.maps.base;
 
-import org.jjoost.collections.Set ;
-import org.jjoost.collections.sets.base.LinkedHashSetTest ;
+import org.jjoost.collections.MultiSet;
+import org.jjoost.collections.sets.base.MultiHashSetTest;
 
-public abstract class LinkedHashMapKeySetTest extends LinkedHashSetTest {
+public abstract class HashMapValueSetTest extends MultiHashSetTest {
 	
 	private final HashMap<String, String, ?> map = createMap() ;
 	protected abstract HashMap<String, String, ?> createMap() ;
@@ -32,7 +32,7 @@ public abstract class LinkedHashMapKeySetTest extends LinkedHashSetTest {
 	
 	public void testAdd() {
 		try {
-			map.keys().add(null) ;
+			map.values().add(null) ;
 			assertFalse(true) ;
 		} catch (UnsupportedOperationException e) {			
 		}
@@ -40,23 +40,25 @@ public abstract class LinkedHashMapKeySetTest extends LinkedHashSetTest {
 	
 	public void testPut() {
 		try {
-			map.keys().put(null) ;
+			map.values().put(null) ;
 			assertFalse(true) ;
 		} catch (UnsupportedOperationException e) {			
 		}
 	}
 	
 	@Override
-	protected Set<String> getSet() {
-		return map.keys() ;
+	protected MultiSet<String> getSet() {
+		return map.values() ;
 	}
 	@Override
 	protected int putAll(Iterable<String> vs) {
-		return 0 ;
+		throw new UnsupportedOperationException() ;
 	}
+	
+	int i = 0 ;
 	@Override
 	protected boolean add(String v) {
-		return map.add(v, v);
+		return map.add(Integer.toString(++i), v);
 	}
 	@Override
 	protected int capacity() {
@@ -64,11 +66,11 @@ public abstract class LinkedHashMapKeySetTest extends LinkedHashSetTest {
 	}
 	@Override
 	protected String put(String v) {
-		return map.put(v, v) ;
+		return map.put(Integer.toString(++i), v) ;
 	}
 	@Override
 	protected String putIfAbsent(String v) {
-		return map.putIfAbsent(v, v) ;
+		throw new UnsupportedOperationException() ;
 	}
 	@Override
 	protected void resize(int i) {

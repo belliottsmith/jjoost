@@ -120,13 +120,13 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		final boolean replace = eq.isUnique() ;
 		final int hash = put.hash ;
 		final int bucket = put.hash & (table.length - 1) ;		
+		boolean partial = false ;
     	N n = table[bucket] ;
     	if (n == null) {
     		table[bucket] = put ;
     	} else {
     		N p = null ;
     		while (n != null) {
-    			boolean partial = false ;
     			if (partial != (n.hash == hash && eq.prefixMatch(find, n))) {
     				if (partial) {
     					// inserting new node grouped with others with same prefix
@@ -155,7 +155,8 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 			// inserting new node with no matching prefixes in table
     		p.next = put ;
     	}
-		uniquePrefixCount++ ;
+    	if (!partial)
+    		uniquePrefixCount++ ;
 		totalNodeCount++ ;
 
 		inserted(put) ;
@@ -168,13 +169,13 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 
 		final int hash = put.hash ;
 		final int bucket = put.hash & (table.length - 1) ;		
+		boolean partial = false ;
     	N n = table[bucket] ;
     	if (n == null) {
     		table[bucket] = put ;
     	} else {
     		N p = null ;
     		while (n != null) {
-    			boolean partial = false ;
     			if (partial != (n.hash == hash && eq.prefixMatch(find, n))) {
     				if (partial) {
     					// inserting new node grouped with others with same prefix
@@ -195,7 +196,8 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 			// inserting new node with no matching prefixes in table
     		p.next = put ;
     	}
-		uniquePrefixCount++ ;
+    	if (!partial)
+    		uniquePrefixCount++ ;
 		totalNodeCount++ ;
 
 		inserted(put) ;
@@ -207,13 +209,13 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		grow() ;
 		
 		final int bucket = hash & (table.length - 1) ;
+		boolean partial = false ;
     	N n = table[bucket] ;
     	if (n == null) {
     		table[bucket] = factory.makeNode(hash, put) ;
     	} else {
     		N p = null ;
     		while (n != null) {
-    			boolean partial = false ;
     			if (partial != (n.hash == hash && eq.prefixMatch(put, n))) {
     				if (partial) {
     					// inserting new node grouped with others with same prefix
@@ -233,7 +235,8 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
     		p.next = factory.makeNode(hash, put) ;
     		inserted(p.next) ;
     	}
-		uniquePrefixCount++ ;
+    	if (!partial)
+    		uniquePrefixCount++ ;
 		totalNodeCount++ ;
 
 		return null ;
@@ -243,6 +246,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	public <NCmp, V> V ensureAndGet(final int hash, NCmp put, HashNodeEquality<? super NCmp, ? super N> eq, HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret) {
 		grow() ;
 		
+		boolean partial = false ;
 		final int bucket = hash & (table.length - 1) ;
     	N n = table[bucket] ;
     	if (n == null) {
@@ -250,7 +254,6 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
     	} else {
     		N p = null ;
     		while (n != null) {
-    			boolean partial = false ;
     			if (partial != (n.hash == hash && eq.prefixMatch(put, n))) {
     				if (partial) {
     					// inserting new node grouped with others with same prefix
@@ -269,7 +272,8 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
     		}
     		n = p.next = factory.makeNode(hash, put) ;
     	}
-		uniquePrefixCount++ ;
+    	if (!partial)
+    		uniquePrefixCount++ ;
 		totalNodeCount++ ;
 
 		inserted(n) ;
@@ -693,7 +697,13 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 			} else {
 				nextPrev = nextNode ;
 				nextNode = nextNode.next ;
-				while (nextNode != null && curNode.hash == nextNode.hash && findEquality.prefixMatch(find, nextNode) && !findEquality.suffixMatch(find, nextNode)) {
+				while (nextNode != null) {
+					if (curNode.hash != nextNode.hash || !findEquality.prefixMatch(find, nextNode)) {
+						nextNode = null ;
+						break ;
+					} 
+					if (findEquality.suffixMatch(find, nextNode))
+						break ;
 					nextPrev = nextNode ;
 					nextNode = nextNode.next ;
 				}
@@ -757,7 +767,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		int size = table.length ;
 		while ((int)(size * loadFactor) > totalNodeCount)
 			size >>= 1 ;
-		size <<=1 ;
+		size <<= 1 ;
 		if (size <= 1)
 			size = 2 ;
 		if (size < table.length)

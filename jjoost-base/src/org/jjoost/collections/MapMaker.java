@@ -7,6 +7,12 @@ import org.jjoost.collections.maps.concurrent.LockFreeLinkedInlineListHashMap;
 import org.jjoost.collections.maps.concurrent.LockFreeLinkedInlineMultiHashMap;
 import org.jjoost.collections.maps.concurrent.LockFreeLinkedHashMap;
 import org.jjoost.collections.maps.concurrent.LockFreeHashMap;
+import org.jjoost.collections.maps.concurrent.SyncHashMap;
+import org.jjoost.collections.maps.concurrent.SyncInlineListHashMap;
+import org.jjoost.collections.maps.concurrent.SyncInlineMultiHashMap;
+import org.jjoost.collections.maps.concurrent.SyncLinkedHashMap;
+import org.jjoost.collections.maps.concurrent.SyncLinkedInlineListHashMap;
+import org.jjoost.collections.maps.concurrent.SyncLinkedInlineMultiHashMap;
 import org.jjoost.collections.maps.nested.NestedSetListMap;
 import org.jjoost.collections.maps.nested.NestedSetMultiMap;
 import org.jjoost.collections.maps.serial.SerialInlineListHashMap;
@@ -17,9 +23,6 @@ import org.jjoost.collections.maps.serial.SerialLinkedHashMap;
 import org.jjoost.collections.maps.serial.SerialHashMap;
 import org.jjoost.collections.maps.wrappers.DefaultFactoryMap ;
 import org.jjoost.collections.maps.wrappers.DefaultFunctionMap ;
-import org.jjoost.collections.maps.wrappers.SynchronizedListMap;
-import org.jjoost.collections.maps.wrappers.SynchronizedMultiMap;
-import org.jjoost.collections.maps.wrappers.SynchronizedMap;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Factory;
@@ -259,10 +262,9 @@ public abstract class MapMaker<K, V> {
 					rehasher(), keyEquality, valEquality) ;
 				break ;
 			case SYNCHRONIZED:
-				r = new SynchronizedMap<K, V>(
-					new SerialHashMap<K, V>(
+				r = new SyncHashMap<K, V>(
 						initialCapacity, loadFactor,  
-						rehasher(), keyEquality, valEquality)) ;
+						rehasher(), keyEquality, valEquality) ;
 				break ;
 			case LINKED_SERIAL:
 				r = new SerialLinkedHashMap<K, V>(
@@ -270,10 +272,9 @@ public abstract class MapMaker<K, V> {
 					rehasher(), keyEquality, valEquality) ;
 				break ;
 			case LINKED_SYNCHRONIZED:
-				r = new SynchronizedMap<K, V>(
-					new SerialLinkedHashMap<K, V>(
+				r = new SyncLinkedHashMap<K, V>(
 						initialCapacity, loadFactor,  
-						rehasher(), keyEquality, valEquality)) ;
+						rehasher(), keyEquality, valEquality) ;
 				break ;
 			case LOCK_FREE:
 				r = new LockFreeHashMap<K, V>(
@@ -305,19 +306,17 @@ public abstract class MapMaker<K, V> {
 						initialCapacity, loadFactor, 
 						rehasher(), keyEquality, valEquality) ;
 				case SYNCHRONIZED:
-					return new SynchronizedMultiMap<K, V>(
-						new SerialInlineMultiHashMap<K, V>(
+					return new SyncInlineMultiHashMap<K, V>(
 							initialCapacity, loadFactor, 
-							rehasher(), keyEquality, valEquality)) ;
+							rehasher(), keyEquality, valEquality) ;
 				case LINKED_SERIAL:
 					return new SerialLinkedInlineMultiHashMap<K, V>(
 						initialCapacity, loadFactor, 
 						rehasher(), keyEquality, valEquality) ;
 				case LINKED_SYNCHRONIZED:
-					return new SynchronizedMultiMap<K, V>(
-						new SerialLinkedInlineMultiHashMap<K, V>(
+					return new SyncLinkedInlineMultiHashMap<K, V>(
 							initialCapacity, loadFactor, 
-							rehasher(), keyEquality, valEquality)) ;
+							rehasher(), keyEquality, valEquality) ;
 				case LOCK_FREE:
 					return new LockFreeInlineMultiHashMap<K, V>(
 						initialCapacity, loadFactor, 
@@ -364,19 +363,17 @@ public abstract class MapMaker<K, V> {
 						rehasher(),  keyEquality, valEquality) ;
 				case SYNCHRONIZED:
 					// TODO : SynchronizedHashStore class so that we need fewer wrapping classes
-					return new SynchronizedListMap<K, V>(
-						new SerialInlineListHashMap<K, V>(
+					return new SyncInlineListHashMap<K, V>(
 							initialCapacity, loadFactor, 
-							rehasher(),  keyEquality, valEquality)) ;
+							rehasher(),  keyEquality, valEquality) ;
 				case LINKED_SERIAL:
 					return new SerialLinkedInlineListHashMap<K, V>(
 						initialCapacity, loadFactor, 
 						rehasher(),  keyEquality, valEquality) ;
 				case LINKED_SYNCHRONIZED:
-					return new SynchronizedListMap<K, V>(
-						new SerialLinkedInlineListHashMap<K, V>(
+					return new SyncLinkedInlineListHashMap<K, V>(
 							initialCapacity, loadFactor, 
-							rehasher(),  keyEquality, valEquality)) ;
+							rehasher(),  keyEquality, valEquality) ;
 				case LOCK_FREE:
 					return new LockFreeInlineListHashMap<K, V>(
 						initialCapacity, loadFactor, 
