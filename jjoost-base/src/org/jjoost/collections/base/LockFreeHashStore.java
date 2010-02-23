@@ -13,6 +13,10 @@ import java.util.concurrent.locks.LockSupport;
 
 import org.jjoost.collections.lists.UniformList ;
 import org.jjoost.util.Equality ;
+import org.jjoost.util.Factories;
+import org.jjoost.util.Factory;
+import org.jjoost.util.Filter;
+import org.jjoost.util.Filters;
 import org.jjoost.util.Function ;
 import org.jjoost.util.Functions ;
 import org.jjoost.util.Iters ;
@@ -25,6 +29,9 @@ import sun.misc.Unsafe;
 @SuppressWarnings("restriction")
 public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> implements HashStore<N> {
 
+	@SuppressWarnings("unchecked")
+	private static final Factory NO_FILTER = Factories.constant(Filters.acceptAll()) ;
+	
 	private static final long serialVersionUID = -1578733824843315344L ;
 	
 	public enum Counting {
@@ -88,7 +95,10 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	
 	
 	@Override
-	public <NCmp, V> V put(NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+	public <NCmp, V> V put(
+			NCmp find, N put, 
+			HashNodeEquality<? super NCmp, ? super N> eq, 
+			Function<? super N, ? extends V> ret) {
 		grow() ;
 		
 		final boolean replace = eq.isUnique() ;		
@@ -241,7 +251,10 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 
 	
 	@Override
-	public <NCmp, V> V putIfAbsent(NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+	public <NCmp, V> V putIfAbsent(
+			NCmp find, N put, 
+			HashNodeEquality<? super NCmp, ? super N> eq, 
+			Function<? super N, ? extends V> ret) {
 		grow() ;
 		
 		final int hash = put.hash ;
@@ -344,7 +357,11 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	}
 	
 	@Override
-	public <NCmp, V> V putIfAbsent(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret) {
+	public <NCmp, V> V putIfAbsent(
+			int hash, NCmp find, 
+			HashNodeEquality<? super NCmp, ? super N> eq, 
+			HashNodeFactory<? super NCmp, N> factory, 
+			Function<? super N, ? extends V> ret) {
 		grow() ;
 		
 		N put = null ;
@@ -453,7 +470,11 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	
 	
 	@Override
-	public <NCmp, V> V ensureAndGet(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret) {
+	public <NCmp, V> V ensureAndGet(
+			int hash, NCmp find, 
+			HashNodeEquality<? super NCmp, ? super N> eq, 
+			HashNodeFactory<? super NCmp, N> factory, 
+			Function<? super N, ? extends V> ret) {
 		grow() ;
 		
 		N put = null ;
@@ -571,7 +592,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	
 	
 	@Override
-	public <NCmp> int remove(int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
+	public <NCmp> int remove(
+			int hash, int removeAtMost, NCmp find, 
+			HashNodeEquality<? super NCmp, ? super N> eq) {
 		if (removeAtMost < 1) {
 			if (removeAtMost == 0)
 				return 0 ;
@@ -715,7 +738,10 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	}
 	
 	@Override
-	public <NCmp, V> V removeAndReturnFirst(int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+	public <NCmp, V> V removeAndReturnFirst(
+			int hash, int removeAtMost, NCmp find, 
+			HashNodeEquality<? super NCmp, ? super N> eq, 
+			Function<? super N, ? extends V> ret) {
 		if (removeAtMost < 1) {
 			if (removeAtMost == 0)
 				return null ;
@@ -866,7 +892,10 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	
 
 	@Override
-	public <NCmp, V> Iterable<V> removeAndReturn(int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+	public <NCmp, V> Iterable<V> removeAndReturn(
+			int hash, int removeAtMost, NCmp find, 
+			HashNodeEquality<? super NCmp, ? super N> eq, 
+			Function<? super N, ? extends V> ret) {
 		if (removeAtMost < 1) {
 			if (removeAtMost == 0)
 				return Iters.emptyIterable() ;
@@ -1015,7 +1044,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	}	
 	
 	@Override
-	public <NCmp> boolean removeNode(Function<? super N, ? extends NCmp> nodePrefixEqFunc, HashNodeEquality<? super NCmp, ? super N> nodePrefixEq, N n) {
+	public <NCmp> boolean removeNode(
+			Function<? super N, ? extends NCmp> nodePrefixEqFunc, 
+			HashNodeEquality<? super NCmp, ? super N> nodePrefixEq, N n) {
 
 		final int hash = n.hash ;
 		N prev = null, prev2 = null ;
@@ -1135,7 +1166,8 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	
 	
 	@Override
-	public <NCmp> boolean contains(final int hash, final NCmp find, final HashNodeEquality<? super NCmp, ? super N> eq) {
+	public <NCmp> boolean contains(final int hash, final NCmp find, 
+			final HashNodeEquality<? super NCmp, ? super N> eq) {
 		N prev = null, prev2 = null ;
 		N node = getTableUnsafe().writerGetStale(hash) ;
 		boolean partial = false ;
@@ -1184,7 +1216,8 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	}
 
 	@Override
-	public <NCmp> int count(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
+	public <NCmp> int count(int hash, NCmp find, 
+			HashNodeEquality<? super NCmp, ? super N> eq) {
 		int c = 0 ;
 		boolean countedLast = false ;
 		N prev = null, prev2 = null ;
@@ -1244,7 +1277,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	}
 
 	@Override
-	public <NCmp, V> V first(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+	public <NCmp, V> V first(int hash, NCmp find, 
+			HashNodeEquality<? super NCmp, ? super N> eq, 
+			Function<? super N, ? extends V> ret) {
 		N prev = null, prev2 = null ;
 		N node = getTableUnsafe().writerGetStale(hash) ;
 		boolean partial = false ;
@@ -1295,7 +1330,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	}
 
 	@Override
-	public <NCmp, V> List<V> findNow(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+	public <NCmp, V> List<V> findNow(int hash, NCmp find, 
+			HashNodeEquality<? super NCmp, ? super N> eq, 
+			Function<? super N, ? extends V> ret) {
 		final List<V> r = new ArrayList<V>(6) ;
 		N prev = null, prev2 = null ;
 		N node = getTableUnsafe().writerGetStale(hash) ;
@@ -1348,24 +1385,36 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	}
 
 	@Override
-	public <NCmp, NCmp2, V> Iterator<V> find(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> findEq,
-			Function<? super N, ? extends NCmp2> nodeEqualityProj, HashNodeEquality<? super NCmp2, ? super N> nodeEq,
+	public <NCmp, NCmp2, V> Iterator<V> find(
+			int hash, 
+			NCmp find, 
+			HashNodeEquality<? super NCmp, ? super N> findEq,
+			Function<? super N, ? extends NCmp2> nodeEqualityProj, 
+			HashNodeEquality<? super NCmp2, ? super N> nodeEq,
 			Function<? super N, ? extends V> ret) {
 		return new Search<NCmp, NCmp2, V>(hash, find, findEq, nodeEqualityProj, nodeEq, ret) ;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public <NCmp, V> Iterator<V> all(Function<? super N, ? extends NCmp> nodeEqualityProj,
-			HashNodeEquality<? super NCmp, ? super N> nodeEquality, Function<? super N, ? extends V> ret) {
-		return new EagerAllIterator<NCmp, V>(nodeEqualityProj, nodeEquality, ret) ;
+	public <NCmp, V> Iterator<V> all(
+			Function<? super N, ? extends NCmp> nodeEqualityProj,
+			HashNodeEquality<? super NCmp, ? super N> nodeEquality, 
+			Function<? super N, ? extends V> ret) {
+		return new EagerAllIterator<NCmp, V>(nodeEqualityProj, nodeEquality, NO_FILTER, ret) ;
 	}
 
 	@Override
-	public <NCmp, NCmp2, V> Iterator<V> unique(Function<? super N, ? extends NCmp> uniquenessEqualityProj,
-			Equality<? super NCmp> uniquenessEquality, Function<? super N, ? extends NCmp2> nodeEqualityProj,
-			HashNodeEquality<? super NCmp2, ? super N> nodeEquality, Function<? super N, ? extends V> ret) {
-		// TODO Auto-generated method stub
-		return null ;
+	public <NCmp, NCmp2, V> Iterator<V> unique(
+			Function<? super N, ? extends NCmp> uniquenessEqualityProj,
+			Equality<? super NCmp> uniquenessEquality, 
+			Locality duplicateLocality, 
+			Function<? super N, ? extends NCmp2> nodeEqualityProj,
+			HashNodeEquality<? super NCmp2, ? super N> nodeEquality, 
+			Function<? super N, ? extends V> ret) {
+		final Factory<Filter<N>> filterFactory ;
+		filterFactory = HashStore.Helper.forUniqueness(uniquenessEqualityProj, uniquenessEquality, duplicateLocality) ;
+		return new EagerAllIterator<NCmp2, V>(nodeEqualityProj, nodeEquality, filterFactory, ret) ;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1398,7 +1447,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	@SuppressWarnings("unchecked")
 	@Override
 	public <NCmp> HashStore<N> copy(Function<? super N, ? extends NCmp> nodeEqualityProj, HashNodeEquality<? super NCmp, ? super N> nodeEquality) {
-		final Iterator<N> iter = new EagerAllIterator<N, N>(null, null, Functions.<N>identity()) ;
+		final Iterator<N> iter = new EagerAllIterator<N, N>(null, null, NO_FILTER, Functions.<N>identity()) ;
 		final LockFreeHashNode<N> head = (LockFreeHashNode<N>) new EmptyNode() ;
 		N tail = (N) head ;
 		boolean countUniq = uniquePrefixCounter.on() ;
@@ -1918,13 +1967,16 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 		final HashIter32Bit indexIter ;
 		Table<N> tableCache = getTableUnsafe() ;
 		final List<N> list = new ArrayList<N>() ;
+		final Factory<? extends Filter<? super N>>  filterFactory ;
 		Iterator<N> current ;
 		
 		public EagerAllIterator(Function<? super N, ? extends NCmp> nodeEqualityProj, 
-			HashNodeEquality<? super NCmp, ? super N> nodeEquality, 
+			HashNodeEquality<? super NCmp, ? super N> nodeEquality,
+			Factory<? extends Filter<? super N>> filterFactory,
 			Function<? super N, ? extends V> ret) {
 			super(nodeEqualityProj, nodeEquality, ret) ;
 			tableCache = getTableUnsafe() ;
+			this.filterFactory = filterFactory ;
 			final int bits = Integer.bitCount(tableCache.length() - 1) ;
 			indexIter = new HashIter32Bit(bits > 4 ? 4 : 1, bits) ;
 			moveNext() ;
@@ -1944,6 +1996,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			if (current == null || !current.hasNext()) {
 				
 				final List<N> list = this.list ;
+				Filter<? super N> filter = filterFactory.create() ;
 				list.clear() ;
 				N prev2 = null, prev = null ;
 				N node ;
@@ -1993,6 +2046,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 							// we do not need to save previously visited nodes; the indexIter ensures we do not look at any hash that occured in 
 							// a previously visited bucket
 							list.clear() ;
+							filter = filterFactory.create() ;
 							tableCache = getTableFresh() ;
 							indexIter.resize(Integer.bitCount(tableCache.length() - 1)) ;
 							prev2 = prev = null ;
@@ -2004,7 +2058,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 						
 						// regular case: we have a non-null node to yield, so simply decide if we have seen it before or not...
 						
-						if (!indexIter.haveVisitedAlready(node.hash)) {
+						if (!indexIter.haveVisitedAlready(node.hash) && filter.accept(node)) {
 							list.add(node) ;
 						}
 						
@@ -2104,7 +2158,6 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 		}
 		
 	}
-	
 	
 	
 	

@@ -6,9 +6,9 @@ import java.util.Iterator;
 import java.util.List ;
 import java.util.NoSuchElementException;
 
-import org.jjoost.collections.AnySet ;
-import org.jjoost.collections.sets.serial.MultiArraySet ;
 import org.jjoost.util.Equality ;
+import org.jjoost.util.Factory;
+import org.jjoost.util.Filter;
 import org.jjoost.util.Function;
 import org.jjoost.util.Functions;
 import org.jjoost.util.Iters ;
@@ -522,10 +522,13 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	public <NCmp, NCmp2, V> Iterator<V> unique(
 			Function<? super N, ? extends NCmp> uniquenessEqualityProj, 
 			Equality<? super NCmp> uniquenessEquality, 
+			Locality duplicateLocality, 
 			Function<? super N, ? extends NCmp2> nodeEqualityProj, 
 			HashNodeEquality<? super NCmp2, ? super N> nodeEquality, 
 			Function<? super N, ? extends V> ret) {
-		return new UniqueIterator<NCmp, NCmp2, V>(uniquenessEqualityProj, uniquenessEquality, nodeEqualityProj, nodeEquality, ret) ;
+		final Factory<Filter<N>> filterFactory ;
+		filterFactory = HashStore.Helper.forUniqueness(uniquenessEqualityProj, uniquenessEquality, duplicateLocality) ;
+		return new UniqueIterator<NCmp, NCmp2, V>(filterFactory, nodeEqualityProj, nodeEquality, ret) ;
 	}
 	
 	// **************************************************
@@ -600,7 +603,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 			nextPrev = nextNode ;
 			nextNode = nextNode.next ;
 			while (nextNode == null & nextHash != table.length - 1) {
-				nextPrev = nextNode ;
+				nextPrev = null ;
 				nextNode = table[++nextHash] ;
 			}
 			return ret.apply(curNode) ;
@@ -608,24 +611,29 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		
 	}
 	
+	// TODO : uniqueness can be achieved much more efficiently if we know if the unique values will be adjacent
 	private class UniqueIterator<NCmp, NCmp2, V> extends GeneralIterator<NCmp2, V> {
 		
-		final Function<? super N, ? extends NCmp> uniquenessEqualityProj ;
-		final AnySet<NCmp> seen ;
+		final Factory<Filter<N>> filterFactory;
+		Filter<N> filter ;
 		
 		int nextHash = - 1 ;
 		
 		UniqueIterator(
-				Function<? super N, ? extends NCmp> uniquenessEqualityProj, 
-				Equality<? super NCmp> uniquenessEquality, 
+				Factory<Filter<N>> filterFactory, 
 				Function<? super N, ? extends NCmp2> nodeEqualityProj, 
 				HashNodeEquality<? super NCmp2, ? super N> nodeEquality, 
 				Function<? super N, ? extends V> ret) {
 			super(nodeEqualityProj, nodeEquality, ret) ;
-			this.seen = new MultiArraySet<NCmp>(4, uniquenessEquality) ;
-			this.uniquenessEqualityProj = uniquenessEqualityProj ;
+			this.filterFactory = filterFactory ;
 			while (nextNode == null & nextHash != table.length - 1) {
 				nextNode = table[++nextHash] ;
+			}
+			if (nextNode != null) {
+				filter = filterFactory.create() ;
+				filter.accept(nextNode) ;
+			} else {
+				filter = null ;
 			}
 		}
 		
@@ -634,22 +642,35 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 				throw new ConcurrentModificationException() ;
 			if (nextNode == null)
 				throw new NoSuchElementException() ;
-			seen.put(uniquenessEqualityProj.apply(nextNode)) ;
+			Filter<N> filter = this.filter ;
 			curNode = nextNode ;
 			curHash = nextHash ;
 			curPrev = nextPrev ;
 			nextPrev = nextNode ;			
 			nextNode = nextNode.next ;
-			while (nextNode != null && seen.contains(uniquenessEqualityProj.apply(nextNode))) {				
-				nextNode = nextNode.next ;
-				while (nextNode == null & nextHash != table.length - 1) {
-					nextPrev = nextNode ;
-					nextNode = table[++nextHash] ;
+			outer: while (true) {
+				if (nextNode != null) {
+					if (filter.accept(nextNode)) {
+						break ;
+					} else {
+						nextPrev = nextNode ;
+						nextNode = nextNode.next ;
+					}
+				} else {
+					nextPrev = null ;
+					while (true) {
+						if (nextHash == table.length - 1) {
+							filter = null ;
+							break outer ;
+						}
+						nextNode = table[++nextHash] ;
+						if (nextNode != null) {
+							this.filter = filter = filterFactory.create() ;
+							break ;
+						}
+					}
 				}
 			}
-			if (nextNode == null || curNode.hash != nextNode.hash 
-					|| !nodeEquality.prefixMatch(nodeEqualityProj.apply(curNode), nextNode))
-				seen.clear() ;
 			return ret.apply(curNode) ;
 		}
 		

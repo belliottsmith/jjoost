@@ -9,6 +9,7 @@ import org.jjoost.collections.MultiMap;
 import org.jjoost.collections.Set ;
 import org.jjoost.collections.base.HashNode ;
 import org.jjoost.collections.base.HashStore ;
+import org.jjoost.collections.base.HashStore.Locality;
 import org.jjoost.collections.sets.base.AbstractUniqueSetAdapter;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Rehasher;
@@ -141,7 +142,7 @@ public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> exten
 			}
 			@Override
 			public Iterator<K> iterator() {
-				return store.unique(keyProj(), keyEq.keyEq, nodeProj(), nodeEq, keyProj()) ;
+				return store.unique(keyProj(), keyEq.keyEq, Locality.ADJACENT, nodeProj(), nodeEq, keyProj()) ;
 			}
 		}
 	}

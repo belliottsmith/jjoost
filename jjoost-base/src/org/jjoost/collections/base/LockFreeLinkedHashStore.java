@@ -198,6 +198,7 @@ public class LockFreeLinkedHashStore<N extends LockFreeLinkedHashStore.LockFreeL
 	public <NCmp, NCmp2, V> Iterator<V> unique(
 			Function<? super N, ? extends NCmp> uniquenessEqualityProj, 
 			Equality<? super NCmp> uniquenessEquality, 
+			Locality duplicateLocality, 
 			Function<? super N, ? extends NCmp2> nodeEqualityProj, 
 			HashNodeEquality<? super NCmp2, ? super N> nodeEquality, 
 			Function<? super N, ? extends V> ret) {

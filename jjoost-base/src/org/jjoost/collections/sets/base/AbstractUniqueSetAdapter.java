@@ -11,7 +11,7 @@ import org.jjoost.util.Equality;
 import org.jjoost.util.Filters;
 import org.jjoost.util.Iters;
 
-public abstract class AbstractUniqueSetAdapter<V> implements Set<V> {
+public abstract class AbstractUniqueSetAdapter<V> extends AbstractSet<V> implements Set<V> {
 
 	private static final long serialVersionUID = -4614054305733007946L;
 
@@ -29,7 +29,7 @@ public abstract class AbstractUniqueSetAdapter<V> implements Set<V> {
 	
 	@Override
 	public Set<V> copy() {
-		throw new UnsupportedOperationException() ;
+		return (Set<V>) set().copy().unique() ;
 	}
 
 	@Override
@@ -180,10 +180,6 @@ public abstract class AbstractUniqueSetAdapter<V> implements Set<V> {
 	@Override
 	public Boolean apply(V v) {
 		return set().apply(v) ;
-	}
-	
-	public String toString() {
-		return "{" + Iters.toString(this, ", ") + "}" ;
 	}
 	
 }

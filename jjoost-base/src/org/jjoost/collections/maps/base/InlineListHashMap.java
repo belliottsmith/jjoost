@@ -9,6 +9,7 @@ import org.jjoost.collections.MultiSet ;
 import org.jjoost.collections.Set;
 import org.jjoost.collections.base.HashNode ;
 import org.jjoost.collections.base.HashStore ;
+import org.jjoost.collections.base.HashStore.Locality;
 import org.jjoost.collections.sets.base.AbstractUniqueSetAdapter;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Filters;
@@ -158,7 +159,7 @@ public class InlineListHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extend
 			}
 			@Override
 			public Iterator<K> iterator() {
-				return store.unique(keyProj(), keyEq.keyEq, nodeProj(), nodeEq, keyProj()) ;
+				return store.unique(keyProj(), keyEq.keyEq, Locality.ADJACENT, nodeProj(), nodeEq, keyProj()) ;
 			}
 		}
 	}
@@ -204,7 +205,7 @@ public class InlineListHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extend
 			}
 			@Override
 			public Iterator<Entry<K, V>> iterator() {
-				return store.unique(nodeProj(), nodeEq, nodeProj(), nodeEq, entryProj()) ;
+				return store.unique(nodeProj(), nodeEq, Locality.SAME_BUCKET, nodeProj(), nodeEq, entryProj()) ;
 			}
 		}
 	}

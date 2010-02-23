@@ -46,18 +46,20 @@ public class SegmentedHashStore<N extends HashNode<N>> implements HashStore<N> {
 			iters[i] = segments[i].all(nodePrefixEqFunc, nodePrefixEq, ret) ;
 		return Iters.concat(Arrays.asList(iters).iterator()) ;
 	}
-	@SuppressWarnings("unchecked")
+
 	@Override
 	public <NCmp, NCmp2, V> Iterator<V> unique(
 			Function<? super N, ? extends NCmp> uniquenessEqualityProj, 
 			Equality<? super NCmp> uniquenessEquality, 
+			Locality duplicateLocality, 
 			Function<? super N, ? extends NCmp2> nodeEqualityProj, 
 			HashNodeEquality<? super NCmp2, ? super N> nodeEquality, 
 			Function<? super N, ? extends V> ret) {
-		Iterator<V>[] iters = new Iterator[segments.length] ;
-		for (int i = 0 ; i != segments.length ; i++)
-			iters[i] = segments[i].unique(uniquenessEqualityProj, uniquenessEquality, nodeEqualityProj, nodeEquality, ret) ;
-		return Iters.concat(Arrays.asList(iters).iterator()) ;
+		throw new UnsupportedOperationException() ;
+//		Iterator<V>[] iters = new Iterator[segments.length] ;
+//		for (int i = 0 ; i != segments.length ; i++)
+//			iters[i] = segments[i].unique(uniquenessEqualityProj, uniquenessEquality, nodeEqualityProj, nodeEquality, ret) ;
+//		return Iters.concat(Arrays.asList(iters).iterator()) ;
 	}
 	@Override
 	public int clear() {

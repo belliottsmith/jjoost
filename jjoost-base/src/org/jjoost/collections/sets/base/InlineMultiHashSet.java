@@ -10,6 +10,7 @@ import org.jjoost.collections.base.HashNode ;
 import org.jjoost.collections.base.HashNodeEquality ;
 import org.jjoost.collections.base.HashNodeFactory ;
 import org.jjoost.collections.base.HashStore ;
+import org.jjoost.collections.base.HashStore.Locality;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Rehasher;
 import org.jjoost.util.tuples.Value;
@@ -81,7 +82,7 @@ public class InlineMultiHashSet<V, N extends HashNode<N> & Value<V>> extends Abs
 
 		@Override
 		public Iterator<V> iterator() {
-			return store.unique(valProj(), valEq.getValueEquality(), valProj(), valEq, valProj()) ;
+			return store.unique(valProj(), valEq.getValueEquality(), Locality.ADJACENT, valProj(), valEq, valProj()) ;
 		}
 		
 	}
