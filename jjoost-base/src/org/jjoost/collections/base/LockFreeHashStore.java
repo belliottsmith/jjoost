@@ -130,7 +130,8 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 					if (prev.casNext(null, put)) {
 						inserted(put) ;
 						totalCounter.increment(hash) ;
-						uniquePrefixCounter.increment(hash) ;
+						if (!partial)
+							uniquePrefixCounter.increment(hash) ;
 						return null ;
 					} 
 					node = prev.getNextFresh() ;
@@ -168,7 +169,8 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 						// so try to insert the new node here
 						// { prev != null }
 						put.lazySetNext(node) ;
-						if (prev.casNext(node, put)) {	
+						if (prev.casNext(node, put)) {
+							inserted(put) ;
 							totalCounter.increment(hash) ;
 							return null ;
 						}
@@ -284,7 +286,8 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 					if (prev.casNext(null, put)) {
 						inserted(put) ;
 						totalCounter.increment(hash) ;
-						uniquePrefixCounter.increment(hash) ;
+						if (!partial)
+							uniquePrefixCounter.increment(hash) ;
 						return null ;
 					} 
 					node = prev.getNextFresh() ;
@@ -321,7 +324,8 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 						// so try to insert the new node here
 						// { prev != null }
 						put.lazySetNext(node) ;
-						if (prev.casNext(node, put)) {	
+						if (prev.casNext(node, put)) {
+							inserted(put) ;
 							totalCounter.increment(hash) ;
 							return null ;
 						}
@@ -393,7 +397,8 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 					if (prev.casNext(null, put)) {
 						inserted(put) ;
 						totalCounter.increment(hash) ;
-						uniquePrefixCounter.increment(hash) ;
+						if (!partial)
+							uniquePrefixCounter.increment(hash) ;
 						return null ;
 					} 
 					node = prev.getNextFresh() ;
@@ -433,7 +438,8 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 						// so try to insert the new node here
 						// { prev != null }
 						put.lazySetNext(node) ;
-						if (prev.casNext(node, put)) {	
+						if (prev.casNext(node, put)) {
+							inserted(put) ;
 							totalCounter.increment(hash) ;
 							return null ;
 						}
@@ -507,7 +513,8 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 					if (prev.casNext(null, put)) {
 						inserted(put) ;
 						totalCounter.increment(hash) ;
-						uniquePrefixCounter.increment(hash) ;
+						if (!partial)
+							uniquePrefixCounter.increment(hash) ;
 						return ret.apply(put) ;
 					} 
 					node = prev.getNextFresh() ;
