@@ -111,8 +111,8 @@ public class LockFreeLinkedHashStore<N extends LockFreeLinkedHashStore.LockFreeL
 	protected final WaitingOnNode<N> waitingOnLinkInsert = new WaitingOnNode<N>(null, null) ;
 	protected final WaitingOnNode<N> waitingOnLinkDelete = new WaitingOnNode<N>(null, null) ;
 	
-	public LockFreeLinkedHashStore(float loadFactor, Counter totalCounter, Counter uniqCounter, N[] table) {
-		super(loadFactor, totalCounter, uniqCounter, table) ;
+	public LockFreeLinkedHashStore(float loadFactor, Counter totalCounter, Counter uniqCounter, boolean useUniqCounterForGrowth, N[] table) {
+		super(loadFactor, totalCounter, uniqCounter, useUniqCounterForGrowth, table) ;
 	}
 
 	public LockFreeLinkedHashStore(int initialCapacity, float loadFactor, Counting totalCounting, Counting uniquePrefixCounting) {

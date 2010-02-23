@@ -37,6 +37,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	protected final float loadFactor ;
 	protected final Counter totalCounter ;
 	protected final Counter uniquePrefixCounter ;
+	protected final Counter growthCounter ;	
 	private Table<N> tablePtr ;
 	
 	@SuppressWarnings("unchecked")
@@ -48,24 +49,30 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
         this.loadFactor = loadFactor ;
         if (totalCounting == null || uniquePrefixCounting == null)
         	throw new IllegalArgumentException() ;
-        switch (totalCounting) {
-        case OFF: totalCounter = DONT_COUNT ; break ;
-        case SAMPLED: totalCounter = new SampledCounter() ; break ;
-        case PRECISE: totalCounter = new PreciseCounter() ; break ;
-        default: throw new IllegalArgumentException() ;
-        }
         switch (uniquePrefixCounting) {
         case OFF: uniquePrefixCounter = DONT_COUNT ; break ;
         case SAMPLED: uniquePrefixCounter = new SampledCounter() ; break ;
         case PRECISE: uniquePrefixCounter = new PreciseCounter() ; break ;
         default: throw new IllegalArgumentException() ;
         }
+        switch (totalCounting) {
+        case OFF: totalCounter = DONT_COUNT ; break ;
+        case SAMPLED: totalCounter = new SampledCounter() ; break ;
+        case PRECISE: totalCounter = new PreciseCounter() ; break ;
+        default: throw new IllegalArgumentException() ;
+        }
+        if (uniquePrefixCounting == Counting.OFF) {
+        	growthCounter = totalCounter ;
+        } else { 
+        	growthCounter = uniquePrefixCounter ;
+        }
 	}
 
-	protected LockFreeHashStore(float loadFactor, Counter totalCounter, Counter uniqCounter, N[] table) {
+	protected LockFreeHashStore(float loadFactor, Counter totalCounter, Counter uniqCounter, boolean useUniqCounterForGrowth, N[] table) {
 		this.loadFactor = loadFactor ;
 		this.totalCounter = totalCounter ;
 		this.uniquePrefixCounter = uniqCounter ;
+		this.growthCounter = useUniqCounterForGrowth ? uniqCounter : totalCounter ;
 		setTable(new RegularTable<N>(table, (int) loadFactor * table.length)) ;
 	}
 	
@@ -1437,7 +1444,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			batchTail.nextPtr = table[batchBucket] ;
 			table[batchBucket] = batchHead ;
 		}
-		return new LockFreeHashStore<N>(loadFactor, totalCounter.newInstance(tc), uniquePrefixCounter.newInstance(uc), table) ;
+		return new LockFreeHashStore<N>(loadFactor, totalCounter.newInstance(tc), uniquePrefixCounter.newInstance(uc), uniquePrefixCounter == growthCounter, table) ;
 	}
 
 	@Override
@@ -1526,9 +1533,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	
 	@SuppressWarnings("unchecked")
 	private void grow() {		
-		while (totalCounter.getUnsafe() > getTableUnsafe().maxCapacity()) {
+		while (growthCounter.getUnsafe() > getTableUnsafe().maxCapacity()) {
 			final Table<N> table = getTableFresh() ;
-			if (totalCounter.getSafe() <= table.maxCapacity())
+			if (growthCounter.getSafe() <= table.maxCapacity())
 				return ;
 			if (table instanceof RegularTable) {
 				final BlockingTable<N> tmp = new BlockingTable<N>() ;
