@@ -30,6 +30,14 @@ public abstract class HashMapValueSetTest extends MultiHashSetTest {
 	public void testPut_whenPresent() {
 	}
 	
+	@Override
+	public void testPutIfAbsent_whenNotPresent() {
+	}
+	
+	@Override
+	public void testPutIfAbsent_whenPresent() {
+	}
+	
 	public void testAdd() {
 		try {
 			map.values().add(null) ;
@@ -41,6 +49,14 @@ public abstract class HashMapValueSetTest extends MultiHashSetTest {
 	public void testPut() {
 		try {
 			map.values().put(null) ;
+			assertFalse(true) ;
+		} catch (UnsupportedOperationException e) {			
+		}
+	}
+	
+	public void testPutIfAbsent() {
+		try {
+			map.values().putIfAbsent(null) ;
 			assertFalse(true) ;
 		} catch (UnsupportedOperationException e) {			
 		}
@@ -58,7 +74,7 @@ public abstract class HashMapValueSetTest extends MultiHashSetTest {
 	int i = 0 ;
 	@Override
 	protected boolean add(String v) {
-		return map.add(Integer.toString(++i), v);
+		return map.add(Integer.toString(i++), v);
 	}
 	@Override
 	protected int capacity() {
@@ -66,7 +82,7 @@ public abstract class HashMapValueSetTest extends MultiHashSetTest {
 	}
 	@Override
 	protected String put(String v) {
-		return map.put(Integer.toString(++i), v) ;
+		return map.put(Integer.toString(i++), v) ;
 	}
 	@Override
 	protected String putIfAbsent(String v) {
