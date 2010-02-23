@@ -6,8 +6,8 @@ import java.util.Iterator ;
 import java.util.NoSuchElementException ;
 import java.util.concurrent.locks.LockSupport ;
 
-import org.jjoost.util.Equality ;
 import org.jjoost.util.Function ;
+import org.jjoost.util.Functions;
 
 @SuppressWarnings("restriction")
 public class LockFreeLinkedHashStore<N extends LockFreeLinkedHashStore.LockFreeLinkedHashNode<N>> extends LockFreeHashStore<N> {
@@ -124,9 +124,9 @@ public class LockFreeLinkedHashStore<N extends LockFreeLinkedHashStore.LockFreeL
 	@Override
 	// will be called precisely once per node
 	protected void inserted(N n) {
+		n.lazySetLinkNext(head) ;
 		N tail = head.getLinkPrevStale() ;
 		while (true) {
-			n.lazySetLinkNext(head) ;
 			if (tail.casLinkNext(head, n)) {
 				n.lazySetLinkPrev(tail) ;
 				head.volatileSetLinkPrev(n) ;
@@ -161,7 +161,7 @@ public class LockFreeLinkedHashStore<N extends LockFreeLinkedHashStore.LockFreeL
 			}
 		}
 	}
-
+ 
 	private void waitOnDelete(final N node) {
 		if (node.getLinkNextFresh() != DELETING_FLAG)
 			return ;
@@ -176,33 +176,35 @@ public class LockFreeLinkedHashStore<N extends LockFreeLinkedHashStore.LockFreeL
 		if (node.getLinkPrevFresh() != null)
 			return ;
 		WaitingOnNode<N> waiting = new WaitingOnNode<N>(Thread.currentThread(), node) ;
-		waitingOnLinkDelete.insert(waiting) ;
+		waitingOnLinkInsert.insert(waiting) ;
 		while (node.getLinkPrevFresh() == null)
 			LockSupport.park() ;
 		waiting.remove() ;
 	}
 	
 	// we could iterate over the array twice, first time inserting in opposite order into buckets and on second pass reversing this...
+	@SuppressWarnings("unchecked")
 	@Override
-	public <NCmp> HashStore<N> copy(Function<? super N, ? extends NCmp> nodeEqualityProj,
-		HashNodeEquality<? super NCmp, ? super N> nodeEquality) {
-		throw new UnsupportedOperationException() ;
+	public <NCmp> HashStore<N> copy(
+			Function<? super N, ? extends NCmp> nodeEqualityProj,		
+			HashNodeEquality<? super NCmp, ? super N> nodeEquality) {
+		final Iterator<N> iter = new LinkIterator<NCmp, N>(nodeEqualityProj, nodeEquality, Functions.<N>identity()) ;
+		final LockFreeLinkedHashStore<N> copy = new LockFreeLinkedHashStore<N>(
+				loadFactor, 
+				totalCounter.newInstance(0), 
+				uniquePrefixCounter.newInstance(0), 
+				uniquePrefixCounter == growthCounter, 
+				(N[]) new LockFreeLinkedHashNode[capacity()]) ;
+		while (iter.hasNext()) {
+			final N next = iter.next().copy() ;
+			copy.put(nodeEqualityProj.apply(next), next, nodeEquality, Functions.identity()) ;
+		}
+		return copy ;
 	}
 
 	@Override
 	public <NCmp, V> Iterator<V> all(Function<? super N, ? extends NCmp> nodePrefixEqFunc, HashNodeEquality<? super NCmp, ? super N> nodePrefixEq, Function<? super N, ? extends V> ret) {
 		return new LinkIterator<NCmp, V>(nodePrefixEqFunc, nodePrefixEq, ret) ;
-	}
-	
-	@Override
-	public <NCmp, NCmp2, V> Iterator<V> unique(
-			Function<? super N, ? extends NCmp> uniquenessEqualityProj, 
-			Equality<? super NCmp> uniquenessEquality, 
-			Locality duplicateLocality, 
-			Function<? super N, ? extends NCmp2> nodeEqualityProj, 
-			HashNodeEquality<? super NCmp2, ? super N> nodeEquality, 
-			Function<? super N, ? extends V> ret) {
-		throw new UnsupportedOperationException() ;
 	}
 	
 	private final class LinkIterator<NCmp, V> implements Iterator<V> {
