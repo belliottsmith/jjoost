@@ -1,11 +1,17 @@
 package org.jjoost.collections.sets.base;
 
 import org.jjoost.collections.AnySet ;
+import org.jjoost.util.Iters;
 
 public abstract class AbstractSet<V> implements AnySet<V> {
 	
 	private static final long serialVersionUID = -2269362435477906614L;
 
+	@Override
+	public String toString() {
+		return "{" + Iters.toString(this, ", ") + "}" ;
+	}
+	
 	@SuppressWarnings("unchecked")
 	public boolean equals(Object that) {
 		return this == that || (that instanceof AnySet && equals((AnySet<V>) that)) ;
