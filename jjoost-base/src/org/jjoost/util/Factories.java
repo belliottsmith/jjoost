@@ -38,6 +38,17 @@ public class Factories {
 	}
 	
 	/**
+	 * Creates a factory which returns the provided value for every call to create()
+	 * @param <E> type of the factory
+	 * @param <F> type to unsafely cast to
+	 * @param object object to return
+	 * @return </p>
+	 */
+	public static <E> Factory<E> constant(E constant) {
+		return new ConstantFactory<E>(constant) ;
+	}
+	
+	/**
 	 * A simple factory that creates objects of the type of the class provided, providing it has an empty constructor
 	 * 
 	 * @author b.elliottsmith
@@ -131,6 +142,26 @@ public class Factories {
 			} catch (Exception e) {
 				throw new UndeclaredThrowableException(e) ;
 			}
+		}
+	}
+	
+	/**
+	 * A simple factory which always returns the same object
+	 * 
+	 * @author b.elliottsmith
+	 */
+	public static final class ConstantFactory<E> implements Factory<E> {
+		private static final long serialVersionUID = -3165526319209124848L;
+		private final E object ;
+		/**
+		 * Create a new NoFactory 
+		 * @param the object to return for every call to create()
+		 */
+		public ConstantFactory(E object) {
+			this.object = object ;
+		}
+		public E create() {
+			return object ;
 		}
 	}
 	
