@@ -43,4 +43,8 @@ public final class ImmutableMapEntry<K, V> implements Map.Entry<K, V> {
 		return Objects.equalQuick(this.key, that.getKey()) && Objects.equalQuick(this.value, that.getValue()) ;
 	}
 	
+	public String toString() {
+		return "{" + key + " -> " + value + "}" ;
+	}
+	
 }
