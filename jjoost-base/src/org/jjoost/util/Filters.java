@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 
 import org.jjoost.util.filters.* ;
 import org.jjoost.collections.AnySet ;
-import org.jjoost.collections.Set ;
 import org.jjoost.collections.iters.ClosableIterator ;
 import org.jjoost.collections.iters.FilteredClosableIterator ;
 import org.jjoost.collections.iters.FilteredIterable ;
@@ -566,7 +565,7 @@ public class Filters {
 	 * @param set the set to store visited values in
 	 * @return a filter accepting only unique values
 	 */
-    public static final <E> Filter<E> unique(Set<E> set) {
+    public static final <E> Filter<E> unique(AnySet<E> set) {
     	return AcceptUnique.<E>get(set) ;
     }
     
@@ -615,7 +614,7 @@ public class Filters {
      * @param filter the delegate filter
      * @return a filter that applies the provided function to its input before delegating to the provided filter
      */
-    public static <X, Y> MappedFilter<X, Y> mapped(Function<X, Y> mapping, Filter<Y> filter) {
+    public static <X, Y> MappedFilter<X, Y> mapped(Function<? super X, ? extends Y> mapping, Filter<? super Y> filter) {
     	return MappedFilter.get(mapping, filter) ;
     }
     

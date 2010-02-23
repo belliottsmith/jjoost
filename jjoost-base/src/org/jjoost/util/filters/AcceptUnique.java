@@ -1,6 +1,6 @@
 package org.jjoost.util.filters ;
 
-import org.jjoost.collections.Set ;
+import org.jjoost.collections.AnySet;
 import org.jjoost.collections.sets.serial.SerialHashSet ;
 import org.jjoost.util.Equality ;
 import org.jjoost.util.Filter ;
@@ -14,7 +14,7 @@ import org.jjoost.util.Filter ;
 public class AcceptUnique<V> implements Filter<V> {
 
 	private static final long serialVersionUID = 4135610622081116945L ;
-	private final Set<V> seen ;
+	private final AnySet<V> seen ;
 
 	/**
 	 * Construct a new <code>AcceptUnique</code> using default propreties (hash set using Object.equals() and Object.hashCode())
@@ -26,7 +26,7 @@ public class AcceptUnique<V> implements Filter<V> {
 	/**
 	 * Construct a new <code>AcceptUnique</code> using the provided set to maintain the previously visited set of values 
 	 */
-	public AcceptUnique(Set<V> set) {
+	public AcceptUnique(AnySet<V> set) {
 		this.seen = set ;
 	}
 
@@ -66,7 +66,7 @@ public class AcceptUnique<V> implements Filter<V> {
 	 * @param set the set to store visited values in
 	 * @return a filter accepting only unique values
 	 */
-	public static <V> AcceptUnique<V> get(Set<V> set) {
+	public static <V> AcceptUnique<V> get(AnySet<V> set) {
 		return new AcceptUnique<V>(set) ;
 	}
 	
