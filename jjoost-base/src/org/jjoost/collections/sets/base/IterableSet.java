@@ -13,6 +13,27 @@ import org.jjoost.util.Iters;
 public abstract class IterableSet<V> extends AbstractSet<V> implements MultiSet<V> {
 
 	private static final long serialVersionUID = 7475686519443650191L;
+	
+	public static class ConcreteIterableSet<V> extends IterableSet<V> {
+		
+		private static final long serialVersionUID = 5370957005133369394L;
+		
+		private final Equality<? super V> eq ;
+		private final Iterable<V> iter ;
+		
+		public ConcreteIterableSet(Equality<? super V> eq, Iterable<V> iter) {
+			this.eq = eq;
+			this.iter = iter;
+		}
+		@Override
+		public Equality<? super V> equality() {
+			return eq ;
+		}
+		@Override
+		public Iterator<V> iterator() {
+			return iter.iterator() ;
+		}
+	}
 
 	public abstract Equality<? super V> equality() ;
 	public abstract Iterator<V> iterator() ;
@@ -36,7 +57,8 @@ public abstract class IterableSet<V> extends AbstractSet<V> implements MultiSet<
 
 	@Override
 	public MultiSet<V> copy() {
-		throw new UnsupportedOperationException() ;
+		final Iterable<V> copy = Iters.toList(iterator()) ;
+		return new ConcreteIterableSet<V>(equality(), copy) ;
 	}
 	
 	@Override
