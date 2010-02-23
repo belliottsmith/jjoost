@@ -54,6 +54,7 @@ public class LockFreeInlineMultiHashMap<K, V> extends InlineMultiHashMap<K, V, L
 		@Override public V getValue() { return value ; }
 		@Override public V setValue(V value) { throw new UnsupportedOperationException() ; }
 		@Override public Node<K, V> copy() { return new Node<K, V>(hash, key, value) ; }
+		@Override public String toString() { return "{" + key + " -> " + value + "}" ; }
 	}
 	
 	@SuppressWarnings("unchecked")

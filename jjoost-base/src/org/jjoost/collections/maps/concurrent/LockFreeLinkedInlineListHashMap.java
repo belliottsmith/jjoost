@@ -56,6 +56,7 @@ public class LockFreeLinkedInlineListHashMap<K, V> extends InlineListHashMap<K, 
 		@Override public V getValue() { return value ; }
 		@Override public V setValue(V value) { final V r = this.value ; this.value = value ; return r ; }
 		@Override public Node<K, V> copy() { return new Node<K, V>(hash, key, value) ; }
+		@Override public String toString() { return "{" + key + " -> " + value + "}" ; }
 	}
 	
 	@SuppressWarnings("unchecked")

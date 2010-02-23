@@ -52,6 +52,8 @@ public class SerialHashMap<K, V> extends HashMap<K, V, SerialHashMap.Node<K, V>>
 		@Override public final V getValue() { return value ; }
 		@Override public final V setValue(V value) { final V r = this.value ; this.value = value ; return r ; }
 		@Override public final Node<K, V> copy() { return new Node<K, V>(hash, key, value) ; }
+		@Override public String toString() { return "{" + key + " -> " + value + "}" ; }
+		
 	}
 	
 	@SuppressWarnings("unchecked")

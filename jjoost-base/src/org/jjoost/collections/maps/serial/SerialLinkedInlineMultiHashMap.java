@@ -53,6 +53,7 @@ public class SerialLinkedInlineMultiHashMap<K, V> extends InlineMultiHashMap<K, 
 		@Override public V getValue() { return value ; }
 		@Override public V setValue(V value) { throw new UnsupportedOperationException() ; }
 		@Override public Node<K, V> copy() { return new Node<K, V>(hash, key, value) ; }
+		@Override public String toString() { return "{" + key + " -> " + value + "}" ; }
 	}
 	
 	@SuppressWarnings("unchecked")
