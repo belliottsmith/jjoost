@@ -1985,7 +1985,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			tableCache = getTableUnsafe() ;
 			this.filterFactory = filterFactory ;
 			final int bits = Integer.bitCount(tableCache.length() - 1) ;
-			indexIter = new HashIter32Bit(bits > 4 ? 4 : 1, bits) ;
+			indexIter = new HashIter32Bit(bits > 4 ? 4 : bits, bits) ;
 			moveNext() ;
 		}
 		
@@ -2074,6 +2074,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 						node = node.getNextStale() ;						
 					}
 				}
+				
 			} else {
 				
 				this.nextPred = this.nextNode ;
