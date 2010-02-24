@@ -14,11 +14,13 @@ public class HashIter32Bit {
 	private ResizingFrom[] resizingFrom = null ;
 	
 	private static final class ResizingFrom {
+		private final int highBitsForHigherLowBits ;
 		private final int highBitsForEqualLowBits ;
 		private final int highBitsForLowerLowBits ;
 		private final int lowBits ;
 		public ResizingFrom(int highBitsForEqualLowBits,
-				int highBitsForLowerLowBits, int lowBits) {
+				int highBitsForLowerLowBits, int highBitsForHigherLowBits, int lowBits) {
+			this.highBitsForHigherLowBits = highBitsForHigherLowBits;
 			this.highBitsForEqualLowBits = highBitsForEqualLowBits;
 			this.highBitsForLowerLowBits = highBitsForLowerLowBits;
 			this.lowBits = lowBits;
@@ -57,7 +59,7 @@ public class HashIter32Bit {
 	}
 	
 	private ResizingFrom getResizingFrom() {
-		return new ResizingFrom(highBitsCounter + (middleBitsCounter >>> numTotalBits), highBitsCounter, lowBitsCounter) ;
+		return new ResizingFrom(highBitsCounter + (middleBitsCounter >>> numTotalBits), highBitsCounter + (1 << (32 - numTotalBits)), highBitsCounter, lowBitsCounter) ;
 	}
 	
 	public HashIter32Bit(int numLowerBits, int numTotalBits) {
@@ -106,22 +108,27 @@ public class HashIter32Bit {
 	public boolean haveVisitedAlready(int hash) {
 		final int highBits = Integer.reverse(hash & ~lowBitsMask) ;
 		final int lowBits = hash & lowBitsMask ;
-		if (lowBits == lowBitsCounter) {
-			return highBitsCounter + (middleBitsCounter >>> numTotalBits) > highBits ;
-		} else if (lowBits < lowBitsCounter) {
-			return highBitsCounter + (1 << (32 - numTotalBits)) > highBits ;
+		int cmpHighBits ;
+		if (lowBits < lowBitsCounter) {
+			cmpHighBits = highBitsCounter + (1 << (32 - numTotalBits)) ;
+		} else if (lowBits == lowBitsCounter) {
+			cmpHighBits = highBitsCounter + (middleBitsCounter >>> numTotalBits) ;
 		} else {
-			if (resizingFrom != null) {
-				for (ResizingFrom rf : resizingFrom) {
-					if (lowBits < rf.lowBits) {
-						return rf.highBitsForEqualLowBits > highBits ;
-					} else if (lowBits == rf.lowBits) {
-						return rf.highBitsForLowerLowBits > highBits ;
-					}
-				}
-			}
-			return highBitsCounter > highBits ;
+			cmpHighBits = highBitsCounter ;
 		}
+		if (resizingFrom != null) {
+			for (ResizingFrom rf : resizingFrom) {
+				if (lowBits < rf.lowBits) {
+					if (cmpHighBits < rf.highBitsForEqualLowBits)
+						cmpHighBits = rf.highBitsForEqualLowBits ;
+				} else if (lowBits == rf.lowBits) {
+					if (cmpHighBits < rf.highBitsForLowerLowBits)
+						cmpHighBits = rf.highBitsForLowerLowBits ;
+				} else if (cmpHighBits < rf.highBitsForHigherLowBits)
+					cmpHighBits = rf.highBitsForHigherLowBits ;
+			}		
+		} 
+		return cmpHighBits > highBits ;
 	}
 	
 	public int current() {
