@@ -1,15 +1,64 @@
 package org.jjoost.collections.base;
 
+import java.util.Arrays;
+
 public class HashIter32Bit {
 
 	private final int lowBitsMask ;
 	private int numTotalBits ;
 	private int resizingTo ;
 	private int highBitsCounter ;
-	private int lowBitsCounter ;	
 	private int middleBitsCounter ;
+	private int lowBitsCounter ;
 	private int middleBitsIncrementor ;
-	private boolean unsafe = false ;
+	private ResizingFrom[] resizingFrom = null ;
+	
+	private static final class ResizingFrom {
+		private final int highBitsForEqualLowBits ;
+		private final int highBitsForLowerLowBits ;
+		private final int lowBits ;
+		public ResizingFrom(int highBitsForEqualLowBits,
+				int highBitsForLowerLowBits, int lowBits) {
+			this.highBitsForEqualLowBits = highBitsForEqualLowBits;
+			this.highBitsForLowerLowBits = highBitsForLowerLowBits;
+			this.lowBits = lowBits;
+		}
+	}
+	
+	private void pushResizingFrom() {
+		if (resizingFrom == null) {
+			resizingFrom = new ResizingFrom[] { getResizingFrom() } ;
+		} else {
+			resizingFrom = Arrays.copyOf(resizingFrom, resizingFrom.length + 1) ;
+			resizingFrom[resizingFrom.length - 1] = getResizingFrom() ;
+		}
+	}
+	
+	private void cleanResizingFrom() {
+		int removed = 0 ;
+		for (int i = 0 ; i != resizingFrom.length ; i++) {
+			if (highBitsCounter >= resizingFrom[i].highBitsForEqualLowBits) {
+				resizingFrom[i] = null ;
+				removed++ ;
+			}
+		}
+		if (removed == resizingFrom.length) {
+			resizingFrom = null ;
+		} else if (removed != 0) {
+			ResizingFrom[] copy = new ResizingFrom[resizingFrom.length - removed] ;
+			int j = 0 ;
+			for (ResizingFrom sf : copy) {
+				if (sf != null) {
+					copy[j++] = sf ;
+				}
+			}
+			resizingFrom = copy ;
+		}
+	}
+	
+	private ResizingFrom getResizingFrom() {
+		return new ResizingFrom(highBitsCounter + (middleBitsCounter >>> numTotalBits), highBitsCounter, lowBitsCounter) ;
+	}
 	
 	public HashIter32Bit(int numLowerBits, int numTotalBits) {
 		this.numTotalBits = numTotalBits ;		
@@ -21,28 +70,32 @@ public class HashIter32Bit {
 		if (numTotalBits > this.numTotalBits) {
 			resizingTo = numTotalBits ;
 			middleBitsIncrementor = 1 << (32 - (numTotalBits - this.numTotalBits)) ;
+			if ((middleBitsCounter & middleBitsIncrementor) != middleBitsCounter)
+				pushResizingFrom() ;
 			middleBitsCounter &= middleBitsIncrementor ;
-			unsafe = true ;
 		} else if (numTotalBits < this.numTotalBits) {
-			final int mask = ~((1 << (32 - numTotalBits)) - 1) ;
-			this.highBitsCounter &= mask ;
-			this.middleBitsIncrementor = 1 << (32 - (this.numTotalBits - numTotalBits)) ;
-			// TODO : must modify middleBitsCounter and lowBitsCounter to make up for the truncation in highBitsCounter 
-			this.resizingTo = numTotalBits ;
+			final int newHighBitsCounter = highBitsCounter & ~((1 << (32 - numTotalBits)) - 1) ;
+			if ((lowBitsCounter != 0) || (middleBitsCounter != 0) || highBitsCounter != newHighBitsCounter)
+				pushResizingFrom() ;
 			this.numTotalBits = numTotalBits ;
-			unsafe = true ;
+			resizingTo = numTotalBits ;
+			middleBitsIncrementor = 0 ;
+			middleBitsCounter = 0 ;
+			highBitsCounter = newHighBitsCounter ;
+			lowBitsCounter = 0 ;
 		}
 	}
 	
 	public boolean next() {
 		middleBitsCounter = middleBitsCounter + middleBitsIncrementor ;
 		if (middleBitsCounter == 0) {
-			unsafe = false ;
 			lowBitsCounter = (lowBitsCounter + 1) & lowBitsMask ;
 			if (lowBitsCounter == 0) {
 				highBitsCounter += 1 << (32 - numTotalBits) ;
 				middleBitsIncrementor = 0 ;
 				numTotalBits = resizingTo ;
+				if (resizingFrom != null)
+					cleanResizingFrom() ;
 				if (highBitsCounter == 1 << (32 - Integer.bitCount(lowBitsMask)))
 					return false ;
 			}
@@ -58,12 +111,17 @@ public class HashIter32Bit {
 		} else if (lowBits < lowBitsCounter) {
 			return highBitsCounter + (1 << (32 - numTotalBits)) > highBits ;
 		} else {
+			if (resizingFrom != null) {
+				for (ResizingFrom rf : resizingFrom) {
+					if (lowBits < rf.lowBits) {
+						return rf.highBitsForEqualLowBits > highBits ;
+					} else if (lowBits == rf.lowBits) {
+						return rf.highBitsForLowerLowBits > highBits ;
+					}
+				}
+			}
 			return highBitsCounter > highBits ;
 		}
-	}
-	
-	public boolean safe() {
-		return unsafe ;
 	}
 	
 	public int current() {
