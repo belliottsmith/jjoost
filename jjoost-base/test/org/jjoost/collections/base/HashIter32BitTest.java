@@ -24,7 +24,7 @@ public class HashIter32BitTest extends TestCase {
 		}
 	}
 	
-	public void testEnlarge() {
+	public void testResizing() {
 		HashIter32Bit iter = new HashIter32Bit(4, 10) ;
 		int[] visited = new int[1 << 20] ;
 		int[] visited2 = new int[1 << 20] ;
@@ -35,10 +35,15 @@ public class HashIter32BitTest extends TestCase {
 		int sizeIncrementor = 1 ; 
 		do {
 			if (++i == nextResize) {
-				if (size + sizeIncrementor > 20) {
-					iter.resize(20) ;
-				} else {
+				if (size + sizeIncrementor == 20) {
+					iter.resize(size = 20) ;
+					sizeIncrementor = -5 ;
+					nextResize <<= 2 ;
+				} else if (sizeIncrementor > 0) {
 					iter.resize(size += sizeIncrementor++) ;
+					nextResize <<= 2 ;
+				} else {
+					iter.resize(size += sizeIncrementor--) ;
 					nextResize <<= 2 ;
 				}
 			}
