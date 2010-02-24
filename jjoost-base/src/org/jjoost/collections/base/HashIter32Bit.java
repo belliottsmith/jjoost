@@ -2,93 +2,72 @@ package org.jjoost.collections.base;
 
 public class HashIter32Bit {
 
-	private final int endHighBits ;
 	private final int lowBitsMask ;
-	private final int[] completionCaps ;
-	private int currentHighBits ;
-	private int nextHighBits ;
-	private int currentLowBits ;
 	private int numTotalBits ;
-	private int incrementor ;
-	private int unsafeUntil = 0 ;
-	private int unsafeFrom = Integer.MAX_VALUE ;
+	private int resizingTo ;
+	private int highBitsCounter ;
+	private int lowBitsCounter ;	
+	private int middleBitsCounter ;
+	private int middleBitsIncrementor ;
+	private boolean unsafe = false ;
 	
 	public HashIter32Bit(int numLowerBits, int numTotalBits) {
-		this.completionCaps = new int[1 << numLowerBits] ;
-		java.util.Arrays.fill(completionCaps, -1) ;
-		this.numTotalBits = numTotalBits ;
+		this.numTotalBits = numTotalBits ;		
+		this.resizingTo = numTotalBits ;
 		this.lowBitsMask = (1 << numLowerBits) - 1 ;
-		this.endHighBits = 1 << (32 - numLowerBits) ;
-		this.incrementor = 1 << (32 - numTotalBits) ;
-		this.nextHighBits = this.incrementor ;
 	}
 	
 	public void resize(int numTotalBits) {
-		final int newIncrementor = 1 << (32 - numTotalBits) ;
 		if (numTotalBits > this.numTotalBits) {
-			if (unsafeFrom > currentHighBits)
-				unsafeFrom = currentHighBits ;
-			final int unsafeTil = nextHighBits ;
-			if (unsafeUntil < unsafeTil)
-				unsafeUntil = unsafeTil ;
+			resizingTo = numTotalBits ;
+			middleBitsIncrementor = 1 << (32 - (numTotalBits - this.numTotalBits)) ;
+			middleBitsCounter &= middleBitsIncrementor ;
+			unsafe = true ;
 		} else if (numTotalBits < this.numTotalBits) {
-			final int mask = ~(newIncrementor - 1) ;
-			currentHighBits &= mask ;
-			if (unsafeUntil != 0) {
-				// need to round unsafeFrom and unsafeUntil to the nearest multiple of the new (smaller) HighBits incrementor
-				unsafeFrom &= mask ;
-				if ((unsafeUntil & mask) != 0)
-					unsafeUntil = (unsafeUntil & mask) + newIncrementor ;
-			}
+			final int mask = ~((1 << (32 - numTotalBits)) - 1) ;
+			this.highBitsCounter &= mask ;
+			this.middleBitsIncrementor = 1 << (32 - (this.numTotalBits - numTotalBits)) ;
+			// TODO : must modify middleBitsCounter and lowBitsCounter to make up for the truncation in highBitsCounter 
+			this.resizingTo = numTotalBits ;
+			this.numTotalBits = numTotalBits ;
+			unsafe = true ;
 		}
-		this.incrementor = newIncrementor ;
-		this.nextHighBits = currentHighBits + newIncrementor ;
-		this.numTotalBits = numTotalBits ;
 	}
 	
 	public boolean next() {
-		if (nextHighBits < completionCaps[currentLowBits])
-			throw new IllegalStateException() ;
-		completionCaps[currentLowBits] = nextHighBits ;
-		while (true) {
-			if (unsafeUntil != 0) {
-				if (nextHighBits == unsafeUntil) {
-					currentHighBits = unsafeFrom ;
-					nextHighBits = currentHighBits + incrementor ;
-					unsafeUntil = 0 ;
-					unsafeFrom = Integer.MAX_VALUE ;
-				} else {
-					currentHighBits = nextHighBits ;
-					nextHighBits += incrementor ;
-					if (nextHighBits > completionCaps[currentLowBits])
-						return true ;
-				}
-			} else if (currentLowBits == lowBitsMask) {
-				currentHighBits = nextHighBits ;
-				if (currentHighBits == endHighBits)
+		middleBitsCounter = middleBitsCounter + middleBitsIncrementor ;
+		if (middleBitsCounter == 0) {
+			unsafe = false ;
+			lowBitsCounter = (lowBitsCounter + 1) & lowBitsMask ;
+			if (lowBitsCounter == 0) {
+				highBitsCounter += 1 << (32 - numTotalBits) ;
+				middleBitsIncrementor = 0 ;
+				numTotalBits = resizingTo ;
+				if (highBitsCounter == 1 << (32 - Integer.bitCount(lowBitsMask)))
 					return false ;
-				nextHighBits += incrementor ;
-				currentLowBits = 0 ;				
-				if (nextHighBits > completionCaps[currentLowBits])
-					return true ; 
-			} else {
-				currentLowBits += 1 ;
-				if (nextHighBits > completionCaps[currentLowBits])
-					return true ;
 			}
 		}
+		return true ;
 	}
 	
 	public boolean haveVisitedAlready(int hash) {
-		return completionCaps[hash & lowBitsMask] > Integer.reverse(hash & ~lowBitsMask) ;
+		final int highBits = Integer.reverse(hash & ~lowBitsMask) ;
+		final int lowBits = hash & lowBitsMask ;
+		if (lowBits == lowBitsCounter) {
+			return highBitsCounter + (middleBitsCounter >>> numTotalBits) > highBits ;
+		} else if (lowBits < lowBitsCounter) {
+			return highBitsCounter + (1 << (32 - numTotalBits)) > highBits ;
+		} else {
+			return highBitsCounter > highBits ;
+		}
 	}
 	
 	public boolean safe() {
-		return unsafeUntil == 0 ;
+		return unsafe ;
 	}
 	
 	public int current() {
-		return Integer.reverse(currentHighBits) | currentLowBits ;
+		return Integer.reverse(highBitsCounter + (middleBitsCounter >>> numTotalBits)) | lowBitsCounter ;
 	}
-	
+
 }
