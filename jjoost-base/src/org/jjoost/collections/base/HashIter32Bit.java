@@ -103,8 +103,8 @@ public class HashIter32Bit {
 			lowBitsCounter = (lowBitsCounter + 1) & lowBitsMask ;
 			if (lowBitsCounter == 0) {
 				highBitsCounter = newHighBitsCounter ;
-				highBitsCurrent = Integer.reverse(newHighBitsCounter) ;
 				highBitsVisited = newHighBitsCounter ;
+				highBitsCurrent = Integer.reverse(newHighBitsCounter) ;
 				highBitsIncrementor = 1 << (32 - resizingTo) ;
 				numTotalBits = resizingTo ;
 				if (newHighBitsCounter == 1 << (32 - Integer.bitCount(lowBitsMask)))
@@ -114,8 +114,8 @@ public class HashIter32Bit {
 				if (oldHighBitsCounter != newHighBitsCounter) {
 					highBitsCounter = newHighBitsCounter ;
 					highBitsCurrent = Integer.reverse(newHighBitsCounter) ;
-					highBitsVisited = newHighBitsCounter ;
 				}					
+				highBitsVisited = newHighBitsCounter ;
 			}
 			ResizingFrom rf ;
 			if (resizingFrom != null && (rf = resizingFrom[0]).lowBits == lowBitsCounter) {
@@ -133,6 +133,7 @@ public class HashIter32Bit {
 		} else {
 			highBitsCounter = newHighBitsCounter ;
 			highBitsVisited = newHighBitsCounter ;
+			highBitsCurrent = Integer.reverse(newHighBitsCounter) ;
 		}
 		return true ;
 	}
