@@ -13,9 +13,9 @@ public class HashIter32BitTest extends TestCase {
 			int lc = -1 ;
 			do {
 				if (lc >= 0)
-					assertTrue(iter.haveVisitedAlready(lc)) ;
-				assertFalse(visited[iter.current()]) ;
-				assertFalse(iter.haveVisitedAlready(iter.current())) ;
+					assertTrue(Integer.toString(lc), iter.haveVisitedAlready(lc)) ;
+ 				assertFalse(Integer.toString(iter.current()), visited[iter.current()]) ;
+				assertFalse(Integer.toString(iter.current()), iter.haveVisitedAlready(iter.current())) ;
 				visited[iter.current()] = true ;
 				lc = iter.current() ;
 			} while (iter.next()) ;

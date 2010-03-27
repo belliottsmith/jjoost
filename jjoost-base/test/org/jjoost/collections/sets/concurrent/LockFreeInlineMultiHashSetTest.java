@@ -19,5 +19,10 @@ public class LockFreeInlineMultiHashSetTest extends MultiHashSetTest {
 	protected void resize(int capacity) {
 		getSet().resize(capacity) ;
 	}
+	
+	@Override
+	protected boolean duplicatesGrowTable() {
+		return false;
+	}
 
 }

@@ -12,4 +12,9 @@ public class SerialHashMapValueSetTest extends HashMapValueSetTest {
 		return new SerialHashMap<String, String>(Rehashers.identity(), Equalities.object()) ;
 	}
 	
+	@Override
+	protected boolean duplicatesGrowTable() {
+		return true ;
+	}
+
 }

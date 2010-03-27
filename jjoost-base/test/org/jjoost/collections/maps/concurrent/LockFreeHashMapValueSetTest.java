@@ -11,5 +11,10 @@ public class LockFreeHashMapValueSetTest extends HashMapValueSetTest {
 	protected HashMap<String, String, ?> createMap() {
 		return new LockFreeHashMap<String, String>(Rehashers.identity(), Equalities.object()) ;
 	}
-	
+
+	@Override
+	protected boolean duplicatesGrowTable() {
+		return true ;
+	}
+
 }

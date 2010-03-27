@@ -5,6 +5,7 @@ import java.util.Iterator ;
 import java.util.List ;
 
 import org.jjoost.util.Iters ;
+
 /**
  * This class is the basis for testing all implementations of Set and Map that use a regular HashStore as backing
  * @author b.elliottsmith
@@ -36,6 +37,8 @@ public abstract class AbstractHashStoreBasedMultiCollectionTest extends Abstract
 	protected abstract void shrink() ;
 	protected abstract void resize(int i) ;
 	protected abstract Iterator<String> iterator() ;
+	
+	protected abstract boolean duplicatesGrowTable() ;
 	
 	protected void checkEmpty() {
 		assertEquals(0, totalCount()) ;
@@ -130,10 +133,10 @@ public abstract class AbstractHashStoreBasedMultiCollectionTest extends Abstract
 	
 	public void testClearAndReturn_whenNotEmpty() {
 		checkEmpty() ;
+		put(null) ;
+		put("a") ;
 		put("a") ;
 		put("q") ;
-		put("a") ;
-		put(null) ;
 		// also perform removes just to test the no-op remove() on this Iterator
 		checkIteratorContents(Arrays.asList(null, "a", "a", "q").iterator(), Iters.destroyAsConsumed(clearAndReturn()), true) ;
 		checkAndClear(0) ;
@@ -476,9 +479,9 @@ public abstract class AbstractHashStoreBasedMultiCollectionTest extends Abstract
 			put(s) ;
 			put(s) ;
 		}
-		assertEquals(128, capacity()) ;
-		for (String s : ss)
-			assertEquals(2, count(s)) ;
+		assertEquals(64 << (duplicatesGrowTable() ? 1 : 0), capacity()) ;
+		for (int i = 0 ; i != ss.length ; i++)
+			assertEquals(ss[i], 2, count(ss[i])) ;
 		checkAndClear(52) ;
 	}
 	
@@ -503,16 +506,21 @@ public abstract class AbstractHashStoreBasedMultiCollectionTest extends Abstract
 			put(s) ;
 			put(s) ;
 		}
+//		System.out.println(Iters.toString(iterator())) ;
+//		System.out.println(Iters.count(iterator())) ;
 		resize(8) ;
 		assertEquals(8, capacity()) ;
-		for (String s : ss)
-			assertEquals(2, count(s)) ;
+		for (int i = 0 ; i != 26 ; i++)
+			assertEquals(ss[i], 2, count(ss[i])) ;
+		resize(64) ;
+		for (int i = 0 ; i != 26 ; i++)
+			assertEquals(ss[i], 2, count(ss[i])) ;
 		resize(32) ;
-		for (String s : ss)
-			assertEquals(2, count(s)) ;
+		for (int i = 0 ; i != 26 ; i++)
+			assertEquals(ss[i], 2, count(ss[i])) ;
 		resize(16) ;
-		for (String s : ss)
-			assertEquals(2, count(s)) ;
+		for (int i = 0 ; i != 26 ; i++)
+			assertEquals(ss[i], 2, count(ss[i])) ;
 		checkAndClear(52) ;
 		
 		ss = new String[] { "a", "q" } ;
@@ -522,15 +530,15 @@ public abstract class AbstractHashStoreBasedMultiCollectionTest extends Abstract
 		}
 		resize(8) ;
 		assertEquals(8, capacity()) ;
-		for (String s : ss)
-			assertEquals(2, count(s)) ;
+		for (int i = 0 ; i != 2 ; i++)
+			assertEquals(ss[i], 2, count(ss[i])) ;
 		resize(16) ;
 		assertEquals(16, capacity()) ;
-		for (String s : ss)
-			assertEquals(2, count(s)) ;
+		for (int i = 0 ; i != 2 ; i++)
+			assertEquals(ss[i], 2, count(ss[i])) ;
 		resize(64) ;
-		for (String s : ss)
-			assertEquals(2, count(s)) ;
+		for (int i = 0 ; i != 2 ; i++)
+			assertEquals(ss[i], 2, count(ss[i])) ;
 		checkAndClear(4) ;
 	}
 	

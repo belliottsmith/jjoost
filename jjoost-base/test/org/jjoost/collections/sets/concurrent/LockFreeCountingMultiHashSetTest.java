@@ -20,4 +20,9 @@ public class LockFreeCountingMultiHashSetTest extends MultiHashSetTest {
 		getSet().resize(capacity) ;
 	}
 
+	@Override
+	protected boolean duplicatesGrowTable() {
+		return false;
+	}
+
 }
