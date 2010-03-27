@@ -95,6 +95,10 @@ public class HashIter32Bit {
 		}
 	}
 	
+	public int size() {
+		return 1 << numTotalBits ;
+	}
+	
 	public boolean next() {
 		final int highBitsMask = (1 << (32 - numTotalBits)) - 1 ;
 		final int oldHighBitsCounter = this.highBitsCounter ;
@@ -138,6 +142,12 @@ public class HashIter32Bit {
 		return true ;
 	}
 	
+	public boolean correctBucket(int hash) {
+		if ((hash & lowBitsMask) != lowBitsCounter) 
+			return false ;
+		final int highBits = Integer.reverse(hash & ~lowBitsMask) ;
+		return highBits >= highBitsCounter && highBits < highBitsCounter + highBitsIncrementor ;
+	}
 	public boolean visit(int hash) {
 		final int highBits = Integer.reverse(hash & ~lowBitsMask) ;
 		final int lowBits = hash & lowBitsMask ;

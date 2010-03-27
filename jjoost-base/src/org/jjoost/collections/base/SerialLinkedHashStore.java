@@ -1,10 +1,8 @@
 package org.jjoost.collections.base;
 
-import java.util.ConcurrentModificationException ;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import org.jjoost.util.Equality ;
 import org.jjoost.util.Function;
 
 @SuppressWarnings("unchecked")
@@ -72,12 +70,13 @@ public class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedH
 		final N prev = n.linkPrev ;
 		next.linkPrev = prev ;
 		prev.linkNext = next ; 
+		n.linkNext = null ;
+		n.linkPrev = next ;
 	}
 
 	@Override
 	public <NCmp> SerialHashStore<N> copy(Function<? super N, ? extends NCmp> nodeEqualityProj,
 		HashNodeEquality<? super NCmp, ? super N> nodeEquality) {
-		int modCount = this.modCount ;
 		final N[] tbl = (N[]) new SerialLinkedHashNode[this.table.length] ;
 		final int totalNodeCount = this.totalNodeCount ;
 		final int uniquePrefixCount = this.uniquePrefixCount ;
@@ -91,8 +90,6 @@ public class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedH
 			cur = cur.linkNext ;
 		}
 		newTail.linkNext = newHead ;
-		if (modCount != this.modCount)
-			throw new ConcurrentModificationException() ;
 		newTail = newHead.linkNext ;
 		final int mask = (tbl.length - 1) ;
 		while (newTail != newHead) {
@@ -101,8 +98,10 @@ public class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedH
 			if (cur == null) {
 				tbl[bucket] = newTail ;
 			} else {
-				while (cur.next != null)
+				int rev = Integer.reverse(newTail.hash) ;
+				while (cur.next != null && Integer.reverse(cur.next.hash) < rev)
 					cur = cur.next ;
+				newTail.next = cur.next ;
 				cur.next = newTail ;
 			}
 			newTail = newTail.linkNext ;
@@ -115,18 +114,6 @@ public class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedH
 		return new LinkIterator<NCmp, V>(nodePrefixEqFunc, nodePrefixEq, ret) ;
 	}
 	
-	@Override
-	public <NCmp, NCmp2, V> Iterator<V> unique(
-			Function<? super N, ? extends NCmp> uniquenessEqualityProj, 
-			Equality<? super NCmp> uniquenessEquality, 
-			Locality duplicateLocality, 
-			Function<? super N, ? extends NCmp2> nodeEqualityProj, 
-			HashNodeEquality<? super NCmp2, ? super N> nodeEquality, 
-			Function<? super N, ? extends V> ret) {
-		// TODO : implement - must apply uniqueness filter inside the LinkIterator in order to be able to apply the ret function afterwards...
-		throw new UnsupportedOperationException() ;
-	}
-	
 	private final class LinkIterator<NCmp, V> implements Iterator<V> {
 
 		private final Function<? super N, ? extends NCmp> nodePrefixEqFunc ;
@@ -134,7 +121,6 @@ public class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedH
 		private final Function<? super N, ? extends V> ret ;
 		private N prev = null ;
 		private N next = head.linkNext ;
-		private int curModCount = modCount ;
 		
 		public LinkIterator(Function<? super N, ? extends NCmp> nodePrefixEqFunc, HashNodeEquality<? super NCmp, ? super N> nodePrefixEq, Function<? super N, ? extends V> f) {
 			this.nodePrefixEqFunc = nodePrefixEqFunc ;
@@ -144,29 +130,31 @@ public class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedH
 
 		@Override
 		public boolean hasNext() {
+			if (next == null) {
+				N prev = this.prev ;
+				if (prev.linkNext == null) {
+					prev = prev.linkPrev ;
+					while (prev.linkNext == null)
+						prev = prev.linkPrev ;
+					next = prev ;
+				} else next = prev.linkNext ;
+			}
 			return next != head ;
 		}
 
 		@Override
 		public V next() {
-			if (next == head)
+			if (!hasNext())
 				throw new NoSuchElementException() ;
-			if (curModCount != modCount)
-				throw new ConcurrentModificationException() ;
 			prev = next ;
-			next = next.linkNext ;
+			next = null ;
 			return ret.apply(prev) ;
 		}
 
 		@Override
 		public void remove() {
-			if (prev == null)
-				throw new NoSuchElementException() ;
-			if (curModCount != modCount)
-				throw new ConcurrentModificationException() ;
-			removeNode(nodePrefixEqFunc, nodePrefixEq, prev) ;
-			curModCount = modCount ;
-			prev = null ;
+			if (prev.linkNext != null)
+				removeNode(nodePrefixEqFunc, nodePrefixEq, prev) ;
 		}
 		
 	}

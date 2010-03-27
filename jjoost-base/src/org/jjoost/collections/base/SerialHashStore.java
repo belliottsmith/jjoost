@@ -1,7 +1,7 @@
 package org.jjoost.collections.base;
 
 import java.util.Arrays;
-import java.util.ConcurrentModificationException;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List ;
 import java.util.NoSuchElementException;
@@ -18,12 +18,17 @@ import org.jjoost.util.Rehashers;
 public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implements HashStore<N> {
 
 	private static final long serialVersionUID = 5818748848600569496L ;
+	private static final FlagNode DELETED_FLAG = new FlagNode("DELETED") ;
 
 	public static abstract class SerialHashNode<N extends SerialHashNode<N>> extends HashNode<N> {
 		private static final long serialVersionUID = 2035712133283347382L;
 		protected N next ;
 		public SerialHashNode(int hash) {
 			super(hash) ;
+		}
+		@SuppressWarnings("unchecked")
+		private void flagDeleted() {
+			next = (N) DELETED_FLAG ;
 		}
 	}
 	
@@ -32,13 +37,10 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	protected int uniquePrefixCount ;
 	protected int loadLimit ;
 	protected final float loadFactor ;
-	protected transient int modCount = 0 ;	
 	
 	protected void inserted(N n) {
-		modCount++ ;
 	}
 	protected void removed(N n) {
-		modCount++ ;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -119,48 +121,50 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		
 		final boolean replace = eq.isUnique() ;
 		final int hash = put.hash ;
+		final int reverse = Integer.reverse(hash) ;
 		final int bucket = put.hash & (table.length - 1) ;		
 		boolean partial = false ;
+		
+   		N p = null ;
     	N n = table[bucket] ;
-    	if (n == null) {
-    		table[bucket] = put ;
-    	} else {
-    		N p = null ;
-    		while (n != null) {
-    			if (partial != (n.hash == hash && eq.prefixMatch(find, n))) {
-    				if (partial) {
-    					// inserting new node grouped with others with same prefix
-    					p.next = put ;
-    					put.next = n ;
-    					totalNodeCount++ ;
-    					inserted(put) ;
-    					return null ;
-    				} else partial = true ;
-    			}   
-    			if (partial && replace && eq.suffixMatch(find, n)) {
-    				// replacing existing node
-    				if (p == null) {
-    					table[bucket] = put ;
-    				} else {
-    					p.next = put ;
-    				}
-					put.next = n.next ;
-					removed(n) ;
-					inserted(put) ;
-    				return ret.apply(n) ;
-    			}
-    			p = n ;
-    			n = n.next ;
-    		}
-			// inserting new node with no matching prefixes in table
-    		p.next = put ;
-    	}
+    	N replaced = null ;
+   		while (n != null) {
+   			if (partial != (n.hash == hash && eq.prefixMatch(find, n))) {
+   				if (partial) break ;
+   				else partial = true ;
+   			}
+   			if (partial) {
+   				if (replace && eq.suffixMatch(find, n)) {
+   	   				replaced = n ;
+   	   				break ;
+   				}   				
+   			} else if (insertBefore(reverse, n)) {
+   				break ;
+   			}
+   			p = n ;
+   			n = n.next ;
+   		}
+   		
+   		if (p == null) 
+   			table[bucket] = put ;
+   		else p.next = put ;
+   		
+		if (replaced == null) {
+			totalNodeCount++ ;
+			put.next = n ;
+		} else {
+			removed(replaced) ;
+			put.next = replaced.next ;
+			// set the next pointer of the removed node to the node that replaces it, so that iterators see consistent state
+			replaced.next = put ;
+		}
     	if (!partial)
     		uniquePrefixCount++ ;
-		totalNodeCount++ ;
 
 		inserted(put) ;
-		return null ;
+		if (replaced == null)
+			return null ;
+		return ret.apply(replaced) ;
 	}
 
 	@Override
@@ -168,34 +172,32 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		grow() ;
 
 		final int hash = put.hash ;
+		final int reverse = Integer.reverse(hash) ;
 		final int bucket = put.hash & (table.length - 1) ;		
 		boolean partial = false ;
+		
+   		N p = null ;
     	N n = table[bucket] ;
-    	if (n == null) {
-    		table[bucket] = put ;
-    	} else {
-    		N p = null ;
-    		while (n != null) {
-    			if (partial != (n.hash == hash && eq.prefixMatch(find, n))) {
-    				if (partial) {
-    					// inserting new node grouped with others with same prefix
-    					p.next = put ;
-    					put.next = n ;
-    					totalNodeCount++ ;
-    					inserted(put) ;
-    					return null ;
-    				} else partial = true ;
-    			}    			
-    			if (partial && eq.suffixMatch(find, n)) {
-    				// already present so not inserting
-    				return ret.apply(n) ;
-    			}
-    			p = n ;
-    			n = n.next ;
-    		}
-			// inserting new node with no matching prefixes in table
-    		p.next = put ;
-    	}
+   		while (n != null) {
+   			if (partial != (n.hash == hash && eq.prefixMatch(find, n))) {
+   				if (partial) break ;
+   				else partial = true ;
+   			}
+   			if (partial) {
+   				if (eq.suffixMatch(find, n))
+   	   				return ret.apply(n) ;
+   			} else if (insertBefore(reverse, n)) {
+   				break ;
+   			}
+   			p = n ;
+   			n = n.next ;
+   		}
+   		
+   		if (p == null) 
+   			table[bucket] = put ;
+   		else p.next = put ;
+		put.next = n ;
+   		
     	if (!partial)
     		uniquePrefixCount++ ;
 		totalNodeCount++ ;
@@ -203,81 +205,94 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		inserted(put) ;
 		return null ;
 	}
+	
+	private static boolean insertBefore(int reverseHash, SerialHashNode<?> node) {
+		final int reverseNodeHash = Integer.reverse(node.hash) ; 
+		return (reverseHash < reverseNodeHash) ^ ((reverseNodeHash > 0) != (reverseHash > 0));
+	}
 
+	private static boolean insertBefore(SerialHashNode<?> a, SerialHashNode<?> b) {
+		final int ra = Integer.reverse(a.hash) ; 
+		final int rb = Integer.reverse(b.hash) ; 
+		return (ra < rb) ^ ((ra > 0) != (rb > 0));
+	}
+	
 	@Override
-	public <NCmp, V> V putIfAbsent(final int hash, NCmp put, HashNodeEquality<? super NCmp, ? super N> eq, HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret) {
+	public <NCmp, V> V putIfAbsent(final int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret) {
 		grow() ;
 		
+		final int reverse = Integer.reverse(hash) ;
 		final int bucket = hash & (table.length - 1) ;
 		boolean partial = false ;
+		
+		N p = null ;
     	N n = table[bucket] ;
-    	if (n == null) {
-    		table[bucket] = factory.makeNode(hash, put) ;
-    	} else {
-    		N p = null ;
-    		while (n != null) {
-    			if (partial != (n.hash == hash && eq.prefixMatch(put, n))) {
-    				if (partial) {
-    					// inserting new node grouped with others with same prefix
-    					p = p.next = factory.makeNode(hash, put) ;
-    					p.next = n ;
-    					inserted(p) ;
-    					return null ;
-    				} else partial = true ;
-    			}    			
-    			if (partial && eq.suffixMatch(put, n)) {
-    				return ret.apply(n) ;
-    			}
-    			p = n ;
-    			n = n.next ;
-    		}
-			// inserting new node with no matching prefix in table
-    		p.next = factory.makeNode(hash, put) ;
-    		inserted(p.next) ;
-    	}
+		while (n != null) {
+			if (partial != (n.hash == hash && eq.prefixMatch(find, n))) {
+				if (partial) break ;
+				else partial = true ;
+			}    			
+   			if (partial) {
+   				if (eq.suffixMatch(find, n))
+   	   				return ret.apply(n) ;
+   			} else if (insertBefore(reverse, n)) {
+   				break ;
+   			}
+			p = n ;
+			n = n.next ;
+		}
+		
+		final N put = factory.makeNode(hash, find) ;
+   		if (p == null) 
+   			table[bucket] = put ;
+   		else p.next = put ;
+   		put.next = n ;
+   		
     	if (!partial)
     		uniquePrefixCount++ ;
 		totalNodeCount++ ;
 
+		inserted(put) ;
 		return null ;
 	}
 	
 	@Override
-	public <NCmp, V> V ensureAndGet(final int hash, NCmp put, HashNodeEquality<? super NCmp, ? super N> eq, HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret) {
+	public <NCmp, V> V ensureAndGet(final int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret) {
 		grow() ;
 		
-		boolean partial = false ;
+		final int reverse = Integer.reverse(hash) ;
 		final int bucket = hash & (table.length - 1) ;
+		boolean partial = false ;
+		
+		N p = null ;
     	N n = table[bucket] ;
-    	if (n == null) {
-    		n = table[bucket] = factory.makeNode(hash, put) ;
-    	} else {
-    		N p = null ;
-    		while (n != null) {
-    			if (partial != (n.hash == hash && eq.prefixMatch(put, n))) {
-    				if (partial) {
-    					// inserting new node grouped with others with same prefix
-    					p = p.next = factory.makeNode(hash, put) ;
-    					p.next = n ;
-    		    		inserted(p) ;
-    					return ret.apply(p) ;
-    				} else partial = true ;
-    			}    			
-    			if (partial && eq.suffixMatch(put, n)) {
-					// already present so not inserting
-    				return ret.apply(n) ;
-    			}
-    			p = n ;
-    			n = n.next ;
-    		}
-    		n = p.next = factory.makeNode(hash, put) ;
-    	}
+		while (n != null) {
+			if (partial != (n.hash == hash && eq.prefixMatch(find, n))) {
+				if (partial) break ;
+				else partial = true ;
+			}    			
+   			if (partial) {
+   				if (eq.suffixMatch(find, n))
+   	   				return ret.apply(n) ;
+   			} else if (Integer.reverse(n.hash) > reverse) {
+   				break ;
+   			}
+			p = n ;
+			n = n.next ;
+		}
+
+		final N put = factory.makeNode(hash, find) ;
+   		if (p == null) 
+   			table[bucket] = put ;
+   		else p.next = put ;
+   		put.next = n ;
+   		
     	if (!partial)
     		uniquePrefixCount++ ;
 		totalNodeCount++ ;
 
-		inserted(n) ;
-		return ret.apply(n) ;
+		inserted(put) ;
+		return ret.apply(put) ;
 	}
 	
 	// **************************************************
@@ -300,13 +315,11 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
     	boolean keptNeighbours = false ;
     	while (n != null) {
 			if (partial != (n.hash == hash && eq.prefixMatch(find, n))) {
-				if (partial) {
-					if (!keptNeighbours)
-						uniquePrefixCount -= 1 ;
-					return r ;
-				} else partial = true ;
+				if (partial) break ;
+				else partial = true ;
 			}
     		if (partial && eq.suffixMatch(find, n)) {
+    			// removing n
     			r++ ;
     			final N next = n.next ;
     			if (p == null) {
@@ -314,7 +327,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
     			} else {
     				p.next = next ;
     			}
-				n.next = null ;
+    			n.flagDeleted() ;
     			removed(n) ;
 				n = next ;
     			totalNodeCount -= 1 ;
@@ -358,24 +371,207 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 			if (!nodePrefixEq.prefixMatch(cmp, p) && (p.next == null || !nodePrefixEq.prefixMatch(cmp, p.next)))
 				uniquePrefixCount -= 1 ;
 		}
+		n.flagDeleted() ;
 		removed(n) ;
 		totalNodeCount -= 1 ;
 		return true ;
 	}
 
+//	@Override
+//	public <NCmp, V> Iterable<V> removeAndReturn(int hash, int removeAtMost, NCmp c, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+//		return removedNodeIterable(internalRemoveAndReturn(hash, removeAtMost, c, eq), ret) ;
+//	}
+//	@Override
+//	public <NCmp, V> V removeAndReturnFirst(int hash, int removeAtMost, NCmp c, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+//		final N n = internalRemoveAndReturn(hash, removeAtMost, c, eq) ;
+//		return n == null ? null : ret.apply(n) ;
+//	}
+//	
+//	private <NCmp> N removeAndReturnFirst(final int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
+//		if (removeAtMost < 1) {
+//			if (removeAtMost == 0)
+//				return null ;
+//			throw new IllegalArgumentException("Cannot remove less than zero elements") ;
+//		}
+//		
+//		final boolean eqIsUniq = eq.isUnique() ;
+//		boolean partial = false ;
+//		final int bucket = hash & (table.length - 1) ;
+//		N p = null ;
+//		N n = table[bucket] ; 
+//		boolean keptNeighbours = false ;
+//		N removed = null ;
+//		int c = 0 ;
+//		while (n != null) {
+//			if (partial != (n.hash == hash && eq.prefixMatch(find, n))) {
+//				if (partial) break ;
+//				else partial = true ;
+//			}
+//			if (partial && eq.suffixMatch(find, n)) {
+//				c++ ;
+//				final N next = n.next ;
+//				if (p == null) {
+//					table[bucket] = next ;
+//				} else {
+//					p.next = next ;
+//				}
+//				if (removed == null)
+//					removed = n ;
+//				n.flagDeleted() ;
+//				totalNodeCount -= 1 ;
+//				removed(n) ;
+//				n = next ;
+//				if (eqIsUniq | (c == removeAtMost)) {
+//    				if (!keptNeighbours)
+//    					keptNeighbours = n != null 
+//    						&& n.hash == hash 
+//    						&& eq.prefixMatch(find, n) ;
+//    				break ;
+//				}
+//			} else if (partial) {
+//				keptNeighbours = true ;
+//				if (eqIsUniq)
+//					break ;
+//			} else {
+//				p = n ;
+//				n = p.next ;
+//			}
+//		}
+//		
+//		if (!keptNeighbours && removed != null)
+//			uniquePrefixCount -= 1 ;
+//		
+//		return removed ;
+//	}
+//	
+//	private <NCmp> N internalRemoveAndReturn(final int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
+//		if (removeAtMost < 1) {
+//			if (removeAtMost == 0)
+//				return null ;
+//			throw new IllegalArgumentException("Cannot remove less than zero elements") ;
+//		}
+//		
+//		final boolean eqIsUniq = eq.isUnique() ;
+//		boolean partial = false ;
+//		final int bucket = hash & (table.length - 1) ;
+//		N p = null ;
+//		N n = table[bucket] ; 
+//		boolean keptNeighbours = false ;
+//		N removedHead = null, removedTail = null ;
+//		int c = 0 ;
+//		while (n != null) {
+//			if (partial != (n.hash == hash && eq.prefixMatch(find, n))) {
+//				if (partial) {
+//					if (!keptNeighbours)
+//						uniquePrefixCount -= 1 ;
+//					return removedHead ;
+//				} else partial = true ;
+//			}
+//			if (partial && eq.suffixMatch(find, n)) {
+//				c++ ;
+//				final N next = n.next ;
+//				if (p == null) {
+//					table[bucket] = next ;
+//				} else {
+//					p.next = next ;
+//				}
+//				if (removedHead == null) {
+//					removedHead = removedTail = n ;
+//				} else {
+//					removedTail = removedTail.next = n ;
+//				}
+//				n.next = null ;
+//				totalNodeCount -= 1 ;
+//				removed(n) ;				
+//				n = next ;
+//				if (eqIsUniq | (c == removeAtMost)) {
+//    				if (!keptNeighbours)
+//    					keptNeighbours = n != null 
+//    						&& n.hash == hash 
+//    						&& eq.prefixMatch(find, n) ;
+//    				break ;
+//				}
+//			} else if (partial) {
+//				keptNeighbours = true ;
+//				if (eqIsUniq)
+//					break ;
+//			} else {
+//				p = n ;
+//				n = p.next ;
+//			}
+//		}
+//		
+//		if (!keptNeighbours && removedHead != null)
+//			uniquePrefixCount -= 1 ;
+//		
+//		return removedHead ;
+//	}
+
 	@Override
-	public <NCmp, V> Iterable<V> removeAndReturn(int hash, int removeAtMost, NCmp c, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
-		return removedNodeIterable(internalRemoveAndReturn(hash, removeAtMost, c, eq), ret) ;
-	}
-	@Override
-	public <NCmp, V> V removeAndReturnFirst(int hash, int removeAtMost, NCmp c, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
-		final N n = internalRemoveAndReturn(hash, removeAtMost, c, eq) ;
-		return n == null ? null : ret.apply(n) ;
-	}
-	private <NCmp> N internalRemoveAndReturn(final int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
+	public <NCmp, V> V removeAndReturnFirst(final int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
 		if (removeAtMost < 1) {
 			if (removeAtMost == 0)
 				return null ;
+			throw new IllegalArgumentException("Cannot remove less than zero elements") ;
+		}
+		
+		final boolean eqIsUniq = eq.isUnique() ;
+		boolean partial = false ;
+		final int bucket = hash & (table.length - 1) ;
+		N p = null ;
+		N n = table[bucket] ; 
+		boolean keptNeighbours = false ;
+		N removed = null ;
+		int c = 0 ;
+		while (n != null) {
+			if (partial != (n.hash == hash && eq.prefixMatch(find, n))) {
+				if (partial) break ;
+				else partial = true ;
+			}
+			if (partial && eq.suffixMatch(find, n)) {
+				c++ ;
+				final N next = n.next ;
+				if (p == null) {
+					table[bucket] = next ;
+				} else {
+					p.next = next ;
+				}
+				if (removed == null)
+					removed = n ;
+				n.flagDeleted() ;
+				totalNodeCount -= 1 ;
+				removed(n) ;
+				n = next ;
+				if (eqIsUniq | (c == removeAtMost)) {
+    				if (!keptNeighbours)
+    					keptNeighbours = n != null 
+    						&& n.hash == hash 
+    						&& eq.prefixMatch(find, n) ;
+    				break ;
+				}
+			} else if (partial) {
+				keptNeighbours = true ;
+				if (eqIsUniq)
+					break ;
+			} else {
+				p = n ;
+				n = p.next ;
+			}
+		}
+		
+		if (removed != null) {
+			if (!keptNeighbours)
+				uniquePrefixCount -= 1 ;
+			return ret.apply(removed) ;			
+		}
+		
+		return null ;
+	}
+	
+	public <NCmp, V> Iterable<V> removeAndReturn(final int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+		if (removeAtMost < 1) {
+			if (removeAtMost == 0)
+				return Collections.emptyList() ;
 			throw new IllegalArgumentException("Cannot remove less than zero elements") ;
 		}
 		
@@ -389,11 +585,8 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		int c = 0 ;
 		while (n != null) {
 			if (partial != (n.hash == hash && eq.prefixMatch(find, n))) {
-				if (partial) {
-					if (!keptNeighbours)
-						uniquePrefixCount -= 1 ;
-					return removedHead ;
-				} else partial = true ;
+				if (partial) break ;
+				else partial = true ;
 			}
 			if (partial && eq.suffixMatch(find, n)) {
 				c++ ;
@@ -404,11 +597,11 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 					p.next = next ;
 				}
 				if (removedHead == null) {
-					removedHead = removedTail = n ;
+					removedHead = removedTail = n.copy() ;
 				} else {
-					removedTail = removedTail.next = n ;
+					removedTail = removedTail.next = n.copy() ;
 				}
-				n.next = null ;
+				n.flagDeleted() ;
 				totalNodeCount -= 1 ;
 				removed(n) ;				
 				n = next ;
@@ -432,7 +625,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		if (!keptNeighbours && removedHead != null)
 			uniquePrefixCount -= 1 ;
 		
-		return removedHead ;
+		return removedNodeIterable(removedHead, ret) ;
 	}
 	
 	// **************************************************
@@ -496,7 +689,6 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		return null ;
 	}
 
-	// TODO : for efficiency, don't delegate to Iters.toList() 
 	@Override
 	public <NCmp, V> List<V> findNow(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> findEq,
 			Function<? super N, ? extends V> ret) {
@@ -510,7 +702,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 			Function<? super N, ? extends NCmp2> nodeEqualityProj, 
 			HashNodeEquality<? super NCmp2, ? super N> nodeEq, 
 			Function<? super N, ? extends V> ret) {		
-		return new Search<NCmp, NCmp2, V>(hash, find, findEq, nodeEqualityProj, nodeEq, ret) ;
+		return new SearchIterator<NCmp, NCmp2, V>(hash, find, findEq, nodeEqualityProj, nodeEq, ret) ;
 	}
 	
 	@Override
@@ -531,19 +723,39 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		return new UniqueIterator<NCmp, NCmp2, V>(filterFactory, nodeEqualityProj, nodeEquality, ret) ;
 	}
 	
+	@SuppressWarnings("unchecked")
+	private static final class FlagNode extends SerialHashNode {
+		private static final long serialVersionUID = -8235849034699744602L ;
+		public final String type ;
+		public FlagNode(String type) {
+			super(-1) ;
+			this.type = type ;
+		}
+		public String toString() {
+			return type ;
+		}
+		public FlagNode copy() {
+			throw new UnsupportedOperationException() ;
+		}
+	}
+
 	// **************************************************
 	// public ITERATOR CLASSES
 	// **************************************************
 	
-	abstract class GeneralIterator<NCmp, V> implements Iterator<V> {
+	abstract class AbstractIterator<NCmp, V> implements Iterator<V> {
 		
 		final Function<? super N, ? extends NCmp> nodeEqualityProj ;
 		final HashNodeEquality<? super NCmp, ? super N> nodeEquality ;
 		final Function<? super N, ? extends V> ret ;
-		int curHash, curModCount = modCount ;
-		N curPrev , curNode , nextPrev , nextNode ;
-
-		public GeneralIterator(
+		N[] nextNodes ;
+		int nextNodesCount ;
+		int nextNode = -1 ;
+		N[] prevNodes ;
+		int prevNode ;
+		N[] reuse ;
+		
+		AbstractIterator(
 				Function<? super N, ? extends NCmp> nodeEqualityProj, 
 				HashNodeEquality<? super NCmp, ? super N> nodeEquality,
 				Function<? super N, ? extends V> ret) {
@@ -551,73 +763,196 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 			this.nodeEquality = nodeEquality ;
 			this.ret = ret ;
 		}
-
-		public boolean hasNext() { 
-			return nextNode != null ; 
-		}
-
-		public void remove() {
-			if (curModCount != modCount)
-				throw new ConcurrentModificationException() ;
-			if (curNode == null)
-				throw new NoSuchElementException("Nothing to remove!") ;
-			if (curPrev == null) {
-				table[curHash & (table.length - 1)] = curNode.next ;
-				if (nextNode == null || !nodeEquality.prefixMatch(nodeEqualityProj.apply(curNode), nextNode))
-					uniquePrefixCount -= 1 ;
-			} else {
-				curPrev.next = curNode.next ;
-				final NCmp cmp = nodeEqualityProj.apply(curPrev) ;
-				if (!nodeEquality.prefixMatch(cmp, curNode) && (nextNode == null || !nodeEquality.prefixMatch(cmp, nextNode)))
-					uniquePrefixCount -= 1 ;
-			}
-			removed(curNode) ;
-			nextPrev = curPrev ;
-			curPrev = null ;
-			curNode = null ;
-			totalNodeCount -= 1 ;
-			curModCount = ++modCount ;
-		}
-
-	}
-	
-	private class AllIterator<NCmp, V> extends GeneralIterator<NCmp, V> {
 		
-		int nextHash = - 1 ;
-		
-		AllIterator(Function<? super N, ? extends NCmp> nodeEqualityProj, HashNodeEquality<? super NCmp, ? super N> nodeEquality, Function<? super N, ? extends V> ret) {
-			super(nodeEqualityProj, nodeEquality, ret) ;
-			while (nextNode == null & nextHash != table.length - 1) {
-				nextNode = table[++nextHash] ;
+		protected abstract void nextHash() ;
+		protected abstract boolean accept(N node) ;
+		public boolean hasNext() {
+			int nextNode = this.nextNode ;
+			if (nextNode == -1) {
+				N[] nextNodes = this.nextNodes ;
+				while (nextNodes != null) {
+					final int nextNodesCount = this.nextNodesCount ;
+					if (prevNodes == nextNodes) {
+						nextNode = prevNode + 1 ;
+					} else {
+						nextNode = 0 ;
+					}
+					while (nextNode != nextNodesCount 
+							&& nextNodes[nextNode].next == DELETED_FLAG
+							&& !accept(nextNodes[nextNode]))
+						nextNode++ ;
+					if (nextNode == nextNodesCount) {
+						nextHash() ;
+						nextNodes = this.nextNodes ;
+					} else {
+						break ;
+					}
+				}
+				this.nextNode = nextNode ;
 			}
+			return nextNodes != null ; 
 		}
-
 		public V next() {
-			if (curModCount != modCount)
-				throw new ConcurrentModificationException() ;
-			if (nextNode == null)
+			if (nextNodes == null)
 				throw new NoSuchElementException() ;
-			curNode = nextNode ;
-			curHash = nextHash ;
-			curPrev = nextPrev ;
-			nextPrev = nextNode ;
-			nextNode = nextNode.next ;
-			while (nextNode == null & nextHash != table.length - 1) {
-				nextPrev = null ;
-				nextNode = table[++nextHash] ;
+			if (prevNodes != nextNodes)
+				reuse = prevNodes ;
+			prevNode = nextNode ;			
+			prevNodes = nextNodes ;
+			nextNode = -1 ;
+			return ret.apply(prevNodes[prevNode]) ;
+		}
+		public void remove() {
+			if (prevNodes == null)
+				throw new NoSuchElementException() ;
+			if (prevNodes[prevNode].next == DELETED_FLAG)
+				throw new NoSuchElementException() ;
+			int prev = prevNode ;
+			while (prev != 0) {
+				prev -= 1 ;
+				if (prevNodes[prev].next == prevNodes[prevNode]) {
+					prevNodes[prev].next = prevNodes[prevNode].next ;
+					prevNodes[prevNode].flagDeleted() ;
+					removed(prevNodes[prevNode]) ;
+					return ;
+				}
 			}
-			return ret.apply(curNode) ;
+			removeNode(nodeEqualityProj, nodeEquality, prevNodes[prevNode]) ;
+		}
+	}
+	
+	final class SearchIterator<NCmp, NCmp2, V> extends AbstractIterator<NCmp2, V> {
+		
+		@SuppressWarnings("unchecked")
+		SearchIterator(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> findEq, 
+				Function<? super N, ? extends NCmp2> nodeEqualityProj,
+				HashNodeEquality<? super NCmp2, ? super N> nodeEquality,
+				Function<? super N, ? extends V> ret) {
+			super(nodeEqualityProj, nodeEquality, ret) ;
+			N[] matches = (N[]) new SerialHashNode[4] ;
+			int count = 0 ;
+			N n = table[hash & (table.length - 1)] ;
+			boolean partial = false ;
+			while (n != null) {
+				if (partial != (hash == n.hash && findEq.prefixMatch(find, n))) {
+					if (partial) break ;
+					else partial = true ;
+				}
+				if (partial && findEq.suffixMatch(find, n)) {
+					if (count == matches.length)
+						matches = Arrays.copyOf(matches, matches.length << 1) ;
+					matches[count++] = n ;
+				}
+				n = n.next ;
+			}
+			if (count == 0) {
+				this.nextNodes = null ;
+				this.nextNodesCount = 0 ;
+			} else {
+				this.nextNodes = matches ;
+				this.nextNodesCount = count ;
+			}
+		}
+
+		@Override
+		protected boolean accept(N node) {
+			return true ;
+		}
+
+		@Override
+		protected void nextHash() {
+			nextNodes = null ;
 		}
 		
 	}
 	
-	// TODO : uniqueness can be achieved much more efficiently if we know if the unique values will be adjacent
-	private class UniqueIterator<NCmp, NCmp2, V> extends GeneralIterator<NCmp2, V> {
+	class AllIterator<NCmp, V> extends AbstractIterator<NCmp, V> {
+
+		final HashIter32Bit iter ;
+		AllIterator(Function<? super N, ? extends NCmp> nodeEqualityProj,
+				HashNodeEquality<? super NCmp, ? super N> nodeEquality,
+				Function<? super N, ? extends V> ret) {
+			super(nodeEqualityProj, nodeEquality, ret) ;
+			
+			final int numTotalBits = Integer.bitCount(table.length - 1) ;
+			if (numTotalBits >= 8) iter = new HashIter32Bit(8, numTotalBits) ;
+			else iter = new HashIter32Bit(numTotalBits, numTotalBits) ;
+			nextHash() ;
+		}
+		
+		@Override
+		protected boolean accept(N node) {
+			return true ;
+		}
+		
+		@SuppressWarnings("unchecked")
+		@Override
+		protected void nextHash() {
+			boolean resized = false ;
+			if (iter.size() != table.length) {
+				resized = true ;
+				iter.resize(Integer.bitCount(table.length - 1)) ;
+			}
+			N n = null ;			
+			if (prevNodes != null) {
+				int prev = prevNode ;
+				while (n == null & prev >= 0) {
+					if (prevNodes[prev].next != DELETED_FLAG) {
+						n = prevNodes[prev] ;
+						break ;
+					}
+					prev-- ;
+				}
+				
+				if (n == null || (resized && n != null && !iter.correctBucket(n.hash)))
+					n = table[iter.current()] ;
+				else if (n != null) 
+					n = n.next ;				
+			} else {
+				// should only be executed on first call
+				n = table[iter.current()] ;
+			}
+			
+			int hash = 0 ;
+			while (true) {
+				while (n != null) {
+					if (iter.visit(n.hash)) {
+						hash = n.hash ;
+						break ;
+					}
+					n = n.next ;
+				}
+				if (n != null)
+					break ;
+				if (!iter.next())
+					break ;
+				n = table[iter.current()] ;
+			}
+			
+			if (n == null) {
+				reuse = nextNodes = null ;
+				return ;
+			}
+			N[] nodes ;
+			if (reuse != null) nodes = reuse ;
+			else nodes = (N[]) new SerialHashNode[2] ;
+			int c = 0 ;
+			while (n != null && n.hash == hash) {
+				if (c == nodes.length)
+					nodes = Arrays.copyOf(nodes, nodes.length << 1) ;
+				nodes[c++] = n ;
+				n = n.next ;
+			}
+			this.nextNodes = nodes ;
+			this.nextNodesCount = c ;
+		}
+		
+	}
+	
+	final class UniqueIterator<NCmp, NCmp2, V> extends AllIterator<NCmp2, V> {
 		
 		final Factory<Filter<N>> filterFactory;
 		Filter<N> filter ;
-		
-		int nextHash = - 1 ;
 		
 		UniqueIterator(
 				Factory<Filter<N>> filterFactory, 
@@ -626,113 +961,211 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 				Function<? super N, ? extends V> ret) {
 			super(nodeEqualityProj, nodeEquality, ret) ;
 			this.filterFactory = filterFactory ;
-			while (nextNode == null & nextHash != table.length - 1) {
-				nextNode = table[++nextHash] ;
-			}
-			if (nextNode != null) {
-				filter = filterFactory.create() ;
-				filter.accept(nextNode) ;
-			} else {
-				filter = null ;
-			}
+			this.filter = filterFactory.create() ;
 		}
 		
-		public V next() {
-			if (curModCount != modCount)
-				throw new ConcurrentModificationException() ;
-			if (nextNode == null)
-				throw new NoSuchElementException() ;
-			Filter<N> filter = this.filter ;
-			curNode = nextNode ;
-			curHash = nextHash ;
-			curPrev = nextPrev ;
-			nextPrev = nextNode ;			
-			nextNode = nextNode.next ;
-			outer: while (true) {
-				if (nextNode != null) {
-					if (filter.accept(nextNode)) {
-						break ;
-					} else {
-						nextPrev = nextNode ;
-						nextNode = nextNode.next ;
-					}
-				} else {
-					nextPrev = null ;
-					while (true) {
-						if (nextHash == table.length - 1) {
-							filter = null ;
-							break outer ;
-						}
-						nextNode = table[++nextHash] ;
-						if (nextNode != null) {
-							this.filter = filter = filterFactory.create() ;
-							break ;
-						}
-					}
-				}
-			}
-			return ret.apply(curNode) ;
+		@Override
+		protected final boolean accept(N node) {
+			return filter.accept(node) ;
+		}
+		
+		@Override
+		protected final void nextHash() {			
+			super.nextHash() ;
+			if (filterFactory != null)
+				filter = filterFactory.create() ;
 		}
 		
 	}
 	
-	class Search<NCmp, NCmp2, V> extends GeneralIterator<NCmp2, V> {
-				
-		final NCmp find ;
-		final HashNodeEquality<? super NCmp, ? super N> findEquality ;
+//	abstract class GeneralIterator<NCmp, V> implements Iterator<V> {
+//		
+//		final Function<? super N, ? extends NCmp> nodeEqualityProj ;
+//		final HashNodeEquality<? super NCmp, ? super N> nodeEquality ;
+//		final Function<? super N, ? extends V> ret ;
+//		int curHash ;
+//		N curPrev , curNode , nextPrev , nextNode ;
+//
+//		public GeneralIterator(
+//				Function<? super N, ? extends NCmp> nodeEqualityProj, 
+//				HashNodeEquality<? super NCmp, ? super N> nodeEquality,
+//				Function<? super N, ? extends V> ret) {
+//			this.nodeEqualityProj = nodeEqualityProj ;
+//			this.nodeEquality = nodeEquality ;
+//			this.ret = ret ;
+//		}
+//
+//		public boolean hasNext() { 
+//			return nextNode != null ; 
+//		}
+//
+//		public void remove() {
+//			if (curNode == null)
+//				throw new NoSuchElementException("Nothing to remove!") ;
+//			if (curPrev == null) {
+//				table[curHash & (table.length - 1)] = curNode.next ;
+//				if (nextNode == null || !nodeEquality.prefixMatch(nodeEqualityProj.apply(curNode), nextNode))
+//					uniquePrefixCount -= 1 ;
+//			} else {
+//				curPrev.next = curNode.next ;
+//				final NCmp cmp = nodeEqualityProj.apply(curPrev) ;
+//				if (!nodeEquality.prefixMatch(cmp, curNode) && (nextNode == null || !nodeEquality.prefixMatch(cmp, nextNode)))
+//					uniquePrefixCount -= 1 ;
+//			}
+//			removed(curNode) ;
+//			nextPrev = curPrev ;
+//			curPrev = null ;
+//			curNode = null ;
+//			totalNodeCount -= 1 ;
+//		}
+//
+//	}
+//	
+//	private class AllIterator<NCmp, V> extends GeneralIterator<NCmp, V> {
+//		
+//		int nextHash = - 1 ;
+//		
+//		AllIterator(Function<? super N, ? extends NCmp> nodeEqualityProj, HashNodeEquality<? super NCmp, ? super N> nodeEquality, Function<? super N, ? extends V> ret) {
+//			super(nodeEqualityProj, nodeEquality, ret) ;
+//			while (nextNode == null & nextHash != table.length - 1) {
+//				nextNode = table[++nextHash] ;
+//			}
+//		}
+//
+//		public V next() {
+//			if (nextNode == null)
+//				throw new NoSuchElementException() ;
+//			curNode = nextNode ;
+//			curHash = nextHash ;
+//			curPrev = nextPrev ;
+//			nextPrev = nextNode ;
+//			nextNode = nextNode.next ;
+//			while (nextNode == null & nextHash != table.length - 1) {
+//				nextPrev = null ;
+//				nextNode = table[++nextHash] ;
+//			}
+//			return ret.apply(curNode) ;
+//		}
+//		
+//	}
+	
+//	private class UniqueIterator<NCmp, NCmp2, V> extends GeneralIterator<NCmp2, V> {
+//		
+//		final Factory<Filter<N>> filterFactory;
+//		Filter<N> filter ;
+//		
+//		int nextHash = - 1 ;
+//		
+//		UniqueIterator(
+//				Factory<Filter<N>> filterFactory, 
+//				Function<? super N, ? extends NCmp2> nodeEqualityProj, 
+//				HashNodeEquality<? super NCmp2, ? super N> nodeEquality, 
+//				Function<? super N, ? extends V> ret) {
+//			super(nodeEqualityProj, nodeEquality, ret) ;
+//			this.filterFactory = filterFactory ;
+//			while (nextNode == null & nextHash != table.length - 1) {
+//				nextNode = table[++nextHash] ;
+//			}
+//			if (nextNode != null) {
+//				filter = filterFactory.create() ;
+//				filter.accept(nextNode) ;
+//			} else {
+//				filter = null ;
+//			}
+//		}
 		
-		Search(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> findEq, 
-				Function<? super N, ? extends NCmp2> nodeEqualityProj,
-				HashNodeEquality<? super NCmp2, ? super N> nodeEquality,
-				Function<? super N, ? extends V> ret) {
-			super(nodeEqualityProj, nodeEquality, ret) ;
-			this.find = find ;
-			this.curHash = hash ;
-			this.findEquality = findEq ;		
-			nextNode = table[curHash & (table.length - 1)] ;
-			boolean partial = false ;
-			while (nextNode != null) {
-				if (partial != (hash == nextNode.hash && findEq.prefixMatch(find, nextNode))) {
-					if (partial) {
-						nextNode = null ;
-						nextPrev = null ;
-						return ;
-					} else partial = true ;
-				}
-				if (partial && findEq.suffixMatch(find, nextNode))
-					break ;
-				nextPrev = nextNode ;
-				nextNode = nextNode.next ;
-			}
-		}
-		
-		public V next() {
-			if (curModCount != modCount)
-				throw new ConcurrentModificationException() ;
-			if (nextNode == null)
-				throw new NoSuchElementException() ;
-			curNode = nextNode ;
-			curPrev = nextPrev ;
-			if (findEquality.isUnique()) {
-				nextPrev = nextNode = null ;
-			} else {
-				nextPrev = nextNode ;
-				nextNode = nextNode.next ;
-				while (nextNode != null) {
-					if (curNode.hash != nextNode.hash || !findEquality.prefixMatch(find, nextNode)) {
-						nextNode = null ;
-						break ;
-					} 
-					if (findEquality.suffixMatch(find, nextNode))
-						break ;
-					nextPrev = nextNode ;
-					nextNode = nextNode.next ;
-				}
-			}
-			return ret.apply(curNode) ;
-		}
-		
-	}
+//		public V next() {
+//			if (nextNode == null)
+//				throw new NoSuchElementException() ;
+//			Filter<N> filter = this.filter ;
+//			curNode = nextNode ;
+//			curHash = nextHash ;
+//			curPrev = nextPrev ;
+//			nextPrev = nextNode ;			
+//			nextNode = nextNode.next ;
+//			outer: while (true) {
+//				if (nextNode != null) {
+//					if (filter.accept(nextNode)) {
+//						break ;
+//					} else {
+//						nextPrev = nextNode ;
+//						nextNode = nextNode.next ;
+//					}
+//				} else {
+//					nextPrev = null ;
+//					while (true) {
+//						if (nextHash == table.length - 1) {
+//							filter = null ;
+//							break outer ;
+//						}
+//						nextNode = table[++nextHash] ;
+//						if (nextNode != null) {
+//							this.filter = filter = filterFactory.create() ;
+//							break ;
+//						}
+//					}
+//				}
+//			}
+//			return ret.apply(curNode) ;
+//		}
+//		
+//	}
+//	
+//	class Search<NCmp, NCmp2, V> extends GeneralIterator<NCmp2, V> {
+//				
+//		final NCmp find ;
+//		final HashNodeEquality<? super NCmp, ? super N> findEquality ;
+//		
+//		Search(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> findEq, 
+//				Function<? super N, ? extends NCmp2> nodeEqualityProj,
+//				HashNodeEquality<? super NCmp2, ? super N> nodeEquality,
+//				Function<? super N, ? extends V> ret) {
+//			super(nodeEqualityProj, nodeEquality, ret) ;
+//			this.find = find ;
+//			this.curHash = hash ;
+//			this.findEquality = findEq ;		
+//			nextNode = table[curHash & (table.length - 1)] ;
+//			boolean partial = false ;
+//			while (nextNode != null) {
+//				if (partial != (hash == nextNode.hash && findEq.prefixMatch(find, nextNode))) {
+//					if (partial) {
+//						nextNode = null ;
+//						nextPrev = null ;
+//						return ;
+//					} else partial = true ;
+//				}
+//				if (partial && findEq.suffixMatch(find, nextNode))
+//					break ;
+//				nextPrev = nextNode ;
+//				nextNode = nextNode.next ;
+//			}
+//		}
+//		
+//		public V next() {
+//			if (nextNode == null)
+//				throw new NoSuchElementException() ;
+//			curNode = nextNode ;
+//			curPrev = nextPrev ;
+//			if (findEquality.isUnique()) {
+//				nextPrev = nextNode = null ;
+//			} else {
+//				nextPrev = nextNode ;
+//				nextNode = nextNode.next ;
+//				while (nextNode != null) {
+//					if (curNode.hash != nextNode.hash || !findEquality.prefixMatch(find, nextNode)) {
+//						nextNode = null ;
+//						break ;
+//					} 
+//					if (findEquality.suffixMatch(find, nextNode))
+//						break ;
+//					nextPrev = nextNode ;
+//					nextNode = nextNode.next ;
+//				}
+//			}
+//			return ret.apply(curNode) ;
+//		}
+//		
+//	}
 	
 	private class ClearedIterator<V> implements Iterator<V> {
 		
@@ -754,7 +1187,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		}
 		
 		public void remove() {
-			// no op - already removed for goodness sake!
+			// no op - already removed
 		}
 
 		public V next() {
@@ -776,7 +1209,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 
 	@SuppressWarnings("unchecked")
 	private void grow() {
-		if (totalNodeCount >= loadLimit) {
+		if (uniquePrefixCount >= loadLimit) {
 			N[] oldtable = table ;
 			table = (N[]) new SerialHashNode[table.length << 1] ;
 			loadLimit = (int) (table.length * loadFactor) ;
@@ -821,15 +1254,36 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
     		final int newTableMask = table.length - 1 ;
     		for (int i = 0 ; i != oldTable.length ; i++) {
     			final int newTableIndex = i & newTableMask ;
-    			final N newHead = oldTable[i] ;
-    			N existingTail = table[newTableIndex] ;
-    			if (existingTail == null) {
-    				table[newTableIndex] = newHead ;
-    			} else if (newHead != null) {
-    				while (existingTail.next != null)
-    					existingTail = existingTail.next ;
-    				existingTail.next = newHead ;
+    			N newNode = oldTable[i] ;
+    			N oldNode = table[newTableIndex] ;
+    			final N newHead ;
+    			N newTail ;
+    			if (oldNode == null) {
+    				if (newNode == null)
+    					continue ;
+    				newHead = newTail = newNode ;
+    				newNode = newNode.next ; 
+    			} else if (newNode != null && insertBefore(newNode, oldNode)) {
+    				newHead = newTail = newNode ;
+    				newNode = newNode.next ; 
+    			} else {
+    				newHead = newTail = oldNode ;
+    				oldNode = oldNode.next ;
     			}
+    			while (oldNode != null & newNode != null) {
+    				if (insertBefore(oldNode, newNode)) {
+    					newTail = newTail.next = oldNode ;
+    					oldNode = oldNode.next ;
+    				} else {
+    					newTail = newTail.next = newNode ;
+    					newNode = newNode.next ;
+    				}
+    			}
+    			if (oldNode != null)
+    				newTail.next = oldNode ;
+    			if (newNode != null)
+    				newTail.next = newNode ;
+    			table[newTableIndex] = newHead ;
     		}
     	} else if (table.length == oldTable.length << 1) { 
     		int newIndexBit = oldTable.length ;
