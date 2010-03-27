@@ -10,6 +10,7 @@ public class HashIter32Bit {
 	private int highBitsVisited ;
 	private int highBitsCounter ;
 	private int highBitsIncrementor ;
+	private int highBitsCurrent ;
 	private int lowBitsCounter ;
 	
 	/**
@@ -18,7 +19,7 @@ public class HashIter32Bit {
 	 * lowBitsCounter we were at when we began the shrink, after setting the highBitsVisited 
 	 * to the highBitsForEqualLowBits value of the deleted record; thus resizingFrom is:
 	 *     - sorted in ascending order of lowBits
-	 *         (because when we insert a record all entries must be by definition above the current lowBitsCounter value)
+	 *         (because when we insert a record all entries must by definition be above the current lowBitsCounter value)
 	 *     - sorted in descending order of highBitsForLowerLowBits
 	 *         (because we can only insert these records in the case of a shrink, and so for a record to already be present
 	 *         it must have been inserted by a shrink still in progress which when instigated must have had a smaller highBitsIncrementor
@@ -75,6 +76,7 @@ public class HashIter32Bit {
 			resizingTo = newTotalBits ;
 			highBitsIncrementor = newHighBitsIncrementor ;
 			highBitsCounter = newHighBitsCounter ;
+			highBitsCurrent = Integer.reverse(newHighBitsCounter) ;
 		} else if (newTotalBits < this.numTotalBits) {
 			if (lowBitsCounter == 0) {
 				// insert a resizing from record IFF we are losing information about how far we have traversed for future records
@@ -89,28 +91,37 @@ public class HashIter32Bit {
 			resizingTo = newTotalBits ;
 			highBitsIncrementor = newHighBitsIncrementor ;
 			highBitsCounter = newHighBitsCounter ;
+			highBitsCurrent = Integer.reverse(newHighBitsCounter) ;
 		}
 	}
 	
 	public boolean next() {
 		final int highBitsMask = (1 << (32 - numTotalBits)) - 1 ;
-		highBitsCounter = highBitsCounter + highBitsIncrementor ;
-		if ((highBitsCounter & highBitsMask) == 0) {
+		final int oldHighBitsCounter = this.highBitsCounter ;
+		int newHighBitsCounter = oldHighBitsCounter + highBitsIncrementor ;
+		if ((newHighBitsCounter & highBitsMask) == 0) {
 			lowBitsCounter = (lowBitsCounter + 1) & lowBitsMask ;
-			if (lowBitsCounter == 0) {				
+			if (lowBitsCounter == 0) {
+				highBitsCounter = newHighBitsCounter ;
+				highBitsCurrent = Integer.reverse(newHighBitsCounter) ;
+				highBitsVisited = newHighBitsCounter ;
 				highBitsIncrementor = 1 << (32 - resizingTo) ;
 				numTotalBits = resizingTo ;
-				if (highBitsCounter == 1 << (32 - Integer.bitCount(lowBitsMask)))
+				if (newHighBitsCounter == 1 << (32 - Integer.bitCount(lowBitsMask)))
 					return false ;
 			} else {
-				highBitsCounter -= highBitsMask + 1;
+				newHighBitsCounter -= highBitsMask + 1 ; 
+				if (oldHighBitsCounter != newHighBitsCounter) {
+					highBitsCounter = newHighBitsCounter ;
+					highBitsCurrent = Integer.reverse(newHighBitsCounter) ;
+					highBitsVisited = newHighBitsCounter ;
+				}					
 			}
-			highBitsVisited = highBitsCounter ;
 			ResizingFrom rf ;
 			if (resizingFrom != null && (rf = resizingFrom[0]).lowBits == lowBitsCounter) {
 				if (highBitsVisited < rf.highBitsForEqualLowBits)
 					highBitsVisited = rf.highBitsForEqualLowBits ;				
-				if (rf.highBitsForHigherLowBits > highBitsCounter && (resizingFrom.length == 1 || resizingFrom[1].lowBits == rf.lowBits + 1)) {
+				if (rf.highBitsForHigherLowBits > newHighBitsCounter && (resizingFrom.length == 1 || resizingFrom[1].lowBits == rf.lowBits + 1)) {
 					rf.lowBits++ ;
 					rf.highBitsForLowerLowBits = -1 ;
 					rf.highBitsForEqualLowBits = rf.highBitsForHigherLowBits ;
@@ -120,7 +131,8 @@ public class HashIter32Bit {
 				}
 			}
 		} else {
-			highBitsVisited = highBitsCounter ;
+			highBitsCounter = newHighBitsCounter ;
+			highBitsVisited = newHighBitsCounter ;
 		}
 		return true ;
 	}
@@ -165,7 +177,7 @@ public class HashIter32Bit {
 	}
 
 	public int current() {
-		return Integer.reverse(highBitsCounter) | lowBitsCounter ;
+		return highBitsCurrent | lowBitsCounter ;
 	}
-
+	
 }
