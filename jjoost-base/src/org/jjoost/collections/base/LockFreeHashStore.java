@@ -137,9 +137,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 					node = prev.getNextFresh() ;
 				}
 				
-			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG) {
+			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG | node == REHASHED_FLAG) {
 				
-				if (node == REHASHING_FLAG) {
+				if (node == REHASHING_FLAG | node == REHASHED_FLAG) {
 					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
 					partial = false ;
 					prev2 = prev = null ;
@@ -197,8 +197,8 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 					
 					// this node is a complete match AND we are replacing complete matches, so swap node for put
 					final N next = node.getNextStale() ;
-					if (next == REHASHING_FLAG | next == DELETING_FLAG | next == DELETED_FLAG){
-						if (next == REHASHING_FLAG) {
+					if (next == REHASHING_FLAG | next == DELETING_FLAG | next == DELETED_FLAG | next == REHASHED_FLAG){
+						if (next == REHASHING_FLAG | next == REHASHED_FLAG) {
 							// bucket is being rehashed, so start again
 							partial = false ;
 							prev2 = prev = null ;
@@ -293,9 +293,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 					node = prev.getNextFresh() ;
 				}
 				
-			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG) {
+			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG | node == REHASHED_FLAG) {
 				
-				if (node == REHASHING_FLAG) {
+				if (node == REHASHING_FLAG | node == REHASHED_FLAG) {
 					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
 					partial = false ;
 					prev2 = prev = null ;
@@ -404,9 +404,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 					node = prev.getNextFresh() ;
 				}
 				
-			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG) {
+			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG | node == REHASHED_FLAG) {
 				
-				if (node == REHASHING_FLAG) {
+				if (node == REHASHING_FLAG | node == REHASHED_FLAG) {
 					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
 					partial = false ;
 					prev2 = prev = null ;
@@ -520,9 +520,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 					node = prev.getNextFresh() ;
 				}
 				
-			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG) {
+			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG | node == REHASHED_FLAG) {
 				
-				if (node == REHASHING_FLAG) {
+				if (node == REHASHING_FLAG | node == REHASHED_FLAG) {
 					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
 					partial = false ;
 					prev2 = prev = null ;
@@ -623,9 +623,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 					uniquePrefixCounter.decrement(hash) ;
 				return c ;
 				
-			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG) {
+			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG | node == REHASHED_FLAG) {
 				
-				if (node == REHASHING_FLAG) {
+				if (node == REHASHING_FLAG | node == REHASHED_FLAG) {
 					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
 					partial = false ;
 					prev2 = prev = null ;
@@ -664,8 +664,8 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 					N next = node.getNextStale() ;
 					while (true) {
 						
-						if (next == REHASHING_FLAG | next == DELETING_FLAG | next == DELETED_FLAG){
-							if (next == REHASHING_FLAG) {
+						if (next == REHASHING_FLAG | next == DELETING_FLAG | next == DELETED_FLAG | next == REHASHED_FLAG){
+							if (next == REHASHING_FLAG | next == REHASHED_FLAG) {
 								// bucket is being rehashed, so start from the beginning of the outer loop
 								partial = false ;
 								prev2 = prev = null ;
@@ -772,9 +772,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 					uniquePrefixCounter.decrement(hash) ;
 				return r ;
 				
-			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG) {
+			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG | node == REHASHED_FLAG) {
 				
-				if (node == REHASHING_FLAG) {
+				if (node == REHASHING_FLAG | node == REHASHED_FLAG) {
 					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
 					partial = false ;
 					prev2 = prev = null ;
@@ -813,8 +813,8 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 					N next = node.getNextStale() ;
 					while (true) {
 						
-						if (next == REHASHING_FLAG | next == DELETING_FLAG | next == DELETED_FLAG){
-							if (next == REHASHING_FLAG) {
+						if (next == REHASHING_FLAG | next == DELETING_FLAG | next == DELETED_FLAG | next == REHASHED_FLAG){
+							if (next == REHASHING_FLAG | next == REHASHED_FLAG) {
 								// bucket is being rehashed, so start from the beginning of the outer loop
 								partial = false ;
 								prev2 = prev = null ;
@@ -926,9 +926,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 					uniquePrefixCounter.decrement(hash) ;
 				return r ;
 				
-			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG) {
+			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG | node == REHASHED_FLAG) {
 				
-				if (node == REHASHING_FLAG) {
+				if (node == REHASHING_FLAG | node == REHASHED_FLAG) {
 					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
 					partial = false ;
 					prev2 = prev = null ;
@@ -967,8 +967,8 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 					N next = node.getNextStale() ;
 					while (true) {
 						
-						if (next == REHASHING_FLAG | next == DELETING_FLAG | next == DELETED_FLAG){
-							if (next == REHASHING_FLAG) {
+						if (next == REHASHING_FLAG | next == DELETING_FLAG | next == DELETED_FLAG | next == REHASHED_FLAG){
+							if (next == REHASHING_FLAG | next == REHASHED_FLAG) {
 								// bucket is being rehashed, so start from the beginning of the outer loop
 								partial = false ;
 								prev2 = prev = null ;
@@ -1065,9 +1065,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 				
 				return false ;
 				
-			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG) {
+			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG | node == REHASHED_FLAG) {
 				
-				if (node == REHASHING_FLAG) {
+				if (node == REHASHING_FLAG | node == REHASHED_FLAG) {
 					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
 					prev2 = prev = null ;
 					node = getTableFresh().writerGetFresh(hash) ;				
@@ -1092,8 +1092,8 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 					N next = node.getNextStale() ;
 					while (true) {
 						
-						if (next == REHASHING_FLAG | next == DELETING_FLAG | next == DELETED_FLAG){
-							if (next == REHASHING_FLAG) {
+						if (next == REHASHING_FLAG | next == DELETING_FLAG | next == DELETED_FLAG | next == REHASHED_FLAG){
+							if (next == REHASHING_FLAG | next == REHASHED_FLAG) {
 								// bucket is being rehashed, so start from the beginning of the outer loop
 								prev2 = prev = null ;
 								node = getTableFresh().writerGetFresh(hash) ;
@@ -1184,8 +1184,8 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 				
 				return false ;
 				
-			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG) {
-				if (node == REHASHING_FLAG) {
+			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG | node == REHASHED_FLAG) {
+				if (node == REHASHING_FLAG | node == REHASHED_FLAG) {
 					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
 					partial = false ;
 					prev2 = prev = null ;
@@ -1236,9 +1236,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 				
 				return c ;
 				
-			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG) {
+			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG | node == REHASHED_FLAG) {
 				
-				if (node == REHASHING_FLAG) {
+				if (node == REHASHING_FLAG | node == REHASHED_FLAG) {
 					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
 					c = 0 ;
 					partial = false ;
@@ -1296,9 +1296,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 				
 				return null ;		
 				
-			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG) {
+			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG | node == REHASHED_FLAG) {
 				
-				if (node == REHASHING_FLAG) {
+				if (node == REHASHING_FLAG | node == REHASHED_FLAG) {
 					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
 					partial = false ;
 					prev2 = prev = null ;
@@ -1350,9 +1350,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 				
 				return r ;
 				
-			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG) {
+			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG | node == REHASHED_FLAG) {
 				
-				if (node == REHASHING_FLAG) {
+				if (node == REHASHING_FLAG | node == REHASHED_FLAG) {
 					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
 					partial = false ;
 					prev2 = prev = null ;
@@ -1569,7 +1569,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 
 	@Override
 	public void shrink() {
-        final int totalCount = totalCounter.getSafe() ;
+        final int totalCount = uniquePrefixCounter.getSafe() ;
         int capacity = 8 ;
         while ((capacity * loadFactor) < totalCount)
         	capacity <<= 1 ;
@@ -1647,8 +1647,8 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 				throw new NoSuchElementException() ;
 			N next = prevNode.getNextStale() ;
 			while (true) {				
-				if (next == REHASHING_FLAG | next == DELETED_FLAG | next == DELETING_FLAG) {
-					if (next == REHASHING_FLAG) {
+				if (next == REHASHING_FLAG | next == DELETED_FLAG | next == DELETING_FLAG | next == REHASHED_FLAG) {
+					if (next == REHASHING_FLAG | next == REHASHED_FLAG) {
 						removeNode(nodeEqualityProj, nodeEquality, prevNode) ;
 					}
 					break ;
@@ -1729,9 +1729,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			}
 			while (node != null) {
 				
-				if (node == REHASHING_FLAG | node == DELETED_FLAG | node == DELETING_FLAG) {
+				if (node == REHASHING_FLAG | node == DELETED_FLAG | node == DELETING_FLAG | node == REHASHED_FLAG) {
 					
-					if (node == REHASHING_FLAG) {
+					if (node == REHASHING_FLAG | node == REHASHED_FLAG) {
 						
 						// this bucket is being rehashed, so we need to start from the head again, however we also have to ensure we skip over nodes we have already visited
 						// as a result this inner loop performs the same work as the outer loop except with a membership check for visitedness...
@@ -1742,9 +1742,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 						
 						while (node != null) {
 							
-							if (node == REHASHING_FLAG | node == DELETED_FLAG | node == DELETING_FLAG) {
+							if (node == REHASHING_FLAG | node == DELETED_FLAG | node == DELETING_FLAG | node == REHASHED_FLAG) {
 								
-								if (node == REHASHING_FLAG) {
+								if (node == REHASHING_FLAG | node == REHASHED_FLAG) {
 									// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
 									prev2 = prev = null ;
 									node = getTableFresh().readerGetFresh(hash) ;
@@ -1883,7 +1883,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 
 				while (true) {
 					
-					if (node == REHASHING_FLAG | node == DELETED_FLAG | node == DELETING_FLAG | node == null) {
+					if (node == REHASHING_FLAG | node == DELETED_FLAG | node == DELETING_FLAG | node == REHASHED_FLAG | node == null) {
 						
 						if (node == DELETING_FLAG | node == DELETED_FLAG) {
 							
@@ -1975,7 +1975,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			
 			while (true) {
 				
-				if (node == REHASHING_FLAG | node == DELETED_FLAG | node == DELETING_FLAG) {
+				if (node == REHASHING_FLAG | node == DELETED_FLAG | node == DELETING_FLAG | node == REHASHED_FLAG) {
 					
 					throw new IllegalStateException() ;
 					
@@ -1994,7 +1994,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 							break ;
 						} else {
 							node = table[i] ;
-							while (!casNodeArray(table, i, node, REHASHING_FLAG)) {
+							while (!casNodeArray(table, i, node, REHASHED_FLAG)) {
 								node = table[i] ;
 							}
 						}
@@ -2121,6 +2121,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	}
 	
 	private static final FlagNode REHASHING_FLAG = new FlagNode("REHASHING") ;	
+	private static final FlagNode REHASHED_FLAG = new FlagNode("REHASHING") ;	
 	private static final FlagNode DELETED_FLAG = new FlagNode("DELETED") ;
 	private static final FlagNode DELETING_FLAG = new FlagNode("DELETING") ;
 	
@@ -2237,7 +2238,6 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	private abstract class ResizingTable implements Table<N> {
 		final N[] oldTable ;
 		final N[] newTable ;
-		final int[] migrated ;
 		final int oldTableMask ;
 		final int newTableMask ;
 		final WaitingOnGrow waiting ;
@@ -2249,70 +2249,52 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			this.oldTableMask = oldTable.length - 1 ;
 			this.newTable = (N[]) new LockFreeHashNode[newLength] ;
 			this.newTableMask = newTable.length - 1 ;
-			this.migrated = new int[(oldTable.length >> 5) + 1] ;
 			this.waiting = new WaitingOnGrow(null, -1) ;
 			this.capacity = (int)(newTable.length * loadFactor) ;
 		}
 		public N readerGetFresh(int hash) {
 			final int oldTableIndex = hash & oldTableMask ;
-			final int migratedIndex = oldTableIndex >> 5 ;
-			final int migratedBit = 1 << (oldTableIndex & 31) ;
-			N r ;
-			if ((migrated[migratedIndex] & migratedBit) == 0) {
+			N r = oldTable[oldTableIndex] ;
+			if (r != REHASHING_FLAG & r != REHASHED_FLAG)
 				r = getNodeVolatile(oldTable, oldTableIndex) ;
+			if (r == REHASHING_FLAG | r == REHASHED_FLAG) {
 				if (r == REHASHING_FLAG) {
 					wait(oldTableIndex) ;
-					r = newTable[hash & newTableMask] ;
-//					r = getNodeVolatile(newTable, hash & newTableMask) ;
+					return newTable[hash & newTableMask] ;
+				} else {
+					return getNodeVolatile(newTable, hash & newTableMask) ;
 				}
-			} else {
-				r = getNodeVolatile(newTable, hash & newTableMask) ;
 			}
 			return r ;
 		}
 		public N readerGetStale(int hash) {
 			final int oldTableIndex = hash & oldTableMask ;
-			final int migratedIndex = oldTableIndex >> 5 ;
-			final int migratedBit = 1 << (oldTableIndex & 31) ;
-			N r ;
-			if ((migrated[migratedIndex] & migratedBit) == 0) {
-				r = oldTable[oldTableIndex] ;
-				if (r == REHASHING_FLAG) {
+			final N r = oldTable[oldTableIndex] ;
+			if (r == REHASHING_FLAG | r == REHASHED_FLAG) {
+				if (r == REHASHING_FLAG)
 					wait(oldTableIndex) ;
-					r = newTable[hash & newTableMask] ;
-				}
-			} else {
-				// just because migrated flag is 1, we cannot guarantee that we haven't seen partial data ahead of a volatile sync, so must perform a volatile read of the data here to be sure  
-				r = getNodeVolatile(newTable, hash & newTableMask) ;
+				return newTable[hash & newTableMask] ;
 			}
 			return r ;
 		}
 		public N writerGetFresh(int hash) {
 			final int oldTableIndex = hash & oldTableMask ;
-			final int migratedIndex = oldTableIndex >> 5 ;
-			final int migratedBit = 1 << (oldTableIndex & 31) ;
-			if ((migrated[migratedIndex] & migratedBit) == 0) {
+			if (oldTable[oldTableIndex] != REHASHED_FLAG) {
 				rehash(oldTableIndex, true, false, false) ;
-				return getNodeVolatile(newTable, hash & newTableMask) ;
+				return newTable[hash & newTableMask];
 			}
 			return getNodeVolatile(newTable, hash & newTableMask) ;
 		}
 		public N writerGetStale(int hash) {
 			final int oldTableIndex = hash & oldTableMask ;
-			final int migratedIndex = oldTableIndex >> 5 ;
-			final int migratedBit = 1 << (oldTableIndex & 31) ;
-			if ((migrated[migratedIndex] & migratedBit) == 0) {
+			if (oldTable[oldTableIndex] != REHASHED_FLAG)
 				rehash(oldTableIndex, true, false, false) ;
-				return newTable[hash & newTableMask] ;
-			}
-			return getNodeVolatile(newTable, hash & newTableMask) ;
+			return newTable[hash & newTableMask];
 		}
 		void wait(int oldTableIndex) {
-			final int migratedIndex = oldTableIndex >> 5 ;
-			final int migratedBit = 1 << (oldTableIndex & 31) ;
 			final WaitingOnGrow queue = new WaitingOnGrow(Thread.currentThread(), oldTableIndex) ;
 			waiting.insert(queue) ;
-			while ((getIntVolatile(migrated, migratedIndex) & migratedBit) == 0)
+			while (getNodeVolatile(oldTable, oldTableIndex) != REHASHED_FLAG)
 				LockSupport.park() ;
 			queue.remove() ;
 		}
@@ -2331,12 +2313,10 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 		// looking for, as if not it will simply cause a retry/continue
 		public boolean compareAndSet(int hash, N expect, N update) {
 			final int oldTableIndex = hash & oldTableMask ;
-			final int migratedIndex = oldTableIndex >> 5 ;
-			final int migratedBit = 1 << (oldTableIndex & 31) ;
-			if ((migrated[migratedIndex] & migratedBit) == 0) {
-				return false ;
-			} else {
+			if (oldTable[oldTableIndex] == REHASHED_FLAG) {
 				return casNodeArray(newTable, hash & newTableMask, expect, update) ;
+			} else {
+				return false ;
 			}
 		}
 		void rehash(int from, boolean needThisIndex, boolean initiator, boolean tryAll) {
@@ -2380,20 +2360,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 				}
 			}
 		}
+		@SuppressWarnings("unchecked")
 		void finishBucket(int oldTableIndex) {
-			final int migratedIndex = oldTableIndex >> 5 ;
-			final int migratedBit = 1 << (oldTableIndex & 31) ;
-			// flag as migrated
-			final long directMigratedIndex = directIntArrayIndex(migratedIndex) ;
-			int prevMigratedFlags = migrated[migratedIndex] ;
-			if (!casIntArrayDirect(migrated, directMigratedIndex, prevMigratedFlags, prevMigratedFlags | migratedBit)) {
-				while (true) {
-					prevMigratedFlags = getIntVolatileDirect(migrated, directMigratedIndex) ;
-					if (casIntArrayDirect(migrated, directMigratedIndex, prevMigratedFlags, prevMigratedFlags | migratedBit))
-						break ;
-				}
-			}
-			
+			lazySetNodeArray(oldTable, oldTableIndex, REHASHED_FLAG) ;
 			// wake up waiters
 			waiting.wake(oldTableIndex) ;
 		}
@@ -2537,9 +2506,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 						node = prev.getNextFresh() ;
 					}
 					
-				} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG) {
+				} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG | node == REHASHED_FLAG) {
 					
-					if (node == REHASHING_FLAG) {
+					if (node == REHASHING_FLAG | node == REHASHED_FLAG) {
 						throw new IllegalStateException() ;
 					} else {
 						// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
@@ -2784,8 +2753,6 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	private static final long tablePtrOffset ;
     private static final long nodeArrayIndexBaseOffset = unsafe.arrayBaseOffset(LockFreeHashNode[].class);
     private static final long nodeArrayIndexScale = unsafe.arrayIndexScale(LockFreeHashNode[].class);
-    private static final long intArrayIndexBaseOffset = unsafe.arrayBaseOffset(int[].class);
-    private static final long intArrayIndexScale = unsafe.arrayIndexScale(int[].class);
 	static {
 		try {
 			final Field field = LockFreeHashStore.class.getDeclaredField("tablePtr") ;
@@ -2839,20 +2806,8 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	private static final <N extends LockFreeHashNode<N>> void lazySetNodeArray(final N[] arr, final int i, final N upd) {
 		unsafe.putOrderedObject(arr, nodeArrayIndexBaseOffset + (nodeArrayIndexScale * i), upd) ;
 	}
-	private static final long directIntArrayIndex(final int i) {
-		return intArrayIndexBaseOffset + (intArrayIndexScale * i) ;
-	}
 	private static final long directNodeArrayIndex(final int i) {
 		return nodeArrayIndexBaseOffset + (nodeArrayIndexScale * i) ;
-	}
-	private static final boolean casIntArrayDirect(final int[] arr, final long i, final int expect, final int upd) {
-		return unsafe.compareAndSwapInt(arr, i, expect, upd) ;
-	}	
-	private static final int getIntVolatile(final int[] arr, final int i) {
-		return unsafe.getIntVolatile(arr, intArrayIndexBaseOffset + (intArrayIndexScale * i)) ;
-	}
-	private static final int getIntVolatileDirect(final int[] arr, final long i) {
-		return unsafe.getIntVolatile(arr, i) ;
 	}
 	@SuppressWarnings("unchecked")
 	private static final <N extends LockFreeHashNode<N>> N getNodeVolatileDirect(final N[] arr, final long i) {
