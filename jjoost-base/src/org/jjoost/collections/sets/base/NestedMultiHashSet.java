@@ -14,6 +14,8 @@ import org.jjoost.collections.base.HashStore.Locality;
 import org.jjoost.collections.iters.EmptyIterator ;
 import org.jjoost.util.Counter;
 import org.jjoost.util.Equality;
+import org.jjoost.util.Filter;
+import org.jjoost.util.Filters;
 import org.jjoost.util.Function;
 import org.jjoost.util.Functions;
 import org.jjoost.util.Iters ;
@@ -322,13 +324,18 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 
 		@Override
 		public Iterator<V> iterator() {
-			final NodeContentsIterator<V, N> f = new NodeContentsIterator<V, N>() ;
-			final Iterator<Iterator<V>> iters = store.unique(valProj(), valEq.getEquality(), Locality.ADJACENT, valProj(), valEq, f) ;
-			f.superIter = iters ;
-			return Iters.concat(iters) ;
+			return wrap(Functions.apply(valProj(), Filters.apply(VALID, store.unique(valProj(), valEq.getEquality(), Locality.ADJACENT, valProj(), valEq, identity())))) ;
 		}
 		
 	}
+	
+	private static final Filter<INode<?, ?>> VALID = new Filter<INode<?, ?>>() {
+		private static final long serialVersionUID = -6361042110136400398L;
+		@Override
+		public boolean accept(INode<?, ?> test) {
+			return test.valid() ;
+		}
+	} ;
 
 	@Override
 	public int clear() {
@@ -357,7 +364,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	}
 	
 	public String toString() {
-		return store.toString() ;
+		return "{" + Iters.toString(this.iterator(), ", ") + "}" ;
 	}
 	
 	// **********************************
