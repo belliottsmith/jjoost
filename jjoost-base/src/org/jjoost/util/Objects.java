@@ -9,6 +9,15 @@ import java.util.Comparator;
  */
 public class Objects {
 
+	private static final Object INITIALISATION_SENTINEL_WITH_OBJECT_ERASURE_SENTINEL = new Object() ;
+	@SuppressWarnings("unchecked")
+	public static <E> E initialisationSentinelWithObjectErasure() {
+		return (E) INITIALISATION_SENTINEL_WITH_OBJECT_ERASURE_SENTINEL ;
+	}
+	public static final boolean isInitialisationSentinelWithObjectErasure(Object o) {
+		return o == INITIALISATION_SENTINEL_WITH_OBJECT_ERASURE_SENTINEL ;
+	}
+	
     /**
 	 * Perform simple object equality on the arguments without throwing an error if either argument is <code>null</code>
 	 * 
