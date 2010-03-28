@@ -3,6 +3,7 @@ package org.jjoost.collections.sets.base;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.jjoost.collections.AnySet;
 import org.jjoost.collections.Set;
@@ -10,6 +11,7 @@ import org.jjoost.collections.lists.UniformList;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Filters;
 import org.jjoost.util.Iters;
+import org.jjoost.util.Objects;
 
 public abstract class AbstractUniqueSetAdapter<V> extends AbstractSet<V> implements Set<V> {
 
@@ -19,12 +21,20 @@ public abstract class AbstractUniqueSetAdapter<V> extends AbstractSet<V> impleme
 	
 	public AbstractUniqueSetAdapter() { }
 
-	private Iterator<V> uniq(Iterator<V> iter) {
-		return Filters.apply(Filters.unique(set().equality()), iter) ;
+	protected Iterator<V> wrap(Iterator<V> iter) {
+		return new UniqueSetIterator(iter) ;
 	}
 	
-	private Iterable<V> uniq(Iterable<V> iter) {
-		return Filters.apply(Filters.unique(set().equality()), iter) ;
+	protected Iterable<V> wrap(Iterable<V> iter) {
+		return new UniqueSetIterable(iter) ;
+	}
+	
+	protected Iterator<V> uniq(Iterator<V> iter) {
+		return Filters.apply(iter, Filters.unique(set().equality())) ;
+	}
+	
+	protected Iterable<V> uniq(Iterable<V> iter) {
+		return Filters.apply(iter, Filters.unique(set().equality())) ;
 	}
 	
 	@Override
@@ -74,7 +84,7 @@ public abstract class AbstractUniqueSetAdapter<V> extends AbstractSet<V> impleme
 
 	@Override
 	public Iterable<V> all(V value) {
-		return list(value) ;
+		return wrap(uniq(set().all(value))) ;
 	}
 
 	@Override
@@ -180,6 +190,40 @@ public abstract class AbstractUniqueSetAdapter<V> extends AbstractSet<V> impleme
 	@Override
 	public Boolean apply(V v) {
 		return set().apply(v) ;
+	}
+
+	private final class UniqueSetIterator implements Iterator<V> {
+		final Iterator<? extends V> wrapped ;
+		V prev = Objects.initialisationSentinelWithObjectErasure() ;
+		public UniqueSetIterator(Iterator<? extends V> base) {
+			this.wrapped = base ;
+		}
+		public V next() {
+			final V next = wrapped.next() ;
+			prev = next ;
+			return next ;
+		}
+		public void remove() {
+			if (Objects.isInitialisationSentinelWithObjectErasure(prev))
+				throw new NoSuchElementException() ;
+			wrapped.remove() ;
+			set().remove(prev) ;
+		}
+		@Override
+		public boolean hasNext() {
+			return wrapped.hasNext() ;
+		}
+	}
+	
+	private final class UniqueSetIterable implements Iterable<V> {
+		final Iterable<? extends V> wrapped ;
+		public UniqueSetIterable(Iterable<? extends V> base) {
+			this.wrapped = base ;
+		}
+		@Override
+		public Iterator<V> iterator() {
+			return new UniqueSetIterator(wrapped.iterator()) ;
+		}
 	}
 	
 }

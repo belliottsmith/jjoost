@@ -82,7 +82,7 @@ public class InlineMultiHashSet<V, N extends HashNode<N> & Value<V>> extends Abs
 
 		@Override
 		public Iterator<V> iterator() {
-			return store.unique(valProj(), valEq.getValueEquality(), Locality.ADJACENT, valProj(), valEq, valProj()) ;
+			return wrap(store.unique(valProj(), valEq.getValueEquality(), Locality.ADJACENT, valProj(), valEq, valProj())) ;
 		}
 		
 	}
