@@ -3,6 +3,7 @@ package org.jjoost.util.filters ;
 import org.jjoost.util.Equalities ;
 import org.jjoost.util.Equality ;
 import org.jjoost.util.Filter ;
+import org.jjoost.util.Objects;
 
 /**
  * A <code>Filter</code> which returns <code>true</code> if and only if the previously tested value is not equal to the value
@@ -29,9 +30,11 @@ public class AcceptUniqueSequence<V> implements Filter<V> {
 		this.eq = eq ;
 	}
 
-	private V prev = null ;
+	private V prev = Objects.initialisationSentinelWithObjectErasure() ;
 	public boolean accept(V next) {
-		final boolean r = !eq.equates(next, prev) ;
+		final boolean r = 
+			Objects.isInitialisationSentinelWithObjectErasure(prev) 
+			|| !eq.equates(next, prev) ;
 		prev = next ;
 		return r ;
 	}
