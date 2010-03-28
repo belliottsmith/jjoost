@@ -154,7 +154,7 @@ public class HashIter32Bit {
 		if (lowBits == lowBitsCounter) {
 			if (highBitsVisited > highBits)
 				return false ;
-			highBitsVisited = highBits ;
+			highBitsVisited = highBits + 1 ;
 			return true ;
 		} else {
 			throw new IllegalArgumentException(String.format("The provided hash should not have occured at index %d of a " +
