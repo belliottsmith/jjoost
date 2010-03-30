@@ -1,5 +1,6 @@
 package org.jjoost.collections.sets.base;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -12,6 +13,7 @@ import org.jjoost.collections.base.HashNodeFactory ;
 import org.jjoost.collections.base.HashStore ;
 import org.jjoost.collections.base.HashStore.Locality;
 import org.jjoost.collections.iters.EmptyIterator ;
+import org.jjoost.collections.iters.UniformIterator;
 import org.jjoost.util.Counter;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Filter;
@@ -41,7 +43,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 		this.valEq = equality ;
 	}
 
-	protected Function<N, N> identity() {
+	protected Function<N, N> nodeProj() {
 		return Functions.<N>identity() ;
 	}
 	
@@ -85,7 +87,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public V put(V val) {
 		final int hash = hash(val) ;
 		while (true) {
-			final N existing = store.ensureAndGet(hash, val, valEq, nodeFactory, identity()) ;
+			final N existing = store.ensureAndGet(hash, val, valEq, nodeFactory, nodeProj()) ;
 			if (existing.put(val))
 				break ;
 		}
@@ -97,7 +99,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public void put(V val, int count) {
 		final int hash = hash(val) ;
 		while (true) {
-			final N existing = store.ensureAndGet(hash, val, valEq, nodeFactory, identity()) ;
+			final N existing = store.ensureAndGet(hash, val, valEq, nodeFactory, nodeProj()) ;
 			if (existing.put(val, count))
 				break ;
 		}
@@ -117,7 +119,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public V putIfAbsent(V val) {
 		final int hash = hash(val) ;
 		while (true) {
-			final N existing = store.ensureAndGet(hash, val, valEq, nodeFactory, identity()) ;
+			final N existing = store.ensureAndGet(hash, val, valEq, nodeFactory, nodeProj()) ;
 			if (existing.initialise()) {				
 				totalCount.add(1) ;
 				return null ;
@@ -131,7 +133,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public int remove(V val) {
 		final int hash = hash(val) ;
 		while (true) {
-			final N r = store.removeAndReturnFirst(hash, 1, val, valEq, identity()) ;
+			final N r = store.removeAndReturnFirst(hash, 1, val, valEq, nodeProj()) ;
 			if (r == null)
 				return 0 ;
 			final int removed = r.remove(Integer.MAX_VALUE) ;
@@ -146,7 +148,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public V removeAndReturnFirst(V val) {
 		final int hash = hash(val) ;
 		while (true) {
-			final N r = store.removeAndReturnFirst(hash, 1, val, valEq, identity()) ;
+			final N r = store.removeAndReturnFirst(hash, 1, val, valEq, nodeProj()) ;
 			if (r == null)
 				return null ;
 			final V v = r.getValue() ; 
@@ -162,7 +164,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public Iterable<V> removeAndReturn(V val) {
 		final int hash = hash(val) ;
 		while (true) {
-			final N r = store.removeAndReturnFirst(hash, 1, val, valEq, identity()) ;
+			final N r = store.removeAndReturnFirst(hash, 1, val, valEq, nodeProj()) ;
 			if (r == null)
 				return Iters.emptyIterable() ;
 			final List<V> removed = r.removeAndReturn(Integer.MAX_VALUE) ;
@@ -182,7 +184,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 		}
 		final int hash = hash(val) ;
 		while (true) {
-			final N r = store.first(hash, val, valEq, identity()) ;
+			final N r = store.first(hash, val, valEq, nodeProj()) ;
 			if (r == null)
 				return 0 ;
 			final int removed = r.remove(atMost) ;
@@ -204,7 +206,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 		}
 		final int hash = hash(val) ;
 		while (true) {
-			final N r = store.first(hash, val, valEq, identity()) ;
+			final N r = store.first(hash, val, valEq, nodeProj()) ;
 			if (r == null)
 				return null ;
 			final int removed = r.remove(atMost) ;
@@ -226,7 +228,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 		}
 		final int hash = hash(val) ;
 		while (true) {
-			final N r = store.first(hash, val, valEq, identity()) ;
+			final N r = store.first(hash, val, valEq, nodeProj()) ;
 			if (r == null)
 				return Iters.emptyIterable() ;
 			final List<V> removed = r.removeAndReturn(atMost) ;
@@ -243,7 +245,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public boolean contains(V val) {
 		final int hash = hash(val) ;
 		while (true) {
-			final N r = store.first(hash, val, valEq, identity()) ;
+			final N r = store.first(hash, val, valEq, nodeProj()) ;
 			if (r == null)
 				return false ;
 			if (r.valid())
@@ -254,7 +256,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public int count(V val) {
 		final int hash = hash(val) ;
 		while (true) {
-			final N r = store.first(hash, val, valEq, identity()) ;
+			final N r = store.first(hash, val, valEq, nodeProj()) ;
 			if (r == null)
 				return 0 ;
 			final int c = r.count() ;
@@ -292,7 +294,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 		return new Iterable<V>() {
 			@Override
 			public Iterator<V> iterator() {
-				final N n = store.first(hash, val, valEq, identity()) ;
+				final N n = store.first(hash, val, valEq, nodeProj()) ;
 				if (n == null)
 					return EmptyIterator.<V>get() ;
 				return n.iterator(NestedMultiHashSet.this) ;
@@ -326,7 +328,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 
 		@Override
 		public Iterator<V> iterator() {
-			return wrap(Functions.apply(valProj(), Filters.apply(VALID, store.unique(valProj(), valEq.getEquality(), Locality.ADJACENT, valProj(), valEq, identity())))) ;
+			return wrap(Functions.apply(valProj(), Filters.apply(VALID, store.unique(valProj(), valEq.getEquality(), Locality.ADJACENT, valProj(), valEq, nodeProj())))) ;
 		}
 		
 	}
@@ -341,15 +343,30 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 
 	@Override
 	public int clear() {
-		store.clear() ;
-		final int r = totalCount.get() ;
-		totalCount.add(-r) ;
-		return r ;
+		int c = 0 ;
+		final Iterator<N> iter = store.clearAndReturn(nodeProj()) ;
+		while (iter.hasNext()) {
+			final N n = iter.next() ;
+			final int r = n.remove(Integer.MAX_VALUE) ;
+			totalCount.add(-r) ;
+			c += r ;
+		}
+		return c ;
 	}
 
 	@Override
 	public Iterator<V> clearAndReturn() {
-		return Iters.concat(store.clearAndReturn(NestedMultiHashSet.<V, N>destroyer())) ;
+		final List<Iterator<V>> ret = new ArrayList<Iterator<V>>() ;
+		final Iterator<N> iter = store.clearAndReturn(nodeProj()) ;
+		while (iter.hasNext()) {
+			final N n = iter.next() ;
+			final int r = n.remove(Integer.MAX_VALUE) ;
+			if (r != 0) {
+				ret.add(new UniformIterator<V>(n.getValue(), r)) ;
+				totalCount.add(-r) ;
+			}
+		}
+		return Iters.concat(ret.iterator()) ;
 	}
 
 	@Override
@@ -408,17 +425,17 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	// UTILITY CLASSES
 	// *******************************
 	
-	private static final <V, N extends HashNode<N> & INode<V, N>> Destroyer<V, N> destroyer() {
-		return new Destroyer<V, N>() ;
-	}
-	
-	private static final class Destroyer<V, N extends HashNode<N> & INode<V, N>> implements Function<N, Iterator<V>> {
-		private static final long serialVersionUID = -965724235732791909L;
-		@Override
-		public Iterator<V> apply(N n) {
-			return n.removeAndReturn(Integer.MAX_VALUE).iterator() ;
-		}
-	}
+//	private static final <V, N extends HashNode<N> & INode<V, N>> Destroyer<V, N> destroyer() {
+//		return new Destroyer<V, N>() ;
+//	}
+//	
+//	private static final class Destroyer<V, N extends HashNode<N> & INode<V, N>> implements Function<N, Iterator<V>> {
+//		private static final long serialVersionUID = -965724235732791909L;
+//		@Override
+//		public Iterator<V> apply(N n) {
+//			return n.removeAndReturn(Integer.MAX_VALUE).iterator() ;
+//		}
+//	}
 
 	private static final class NodeContentsIterator<V, N extends HashNode<N> & INode<V, N>> implements Function<N, Iterator<V>> {
 		private static final long serialVersionUID = -965724235732791909L;

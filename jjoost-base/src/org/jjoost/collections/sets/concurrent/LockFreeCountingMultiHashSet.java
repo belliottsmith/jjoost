@@ -11,7 +11,6 @@ import org.jjoost.collections.base.LockFreeHashStore.Counting;
 import org.jjoost.collections.base.LockFreeHashStore.LockFreeHashNode;
 import org.jjoost.collections.lists.UniformList;
 import org.jjoost.collections.sets.base.NestedMultiHashSet;
-import org.jjoost.collections.sets.serial.SerialCountingMultiHashSet;
 import org.jjoost.util.Counters;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
