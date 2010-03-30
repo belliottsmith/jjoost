@@ -49,7 +49,7 @@ public class SerialNestedMultiHashSet<V> extends NestedMultiHashSet<V, SerialNes
 		private static final long serialVersionUID = -5766263745864028747L;
 
 		private V[] values = (V[]) new Object[4] ;
-		private int count = 1 ;
+		private int count = 0 ;
 		
 		protected Node(int hash, V value) {
 			super(hash);
@@ -121,42 +121,16 @@ public class SerialNestedMultiHashSet<V> extends NestedMultiHashSet<V, SerialNes
 		}
 		
 		@Override
-		public Iterator<V> iterator(final Iterator<Iterator<V>> superIter) {
-			return new Iterator<V>() {
-				int last = -1 ;
-				int next = 0 ;
-				@Override
-				public boolean hasNext() {
-					return next < count ;
-				}
-				@Override
-				public V next() {
-					if (next >= count)
-						throw new NoSuchElementException() ;
-					last = next ;
-					next += 1 ;
-					return values[last] ;
-				}
-				@Override
-				public void remove() {
-					if (last == -1)
-						throw new NoSuchElementException() ;
-					if (count < 2) {
-						count = -1 ;
-						superIter.remove() ;
-					} else {
-						final int mi = count - 1 ;
-						for (int i = last ; i < mi ; i++)
-							values[i] = values[i+1] ;
-						last = -1 ;
-						count-- ;
-					}
-				}				
-			};
+		public boolean initialise() {
+			if (count != 0)
+				return false ;
+			count = 1 ;
+			return true ;
 		}
 		
 		@Override
-		public Iterator<V> iterator(final NestedMultiHashSet<V, Node<V>> set) {
+		public Iterator<V> iterator(final NestedMultiHashSet<V, Node<V>> arg) {
+			final SerialNestedMultiHashSet<V> set = (SerialNestedMultiHashSet<V>) arg ;
 			return new Iterator<V>() {
 				int last = -1 ;
 				int next = 0 ;
@@ -177,14 +151,18 @@ public class SerialNestedMultiHashSet<V> extends NestedMultiHashSet<V, SerialNes
 					if (last == -1)
 						throw new NoSuchElementException() ;
 					if (count < 2) {
-						count = -1 ;
-						removeNode(set, Node.this) ;
+						if (count == 1) {
+							set.totalCount.add(-1) ;
+							count = -1 ;
+							set.removeNode(Node.this) ;
+						}
 					} else {
 						final int mi = count - 1 ;
 						for (int i = last ; i < mi ; i++)
 							values[i] = values[i+1] ;
 						last = -1 ;
 						count-- ;
+						set.totalCount.add(-1) ;
 					}
 				}				
 			};

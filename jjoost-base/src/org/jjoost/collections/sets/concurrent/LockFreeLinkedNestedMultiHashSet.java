@@ -11,6 +11,7 @@ import org.jjoost.collections.base.SerialHashStore;
 import org.jjoost.collections.base.LockFreeHashStore.Counting;
 import org.jjoost.collections.base.LockFreeLinkedHashStore.LockFreeLinkedHashNode;
 import org.jjoost.collections.sets.base.NestedMultiHashSet;
+import org.jjoost.collections.sets.serial.SerialCountingMultiHashSet;
 import org.jjoost.util.Counters;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
@@ -121,44 +122,17 @@ public class LockFreeLinkedNestedMultiHashSet<V> extends NestedMultiHashSet<V, L
 		public V getValue() {
 			return values[0] ;
 		}
-		
 		@Override
-		public Iterator<V> iterator(final Iterator<Iterator<V>> superIter) {
-			return new Iterator<V>() {
-				int last = -1 ;
-				int next = 0 ;
-				@Override
-				public boolean hasNext() {
-					return next < count ;
-				}
-				@Override
-				public V next() {
-					if (next >= count)
-						throw new NoSuchElementException() ;
-					last = next ;
-					next += 1 ;
-					return values[last] ;
-				}
-				@Override
-				public void remove() {
-					if (last == -1)
-						throw new NoSuchElementException() ;
-					if (count < 2) {
-						count = -1 ;
-						superIter.remove() ;
-					} else {
-						final int mi = count - 1 ;
-						for (int i = last ; i < mi ; i++)
-							values[i] = values[i+1] ;
-						last = -1 ;
-						count-- ;
-					}
-				}				
-			};
+		public boolean initialise() {
+			if (count != 0)
+				return false ;
+			count = 1 ;
+			return true ;
 		}
 		
 		@Override
-		public Iterator<V> iterator(final NestedMultiHashSet<V, Node<V>> set) {
+		public Iterator<V> iterator(final NestedMultiHashSet<V, Node<V>> arg) {
+			final LockFreeLinkedNestedMultiHashSet<V> set = (LockFreeLinkedNestedMultiHashSet<V>) arg ;
 			return new Iterator<V>() {
 				int last = -1 ;
 				int next = 0 ;
@@ -180,7 +154,7 @@ public class LockFreeLinkedNestedMultiHashSet<V> extends NestedMultiHashSet<V, L
 						throw new NoSuchElementException() ;
 					if (count < 2) {
 						count = -1 ;
-						removeNode(set, Node.this) ;
+						set.removeNode(Node.this) ;
 					} else {
 						final int mi = count - 1 ;
 						for (int i = last ; i < mi ; i++)

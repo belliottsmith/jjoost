@@ -61,8 +61,8 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 		return rehasher.rehash(valEq.valEq.hash(key)) ;
 	}
 	
-	protected static <V, N extends HashNode<N> & INode<V, N>> boolean removeNode(NestedMultiHashSet<V, N> set, N node) {
-		return set.store.removeNode(set.valProj(), set.valEq, node) ;
+	protected boolean removeNode(N node) {
+		return store.removeNode(valProj(), valEq, node) ;
 	}
 	
 	@Override
@@ -117,12 +117,13 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public V putIfAbsent(V val) {
 		final int hash = hash(val) ;
 		while (true) {
-			final N existing = store.putIfAbsent(hash, val, valEq, nodeFactory, identity()) ;
-			if (existing == null) {
+			final N existing = store.ensureAndGet(hash, val, valEq, nodeFactory, identity()) ;
+			if (existing.initialise()) {				
 				totalCount.add(1) ;
 				return null ;
+			} else if (existing.valid()) {
+				return existing.getValue() ;
 			}
-			return existing.getValue() ;
 		}
 	}
 	
@@ -208,7 +209,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 				return null ;
 			final int removed = r.remove(atMost) ;
 			if (removed != 0) {
-				if (removed <= atMost)
+				if (removed < atMost || !r.valid())
 					store.removeNode(valProj(), valEq, r) ;
 				totalCount.add(-removed) ;
 				return r.getValue() ;
@@ -230,7 +231,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 				return Iters.emptyIterable() ;
 			final List<V> removed = r.removeAndReturn(atMost) ;
 			if (removed.size() != 0) {
-				if (removed.size() <= atMost)
+				if (removed.size() < atMost || !r.valid())
 					store.removeNode(valProj(), valEq, r) ;
 				totalCount.add(-removed.size()) ;
 				return removed ;
@@ -301,6 +302,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 
 	@Override
 	public MultiSet<V> copy() {
+		
 		// TODO implement
 		// no way to guarantee totalCount is valid - must copy the table and then calculate a fresh total
 		throw new UnsupportedOperationException() ;
@@ -352,9 +354,8 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 
 	@Override
 	public Iterator<V> iterator() {
-		final NodeContentsIterator<V, N> f = new NodeContentsIterator<V, N>() ;
+		final NodeContentsIterator<V, N> f = new NodeContentsIterator<V, N>(this) ;
 		final Iterator<Iterator<V>> iters = store.all(valProj(), valEq, f) ;
-		f.superIter = iters ;
 		return Iters.concat(iters) ;
 	}
 
@@ -378,8 +379,8 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 		public int count() ;
 		public int remove(int target) ;
 		public List<V> removeAndReturn(int target) ;
-		public Iterator<V> iterator(Iterator<Iterator<V>> superIter) ;		
-		public Iterator<V> iterator(NestedMultiHashSet<V, N> set) ;		
+		public Iterator<V> iterator(NestedMultiHashSet<V, N> set) ;	
+		public boolean initialise() ;
 	}
 
 	public static final class ValueEquality<V, N extends HashNode<N> & INode<V, N>> implements HashNodeEquality<V, N> {
@@ -421,10 +422,13 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 
 	private static final class NodeContentsIterator<V, N extends HashNode<N> & INode<V, N>> implements Function<N, Iterator<V>> {
 		private static final long serialVersionUID = -965724235732791909L;
-		Iterator<Iterator<V>> superIter ;
+		final NestedMultiHashSet<V, N> set ;
+		public NodeContentsIterator(NestedMultiHashSet<V, N> set) {
+			this.set = set;
+		}
 		@Override
 		public Iterator<V> apply(N n) {
-			return n.iterator(superIter) ;
+			return n.iterator(set) ;
 		}
 	}
 

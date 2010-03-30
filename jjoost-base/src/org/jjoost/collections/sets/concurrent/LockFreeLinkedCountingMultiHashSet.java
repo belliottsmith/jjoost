@@ -11,6 +11,7 @@ import org.jjoost.collections.base.LockFreeHashStore.Counting;
 import org.jjoost.collections.base.LockFreeLinkedHashStore.LockFreeLinkedHashNode;
 import org.jjoost.collections.lists.UniformList;
 import org.jjoost.collections.sets.base.NestedMultiHashSet;
+import org.jjoost.collections.sets.serial.SerialCountingMultiHashSet;
 import org.jjoost.util.Counters;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
@@ -107,38 +108,16 @@ public class LockFreeLinkedCountingMultiHashSet<V> extends NestedMultiHashSet<V,
 		}
 		
 		@Override
-		public Iterator<V> iterator(final Iterator<Iterator<V>> superIter) {
-			return new Iterator<V>() {
-				int c = 0 ;
-				boolean last = false ;
-				boolean next = false ;
-				@Override
-				public boolean hasNext() {
-					return next = (count > c) ;
-				}
-				@Override
-				public V next() {
-					if (!next)
-						throw new NoSuchElementException() ;
-					c++ ;
-					last = true ;
-					return value ;
-				}
-				@Override
-				public void remove() {
-					if (!last)
-						throw new NoSuchElementException() ;
-					count -= 1 ;
-					if (count <= 0) {
-						count = -1 ;
-						superIter.remove() ;
-					}
-				}
-			} ;
+		public boolean initialise() {
+			if (count != 0)
+				return false ;
+			count = 1 ;
+			return true ;
 		}
 		
 		@Override
-		public Iterator<V> iterator(final NestedMultiHashSet<V, Node<V>> set) {
+		public Iterator<V> iterator(final NestedMultiHashSet<V, Node<V>> arg) {
+			final LockFreeLinkedCountingMultiHashSet<V> set = (LockFreeLinkedCountingMultiHashSet<V>) arg ;
 			return new Iterator<V>() {
 				int c = 0 ;
 				boolean last = false ;
@@ -162,7 +141,7 @@ public class LockFreeLinkedCountingMultiHashSet<V> extends NestedMultiHashSet<V,
 					count -= 1 ;
 					if (count <= 0) {
 						count = -1 ;
-						removeNode(set, Node.this) ;
+						set.removeNode(Node.this) ;
 					}
 				}
 			} ;			

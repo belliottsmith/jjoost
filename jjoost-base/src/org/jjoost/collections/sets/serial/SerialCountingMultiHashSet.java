@@ -105,38 +105,16 @@ public class SerialCountingMultiHashSet<V> extends NestedMultiHashSet<V, SerialC
 		}
 		
 		@Override
-		public Iterator<V> iterator(final Iterator<Iterator<V>> superIter) {
-			return new Iterator<V>() {
-				int c = 0 ;
-				boolean last = false ;
-				boolean next = false ;
-				@Override
-				public boolean hasNext() {
-					return next = (count > c) ;
-				}
-				@Override
-				public V next() {
-					if (!next)
-						throw new NoSuchElementException() ;
-					c++ ;
-					last = true ;
-					return value ;
-				}
-				@Override
-				public void remove() {
-					if (!last)
-						throw new NoSuchElementException() ;
-					count -= 1 ;
-					if (count <= 0) {
-						count = -1 ;
-						superIter.remove() ;
-					}
-				}
-			} ;
+		public boolean initialise() {
+			if (count != 0)
+				return false ;
+			count = 1 ;
+			return true ;
 		}
 		
 		@Override
-		public Iterator<V> iterator(final NestedMultiHashSet<V, Node<V>> set) {
+		public Iterator<V> iterator(final NestedMultiHashSet<V, Node<V>> arg) {
+			final SerialCountingMultiHashSet<V> set = (SerialCountingMultiHashSet<V>) arg ;
 			return new Iterator<V>() {
 				int c = 0 ;
 				boolean last = false ;
@@ -158,14 +136,16 @@ public class SerialCountingMultiHashSet<V> extends NestedMultiHashSet<V, SerialC
 					if (!last)
 						throw new NoSuchElementException() ;
 					count -= 1 ;
+					c -= 1 ;
+					set.totalCount.add(-1) ;
 					if (count <= 0) {
 						count = -1 ;
-						removeNode(set, Node.this) ;
+						set.removeNode(Node.this) ;
 					}
 				}
 			} ;			
 		}
-		
+
 	}
 	
 	@SuppressWarnings("unchecked")

@@ -82,6 +82,13 @@ public class SerialLinkedNestedMultiHashSet<V> extends NestedMultiHashSet<V, Ser
 			return count > 0 ; 
 		}
 		@Override
+		public boolean initialise() {
+			if (count != 0)
+				return false ;
+			count = 1 ;
+			return true ;
+		}
+		@Override
 		public boolean put(V v, int c) {
 			if (count <= 0)
 				return false ;
@@ -122,7 +129,8 @@ public class SerialLinkedNestedMultiHashSet<V> extends NestedMultiHashSet<V, Ser
 		}
 		
 		@Override
-		public Iterator<V> iterator(final Iterator<Iterator<V>> superIter) {
+		public Iterator<V> iterator(final NestedMultiHashSet<V, Node<V>> arg) {
+			final SerialLinkedNestedMultiHashSet<V> set = (SerialLinkedNestedMultiHashSet<V>) arg ;
 			return new Iterator<V>() {
 				int last = -1 ;
 				int next = 0 ;
@@ -143,44 +151,13 @@ public class SerialLinkedNestedMultiHashSet<V> extends NestedMultiHashSet<V, Ser
 					if (last == -1)
 						throw new NoSuchElementException() ;
 					if (count < 2) {
-						count = -1 ;
-						superIter.remove() ;
+						if (count == 1) {
+							set.totalCount.add(-1) ;
+							count = -1 ;
+							set.removeNode(Node.this) ;
+						}
 					} else {
-						final int mi = count - 1 ;
-						for (int i = last ; i < mi ; i++)
-							values[i] = values[i+1] ;
-						last = -1 ;
-						count-- ;
-					}
-				}				
-			};
-		}
-		
-		@Override
-		public Iterator<V> iterator(final NestedMultiHashSet<V, Node<V>> set) {
-			return new Iterator<V>() {
-				int last = -1 ;
-				int next = 0 ;
-				@Override
-				public boolean hasNext() {
-					return next < count ;
-				}
-				@Override
-				public V next() {
-					if (next >= count)
-						throw new NoSuchElementException() ;
-					last = next ;
-					next += 1 ;
-					return values[last] ;
-				}
-				@Override
-				public void remove() {
-					if (last == -1)
-						throw new NoSuchElementException() ;
-					if (count < 2) {
-						count = -1 ;
-						removeNode(set, Node.this) ;
-					} else {
+						set.totalCount.add(-1) ;
 						final int mi = count - 1 ;
 						for (int i = last ; i < mi ; i++)
 							values[i] = values[i+1] ;

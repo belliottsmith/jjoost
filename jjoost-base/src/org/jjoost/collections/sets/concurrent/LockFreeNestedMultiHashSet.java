@@ -11,6 +11,7 @@ import org.jjoost.collections.base.SerialHashStore;
 import org.jjoost.collections.base.LockFreeHashStore.Counting;
 import org.jjoost.collections.base.LockFreeHashStore.LockFreeHashNode;
 import org.jjoost.collections.sets.base.NestedMultiHashSet;
+import org.jjoost.collections.sets.serial.SerialCountingMultiHashSet;
 import org.jjoost.util.Counters;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
@@ -83,6 +84,13 @@ public class LockFreeNestedMultiHashSet<V> extends NestedMultiHashSet<V, LockFre
 			return count > 0 ; 
 		}
 		@Override
+		public boolean initialise() {
+			if (count != 0)
+				return false ;
+			count = 1 ;
+			return true ;
+		}
+		@Override
 		public boolean put(V v, int c) {
 			if (count <= 0)
 				return false ;
@@ -123,7 +131,8 @@ public class LockFreeNestedMultiHashSet<V> extends NestedMultiHashSet<V, LockFre
 		}
 		
 		@Override
-		public Iterator<V> iterator(final Iterator<Iterator<V>> superIter) {
+		public Iterator<V> iterator(final NestedMultiHashSet<V, Node<V>> arg) {
+			final LockFreeNestedMultiHashSet<V> set = (LockFreeNestedMultiHashSet<V>) arg ;
 			return new Iterator<V>() {
 				int last = -1 ;
 				int next = 0 ;
@@ -145,42 +154,7 @@ public class LockFreeNestedMultiHashSet<V> extends NestedMultiHashSet<V, LockFre
 						throw new NoSuchElementException() ;
 					if (count < 2) {
 						count = -1 ;
-						superIter.remove() ;
-					} else {
-						final int mi = count - 1 ;
-						for (int i = last ; i < mi ; i++)
-							values[i] = values[i+1] ;
-						last = -1 ;
-						count-- ;
-					}
-				}				
-			};
-		}
-		
-		@Override
-		public Iterator<V> iterator(final NestedMultiHashSet<V, Node<V>> set) {
-			return new Iterator<V>() {
-				int last = -1 ;
-				int next = 0 ;
-				@Override
-				public boolean hasNext() {
-					return next < count ;
-				}
-				@Override
-				public V next() {
-					if (next >= count)
-						throw new NoSuchElementException() ;
-					last = next ;
-					next += 1 ;
-					return values[last] ;
-				}
-				@Override
-				public void remove() {
-					if (last == -1)
-						throw new NoSuchElementException() ;
-					if (count < 2) {
-						count = -1 ;
-						removeNode(set, Node.this) ;
+						set.removeNode(Node.this) ;
 					} else {
 						final int mi = count - 1 ;
 						for (int i = last ; i < mi ; i++)
