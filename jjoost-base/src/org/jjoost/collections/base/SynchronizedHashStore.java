@@ -26,15 +26,12 @@ public class SynchronizedHashStore<N extends HashNode<N>> extends SynchronizedDe
 	public synchronized <V> Iterator<V> clearAndReturn(Function<? super N, ? extends V> f) {
 		return delegate.clearAndReturn(f) ;
 	}
-	public synchronized <NCmp> boolean contains(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
-		return delegate.contains(hash, find, eq) ;
-	}
 	public synchronized <NCmp> HashStore<N> copy(Function<? super N, ? extends NCmp> nodeEqualityProj,
 		HashNodeEquality<? super NCmp, ? super N> nodeEquality) {
 		return new SynchronizedHashStore<N>(delegate.copy(nodeEqualityProj, nodeEquality)) ;
 	}
-	public synchronized <NCmp> int count(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
-		return delegate.count(hash, find, eq) ;
+	public synchronized <NCmp> int count(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, int countUpTo) {
+		return delegate.count(hash, find, eq, countUpTo) ;
 	}
 	public synchronized <NCmp, NCmp2, V> Iterator<V> find(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> findEq,
 		Function<? super N, ? extends NCmp2> nodeEqualityProj, HashNodeEquality<? super NCmp2, ? super N> nodeEq,

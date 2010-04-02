@@ -105,11 +105,11 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> exten
 	
 	@Override
 	public boolean contains(V value) {
-		return store.contains(hash(value), value, valEq) ;
+		return store.count(hash(value), value, valEq, 1) > 0 ;
 	}
 	@Override
 	public int count(V value) {
-		return store.count(hash(value), value, valEq) ;
+		return store.count(hash(value), value, valEq, Integer.MAX_VALUE) ;
 	}
 	@Override
 	public void shrink() {

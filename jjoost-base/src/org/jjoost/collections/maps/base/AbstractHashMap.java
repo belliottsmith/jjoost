@@ -130,19 +130,19 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 	}
 	@Override
 	public boolean contains(K key, V val) {
-		return store.contains(hash(key), entry(key, val), nodeEq) ;
+		return store.count(hash(key), entry(key, val), nodeEq, 1) > 0 ;
 	}
 	@Override
 	public boolean contains(K key) {
-		return store.contains(hash(key), key, keyEq) ;
+		return store.count(hash(key), key, keyEq, 1) > 0 ;
 	}
 	@Override
 	public int count(K key, V val) {
-		return store.count(hash(key), entry(key, val), nodeEq) ;
+		return store.count(hash(key), entry(key, val), nodeEq, Integer.MAX_VALUE) ;
 	}
 	@Override
 	public int count(K key) {
-		return store.count(hash(key), key, keyEq) ;
+		return store.count(hash(key), key, keyEq, Integer.MAX_VALUE) ;
 	}
 	@Override
 	public Iterable<Entry<K, V>> entries(final K key) {
@@ -245,7 +245,7 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		
 		@Override
 		public int totalCount() {
-			return store.count(hash, key, keyEq) ;
+			return store.count(hash, key, keyEq, Integer.MAX_VALUE) ;
 		}
 		
 		@Override
@@ -265,7 +265,7 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		
 		@Override
 		public Boolean apply(V v) {
-			return store.contains(hash, entry(key, v), nodeEq) ;
+			return store.count(hash, entry(key, v), nodeEq, 1) > 0 ;
 		}
 		
 		@Override
@@ -295,7 +295,7 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		
 		@Override
 		public boolean isEmpty() {
-			return store.contains(hash, key, keyEq) ;
+			return store.count(hash, key, keyEq, 1) > 0 ;
 		}
 		
 		@Override

@@ -1057,62 +1057,12 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	// METHODS TO QUERY
 	// **********************************************************	
 	
-	
-	
-	@Override
-	public <NCmp> boolean contains(final int hash, final NCmp find, 
-			final HashNodeEquality<? super NCmp, ? super N> eq) {
-		N prev = null, prev2 = null ;
-		N node = getTableUnsafe().readerGetFresh(hash) ;
-		boolean partial = false ;
-		while (true) {
-			
-			if (node == null) {
-				
-				return false ;
-				
-			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG | node == REHASHED_FLAG) {
-				if (node == REHASHING_FLAG | node == REHASHED_FLAG) {
-					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
-					partial = false ;
-					prev2 = prev = null ;
-					node = getTableFresh().readerGetFresh(hash) ;				
-				} else {
-					// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
-					waitOnDelete(prev) ;
-					if (prev2 == null) {
-						partial = false ;
-						prev2 = prev = null ;						
-						node = getTableUnsafe().readerGetFresh(hash) ; // note: could improve by performing a get *un*safe, as we have passed a memory barrier already with the waitOnDelete
-					} else {
-						node = prev2.getNextFresh() ;
-						prev = prev2 ;
-						prev2 = null ;
-						partial = prev.hash == hash && eq.prefixMatch(find, prev) ;
-					}
-				}
-			} else {
-				
-				if (partial != (node.hash == hash && eq.prefixMatch(find, node))) {
-					if (partial) return false ;
-					else  partial = true ;
-				}				
-				if (partial && eq.suffixMatch(find, node)) {
-					// this node is a complete match so simply return it
-					return true ;
-				}
-				
-				prev2 = prev ;
-				prev = node ;
-				node = node.getNextStale() ;
-			}
-		}
-	}
-
 	@Override
 	public <NCmp> int count(int hash, NCmp find, 
-			HashNodeEquality<? super NCmp, ? super N> eq) {
-		int c = 0 ;
+			HashNodeEquality<? super NCmp, ? super N> eq, int countUpTo) {
+		if (countUpTo < 1)
+			return 0 ;
+		int count = 0 ;
 		boolean countedLast = false ;
 		N prev = null, prev2 = null ;
 		N node = getTableFresh().readerGetStale(hash) ;
@@ -1121,13 +1071,13 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			
 			if (node == null) {
 				
-				return c ;
+				return count ;
 				
 			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG | node == REHASHED_FLAG) {
 				
 				if (node == REHASHING_FLAG | node == REHASHED_FLAG) {
 					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
-					c = 0 ;
+					count = 0 ;
 					partial = false ;
 					prev2 = prev = null ;
 					node = getTableFresh().readerGetFresh(hash) ;				
@@ -1135,13 +1085,13 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 					// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
 					waitOnDelete(prev) ;
 					if (prev2 == null) {
-						c = 0 ;
+						count = 0 ;
 						partial = false ;
 						prev2 = prev = null ;						
 						node = getTableUnsafe().readerGetFresh(hash) ; // note: could improve by performing a get *un*safe, as we have passed a memory barrier already with the waitOnDelete
 					} else {
 						if (countedLast)
-							c-- ;
+							count-- ;
 						node = prev2.getNextFresh() ;
 						prev = prev2 ;
 						prev2 = null ;
@@ -1152,12 +1102,14 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			} else {
 				
 				if (partial != (node.hash == hash && eq.prefixMatch(find, node))) {
-					if (partial) return c ;
+					if (partial) return count ;
 					else  partial = true ;
 				}				
 				if (partial && eq.suffixMatch(find, node)) {
 					// this node is a complete match so simply return it
-					c++ ;
+					count += 1 ;
+					if (countUpTo == count)
+						return countUpTo ;
 					countedLast = true ;
 				} else {
 					countedLast = false ;

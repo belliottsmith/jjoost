@@ -330,136 +330,6 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		return true ;
 	}
 
-//	@Override
-//	public <NCmp, V> Iterable<V> removeAndReturn(int hash, int removeAtMost, NCmp c, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
-//		return removedNodeIterable(internalRemoveAndReturn(hash, removeAtMost, c, eq), ret) ;
-//	}
-//	@Override
-//	public <NCmp, V> V removeAndReturnFirst(int hash, int removeAtMost, NCmp c, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
-//		final N n = internalRemoveAndReturn(hash, removeAtMost, c, eq) ;
-//		return n == null ? null : ret.apply(n) ;
-//	}
-//	
-//	private <NCmp> N removeAndReturnFirst(final int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
-//		if (removeAtMost < 1) {
-//			if (removeAtMost == 0)
-//				return null ;
-//			throw new IllegalArgumentException("Cannot remove less than zero elements") ;
-//		}
-//		
-//		final boolean eqIsUniq = eq.isUnique() ;
-//		boolean partial = false ;
-//		final int bucket = hash & (table.length - 1) ;
-//		N p = null ;
-//		N n = table[bucket] ; 
-//		boolean keptNeighbours = false ;
-//		N removed = null ;
-//		int c = 0 ;
-//		while (n != null) {
-//			if (partial != (n.hash == hash && eq.prefixMatch(find, n))) {
-//				if (partial) break ;
-//				else partial = true ;
-//			}
-//			if (partial && eq.suffixMatch(find, n)) {
-//				c++ ;
-//				final N next = n.next ;
-//				if (p == null) {
-//					table[bucket] = next ;
-//				} else {
-//					p.next = next ;
-//				}
-//				if (removed == null)
-//					removed = n ;
-//				n.flagDeleted() ;
-//				totalNodeCount -= 1 ;
-//				removed(n) ;
-//				n = next ;
-//				if (eqIsUniq | (c == removeAtMost)) {
-//    				if (!keptNeighbours)
-//    					keptNeighbours = n != null 
-//    						&& n.hash == hash 
-//    						&& eq.prefixMatch(find, n) ;
-//    				break ;
-//				}
-//			} else if (partial) {
-//				keptNeighbours = true ;
-//				if (eqIsUniq)
-//					break ;
-//			} else {
-//				p = n ;
-//				n = p.next ;
-//			}
-//		}
-//		
-//		if (!keptNeighbours && removed != null)
-//			uniquePrefixCount -= 1 ;
-//		
-//		return removed ;
-//	}
-//	
-//	private <NCmp> N internalRemoveAndReturn(final int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
-//		if (removeAtMost < 1) {
-//			if (removeAtMost == 0)
-//				return null ;
-//			throw new IllegalArgumentException("Cannot remove less than zero elements") ;
-//		}
-//		
-//		final boolean eqIsUniq = eq.isUnique() ;
-//		boolean partial = false ;
-//		final int bucket = hash & (table.length - 1) ;
-//		N p = null ;
-//		N n = table[bucket] ; 
-//		boolean keptNeighbours = false ;
-//		N removedHead = null, removedTail = null ;
-//		int c = 0 ;
-//		while (n != null) {
-//			if (partial != (n.hash == hash && eq.prefixMatch(find, n))) {
-//				if (partial) {
-//					if (!keptNeighbours)
-//						uniquePrefixCount -= 1 ;
-//					return removedHead ;
-//				} else partial = true ;
-//			}
-//			if (partial && eq.suffixMatch(find, n)) {
-//				c++ ;
-//				final N next = n.next ;
-//				if (p == null) {
-//					table[bucket] = next ;
-//				} else {
-//					p.next = next ;
-//				}
-//				if (removedHead == null) {
-//					removedHead = removedTail = n ;
-//				} else {
-//					removedTail = removedTail.next = n ;
-//				}
-//				n.next = null ;
-//				totalNodeCount -= 1 ;
-//				removed(n) ;				
-//				n = next ;
-//				if (eqIsUniq | (c == removeAtMost)) {
-//    				if (!keptNeighbours)
-//    					keptNeighbours = n != null 
-//    						&& n.hash == hash 
-//    						&& eq.prefixMatch(find, n) ;
-//    				break ;
-//				}
-//			} else if (partial) {
-//				keptNeighbours = true ;
-//				if (eqIsUniq)
-//					break ;
-//			} else {
-//				p = n ;
-//				n = p.next ;
-//			}
-//		}
-//		
-//		if (!keptNeighbours && removedHead != null)
-//			uniquePrefixCount -= 1 ;
-//		
-//		return removedHead ;
-//	}
-
 	@Override
 	public <NCmp, V> V removeAndReturnFirst(final int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
 		if (removeAtMost < 1) {
@@ -586,24 +456,10 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	// **************************************************
 	
 	@Override
-	public <NCmp> boolean contains(int hash, NCmp c, HashNodeEquality<? super NCmp, ? super N> eq) {
-		boolean partial = false ;
-    	N n = table[hash & (table.length - 1)] ;
-    	while (n != null) {
-			if (partial != (n.hash == hash && eq.prefixMatch(c, n))) {
-				if (partial) return false ;
-				else partial = true ;
-			}
-    		if (partial && eq.suffixMatch(c, n))
-    			return true ;
-    		n = n.next ;
-    	}
-    	return false ;
-	}
-	
-	@Override
-	public <NCmp> int count(int hash, NCmp c, HashNodeEquality<? super NCmp, ? super N> eq) {
-		final boolean eqIsUniq = eq.isUnique() ;
+	public <NCmp> int count(int hash, NCmp c, HashNodeEquality<? super NCmp, ? super N> eq, int countUpTo) {
+		if (countUpTo < 1)
+			return 0 ;
+		final boolean stopAtOne = eq.isUnique() | countUpTo == 1 ;
 		boolean partial = false ;
 		int count = 0 ;
 		N n = table[hash & (table.length - 1)] ;
@@ -613,9 +469,11 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 				else partial = true ;
 			}
 			if (partial && eq.suffixMatch(c, n)) {
-				if (eqIsUniq)
+				if (stopAtOne)
 					return 1 ;
-				count++ ;
+				count += 1 ;
+				if (countUpTo == count)
+					return count ;
 			}
 			n = n.next ;
 		}
