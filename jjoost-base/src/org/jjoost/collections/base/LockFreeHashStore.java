@@ -611,7 +611,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 		final boolean expectOnlyOne = eq.isUnique() ;
 		int c = 0 ;
 		N prev = null, prev2 = null ;
-		N node = getTableUnsafe().writerGetStale(hash) ;
+		N node = getTableUnsafe().writerGetFresh(hash) ;
 		boolean partial = false ;
 		boolean keptNeighbours = false ;
 		
@@ -759,7 +759,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 		boolean doneFirst = false ;
 		V r = null ;
 		N prev = null, prev2 = null ;
-		N node = getTableUnsafe().writerGetStale(hash) ;
+		N node = getTableUnsafe().writerGetFresh(hash) ;
 		boolean partial = false ;
 		boolean keptNeighbours = false ;
 		int c = 0 ;
@@ -912,7 +912,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 		int c = 0 ;
 		final List<V> r = eq.isUnique() | removeAtMost == 1 ? null : new ArrayList<V>(4) ;
 		N prev = null, prev2 = null ;
-		N node = getTableUnsafe().writerGetStale(hash) ;
+		N node = getTableUnsafe().writerGetFresh(hash) ;
 		boolean partial = false ;
 		boolean keptNeighbours = false ;
 		
@@ -1057,7 +1057,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 
 		final int hash = n.hash ;
 		N prev = null, prev2 = null ;
-		N node = getTableUnsafe().writerGetStale(hash) ;
+		N node = getTableUnsafe().writerGetStale(hash) ; // no need to getFresh() as this thread has to have got the node from somewhere
 		
 		while (true) {
 			
@@ -1176,7 +1176,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	public <NCmp> boolean contains(final int hash, final NCmp find, 
 			final HashNodeEquality<? super NCmp, ? super N> eq) {
 		N prev = null, prev2 = null ;
-		N node = getTableUnsafe().writerGetStale(hash) ;
+		N node = getTableUnsafe().readerGetFresh(hash) ;
 		boolean partial = false ;
 		while (true) {
 			
@@ -1228,7 +1228,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 		int c = 0 ;
 		boolean countedLast = false ;
 		N prev = null, prev2 = null ;
-		N node = getTableUnsafe().writerGetStale(hash) ;
+		N node = getTableFresh().readerGetStale(hash) ;
 		boolean partial = false ;
 		while (true) {
 			
@@ -1288,7 +1288,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			HashNodeEquality<? super NCmp, ? super N> eq, 
 			Function<? super N, ? extends V> ret) {
 		N prev = null, prev2 = null ;
-		N node = getTableUnsafe().writerGetStale(hash) ;
+		N node = getTableUnsafe().readerGetFresh(hash) ;
 		boolean partial = false ;
 		while (true) {
 			
@@ -1342,7 +1342,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			Function<? super N, ? extends V> ret) {
 		final List<V> r = new ArrayList<V>(6) ;
 		N prev = null, prev2 = null ;
-		N node = getTableUnsafe().writerGetStale(hash) ;
+		N node = getTableUnsafe().writerGetFresh(hash) ;
 		boolean partial = false ;
 		while (true) {
 			
@@ -2259,7 +2259,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 				r = getNodeVolatile(oldTable, oldTableIndex) ;
 			if (r == REHASHING_FLAG | r == REHASHED_FLAG) {
 				if (r == REHASHING_FLAG) {
-					wait(oldTableIndex) ;
+					waitForIndex(oldTableIndex) ;
 					return newTable[hash & newTableMask] ;
 				} else {
 					return getNodeVolatile(newTable, hash & newTableMask) ;
@@ -2272,7 +2272,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			final N r = oldTable[oldTableIndex] ;
 			if (r == REHASHING_FLAG | r == REHASHED_FLAG) {
 				if (r == REHASHING_FLAG)
-					wait(oldTableIndex) ;
+					waitForIndex(oldTableIndex) ;
 				return newTable[hash & newTableMask] ;
 			}
 			return r ;
@@ -2291,7 +2291,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 				rehash(oldTableIndex, true, false, false) ;
 			return newTable[hash & newTableMask];
 		}
-		void wait(int oldTableIndex) {
+		void waitForIndex(int oldTableIndex) {
 			final WaitingOnGrow queue = new WaitingOnGrow(Thread.currentThread(), oldTableIndex) ;
 			waiting.insert(queue) ;
 			while (getNodeVolatile(oldTable, oldTableIndex) != REHASHED_FLAG)
@@ -2350,7 +2350,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 				final boolean success = casNodeArrayDirect(oldTable, directOldTableIndex, cur, REHASHING_FLAG) ;
 				if (cur == REHASHING_FLAG) {
 					if (!returnImmediatelyIfAlreadyRehashing)
-						wait(oldTableIndex) ;
+						waitForIndex(oldTableIndex) ;
 					return null ;
 				} 
 				if (success) {
