@@ -57,7 +57,7 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> exten
 	
 	@Override
 	public V putIfAbsent(V val) {
-		return store.putIfAbsent(hash(val), val, valEq, nodeFactory, valProj()) ;
+		return store.putIfAbsent(hash(val), val, valEq, nodeFactory, valProj(), false) ;
 	}
 	
 	@Override

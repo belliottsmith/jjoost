@@ -63,24 +63,24 @@ public class HashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Abstract
 
 	@Override
 	public V ensureAndGet(K key, final Factory<? extends V> putIfNotPresent) {
-		return store.ensureAndGet(hash(key), key, keyEq, new HashNodeFactory<K, N>() {
+		return store.putIfAbsent(hash(key), key, keyEq, new HashNodeFactory<K, N>() {
 			private static final long serialVersionUID = 1L;
 			@Override
 			public N makeNode(int hash, K key) {
 				return nodeFactory.makeNode(hash, key, putIfNotPresent.create()) ;
 			}
-		}, valProj()) ;
+		}, valProj(), true) ;
 	}
 
 	@Override
 	public V ensureAndGet(K key, final Function<? super K, ? extends V> putIfNotPresent) {
-		return store.ensureAndGet(hash(key), key, keyEq, new HashNodeFactory<K, N>() {
+		return store.putIfAbsent(hash(key), key, keyEq, new HashNodeFactory<K, N>() {
 			private static final long serialVersionUID = 526770033919300687L;
 			@Override
 			public N makeNode(int hash, K key) {
 				return nodeFactory.makeNode(hash, key, putIfNotPresent.apply(key)) ;
 			}
-		}, valProj());
+		}, valProj(), true);
 	}
 
 	@Override
@@ -106,7 +106,7 @@ public class HashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Abstract
 			public N makeNode(int hash, K key) {
 				return nodeFactory.makeNode(hash, key, putIfNotPresent.apply(key)) ;
 			}
-		}, valProj()) ;
+		}, valProj(), false) ;
 	}
 
 	@Override

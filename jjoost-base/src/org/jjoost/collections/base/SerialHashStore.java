@@ -207,7 +207,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	}
 	
 	@Override
-	public <NCmp, V> V putIfAbsent(final int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret) {
+	public <NCmp, V> V putIfAbsent(final int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret, boolean returnNewIfCreated) {
 		grow() ;
 		
 		final int reverse = Integer.reverse(hash) ;
@@ -242,46 +242,10 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		totalNodeCount++ ;
 
 		inserted(put) ;
+		
+		if (returnNewIfCreated)
+			return ret.apply(put) ;
 		return null ;
-	}
-	
-	@Override
-	public <NCmp, V> V ensureAndGet(final int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret) {
-		grow() ;
-		
-		final int reverse = Integer.reverse(hash) ;
-		final int bucket = hash & (table.length - 1) ;
-		boolean partial = false ;
-		
-		N p = null ;
-    	N n = table[bucket] ;
-		while (n != null) {
-			if (partial != (n.hash == hash && eq.prefixMatch(find, n))) {
-				if (partial) break ;
-				else partial = true ;
-			}    			
-   			if (partial) {
-   				if (eq.suffixMatch(find, n))
-   	   				return ret.apply(n) ;
-   			} else if (Integer.reverse(n.hash) > reverse) {
-   				break ;
-   			}
-			p = n ;
-			n = n.next ;
-		}
-
-		final N put = factory.makeNode(hash, find) ;
-   		if (p == null) 
-   			table[bucket] = put ;
-   		else p.next = put ;
-   		put.next = n ;
-   		
-    	if (!partial)
-    		uniquePrefixCount++ ;
-		totalNodeCount++ ;
-
-		inserted(put) ;
-		return ret.apply(put) ;
 	}
 	
 	// **************************************************

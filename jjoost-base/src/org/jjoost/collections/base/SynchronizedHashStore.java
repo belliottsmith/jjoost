@@ -36,10 +36,6 @@ public class SynchronizedHashStore<N extends HashNode<N>> extends SynchronizedDe
 	public synchronized <NCmp> int count(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
 		return delegate.count(hash, find, eq) ;
 	}
-	public synchronized <NCmp, V> V ensureAndGet(int hash, NCmp put, HashNodeEquality<? super NCmp, ? super N> eq,
-		HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret) {
-		return delegate.ensureAndGet(hash, put, eq, factory, ret) ;
-	}
 	public synchronized <NCmp, NCmp2, V> Iterator<V> find(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> findEq,
 		Function<? super N, ? extends NCmp2> nodeEqualityProj, HashNodeEquality<? super NCmp2, ? super N> nodeEq,
 		Function<? super N, ? extends V> ret) {
@@ -59,8 +55,8 @@ public class SynchronizedHashStore<N extends HashNode<N>> extends SynchronizedDe
 		return delegate.put(find, put, eq, ret) ;
 	}
 	public synchronized <NCmp, V> V putIfAbsent(int hash, NCmp put, HashNodeEquality<? super NCmp, ? super N> eq,
-		HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret) {
-		return delegate.putIfAbsent(hash, put, eq, factory, ret) ;
+		HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret, boolean returnNewIfCreated) {
+		return delegate.putIfAbsent(hash, put, eq, factory, ret, returnNewIfCreated) ;
 	}
 	public synchronized <NCmp, V> V putIfAbsent(NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
 		return delegate.putIfAbsent(find, put, eq, ret) ;

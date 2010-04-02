@@ -87,7 +87,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public V put(V val) {
 		final int hash = hash(val) ;
 		while (true) {
-			final N existing = store.ensureAndGet(hash, val, valEq, nodeFactory, nodeProj()) ;
+			final N existing = store.putIfAbsent(hash, val, valEq, nodeFactory, nodeProj(), true) ;
 			if (existing.put(val))
 				break ;
 		}
@@ -99,7 +99,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public void put(V val, int count) {
 		final int hash = hash(val) ;
 		while (true) {
-			final N existing = store.ensureAndGet(hash, val, valEq, nodeFactory, nodeProj()) ;
+			final N existing = store.putIfAbsent(hash, val, valEq, nodeFactory, nodeProj(), true) ;
 			if (existing.put(val, count))
 				break ;
 		}
@@ -119,7 +119,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public V putIfAbsent(V val) {
 		final int hash = hash(val) ;
 		while (true) {
-			final N existing = store.ensureAndGet(hash, val, valEq, nodeFactory, nodeProj()) ;
+			final N existing = store.putIfAbsent(hash, val, valEq, nodeFactory, nodeProj(), true) ;
 			if (existing.initialise()) {				
 				totalCount.add(1) ;
 				return null ;

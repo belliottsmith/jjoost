@@ -90,11 +90,6 @@ public class SegmentedHashStore<N extends HashNode<N>> implements HashStore<N> {
 		return segmentFor(hash).count(hash, find, eq) ;
 	}
 	@Override
-	public <NCmp, V> V ensureAndGet(int hash, NCmp put, HashNodeEquality<? super NCmp, ? super N> eq,
-			HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret) {
-		return segmentFor(hash).ensureAndGet(hash, put, eq, factory, ret) ;
-	}
-	@Override
 	public <NCmp, NCmp2, V> Iterator<V> find(
 			int hash, NCmp find, 
 			HashNodeEquality<? super NCmp, ? super N> findEq, 
@@ -120,8 +115,8 @@ public class SegmentedHashStore<N extends HashNode<N>> implements HashStore<N> {
 	}
 	@Override
 	public <NCmp, V> V putIfAbsent(int hash, NCmp put, HashNodeEquality<? super NCmp, ? super N> eq,
-			HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret) {
-		return segmentFor(hash).putIfAbsent(hash, put, eq, factory, ret) ;
+			HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret, boolean returnNewIfCreated) {
+		return segmentFor(hash).putIfAbsent(hash, put, eq, factory, ret, returnNewIfCreated) ;
 	}
 	@Override
 	public <NCmp, V> V putIfAbsent(NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {

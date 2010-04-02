@@ -365,7 +365,8 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			int hash, NCmp find, 
 			HashNodeEquality<? super NCmp, ? super N> eq, 
 			HashNodeFactory<? super NCmp, N> factory, 
-			Function<? super N, ? extends V> ret) {
+			Function<? super N, ? extends V> ret,
+			boolean returnNewIfCreated) {
 		grow() ;
 		
 		N put = null ;
@@ -386,6 +387,8 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 						inserted(put) ;
 						totalCounter.increment(hash) ;
 						uniquePrefixCounter.increment(hash) ;
+						if (returnNewIfCreated)
+							return ret.apply(put) ;
 						return null ;
 					}
 					partial = false ;
@@ -399,6 +402,8 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 						totalCounter.increment(hash) ;
 						if (!partial)
 							uniquePrefixCounter.increment(hash) ;
+						if (returnNewIfCreated)
+							return ret.apply(put) ;
 						return null ;
 					} 
 					node = prev.getNextFresh() ;
@@ -441,6 +446,8 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 						if (prev.casNext(node, put)) {
 							inserted(put) ;
 							totalCounter.increment(hash) ;
+							if (returnNewIfCreated)
+								return ret.apply(put) ;
 							return null ;
 						}
 						// if we fail, backtrack to prev2.next, or to the list head if prev2 is null
@@ -474,129 +481,9 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 		}
 	}
 	
-	
-	@Override
-	public <NCmp, V> V ensureAndGet(
-			int hash, NCmp find, 
-			HashNodeEquality<? super NCmp, ? super N> eq, 
-			HashNodeFactory<? super NCmp, N> factory, 
-			Function<? super N, ? extends V> ret) {
-		grow() ;
-		
-		N put = null ;
-		N prev = null, prev2 = null ;
-		N node = getTableUnsafe().writerGetStale(hash) ;
-		boolean partial = false ;
-		while (true) {
-			
-			if (node == null) {
-				
-				// we have not encountered any prior partial or complete node matches, so simply insert the node at the end of the list
-				if (put == null)
-					put = factory.makeNode(hash, find) ;
-				
-				if (prev == null) {
-					
-					// prev is null, so list is entirely empty; attempt to add at head
-					if (getTableUnsafe().compareAndSet(hash, null, put)) {
-						inserted(put) ;
-						totalCounter.increment(hash) ;
-						uniquePrefixCounter.increment(hash) ;
-						return ret.apply(put) ;
-					}
-					partial = false ;
-					node = getTableUnsafe().writerGetFresh(hash) ;
-					
-				} else {
-					
-					// otherwise prev was the last item in the list, so attempt to cas tail pointer from null to our new node
-					if (prev.casNext(null, put)) {
-						inserted(put) ;
-						totalCounter.increment(hash) ;
-						if (!partial)
-							uniquePrefixCounter.increment(hash) ;
-						return ret.apply(put) ;
-					} 
-					node = prev.getNextFresh() ;
-				}
-				
-			} else if (node == REHASHING_FLAG | node == DELETING_FLAG | node == DELETED_FLAG | node == REHASHED_FLAG) {
-				
-				if (node == REHASHING_FLAG | node == REHASHED_FLAG) {
-					// this bucket is being rehashed, so simply start from the head again (this will block until this bucket has been grown)
-					partial = false ;
-					prev2 = prev = null ;
-					node = getTableFresh().writerGetFresh(hash) ;				
-				} else {
-					// prev has been or is being deleted, so wait for deletion to complete and then backtrack either to prev2 or to the list head
-					waitOnDelete(prev) ;
-					if (prev2 == null) {
-						partial = false ;
-						prev2 = prev = null ;						
-						node = getTableUnsafe().writerGetFresh(hash) ; // note: could improve by performing a get *un*safe, as we have passed a memory barrier already with the waitOnDelete
-					} else {
-						node = prev2.getNextFresh() ;
-						prev = prev2 ;
-						prev2 = null ;
-						partial = prev.hash == hash && eq.prefixMatch(find, prev) ;
-					}
-				}
-				
-			} else {
-				
-				if (partial != (node.hash == hash && eq.prefixMatch(find, node))) {
-					if (partial) {						
-						if (put == null)
-							put = factory.makeNode(hash, find) ;
-						
-						// at this point we have previously seen at least one partial match but have encountered no complete matches
-						// so try to insert the new node here
-						// { prev != null }
-						put.lazySetNext(node) ;
-						if (prev.casNext(node, put)) {	
-							totalCounter.increment(hash) ;
-							return ret.apply(put) ;
-						}
-						// if we fail, backtrack to prev2.next, or to the list head if prev2 is null
-						if (prev2 == null) {
-							partial = false ;
-							prev2 = prev = null ;						
-							node = getTableUnsafe().writerGetFresh(hash) ;
-						} else {
-							node = prev2.getNextFresh() ;
-							prev = prev2 ;
-							prev2 = null ;
-							partial = prev.hash == hash && eq.prefixMatch(find, prev) ;
-						}
-						continue ;
-						
-					} else {
-						// we have not seen a partial match before this node, so simply set partial match to true						
-						partial = true ;
-					}
-				}
-				
-				if (partial && eq.suffixMatch(find, node)) {
-					// this node is a complete match so simply return it
-					return ret.apply(node) ;
-				}
-				
-				prev2 = prev ;
-				prev = node ;
-				node = node.getNextStale() ;
-			}
-		}
-	}
-
-	
-	
-	
 	// **********************************************************
 	// METHODS FOR REMOVAL
 	// **********************************************************	
-	
-	
-	
 	
 	@Override
 	public <NCmp> int remove(
