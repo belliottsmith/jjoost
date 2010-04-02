@@ -24,10 +24,10 @@ public class LockFreeLinkedHashStore<N extends LockFreeLinkedHashStore.LockFreeL
 		private static final long linkNextPtrOffset ;
 		private static final long linkPrevPtrOffset ;
 		private final boolean startLinkDelete(N expect) {
-			return unsafe.compareAndSwapObject(this, linkNextPtrOffset, expect, DELETING_FLAG) ;
+			return unsafe.compareAndSwapObject(this, linkNextPtrOffset, expect, DELETING_LINK_FLAG) ;
 		}
 		private final void finishLinkDelete() {
-			unsafe.putObjectVolatile(this, linkNextPtrOffset, DELETED_FLAG) ;
+			unsafe.putObjectVolatile(this, linkNextPtrOffset, DELETED_LINK_FLAG) ;
 		}
 		private final boolean casLinkNext(N expect, N upd) {
 			return unsafe.compareAndSwapObject(this, linkNextPtrOffset, expect, upd) ;
@@ -105,11 +105,11 @@ public class LockFreeLinkedHashStore<N extends LockFreeLinkedHashStore.LockFreeL
 		}
 	}
 	
-	private static final FlagNode DELETING_FLAG = new FlagNode("DELETING") ;
-	private static final FlagNode DELETED_FLAG = new FlagNode("DELETED") ;
+	private static final FlagNode DELETING_LINK_FLAG = new FlagNode("DELETING") ;
+	private static final FlagNode DELETED_LINK_FLAG = new FlagNode("DELETED") ;
 
-	protected final WaitingOnNode<N> waitingOnLinkInsert = new WaitingOnNode<N>(null, null) ;
-	protected final WaitingOnNode<N> waitingOnLinkDelete = new WaitingOnNode<N>(null, null) ;
+	// TODO : can probably merge waiting
+	protected final WaitingOnNode<N> waitingOnLink = new WaitingOnNode<N>(null, null) ;
 	
 	public LockFreeLinkedHashStore(float loadFactor, Counter totalCounter, Counter uniqCounter, boolean useUniqCounterForGrowth, N[] table) {
 		super(loadFactor, totalCounter, uniqCounter, useUniqCounterForGrowth, table) ;
@@ -130,7 +130,7 @@ public class LockFreeLinkedHashStore<N extends LockFreeLinkedHashStore.LockFreeL
 			if (tail.casLinkNext(head, n)) {
 				n.lazySetLinkPrev(tail) ;
 				head.volatileSetLinkPrev(n) ;
-				waitingOnLinkInsert.wake(n) ;
+				waitingOnLink.wake(n) ;
 				return ;
 			}
 			tail = head.getLinkPrevFresh() ;		
@@ -156,18 +156,18 @@ public class LockFreeLinkedHashStore<N extends LockFreeLinkedHashStore.LockFreeL
 				next.lazySetLinkPrev(prev) ;
 				n.lazySetLinkPrev(next) ;
 				n.finishLinkDelete() ;
-				waitingOnLinkDelete.wake(n) ;
+				waitingOnLink.wake(n) ;
 				return ;
 			}
 		}
 	}
  
 	private void waitOnDelete(final N node) {
-		if (node.getLinkNextFresh() != DELETING_FLAG)
+		if (node.getLinkNextFresh() != DELETING_LINK_FLAG)
 			return ;
 		WaitingOnNode<N> waiting = new WaitingOnNode<N>(Thread.currentThread(), node) ;
-		waitingOnLinkDelete.insert(waiting) ;
-		while (node.getLinkNextFresh() == DELETING_FLAG)
+		waitingOnLink.insert(waiting) ;
+		while (node.getLinkNextFresh() == DELETING_LINK_FLAG)
 			LockSupport.park() ;
 		waiting.remove() ;
 	}
@@ -176,7 +176,7 @@ public class LockFreeLinkedHashStore<N extends LockFreeLinkedHashStore.LockFreeL
 		if (node.getLinkPrevFresh() != null)
 			return ;
 		WaitingOnNode<N> waiting = new WaitingOnNode<N>(Thread.currentThread(), node) ;
-		waitingOnLinkInsert.insert(waiting) ;
+		waitingOnLink.insert(waiting) ;
 		while (node.getLinkPrevFresh() == null)
 			LockSupport.park() ;
 		waiting.remove() ;
@@ -238,12 +238,12 @@ public class LockFreeLinkedHashStore<N extends LockFreeLinkedHashStore.LockFreeL
 		private void moveNext() {
 			final N prev = this.next ;
 			N next = prev.getLinkNextStale() ;
-			if (next == DELETING_FLAG | next == DELETED_FLAG) {
+			if (next == DELETING_LINK_FLAG | next == DELETED_LINK_FLAG) {
 				waitOnDelete(prev) ;
 				next = prev.getLinkPrevStale() ;
 			}
 			N nextNext = next.getLinkNextStale() ;
-			while (nextNext == DELETING_FLAG | nextNext == DELETED_FLAG) {
+			while (nextNext == DELETING_LINK_FLAG | nextNext == DELETED_LINK_FLAG) {
 				waitOnDelete(next) ;
 				next = next.getLinkPrevStale() ;
 				nextNext = next.getLinkNextStale() ;
