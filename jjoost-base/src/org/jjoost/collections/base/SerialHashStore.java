@@ -121,8 +121,8 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		
 		final boolean replace = eq.isUnique() ;
 		final int hash = put.hash ;
-		final int reverse = Integer.reverse(hash) ;
 		final int bucket = put.hash & (table.length - 1) ;		
+		final int reverse = Integer.reverse(hash) ;
 		boolean partial = false ;
 		
    		N p = null ;
@@ -138,9 +138,9 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
    	   				replaced = n ;
    	   				break ;
    				}   				
-   			} else if (HashNode.insertBefore(reverse, n)) {
-   				break ;
    			}
+			if (HashNode.insertBefore(reverse, n)) 
+    			break ;
    			p = n ;
    			n = n.next ;
    		}
@@ -172,8 +172,8 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		grow() ;
 
 		final int hash = put.hash ;
-		final int reverse = Integer.reverse(hash) ;
 		final int bucket = put.hash & (table.length - 1) ;		
+		final int reverse = Integer.reverse(hash) ;
 		boolean partial = false ;
 		
    		N p = null ;
@@ -186,9 +186,9 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
    			if (partial) {
    				if (eq.suffixMatch(find, n))
    	   				return ret.apply(n) ;
-   			} else if (HashNode.insertBefore(reverse, n)) {
-   				break ;
    			}
+			if (HashNode.insertBefore(reverse, n)) 
+    			break ;
    			p = n ;
    			n = n.next ;
    		}
@@ -210,8 +210,8 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	public <NCmp, V> V putIfAbsent(final int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret, boolean returnNewIfCreated) {
 		grow() ;
 		
-		final int reverse = Integer.reverse(hash) ;
 		final int bucket = hash & (table.length - 1) ;
+		final int reverse = Integer.reverse(hash) ;
 		boolean partial = false ;
 		
 		N p = null ;
@@ -224,9 +224,9 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
    			if (partial) {
    				if (eq.suffixMatch(find, n))
    	   				return ret.apply(n) ;
-   			} else if (HashNode.insertBefore(reverse, n)) {
-   				break ;
    			}
+			if (HashNode.insertBefore(reverse, n)) 
+    			break ;
 			p = n ;
 			n = n.next ;
 		}
@@ -261,6 +261,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		}
 		final boolean eqIsUniq = eq.isUnique() ;
     	final int bucket = hash & (table.length - 1) ;
+    	final int reverse = Integer.reverse(hash) ;
 		boolean partial = false ;
     	N p = null ;
     	N n = table[bucket] ; 
@@ -295,6 +296,8 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
     			keptNeighbours = true ;
     			if (eqIsUniq)
     				break ;
+    		} else if (HashNode.insertBefore(reverse, n)) {
+    			break ;
     		} else {
     			p = n ;
     			n = p.next ;
@@ -341,6 +344,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		final boolean eqIsUniq = eq.isUnique() ;
 		boolean partial = false ;
 		final int bucket = hash & (table.length - 1) ;
+    	final int reverse = Integer.reverse(hash) ;
 		N p = null ;
 		N n = table[bucket] ; 
 		boolean keptNeighbours = false ;
@@ -376,7 +380,9 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 				keptNeighbours = true ;
 				if (eqIsUniq)
 					break ;
-			} else {
+    		} else if (HashNode.insertBefore(reverse, n)) {
+    			break ;
+    		} else {
 				p = n ;
 				n = p.next ;
 			}
@@ -401,6 +407,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		final boolean eqIsUniq = eq.isUnique() ;
 		boolean partial = false ;
 		final int bucket = hash & (table.length - 1) ;
+    	final int reverse = Integer.reverse(hash) ;
 		N p = null ;
 		N n = table[bucket] ; 
 		boolean keptNeighbours = false ;
@@ -439,6 +446,8 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 				keptNeighbours = true ;
 				if (eqIsUniq)
 					break ;
+    		} else if (HashNode.insertBefore(reverse, n)) {
+    			break ;
 			} else {
 				p = n ;
 				n = p.next ;
@@ -486,6 +495,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	
 	@Override
 	public <NCmp, V> V first(int hash, NCmp c, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+		final int reverse = Integer.reverse(hash) ;
 		boolean partial = false ;
 		N n = table[hash & (table.length - 1)] ;
 		while (n != null) {
@@ -495,6 +505,8 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 			}
 			if (partial && eq.suffixMatch(c, n))
 				return ret.apply(n) ;
+			if (HashNode.insertBefore(reverse, n))
+				break ;
 			n = n.next ;
 		}
 		return null ;
@@ -825,6 +837,44 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		
 	}
 
+	protected static final class SimpleNodeIterable<N extends SerialHashNode<N>, V> implements Iterable<V> {
+		private final N head ;
+		private final Function<? super N, ? extends V> f ;
+		public SimpleNodeIterable(N head, Function<? super N, ? extends V> f) {
+			this.head = head ;
+			this.f = f;
+		}
+		@Override
+		public Iterator<V> iterator() {
+			return new NodeIterator<N, V>(head, f) ;
+		}		
+	}
+	
+	protected static final class NodeIterator<N extends SerialHashNode<N>, V> implements Iterator<V> {
+		private N cur ;
+		private final Function<? super N, ? extends V> f ;
+		public NodeIterator(N head, Function<? super N, ? extends V> f) {
+			this.cur = head ;
+			this.f = f;
+		}
+		@Override
+		public boolean hasNext() {
+			return cur != null ;
+		}
+		@Override
+		public V next() {
+			if (cur == null)
+				throw new NoSuchElementException() ;
+			final V r = f.apply(cur) ;
+			cur = cur.next ;
+			return r ;
+		}
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException() ;
+		}
+	}
+
 	// **************************************************
 	// PRIVATE METHODS
 	// **************************************************
@@ -977,47 +1027,10 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	}
 
 	private static <N extends SerialHashNode<N>, V> Iterable<V> removedNodeIterable(N head, Function<? super N, ? extends V> f) {
-		return new RemovedNodeIterable<N, V>(head, f) ;
+		return new SimpleNodeIterable<N, V>(head, f) ;
 	}
-	private static final class RemovedNodeIterable<N extends SerialHashNode<N>, V> implements Iterable<V> {
-		private final N head ;
-		private final Function<? super N, ? extends V> f ;
-		public RemovedNodeIterable(N head, Function<? super N, ? extends V> f) {
-			this.head = head ;
-			this.f = f;
-		}
-		@Override
-		public Iterator<V> iterator() {
-			return new NodeIterator<N, V>(head, f) ;
-		}		
-	}
-	private static final class NodeIterator<N extends SerialHashNode<N>, V> implements Iterator<V> {
-		private N cur ;
-		private final Function<? super N, ? extends V> f ;
-		public NodeIterator(N head, Function<? super N, ? extends V> f) {
-			this.cur = head ;
-			this.f = f;
-		}
-		@Override
-		public boolean hasNext() {
-			return cur != null ;
-		}
-		@Override
-		public V next() {
-			if (cur == null)
-				throw new NoSuchElementException() ;
-			final V r = f.apply(cur) ;
-			cur = cur.next ;
-			return r ;
-		}
-		@Override
-		public void remove() {
-			throw new UnsupportedOperationException() ;
-		}
-	}
-
 	public static Rehasher defaultRehasher() {
 		return Rehashers.jdkHashmapRehasher() ;
 	}
-
+	
 }
