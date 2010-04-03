@@ -174,10 +174,10 @@ public abstract class AbstractConcurrentHashStore<
 		}
 		public abstract N copy() ; 
 		final boolean startRehashing(N expect) {
-			return unsafe.compareAndSwapObject(this, nextPtrOffset, expect, REHASHING_FLAG) ;
+			return unsafe.compareAndSwapObject(this, nextPtrOffset, expect, BLOCKING_REHASH_IN_PROGRESS_FLAG) ;
 		}
 		final boolean startTwoStepDelete(N expect) {
-			return unsafe.compareAndSwapObject(this, nextPtrOffset, expect, DELETING_FLAG) ;
+			return unsafe.compareAndSwapObject(this, nextPtrOffset, expect, BLOCKING_DELETE_IN_PROGRESS_FLAG) ;
 		}
 		final void completeTwoStepDelete() {
 			unsafe.putObjectVolatile(this, nextPtrOffset, DELETED_FLAG) ;
@@ -231,11 +231,10 @@ public abstract class AbstractConcurrentHashStore<
 		}
 	}
 	
-	protected static final FlagNode REHASHING_FLAG = new FlagNode("REHASHING") ;	
 	protected static final FlagNode REHASHED_FLAG = new FlagNode("REHASHING") ;	
 	protected static final FlagNode DELETED_FLAG = new FlagNode("DELETED") ;
-	protected static final FlagNode DELETING_FLAG = new FlagNode("DELETING") ;
-	protected static final FlagNode UPDATING_FLAG = new FlagNode("UPDATING") ;
+	protected static final FlagNode BLOCKING_REHASH_IN_PROGRESS_FLAG = new FlagNode("REHASHING") ;	
+	protected static final FlagNode BLOCKING_DELETE_IN_PROGRESS_FLAG = new FlagNode("DELETING") ;
 	
 	// *****************************************
 	// UNDERLYING TABLE DEFINITIONS
@@ -360,6 +359,7 @@ public abstract class AbstractConcurrentHashStore<
 			return false ;
 		}
 
+		@SuppressWarnings("unchecked")
 		public final void rehash(int from, boolean needThisIndex, boolean initiator, boolean tryAll) {
 			if (!completion.startContributing())
 				return ;
@@ -367,10 +367,12 @@ public abstract class AbstractConcurrentHashStore<
 			for (int i = from ; i != oldTable.length ; i++) {
 				N head = startBucket(i, returnImmediatelyIfAlreadyHashing) ;
 				if (head != null) {
-					if (head == REHASHING_FLAG)
-						head = null ;
-					doBucket(head, i) ;
-					finishBucket(i) ;
+					if (head != REHASHED_FLAG) {
+						doBucket(head, i) ;
+						lazySetNodeArray(oldTable, i, REHASHED_FLAG) ;
+					}
+					// wake up waiters
+					waiting.wake(i) ;
 				} else if (!tryAll) {
 					break ;
 				}
@@ -381,13 +383,6 @@ public abstract class AbstractConcurrentHashStore<
 				store.casTable(this, store.newRegularTable(newTable, capacity)) ;
 				waiting.wakeAll() ;
 			}
-		}
-		
-		@SuppressWarnings("unchecked")
-		private final void finishBucket(int oldTableIndex) {
-			lazySetNodeArray(oldTable, oldTableIndex, REHASHED_FLAG) ;
-			// wake up waiters
-			waiting.wake(oldTableIndex) ;
 		}
 		
 		protected abstract N startBucket(int oldTableIndex, boolean returnImmediatelyIfAlreadyRehashing) ;
@@ -653,6 +648,9 @@ public abstract class AbstractConcurrentHashStore<
 	}	
 	static final <N extends ConcurrentHashNode<N>> void lazySetNodeArray(final N[] arr, final int i, final N upd) {
 		unsafe.putOrderedObject(arr, nodeArrayIndexBaseOffset + (nodeArrayIndexScale * i), upd) ;
+	}
+	static final <N extends ConcurrentHashNode<N>> void volatileSetNodeArray(final N[] arr, final int i, final N upd) {
+		unsafe.putObjectVolatile(arr, nodeArrayIndexBaseOffset + (nodeArrayIndexScale * i), upd) ;
 	}
 	static final long directNodeArrayIndex(final int i) {
 		return nodeArrayIndexBaseOffset + (nodeArrayIndexScale * i) ;
