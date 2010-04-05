@@ -338,14 +338,6 @@ public abstract class AbstractConcurrentHashStore<
 				LockSupport.park() ;
 		}
 		
-//		public boolean compareAndSet(int hash, N expect, N update) {
-//			final int oldTableIndex = hash & oldTableMask ;
-//			if (oldTable[oldTableIndex] == REHASHED_FLAG) {
-//				return casNodeArray(newTable, hash & newTableMask, expect, update) ;
-//			} else {
-//				return false ;
-//			}
-//		}
 		@Override
 		public final int maxCapacity() {
 			return capacity ;
@@ -368,8 +360,9 @@ public abstract class AbstractConcurrentHashStore<
 				N head = startBucket(i, returnImmediatelyIfAlreadyHashing) ;
 				if (head != null) {
 					if (head != REHASHED_FLAG) {
-						doBucket(head, i) ;
+						doBucket(head, i) ;						
 						lazySetNodeArray(oldTable, i, REHASHED_FLAG) ;
+						finishedBucket(head, i) ;
 					}
 					// wake up waiters
 					waiting.wake(i) ;
@@ -387,6 +380,7 @@ public abstract class AbstractConcurrentHashStore<
 		
 		protected abstract N startBucket(int oldTableIndex, boolean returnImmediatelyIfAlreadyRehashing) ;
 		protected abstract void doBucket(N head, int oldTableIndex) ;
+		protected void finishedBucket(N head, int oldTableIndex) {}
 		
 	}
 

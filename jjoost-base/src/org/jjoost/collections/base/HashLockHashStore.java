@@ -15,6 +15,10 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 
 	private static final long serialVersionUID = -369208509152951474L;
 
+	private final WaitingOnNode<N> waitingOnLock = new WaitingOnNode<N>(null, null) ;
+	private LockCache lockCache = new LockCache(new Thread[32], new LockNode[32]) ;
+	
+
 	public HashLockHashStore(int initialCapacity, float loadFactor, Counting totalCounting, Counting uniquePrefixCounting) {
 		super(initialCapacity, loadFactor, totalCounting, uniquePrefixCounting) ;
 	}
@@ -40,7 +44,7 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 	@Override
 	protected Table<N> newResizingTable(Table<N> table, int newLength) {
 		if (newLength == table.length() << 1)
-			return new Growing2xTable(this, (RegularTable) table, newLength) ;
+			return new GrowingTable(this, (RegularTable) table, newLength) ;
 		throw new IllegalArgumentException() ;
 	}
 
@@ -267,7 +271,6 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 	    			r++ ;
 	    			final N next = n.getNextStale() ;
 	    			p.lazySetNext(next) ;
-//	    			n.performOneStepForcedLazyDelete() ;
 	    			removed(n) ;
 					n = next ;
 	    			totalCounter.decrement(hash) ;
@@ -340,7 +343,6 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 					p.lazySetNext(next) ;
 					if (removed == null)
 						removed = n ;
-					n.performOneStepForcedLazyDelete() ;
 					totalCounter.decrement(hash) ;
 					removed(n) ;
 					n = next ;
@@ -421,7 +423,6 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 						removedTail.lazySetNext(n.copy()) ;
 						removedTail = removedTail.getNextStale() ;
 					}
-					n.performOneStepForcedLazyDelete() ;
 					totalCounter.decrement(hash) ;
 					removed(n) ;				
 					n = next ;
@@ -619,15 +620,6 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 
 	private final class RegularTable extends AbstractConcurrentHashStore.RegularTable<N> implements Table<N> {
 
-		final WaitingOnNode<N> waitingOnLock = new WaitingOnNode<N>(null, null) ;
-		private void waitOnLock(N lock, long directIndex) {
-			WaitingOnNode<N> queue = new WaitingOnNode<N>(Thread.currentThread(), lock) ;
-			waitingOnLock.insert(queue) ;
-			while (getNodeVolatileDirect(table, directIndex) == lock)
-				LockSupport.park() ;
-			queue.remove() ;
-		}
-
 		public RegularTable(N[] table, int capacity) {
 			super(table, capacity);
 		}
@@ -645,7 +637,7 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 			while (true) {
 				final N head = getNodeVolatileDirect(table, directIndex) ;
 				if (head instanceof LockNode) {
-					waitOnLock(head, directIndex) ;
+					waitOnLock(table, head, directIndex) ;
 					continue ;
 				}
 				if (head == REHASHED_FLAG)
@@ -670,7 +662,7 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 				if (head == REHASHED_FLAG)
 					return (N) REHASHED_FLAG ;
 				if (head instanceof LockNode) {
-					waitOnLock(head, directIndex) ;
+					waitOnLock(table, head, directIndex) ;
 					continue ;
 				}
 				break ;
@@ -698,7 +690,7 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 				if (head == REHASHED_FLAG)
 					return (N) REHASHED_FLAG ;
 				if (head instanceof LockNode) {
-					waitOnLock(head, directIndex) ;
+					waitOnLock(table, head, directIndex) ;
 					continue ;
 				}
 				if (lock == null)
@@ -721,8 +713,6 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 
 		@Override
 		public final void unlock(int hash, N lock) {
-//			if (!casNodeArray(table, hash & mask, lock, lock.getNextStale()))
-//				throw new IllegalStateException() ;
 			volatileSetNodeArray(table, hash & mask, lock.getNextStale()) ;
 			waitingOnLock.wake(lock) ;
 		}
@@ -763,63 +753,32 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 		
 	}
 	
-	private final class Growing2xTable extends ResizingTable {
-		public Growing2xTable(AbstractConcurrentHashStore<N, Table<N>> store,
+	private final class GrowingTable extends ResizingTable {
+		public GrowingTable(AbstractConcurrentHashStore<N, Table<N>> store,
 				RegularTable table, int newLength) {
 			super(store, table, newLength);
 		}
 		@Override
-		protected void doBucket(N head, int oldTableIndex) {
-    		int newIndexBit = oldTable.length ;
-    		N head1 = null, head2 = null ;
-       		N tail1 = null, tail2 = null ;
-       		boolean chain1IsOrig = true, chain2IsOrig = true ;
-       		N node = head.getNextStale() ;
-       		while (node != null) {
-           		if ((node.hash & newIndexBit) == 0) {
-           			if (chain2IsOrig & head2 != null) {
-           				chain2IsOrig = false ;
-           				head2 = copyChain(head2, node) ;
-           			}
-           			if (tail1 == null) {
-           				head1 = tail1 = node ;
-           			} else {
-           				final N next = chain1IsOrig ? node : node.copy() ;
-           				tail1.lazySetNext(next) ;
-           				tail1 = next ;
-           			}
-           		} else {
-           			if (chain1IsOrig & head1 != null) {
-           				chain1IsOrig = false ;
-           				head1 = copyChain(head1, node) ;
-           			}
-           			if (tail2 == null) {
-           				head2 = tail2 = node ;
-           			} else {
-           				final N next = chain2IsOrig ? node : node.copy() ;
-           				tail2.lazySetNext(next) ;
-           				tail2 = next ;
-           			}
-           		}
-       			node = node.getNextStale() ;
-       		}
-       		if (head1 != null)
-       			lazySetNodeArray(newTable, oldTableIndex, head1) ;
-       		if (head2 != null)
-       			lazySetNodeArray(newTable, oldTableIndex | newIndexBit, head2) ;
+		protected final void doBucket(N lock, int oldTableIndex) {
+			N cur = lock.getNextStale() ;
+			while (true) {
+				final N chainHead = cur ;
+				final int chainIndex = chainHead.hash & newTableMask ;
+				cur = cur.getNextStale() ;
+				while (cur != null && (cur.hash & newTableMask) == chainIndex) {
+					cur = cur.getNextStale() ;
+				}
+				if (cur == null) {
+					lazySetNodeArray(newTable, chainIndex, chainHead) ;
+					return ;
+				} else {
+					lazySetNodeArray(newTable, chainIndex, copyChain(chainHead, cur)) ;
+				}
+			}
 		}
-	}
+	}	
 	
 	private abstract class ResizingTable extends AbstractConcurrentHashStore.ResizingTable<N, Table<N>> implements Table<N> {
-
-		final WaitingOnNode<N> waitingOnLock = new WaitingOnNode<N>(null, null) ;
-		final void waitOnLock(N[] table, N lock, long directIndex) {
-			WaitingOnNode<N> queue = new WaitingOnNode<N>(Thread.currentThread(), lock) ;
-			waitingOnLock.insert(queue) ;
-			while (getNodeVolatileDirect(table, directIndex) == lock)
-				LockSupport.park() ;
-			queue.remove() ;
-		}
 
 		public ResizingTable(AbstractConcurrentHashStore<N, Table<N>> store,
 				RegularTable table, int newLength) {
@@ -856,6 +815,11 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 					return lock ;
 			}
 		}
+		
+		@Override
+		protected final void finishedBucket(N lock, int oldTableIndex) {
+			waitingOnLock.wake(lock) ;
+		}
 
 		@SuppressWarnings("unchecked")
 		@Override
@@ -873,7 +837,7 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 					continue ;
 				}
 				if (head == REHASHED_FLAG)
-					return null ;
+					return (N) REHASHED_FLAG ;
 				lock.lazySetNext(head) ;
 				if (casNodeArrayDirect(newTable, directNewTableIndex, head, lock))
 					return lock ;
@@ -891,23 +855,6 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 			return lock(hash) ;
 		}
 		
-//		@Override
-//		public final boolean quickSet(int hash, N node) {
-//			final int oldTableIndex = hash & oldTableMask ;
-//			N oldTableHead = oldTable[oldTableIndex] ;
-//			if (oldTableHead == null) {
-//				if (casNodeArray(oldTable, oldTableIndex, null, node))
-//					return true ;
-//				oldTableHead = oldTable[oldTableIndex] ;
-//			}
-//			if (oldTableHead == REHASHED_FLAG) {
-//				final int newTableIndex = hash & newTableMask ;
-//				if (newTable[newTableIndex] == null)
-//					return casNodeArray(newTable, newTableIndex, null, node) ;
-//			}
-//			return false ;
-//		}
-
 		@SuppressWarnings("unchecked")
 		@Override
 		public final N read(int hash) {
@@ -935,7 +882,6 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 		
 	}
 	
-//	static final ThreadLocal<LockNode> lockCache = new ThreadLocal<LockNode>() ;
 	@SuppressWarnings("unchecked")
 	final N lockNode() {
 		final Thread me = Thread.currentThread() ;
@@ -955,7 +901,7 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 						return (N) cache.locks[index] ;
 					break ;
 				}
-				index++ ;
+				index = (index + 1) & mask;
 			}
 		}
 	}
@@ -963,17 +909,20 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 	@SuppressWarnings("unchecked")
 	final synchronized void addLock(final Thread me) {
 		LockCache cache = lockCache ;
-		if (cache.count == cache.threads.length >> 1) {
+		if (cache.count == cache.threads.length >> 2) {
 			final LockCache repl = new LockCache(new Thread[cache.threads.length << 1], new LockNode[cache.threads.length << 1]) ;
 			final int mask = repl.threads.length - 1 ;
 			for (int i = 0 ; i != cache.threads.length ; i++) {
 				final Thread t = cache.threads[i] ;
-				int index = t.hashCode() & mask ;
-				while (true) {
-					if (repl.threads[index] == null) {
-						repl.threads[index] = t ;
-						repl.locks[index] = cache.locks[i] ;
-						break ;
+				if (t != null) {
+					int index = t.hashCode() & mask ;
+					while (true) {
+						if (repl.threads[index] == null) {
+							repl.threads[index] = t ;
+							repl.locks[index] = cache.locks[i] ;
+							break ;
+						}
+						index = (index + 1) & mask ;
 					}
 				}
 			}
@@ -991,8 +940,16 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 				cache.count += 1 ;
 				break ;
 			}
-			index++ ;
+			index = (index + 1) & mask ;
 		}
+	}
+	
+	private void waitOnLock(N[] table, N lock, long directIndex) {
+		WaitingOnNode<N> queue = new WaitingOnNode<N>(Thread.currentThread(), lock) ;
+		waitingOnLock.insert(queue) ;
+		while (getNodeVolatileDirect(table, directIndex) == lock)
+			LockSupport.park() ;
+		queue.remove() ;
 	}
 	
 	private static final class LockCache {
@@ -1006,8 +963,6 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 			this.locks = locks;
 		}
 	}
-	
-	private LockCache lockCache = new LockCache(new Thread[32], new LockNode[32]) ;
 	
 	private static <N extends ConcurrentHashNode<N>> N copyChain(N head, N tail) {
 		N r = head.copy() ;
