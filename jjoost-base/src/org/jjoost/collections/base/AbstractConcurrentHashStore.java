@@ -9,9 +9,8 @@ import org.jjoost.util.Functions ;
 import org.jjoost.util.Iters ;
 import org.jjoost.util.Rehasher ;
 import org.jjoost.util.Rehashers ;
-import org.jjoost.util.concurrent.ThreadQueue ;
-
-import sun.misc.Unsafe;
+import org.jjoost.util.concurrent.CommunalThreadQueue ;
+import org.jjoost.util.concurrent.ExclusiveThreadQueue;
 
 @SuppressWarnings({ "restriction", "unchecked" })
 public abstract class AbstractConcurrentHashStore<
@@ -19,15 +18,13 @@ public abstract class AbstractConcurrentHashStore<
 	T extends AbstractConcurrentHashStore.Table> implements HashStore<N> {
 
 	private static final long serialVersionUID = -1578733824843315344L ;
-	protected static final int REHASH_SEGMENT_SIZE = 128 ;
+	protected static final int REHASH_SEGMENT_SIZE = 256 ;
 	protected static final int REHASH_SEGMENT_SHIFT = Integer.bitCount(REHASH_SEGMENT_SIZE - 1) ;
 	
 	public enum Counting {
 		OFF, SAMPLED, PRECISE
 	}
 
-	protected static final Unsafe unsafe = getUnsafe();
-	
 	protected final WaitingOnNode<N> waitingOnDelete = new WaitingOnNode<N>(null, null) ;
 	protected final float loadFactor ;
 	protected final Counter totalCounter ;
@@ -118,7 +115,7 @@ public abstract class AbstractConcurrentHashStore<
 					final T resizingTable = newResizingTable((T) table, capacity) ;
 					setTable(resizingTable) ;
 					((BlockingTable<T>)tmp).wake(resizingTable) ;
-					((ResizingTable<T>)resizingTable).rehash(0, false, true, false) ;
+					((ResizingTable<T>)resizingTable).rehash(0, false) ;
 				}
         	} else if (table instanceof BlockingTable) {
         	} else {
@@ -148,7 +145,7 @@ public abstract class AbstractConcurrentHashStore<
 					final T growingTable = newResizingTable((T) table, table.length() << 1) ;
 					setTable(growingTable) ;
 					((BlockingTable<T>)tmp).wake(growingTable) ;
-					((ResizingTable<T>)growingTable).rehash(0, false, true, false) ;
+					((ResizingTable<T>)growingTable).rehash(0, false) ;
 				}
 			} else if (table instanceof BlockingTable) {
 				((BlockingTable<T>) table).waitForNext() ;
@@ -171,39 +168,39 @@ public abstract class AbstractConcurrentHashStore<
 		}
 		public abstract N copy() ; 
 		final boolean startRehashing(ConcurrentHashNode expect) {
-			return unsafe.compareAndSwapObject(this, nextPtrOffset, expect, BLOCKING_REHASH_IN_PROGRESS_FLAG) ;
+			return Unsafe.INST.compareAndSwapObject(this, nextPtrOffset, expect, BLOCKING_REHASH_IN_PROGRESS_FLAG) ;
 		}
 		final boolean startTwoStepDelete(ConcurrentHashNode expect) {
-			return unsafe.compareAndSwapObject(this, nextPtrOffset, expect, BLOCKING_DELETE_IN_PROGRESS_FLAG) ;
+			return Unsafe.INST.compareAndSwapObject(this, nextPtrOffset, expect, BLOCKING_DELETE_IN_PROGRESS_FLAG) ;
 		}
 		final void completeTwoStepDelete() {
-			unsafe.putObjectVolatile(this, nextPtrOffset, DELETED_FLAG) ;
+			Unsafe.INST.putObjectVolatile(this, nextPtrOffset, DELETED_FLAG) ;
 		}
 		final boolean performOneStepSafeDelete(ConcurrentHashNode expect) {
-			return unsafe.compareAndSwapObject(this, nextPtrOffset, expect, DELETED_FLAG) ;
+			return Unsafe.INST.compareAndSwapObject(this, nextPtrOffset, expect, DELETED_FLAG) ;
 		}
 		final void performOneStepForcedLazyDelete() {
-			unsafe.putOrderedObject(this, nextPtrOffset, DELETED_FLAG) ;
+			Unsafe.INST.putOrderedObject(this, nextPtrOffset, DELETED_FLAG) ;
 		}
 		final boolean casNext(ConcurrentHashNode expect, ConcurrentHashNode upd) {
-			return unsafe.compareAndSwapObject(this, nextPtrOffset, expect, upd) ;
+			return Unsafe.INST.compareAndSwapObject(this, nextPtrOffset, expect, upd) ;
 		}
 		final ConcurrentHashNode getNextStale() {
 			return nextPtr ;
 		}
 		final ConcurrentHashNode getNextFresh() {
-			return (N) unsafe.getObjectVolatile(this, nextPtrOffset) ;
+			return (N) Unsafe.INST.getObjectVolatile(this, nextPtrOffset) ;
 		}
 		final void lazySetNext(ConcurrentHashNode upd) {
-			unsafe.putOrderedObject(this, nextPtrOffset, upd) ;
+			Unsafe.INST.putOrderedObject(this, nextPtrOffset, upd) ;
 		}
 		final void volatileSetNext(ConcurrentHashNode upd) {
-			unsafe.putObjectVolatile(this, nextPtrOffset, upd) ;
+			Unsafe.INST.putObjectVolatile(this, nextPtrOffset, upd) ;
 		}
 		static {
 			try {
 				final Field field = ConcurrentHashNode.class.getDeclaredField("nextPtr") ;
-				nextPtrOffset = unsafe.objectFieldOffset(field) ;
+				nextPtrOffset = Unsafe.INST.objectFieldOffset(field) ;
 			} catch (Exception e) {
 				throw new UndeclaredThrowableException(e) ;
 			}
@@ -226,7 +223,7 @@ public abstract class AbstractConcurrentHashStore<
 		}
 	}
 	
-	protected static final FlagNode REHASHED_FLAG = new FlagNode("REHASHING") ;	
+	protected static final FlagNode REHASHED_FLAG = new FlagNode("REHASHED") ;	
 	protected static final FlagNode DELETED_FLAG = new FlagNode("DELETED") ;
 	protected static final FlagNode BLOCKING_REHASH_IN_PROGRESS_FLAG = new FlagNode("REHASHING") ;	
 	protected static final FlagNode BLOCKING_DELETE_IN_PROGRESS_FLAG = new FlagNode("DELETING") ;
@@ -268,10 +265,10 @@ public abstract class AbstractConcurrentHashStore<
 	}	
 	
 	protected static class BlockingTable<T extends Table> implements Table {
-		private final ThreadQueue waiting = new ThreadQueue(null) ;
+		private final CommunalThreadQueue waiting = new CommunalThreadQueue(null) ;
 		protected volatile T next = null ;
 		protected final void waitForNext() {
-			waiting.insert(new ThreadQueue(Thread.currentThread())) ;
+			waiting.insert(new CommunalThreadQueue(Thread.currentThread())) ;
 			while (next == null)
 				LockSupport.park() ;
 		}
@@ -301,9 +298,8 @@ public abstract class AbstractConcurrentHashStore<
 		protected final ConcurrentHashNode[] newTable ;
 		protected final int oldTableMask ;
 		protected final int newTableMask ;
-		protected final WaitingOnGrow waiting ;
-//		protected final AtomicInteger remainingSegments ;
 		protected int remainingSegments ;
+		protected final ExclusiveThreadQueue waitingForCompletion = new ExclusiveThreadQueue() ;
 		protected final int capacity ;
 		
 		public ResizingTable(AbstractConcurrentHashStore<?, T> store, RegularTable table, int newLength) {
@@ -312,26 +308,14 @@ public abstract class AbstractConcurrentHashStore<
 			this.oldTableMask = oldTable.length - 1 ;
 			this.newTable = new ConcurrentHashNode[newLength] ;
 			this.newTableMask = newTable.length - 1 ;
-			this.waiting = new WaitingOnGrow(null, -1) ;
 			this.capacity = (int)(newTable.length * store.loadFactor) ;
-			unsafe.putIntVolatile(this, remainingSegmentsOffset, Math.max(1, oldTable.length >>> REHASH_SEGMENT_SHIFT)) ;
-//			remainingSegments = new AtomicInteger(Math.max(1, oldTable.length >>> REHASH_SEGMENT_SHIFT)) ;
-		}
-		
-		protected final void waitOnIndexResize(int oldTableIndex) {
-			final WaitingOnGrow queue = new WaitingOnGrow(Thread.currentThread(), oldTableIndex) ;
-			waiting.insert(queue) ;
-			while (getNodeVolatile(oldTable, oldTableIndex) != REHASHED_FLAG)
-				LockSupport.park() ;
-			queue.remove() ;
+			Unsafe.INST.putIntVolatile(this, remainingSegmentsOffset, Math.max(1, oldTable.length >>> REHASH_SEGMENT_SHIFT)) ;
 		}
 		
 		protected final void waitOnTableResize() {
-			// small possibility somebody will get to here before the first grow() is called; this should only happen on small hash maps however
 			if (store.getTableFresh() != this)
 				return ;
-			final WaitingOnGrow queue = new WaitingOnGrow(Thread.currentThread(), -1) ;
-			waiting.insert(queue) ;
+			waitingForCompletion.amWaiting() ;
 			while (store.getTableFresh() == this)
 				LockSupport.park() ;
 		}
@@ -349,18 +333,18 @@ public abstract class AbstractConcurrentHashStore<
 			return false ;
 		}
 
-		protected abstract void rehash(int from, boolean needThisIndex, boolean initiator, boolean tryAll) ;
+		protected abstract void rehash(int from, boolean needThisIndex) ;
 		
 		protected final void finishSegment() {
 			int remaining = remainingSegments ;
 			while (true) {
-				if (unsafe.compareAndSwapInt(this, remainingSegmentsOffset, remaining, remaining - 1))
+				if (Unsafe.INST.compareAndSwapInt(this, remainingSegmentsOffset, remaining, remaining - 1))
 					break ;
-				remaining = unsafe.getIntVolatile(this, remainingSegmentsOffset) ;
+				remaining = Unsafe.INST.getIntVolatile(this, remainingSegmentsOffset) ;
 			}
 			if (remaining == 1) {
 				store.casTable(this, store.newRegularTable(newTable, capacity)) ;
-				waiting.wakeAll() ;
+				waitingForCompletion.wakeAll() ;
 			}
 		}
 		
@@ -368,7 +352,7 @@ public abstract class AbstractConcurrentHashStore<
 		static {
 			try {
 				final Field field = ResizingTable.class.getDeclaredField("remainingSegments") ;
-				remainingSegmentsOffset = unsafe.objectFieldOffset(field) ;
+				remainingSegmentsOffset = Unsafe.INST.objectFieldOffset(field) ;
 			} catch (Exception e) {
 				throw new UndeclaredThrowableException(e) ;
 			}
@@ -382,27 +366,27 @@ public abstract class AbstractConcurrentHashStore<
 	// THREAD WAITING UTILITIES
 	// ********************************************
 	
-	protected static final class WaitingOnGrow extends ThreadQueue<WaitingOnGrow> {
-		private final int oldTableIndex ;
-		public WaitingOnGrow(Thread thread, int oldTableIndex) {
-			super(thread) ;
-			this.oldTableIndex = oldTableIndex;
-		}
-		void wake(int tableIndex) {
-			WaitingOnGrow next = this.next ;
-			while (next != null) {
-				if (tableIndex == next.oldTableIndex) {
-					final WaitingOnGrow prev = next ;
-					next = next.next ;
-					prev.wake() ;
-				} else {
-					next = next.next ;
-				}
-			}
-		} 
-	}
-	
-	protected static final class WaitingOnNode<N> extends ThreadQueue<WaitingOnNode<N>> {
+//	protected static final class WaitingOnGrow extends CommunalThreadQueue<WaitingOnGrow> {
+//		private final int oldTableIndex ;
+//		public WaitingOnGrow(Thread thread, int oldTableIndex) {
+//			super(thread) ;
+//			this.oldTableIndex = oldTableIndex;
+//		}
+//		void wake(int tableIndex) {
+//			WaitingOnGrow next = this.next ;
+//			while (next != null) {
+//				if (tableIndex == next.oldTableIndex) {
+//					final WaitingOnGrow prev = next ;
+//					next = next.next ;
+//					prev.wake() ;
+//				} else {
+//					next = next.next ;
+//				}
+//			}
+//		} 
+//	}
+//	
+	protected static final class WaitingOnNode<N> extends CommunalThreadQueue<WaitingOnNode<N>> {
 		private final N node ;
 		public WaitingOnNode(Thread thread, N node) {
 			super(thread) ;
@@ -439,28 +423,28 @@ public abstract class AbstractConcurrentHashStore<
 		private int count = 0 ;
 		private static final long countOffset ;
 		public int getSafe() {
-			return unsafe.getIntVolatile(this, countOffset) ;
+			return Unsafe.INST.getIntVolatile(this, countOffset) ;
 		}
 		public int getUnsafe() {
 			return count ;
 		}
 		public void increment(int hash) {
 			{	final int count = this.count ;
-				if (unsafe.compareAndSwapInt(this, countOffset, count, count + 1))
+				if (Unsafe.INST.compareAndSwapInt(this, countOffset, count, count + 1))
 					return ;	}
 			while (true) {
-				final int count = unsafe.getIntVolatile(this, countOffset) ;
-				if (unsafe.compareAndSwapInt(this, countOffset, count, count + 1))
+				final int count = Unsafe.INST.getIntVolatile(this, countOffset) ;
+				if (Unsafe.INST.compareAndSwapInt(this, countOffset, count, count + 1))
 					return ;
 			}
 		}
 		public void decrement(int hash) {
 			{	final int count = this.count ;
-				if (unsafe.compareAndSwapInt(this, countOffset, count, count - 1))
+				if (Unsafe.INST.compareAndSwapInt(this, countOffset, count, count - 1))
 					return ;	 }
 			while (true) {
-				final int count = unsafe.getIntVolatile(this, countOffset) ;
-				if (unsafe.compareAndSwapInt(this, countOffset, count, count - 1))
+				final int count = Unsafe.INST.getIntVolatile(this, countOffset) ;
+				if (Unsafe.INST.compareAndSwapInt(this, countOffset, count, count - 1))
 					return ;
 			}
 		}
@@ -468,7 +452,7 @@ public abstract class AbstractConcurrentHashStore<
 		static {
 			try {
 				final Field field = PreciseCounter.class.getDeclaredField("count") ;
-				countOffset = unsafe.objectFieldOffset(field) ;
+				countOffset = Unsafe.INST.objectFieldOffset(field) ;
 			} catch (Exception e) {
 				throw new UndeclaredThrowableException(e) ;
 			}
@@ -485,7 +469,7 @@ public abstract class AbstractConcurrentHashStore<
 		private int count = 0 ;
 		private static final long countOffset ;
 		public final int getSafe() {
-			return unsafe.getIntVolatile(this, countOffset) << 4 ;
+			return Unsafe.INST.getIntVolatile(this, countOffset) << 4 ;
 		}
 		public final int getUnsafe() {
 			return count << 4 ;
@@ -495,12 +479,12 @@ public abstract class AbstractConcurrentHashStore<
 				return ;
 			{
 				final int count = this.count ;
-				if (unsafe.compareAndSwapInt(this, countOffset, count, count + 1))
+				if (Unsafe.INST.compareAndSwapInt(this, countOffset, count, count + 1))
 					return ;
 			}
 			while (true) {
-				final int count = unsafe.getIntVolatile(this, countOffset) ;
-				if (unsafe.compareAndSwapInt(this, countOffset, count, count + 1))
+				final int count = Unsafe.INST.getIntVolatile(this, countOffset) ;
+				if (Unsafe.INST.compareAndSwapInt(this, countOffset, count, count + 1))
 					return ;
 			}
 		}
@@ -509,12 +493,12 @@ public abstract class AbstractConcurrentHashStore<
 				return ;
 			{
 				final int count = this.count ;
-				if (unsafe.compareAndSwapInt(this, countOffset, count, count - 1))
+				if (Unsafe.INST.compareAndSwapInt(this, countOffset, count, count - 1))
 					return ;
 			}
 			while (true) {
-				final int count = unsafe.getIntVolatile(this, countOffset) ;
-				if (unsafe.compareAndSwapInt(this, countOffset, count, count - 1))
+				final int count = Unsafe.INST.getIntVolatile(this, countOffset) ;
+				if (Unsafe.INST.compareAndSwapInt(this, countOffset, count, count - 1))
 					return ;
 			}
 		}
@@ -529,7 +513,7 @@ public abstract class AbstractConcurrentHashStore<
 		static {
 			try {
 				final Field field = SampledCounter.class.getDeclaredField("count") ;
-				countOffset = unsafe.objectFieldOffset(field) ;
+				countOffset = Unsafe.INST.objectFieldOffset(field) ;
 			} catch (Exception e) {
 				throw new UndeclaredThrowableException(e) ;
 			}
@@ -552,45 +536,27 @@ public abstract class AbstractConcurrentHashStore<
 	// *************************************
 	
 	private static final long tablePtrOffset ;
-    private static final long nodeArrayIndexBaseOffset = unsafe.arrayBaseOffset(ConcurrentHashNode[].class);
-    private static final long nodeArrayIndexScale = unsafe.arrayIndexScale(ConcurrentHashNode[].class);
+    private static final long nodeArrayIndexBaseOffset = Unsafe.INST.arrayBaseOffset(ConcurrentHashNode[].class);
+    private static final long nodeArrayIndexScale = Unsafe.INST.arrayIndexScale(ConcurrentHashNode[].class);
 	static {
 		try {
 			final Field field = AbstractConcurrentHashStore.class.getDeclaredField("tablePtr") ;
-			tablePtrOffset = unsafe.objectFieldOffset(field) ;
+			tablePtrOffset = Unsafe.INST.objectFieldOffset(field) ;
 		} catch (Exception e) {
 			throw new UndeclaredThrowableException(e) ;
 		}
-	}
-	
-	private static Unsafe getUnsafe() {
-		Unsafe unsafe = null ;
-		try {
-			Class<?> uc = Unsafe.class;
-			Field[] fields = uc.getDeclaredFields();
-			for (int i = 0; i < fields.length; i++) {
-				if (fields[i].getName().equals("theUnsafe")) {
-					fields[i].setAccessible(true);
-					unsafe = (Unsafe) fields[i].get(uc);
-					break;
-				}
-			}
-		} catch (Exception e) {
-			throw new UndeclaredThrowableException(e) ;
-		}
-		return unsafe;
 	}
 	
 	final boolean casTable(Table expect, T update) {
-		return unsafe.compareAndSwapObject(this, tablePtrOffset, expect, update) ;
+		return Unsafe.INST.compareAndSwapObject(this, tablePtrOffset, expect, update) ;
 	}
 
 	final void setTable(T update) {
-		unsafe.putObjectVolatile(this, tablePtrOffset, update) ;
+		Unsafe.INST.putObjectVolatile(this, tablePtrOffset, update) ;
 	}
 	
 	final T getTableFresh() {
-		return (T) unsafe.getObjectVolatile(this, tablePtrOffset) ;
+		return (T) Unsafe.INST.getObjectVolatile(this, tablePtrOffset) ;
 	}
 	
 	final T getTableStale() {
@@ -598,25 +564,25 @@ public abstract class AbstractConcurrentHashStore<
 	}
 	
 	static final boolean casNodeArrayDirect(final ConcurrentHashNode[] arr, final long i, final ConcurrentHashNode expect, final ConcurrentHashNode upd) {
-		return unsafe.compareAndSwapObject(arr, i, expect, upd) ;
+		return Unsafe.INST.compareAndSwapObject(arr, i, expect, upd) ;
 	}	
 	static final boolean casNodeArray(final ConcurrentHashNode[] arr, final int i, final ConcurrentHashNode expect, final ConcurrentHashNode upd) {
-		return unsafe.compareAndSwapObject(arr, nodeArrayIndexBaseOffset + (nodeArrayIndexScale * i), expect, upd) ;
+		return Unsafe.INST.compareAndSwapObject(arr, nodeArrayIndexBaseOffset + (nodeArrayIndexScale * i), expect, upd) ;
 	}	
 	static final void lazySetNodeArray(final ConcurrentHashNode[] arr, final int i, final ConcurrentHashNode upd) {
-		unsafe.putOrderedObject(arr, nodeArrayIndexBaseOffset + (nodeArrayIndexScale * i), upd) ;
+		Unsafe.INST.putOrderedObject(arr, nodeArrayIndexBaseOffset + (nodeArrayIndexScale * i), upd) ;
 	}
 	static final void volatileSetNodeArray(final ConcurrentHashNode[] arr, final int i, final ConcurrentHashNode upd) {
-		unsafe.putObjectVolatile(arr, nodeArrayIndexBaseOffset + (nodeArrayIndexScale * i), upd) ;
+		Unsafe.INST.putObjectVolatile(arr, nodeArrayIndexBaseOffset + (nodeArrayIndexScale * i), upd) ;
 	}
 	static final long directNodeArrayIndex(final int i) {
 		return nodeArrayIndexBaseOffset + (nodeArrayIndexScale * i) ;
 	}
 	static final ConcurrentHashNode getNodeVolatileDirect(final ConcurrentHashNode[] arr, final long i) {
-		return (ConcurrentHashNode) unsafe.getObjectVolatile(arr, i) ;
+		return (ConcurrentHashNode) Unsafe.INST.getObjectVolatile(arr, i) ;
 	}
 	static final ConcurrentHashNode getNodeVolatile(final ConcurrentHashNode[] arr, final int i) {
-		return (ConcurrentHashNode) unsafe.getObjectVolatile(arr, nodeArrayIndexBaseOffset + (nodeArrayIndexScale * i)) ;
+		return (ConcurrentHashNode) Unsafe.INST.getObjectVolatile(arr, nodeArrayIndexBaseOffset + (nodeArrayIndexScale * i)) ;
 	}
 
 	public static Rehasher defaultRehasher() {

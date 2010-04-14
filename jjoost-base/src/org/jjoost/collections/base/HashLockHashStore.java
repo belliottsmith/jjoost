@@ -10,14 +10,13 @@ import org.jjoost.collections.base.AbstractConcurrentHashStore.ConcurrentHashNod
 import org.jjoost.collections.lists.UniformList;
 import org.jjoost.util.Equality ;
 import org.jjoost.util.Function ;
+import org.jjoost.util.concurrent.ExclusiveThreadQueue;
 
 @SuppressWarnings("unchecked")
 public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends AbstractConcurrentHashStore<N, HashLockHashStore.Table<N>> {
 
 	private static final long serialVersionUID = -369208509152951474L;
 
-	private final WaitingOnNode<ConcurrentHashNode> waitingOnLock = new WaitingOnNode<ConcurrentHashNode>(null, null) ;
-//	private LockCache lockCache = new LockCache() ;
 	private static ThreadLocal<LockNode> lockCache = new ThreadLocal<LockNode>() ;
 
 	public HashLockHashStore(int initialCapacity, float loadFactor, Counting totalCounting, Counting uniquePrefixCounting) {
@@ -603,12 +602,19 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 	
 	private static final class LockNode<N extends ConcurrentHashNode<N>> extends ConcurrentHashNode<N> {
 		private static final long serialVersionUID = 1L;
+		final ExclusiveThreadQueue waiting = new ExclusiveThreadQueue() ;
 		public LockNode(int hash) {
 			super(hash);
 		}
 		@Override
 		public N copy() {
 			throw new UnsupportedOperationException() ;
+		}
+		void startWaiting() {
+			waiting.amWaiting() ;
+		}
+		void wakeAll() {
+			waiting.wakeAll() ;
 		}
 	}
 
@@ -671,17 +677,19 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 			final int index = hash & mask ;
 			final long directIndex = directNodeArrayIndex(index) ;			
 			ConcurrentHashNode lock = null ;
+			ConcurrentHashNode head = table[index] ;
 			while (true) {
-				final ConcurrentHashNode head = getNodeVolatileDirect(table, directIndex) ;
 				if (head == null) {
 					if (casNodeArrayDirect(table, directIndex, null, node))
 						return null ;
+					head = getNodeVolatileDirect(table, directIndex) ;
 					continue ;
 				}
 				if (head == REHASHED_FLAG)
 					return (N) REHASHED_FLAG ;
 				if (head instanceof LockNode) {
 					waitOnLock(table, head, directIndex) ;
+					head = getNodeVolatileDirect(table, directIndex) ;
 					continue ;
 				}
 				if (lock == null)
@@ -689,6 +697,7 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 				lock.lazySetNext(head) ;
 				if (casNodeArrayDirect(table, directIndex, head, lock))
 					return lock ;
+				head = getNodeVolatileDirect(table, directIndex) ;
 			}
 		}
 		
@@ -716,7 +725,7 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 		@Override
 		public final void unlock(int hash, ConcurrentHashNode lock) {
 			volatileSetNodeArray(table, hash & mask, lock.getNextStale()) ;
-			waitingOnLock.wake(lock) ;
+			((LockNode) lock).wakeAll() ;
 		}
 
 	}
@@ -782,6 +791,15 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 		}
 	}	
 	
+//	private static final class ResizingLock {
+//		private final LockNode lock ;
+//		private volatile int bucket ;
+//		public ResizingLock(LockNode lock, int bucket) {
+//			this.lock = lock;
+//			this.bucket = bucket;
+//		}
+//	}
+//	
 	private abstract class ResizingTable extends AbstractConcurrentHashStore.ResizingTable<Table<N>> implements Table<N> {
 
 		public ResizingTable(AbstractConcurrentHashStore<N, Table<N>> store,
@@ -791,34 +809,59 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 
 		protected abstract void doBucket(ConcurrentHashNode lock, int oldTableIndex) ;
 		
-		// TODO : remove "initiator"
-		public final void rehash(int from, boolean needThisIndex, boolean initiator, boolean tryAll) {
-			boolean returnImmediatelyIfAlreadyHashing = !needThisIndex ;
+		public final void rehash(int from, boolean needThisIndex) {
 			final int needIndex = needThisIndex ? from : -1 ;
 			from = from & ~(REHASH_SEGMENT_SIZE - 1) ;
-			ConcurrentHashNode lock = null ;
-			while (from != oldTable.length) {
+			LockNode lock = null ;
+			int c = 0 ;
+			while (c < oldTableMask) {
 				lock = startSegment(lock, from) ;
 				if (lock == null) {
-					if (!returnImmediatelyIfAlreadyHashing)
-						waitOnIndexResize(needIndex) ;
-					break ;
-				}
-				for (int i = from ; i != oldTable.length & (i != from + REHASH_SEGMENT_SIZE) ; i++) {
-					if (i == from || startBucket(lock, i)) {
-						doBucket(lock, i) ;
-						lazySetNodeArray(oldTable, i, REHASHED_FLAG) ;
-						waitingOnLock.wake(lock) ;
+					if (needIndex < 0 || oldTable[needIndex] == REHASHED_FLAG)
+						return ;
+				} else {
+					final int maxi = Math.min(oldTable.length, from + REHASH_SEGMENT_SIZE) ;
+					for (int i = from ; i != maxi ; i++) {
+						if (i == from || startBucket(lock, i)) {
+							doBucket(lock, i) ;
+							lazySetNodeArray(oldTable, i, REHASHED_FLAG) ;
+						}
 					}
-					waiting.wake(i) ;
+					lock.wakeAll() ;
+					finishSegment() ;
 				}
-				finishSegment() ;
-				from += REHASH_SEGMENT_SIZE ;
-				returnImmediatelyIfAlreadyHashing = true ;
+				c = c + REHASH_SEGMENT_SIZE ;
+				from = (from + REHASH_SEGMENT_SIZE) & oldTableMask ;
 			}
+			if (needIndex >= 0 && oldTable[needIndex] != REHASHED_FLAG)
+				waitOnTableResize() ;
 		}
 		
-		protected final ConcurrentHashNode startSegment(ConcurrentHashNode lock, int oldTableIndex) {
+//		protected final void waitOnIndexResize(int oldTableIndex) {
+//			if (oldTable[oldTableIndex] == REHASHED_FLAG)
+//				return ;
+//			final int waitingFor = oldTableIndex & ~(REHASH_SEGMENT_SIZE - 1) ;
+//			while (true) {
+//				LockNode lock = null ;
+//				for (ResizingLock test : resizingLocks) {
+//					if (test == null)
+//						break ;
+//					if (test.bucket == waitingFor) {
+//						lock = test.lock ;
+//						break ;
+//					}
+//				}
+//				if (oldTable[oldTableIndex] == REHASHED_FLAG)
+//					return ;
+//				if (lock == null)
+//					continue ;
+//				lock.startWaiting() ;
+//				while (oldTable[oldTableIndex] != REHASHED_FLAG)
+//					LockSupport.park() ;
+//			}
+//		}
+//		
+		protected final LockNode startSegment(LockNode lock, int oldTableIndex) {
 			ConcurrentHashNode cur ;
 			final long directOldTableIndex = directNodeArrayIndex(oldTableIndex) ;
 			while (true) {
@@ -837,6 +880,32 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 			}
 		}
 		
+//		protected final ResizingLock startSegment(ResizingLock resizingLock, int oldTableIndex) {
+//			LockNode lock = resizingLock == null ? null : resizingLock.lock ;
+//			ConcurrentHashNode cur ;
+//			final long directOldTableIndex = directNodeArrayIndex(oldTableIndex) ;
+//			while (true) {
+//				cur = getNodeVolatileDirect(oldTable, directOldTableIndex) ;
+//				if (cur instanceof LockNode) {
+//					waitOnLock(oldTable, cur, directOldTableIndex) ;
+//					continue ;
+//				}
+//				if (cur == REHASHED_FLAG) {
+//					if (resizingLock != null) {
+//					}
+//					return null ;
+//				}
+//				if (resizingLock == null) {
+//					lock = lockNode() ;
+//					resizingLock = new ResizingLock(lock, oldTableIndex) ;
+//				}
+//				lock.lazySetNext(cur) ;
+//				if (casNodeArrayDirect(oldTable, directOldTableIndex, cur, lock))
+//					return resizingLock ;
+//			}
+//		}
+//		
+		// returns a boolean indicating if work needs to be done
 		protected final boolean startBucket(ConcurrentHashNode lock, int oldTableIndex) {
 			ConcurrentHashNode cur ;
 			final long directOldTableIndex = directNodeArrayIndex(oldTableIndex) ;
@@ -863,7 +932,7 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 		public final ConcurrentHashNode lock(int hash) {
 			final int oldTableIndex = hash & oldTableMask ;
 			if (oldTable[oldTableIndex] != REHASHED_FLAG)
-				rehash(oldTableIndex, true, false, true) ;			
+				rehash(oldTableIndex, true) ;			
 			return lockInternal(directNodeArrayIndex(hash & newTableMask)) ;
 		}
 
@@ -887,7 +956,7 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 		public final ConcurrentHashNode insertOrLock(int hash, N node) {
 			final int oldTableIndex = hash & oldTableMask ;
 			if (oldTable[oldTableIndex] != REHASHED_FLAG)
-				rehash(oldTableIndex, true, false, true) ;			
+				rehash(oldTableIndex, true) ;			
 			final int newTableIndex = hash & newTableMask ;
 			final long newTableIndexDirect = directNodeArrayIndex(hash & newTableMask) ;
 			if (newTable[newTableIndex] == null && casNodeArrayDirect(newTable, newTableIndexDirect, null, node))
@@ -900,7 +969,7 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 				HashNodeEquality<? super NCmp, ? super N> eq, NCmp find) {
 			final int oldTableIndex = hash & oldTableMask ;
 			if (oldTable[oldTableIndex] != REHASHED_FLAG)
-				rehash(oldTableIndex, true, false, true) ;			
+				rehash(oldTableIndex, true) ;			
 			final long newTableIndexDirect = directNodeArrayIndex(hash & newTableMask) ;
 			return lockInternal(newTableIndexDirect) ;
 		}
@@ -946,7 +1015,7 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 		@Override
 		public final void unlock(int hash, ConcurrentHashNode lock) {
 			volatileSetNodeArray(newTable, hash & newTableMask, lock.getNextStale()) ;
-			waitingOnLock.wake(lock) ;
+			((LockNode)lock).wakeAll() ;
 		}
 		
 	}
@@ -961,11 +1030,9 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 	}
 	
 	private void waitOnLock(ConcurrentHashNode[] table, ConcurrentHashNode lock, long directIndex) {
-		WaitingOnNode<ConcurrentHashNode> queue = new WaitingOnNode<ConcurrentHashNode>(Thread.currentThread(), lock) ;
-		waitingOnLock.insert(queue) ;
+		((LockNode) lock).startWaiting() ;
 		while (getNodeVolatileDirect(table, directIndex) == lock)
 			LockSupport.park() ;
-		queue.remove() ;
 	}
 	
 	private static ConcurrentHashNode copyChain(ConcurrentHashNode head, ConcurrentHashNode tail) {
