@@ -138,7 +138,7 @@ public abstract class AbstractHashStoreBasedMultiCollectionTest extends Abstract
 		put("a") ;
 		put("q") ;
 		// also perform removes just to test the no-op remove() on this Iterator
-		checkIteratorContents(Arrays.asList(null, "a", "a", "q").iterator(), Iters.destroyAsConsumed(clearAndReturn()), true) ;
+		checkIteratorContents(Arrays.asList(null, "a", "a", "q").iterator(), clearAndReturn(), true) ;
 		checkAndClear(0) ;
 	}
 	

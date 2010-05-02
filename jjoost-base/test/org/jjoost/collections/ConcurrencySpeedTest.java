@@ -13,6 +13,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
+import org.jjoost.collections.maps.concurrent.HashLockHashMap;
 import org.jjoost.collections.maps.concurrent.LockFreeHashMap ;
 
 public class ConcurrencySpeedTest {
@@ -72,9 +73,10 @@ public class ConcurrencySpeedTest {
 		exec = new ExecutorCompletionService<String>(internal) ;
 		double sum = 0 ;
 		double sumsq = 0 ;
-		final int c = 100 ;
+		final int c = 10 ;
 		for (int i = 0 ; i != c ; i++) {
-			final long len = doJDK(exec, i, 1000000, 5, 1000000, 4096, 10f) ;
+//			final long len = doJDK(exec, i, 1000000, 10, 1000, 4096, 0.75f) ;
+			final long len = doJjoost(exec, i, 1000000, 10, 1000, 0.5f) ;
 			sum += len ;
 			sumsq += (len * len) ;
 		}
@@ -85,7 +87,8 @@ public class ConcurrencySpeedTest {
 
 	public static long doJjoost(ExecutorCompletionService<String> exec, final int run, final int itemCount, final int threadCount, final int bucketCount, final float loadFactor) throws InterruptedException, ExecutionException {
 		final long start = System.currentTimeMillis() ;
-		final LockFreeHashMap<Long, Long> map = new LockFreeHashMap<Long, Long>(bucketCount, loadFactor) ;
+		final HashLockHashMap<Long, Long> map = new HashLockHashMap<Long, Long>(bucketCount, loadFactor) ;
+//		final LockFreeHashMap<Long, Long> map = new LockFreeHashMap<Long, Long>(bucketCount, loadFactor) ;
 		final List<Future<String>> results = new ArrayList<Future<String>>() ;
 		final AtomicIntegerArray putLimit = new AtomicIntegerArray(threadCount) ;
 		for (int i = 0 ; i != threadCount ; i++) {

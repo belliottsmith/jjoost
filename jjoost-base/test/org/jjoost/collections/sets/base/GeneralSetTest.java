@@ -10,9 +10,7 @@ import org.jjoost.util.Iters ;
 public abstract class GeneralSetTest extends AbstractTest {
 	
 	protected final Set<String> set = getSet() ;
-	/**
-	 * @return a hash set using Rehashers.identity() and Equalities.object(), with a table size of 16
-	 */
+
 	protected abstract Set<String> getSet() ;
 	protected abstract String put(String v) ;
 	protected abstract boolean add(String v) ;

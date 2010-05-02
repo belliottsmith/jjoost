@@ -1,3 +1,25 @@
+/**
+ * Copyright (c) 2010 Benedict Elliott Smith
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package org.jjoost.collections.base;
 
 import java.io.Serializable ;
@@ -22,7 +44,7 @@ import org.jjoost.util.Functions ;
 import org.jjoost.util.Iters ;
 import org.jjoost.util.Rehasher ;
 import org.jjoost.util.Rehashers ;
-import org.jjoost.util.concurrent.ThreadQueue ;
+import org.jjoost.util.concurrent.CommunalThreadQueue ;
 
 import sun.misc.Unsafe;
 
@@ -1960,7 +1982,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	}
 	
 	private static final FlagNode REHASHING_FLAG = new FlagNode("REHASHING") ;	
-	private static final FlagNode REHASHED_FLAG = new FlagNode("REHASHING") ;	
+	private static final FlagNode REHASHED_FLAG = new FlagNode("REHASHED") ;	
 	private static final FlagNode DELETED_FLAG = new FlagNode("DELETED") ;
 	private static final FlagNode DELETING_FLAG = new FlagNode("DELETING") ;
 	
@@ -2028,10 +2050,10 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	
 	@SuppressWarnings("unchecked")
 	private static final class BlockingTable<N extends LockFreeHashNode<N>> implements Table<N> {
-		private final ThreadQueue waiting = new ThreadQueue(null) ;
+		private final CommunalThreadQueue waiting = new CommunalThreadQueue(null) ;
 		private volatile Table<N> next = null ;
 		void waitForNext() {
-			waiting.insert(new ThreadQueue(Thread.currentThread())) ;
+			waiting.insert(new CommunalThreadQueue(Thread.currentThread())) ;
 			while (next == null)
 				LockSupport.park() ;
 		}
@@ -2186,26 +2208,25 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			final long directOldTableIndex = directNodeArrayIndex(oldTableIndex) ;
 			while (true) {
 				cur = getNodeVolatileDirect(oldTable, directOldTableIndex) ;
-				final boolean success = casNodeArrayDirect(oldTable, directOldTableIndex, cur, REHASHING_FLAG) ;
-				if (cur == REHASHING_FLAG) {
+				if (cur == REHASHING_FLAG | cur == REHASHED_FLAG) {
 					if (!returnImmediatelyIfAlreadyRehashing)
 						waitForIndex(oldTableIndex) ;
 					return null ;
-				} 
-				if (success) {
+				}
+				if (casNodeArrayDirect(oldTable, directOldTableIndex, cur, REHASHING_FLAG)) {
 					if (cur == null)
 						return (N) REHASHING_FLAG ; 
 					return cur ;
 				}
 			}
 		}
+		abstract void doBucket(N head, int oldTableIndex) ;
 		@SuppressWarnings("unchecked")
 		void finishBucket(int oldTableIndex) {
 			lazySetNodeArray(oldTable, oldTableIndex, REHASHED_FLAG) ;
 			// wake up waiters
 			waiting.wake(oldTableIndex) ;
 		}
-		abstract void doBucket(N head, int oldTableIndex) ;
 		@Override
 		public int maxCapacity() {
 			return capacity ;
@@ -2233,7 +2254,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			boolean doGetNextSafely = false ;
 			while (cur != null) {
 				final N next = (doGetNextSafely ? cur.getNextFresh() : cur.getNextStale()) ;
-				if (next == DELETING_FLAG) {
+				if (next == DELETING_FLAG | next == DELETED_FLAG) {
 					// cur cannot be actually deleted as CAS operations to the head will fail, and we have set prev's next to RETRY_FLAG,
 					// as such the delete will be aborted by the deleting thread at which point we can continue; however add ourselves to the
 					// waiting queue so as to not spin wastefully
@@ -2408,7 +2429,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 		}
 	}
 
-	private static final class WaitingOnGrow extends ThreadQueue<WaitingOnGrow> {
+	private static final class WaitingOnGrow extends CommunalThreadQueue<WaitingOnGrow> {
 		private final int oldTableIndex ;
 		public WaitingOnGrow(Thread thread, int oldTableIndex) {
 			super(thread) ;
@@ -2428,7 +2449,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 		} 
 	}
 	
-	protected static final class WaitingOnNode<N> extends ThreadQueue<WaitingOnNode<N>> {
+	protected static final class WaitingOnNode<N> extends CommunalThreadQueue<WaitingOnNode<N>> {
 		private final N node ;
 		public WaitingOnNode(Thread thread, N node) {
 			super(thread) ;

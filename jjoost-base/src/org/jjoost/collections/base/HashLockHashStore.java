@@ -616,6 +616,9 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 		void wakeAll() {
 			waiting.wakeAll() ;
 		}
+		void wakeAllQuick() {
+			waiting.wakeAllQuick() ;
+		}
 	}
 
 	private final class RegularTable extends AbstractConcurrentHashStore.RegularTable implements Table<N> {
@@ -825,6 +828,7 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 						if (i == from || startBucket(lock, i)) {
 							doBucket(lock, i) ;
 							lazySetNodeArray(oldTable, i, REHASHED_FLAG) ;
+							lock.wakeAllQuick() ;
 						}
 					}
 					lock.wakeAll() ;
@@ -837,30 +841,6 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 				waitOnTableResize() ;
 		}
 		
-//		protected final void waitOnIndexResize(int oldTableIndex) {
-//			if (oldTable[oldTableIndex] == REHASHED_FLAG)
-//				return ;
-//			final int waitingFor = oldTableIndex & ~(REHASH_SEGMENT_SIZE - 1) ;
-//			while (true) {
-//				LockNode lock = null ;
-//				for (ResizingLock test : resizingLocks) {
-//					if (test == null)
-//						break ;
-//					if (test.bucket == waitingFor) {
-//						lock = test.lock ;
-//						break ;
-//					}
-//				}
-//				if (oldTable[oldTableIndex] == REHASHED_FLAG)
-//					return ;
-//				if (lock == null)
-//					continue ;
-//				lock.startWaiting() ;
-//				while (oldTable[oldTableIndex] != REHASHED_FLAG)
-//					LockSupport.park() ;
-//			}
-//		}
-//		
 		protected final LockNode startSegment(LockNode lock, int oldTableIndex) {
 			ConcurrentHashNode cur ;
 			final long directOldTableIndex = directNodeArrayIndex(oldTableIndex) ;
@@ -880,31 +860,6 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 			}
 		}
 		
-//		protected final ResizingLock startSegment(ResizingLock resizingLock, int oldTableIndex) {
-//			LockNode lock = resizingLock == null ? null : resizingLock.lock ;
-//			ConcurrentHashNode cur ;
-//			final long directOldTableIndex = directNodeArrayIndex(oldTableIndex) ;
-//			while (true) {
-//				cur = getNodeVolatileDirect(oldTable, directOldTableIndex) ;
-//				if (cur instanceof LockNode) {
-//					waitOnLock(oldTable, cur, directOldTableIndex) ;
-//					continue ;
-//				}
-//				if (cur == REHASHED_FLAG) {
-//					if (resizingLock != null) {
-//					}
-//					return null ;
-//				}
-//				if (resizingLock == null) {
-//					lock = lockNode() ;
-//					resizingLock = new ResizingLock(lock, oldTableIndex) ;
-//				}
-//				lock.lazySetNext(cur) ;
-//				if (casNodeArrayDirect(oldTable, directOldTableIndex, cur, lock))
-//					return resizingLock ;
-//			}
-//		}
-//		
 		// returns a boolean indicating if work needs to be done
 		protected final boolean startBucket(ConcurrentHashNode lock, int oldTableIndex) {
 			ConcurrentHashNode cur ;
