@@ -22,7 +22,6 @@
 
 package org.jjoost.collections;
 
-import java.util.Map.Entry ;
 
 import org.jjoost.util.Factory;
 import org.jjoost.util.Function;
@@ -32,7 +31,7 @@ import org.jjoost.util.Function;
  * 
  * @author b.elliottsmith
  */
-public interface Map<K, V> extends AnyMap<K, V>, Function<K, V> {
+public interface Map<K, V> extends ReadMap<K, V>, AnyMap<K, V> {
 
 	/**
 	 * Ensures that the provided key binds to the provided value, removing and
@@ -108,40 +107,10 @@ public interface Map<K, V> extends AnyMap<K, V>, Function<K, V> {
 	 */
 	public V ensureAndGet(K key, Function<? super K, ? extends V> putIfNotPresent) ;
 	
-	/**
-	 * A convenience method, equivalent to first(key)
-	 * 
-	 * @param key the key
-	 * 
-	 * @return the value associated with the key, or null if none
-	 */
-	public V get(K key) ;
-
-	/**
-	 * A convenience method, equivalent to both <code>totalCount()</code> and <code>uniqueKeyCount()</code>
-	 * 
-	 * @return the int
-	 */
-	public int size() ;
-	
-	/* (non-Javadoc)
-	 * @see org.jjoost.collections.AnyMap#values(java.lang.Object)
-	 */
-	@Override public UnitarySet<V> values(K key) ;
 
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyMap#copy()
 	 */
-	@Override public Map<K, V> copy() ;
-	
-	/* (non-Javadoc)
-	 * @see org.jjoost.collections.AnyMap#entries()
-	 */
-	@Override public Set<Entry<K, V>> entries() ;
-	
-	/* (non-Javadoc)
-	 * @see org.jjoost.collections.AnyMap#keys()
-	 */
-	@Override public Set<K> keys() ;
+	public abstract Map<K, V> copy();
 	
 }

@@ -32,29 +32,36 @@ package org.jjoost.collections;
  * 
  * @author b.elliottsmith
  */
-public interface Set<V> extends AnySet<V>, ReadSet<V> {
+public interface ReadSet<V> extends AnyReadSet<V> {
 
 	/**
-	 * Insert the parameter into the set, removing and returning any value equal to the parameter that was already present, as determined by
-	 * the set's definition of equality.
+	 * Returns the value stored in the set that is equal to the provided value, as determined by any provided <code>Equality</code> or
+	 * <code>Comparator</code>. Returns null if no matching item is stored in the set. Equivalent to <code>first(key)</code>
 	 * 
-	 * @param value
-	 *            value to insert
-	 * @return value that was evicted from the set as a result of the action
+	 * @param find
+	 *            value to find
+	 * @return first matching value
 	 */
-	@Override public V put(V value) ;
+	public V get(V find) ;
+
+	/**
+	 * A convenience method returning the size of the set; this is equivalent to
+	 * <code>totalCount()</code> or <code>uniqueCount()</code> 
+	 * @return size of the set
+	 */
+	public int size() ;
 	
 	/**
 	 * Returns a copy of the set. This method may or may not return a set of the same class as the one it was
 	 * called on, however return a <code>Set</code>
 	 */
-	@Override public Set<V> copy() ;
+	@Override public ReadSet<V> copy() ;
 	
 	/**
 	 * Returns <code>this</code>
 	 * 
 	 * @return <code>this</code>
 	 */
-	public Set<V> unique() ;
+	public ReadSet<V> unique() ;
 
 }

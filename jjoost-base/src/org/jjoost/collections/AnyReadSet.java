@@ -148,4 +148,10 @@ public interface AnyReadSet<V> extends Iterable<V>, Function<V, Boolean>, Serial
 	 */
 	public Equality<? super V> equality() ;
 	
+	/**
+	 * Returns a copy of the set. This method may or may not return a set of the same class as the one it was
+	 * called on, however must be of the same basic interface (either <code>Set</code> or <code>MultiSet</code>).
+	 */
+	public AnyReadSet<V> copy() ;
+	
 }

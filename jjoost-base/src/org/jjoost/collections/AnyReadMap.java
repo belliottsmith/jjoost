@@ -212,4 +212,13 @@ public interface AnyReadMap<K, V> extends Serializable {
 	 */
 	public boolean permitsDuplicateKeys() ;
 
+	/**
+	 * Returns a copy of the map. Note that this method may not necessarily return an object of the same
+	 * class as the one it is called upon, but will return one indistinguishable from it with respect
+	 * to all method calls.
+	 * 
+	 * @return the any map< k, v>
+	 */
+	public AnyReadMap<K, V> copy() ;
+	
 }
