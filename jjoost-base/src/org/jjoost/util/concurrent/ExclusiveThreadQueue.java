@@ -27,6 +27,7 @@ import java.util.concurrent.locks.LockSupport;
 /**
  * @author b.elliottsmith
  */
+@Deprecated
 public class ExclusiveThreadQueue {
 	
 	private static final class Node {

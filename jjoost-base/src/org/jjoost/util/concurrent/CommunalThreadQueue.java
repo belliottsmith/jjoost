@@ -50,6 +50,8 @@ import org.jjoost.util.Filter ;
  * 
  * @author b.elliottsmith
  */
+
+@Deprecated
 public class CommunalThreadQueue<Q extends CommunalThreadQueue<Q>> {
 	
 	final Thread thread ;

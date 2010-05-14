@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.UndeclaredThrowableException;
 
 @SuppressWarnings("restriction")
+@Deprecated
 class Unsafe {
 
 	static final sun.misc.Unsafe INST = getUnsafe() ;
