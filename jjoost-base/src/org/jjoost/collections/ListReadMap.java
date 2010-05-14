@@ -35,17 +35,17 @@ public interface ListReadMap<K, V> extends AnyReadMap<K, V>, Function<K, Iterabl
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyReadMap#values(java.lang.Object)
 	 */
-	@Override public MultiSet<V> values(K key) ;
+	@Override public MultiReadSet<V> values(K key) ;
 
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyReadMap#keys()
 	 */
-	@Override public MultiSet<K> keys() ;
+	@Override public MultiReadSet<K> keys() ;
 	
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyReadMap#entries()
 	 */
-	@Override public MultiSet<Entry<K, V>> entries() ;
+	@Override public MultiReadSet<Entry<K, V>> entries() ;
 	
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyMap#copy()

@@ -36,7 +36,7 @@ package org.jjoost.collections;
  * 
  * @author b.elliottsmith
  */
-public interface MultiSet<V> extends AnySet<V> {
+public interface MultiSet<V> extends MultiReadSet<V>, AnySet<V> {
 
 	/**
 	 * Insert the value into the set. This method will always succeed and the

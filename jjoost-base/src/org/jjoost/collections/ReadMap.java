@@ -25,7 +25,7 @@ public interface ReadMap<K, V> extends Function<K, V>, AnyReadMap<K, V> {
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyMap#values(java.lang.Object)
 	 */
-	public abstract UnitarySet<V> values(K key);
+	public abstract UnitaryReadSet<V> values(K key);
 
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyMap#copy()
@@ -35,11 +35,11 @@ public interface ReadMap<K, V> extends Function<K, V>, AnyReadMap<K, V> {
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyMap#entries()
 	 */
-	public abstract Set<Entry<K, V>> entries();
+	public abstract ReadSet<Entry<K, V>> entries();
 
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyMap#keys()
 	 */
-	public abstract Set<K> keys();
+	public abstract ReadSet<K> keys();
 
 }

@@ -22,6 +22,8 @@
 
 package org.jjoost.collections;
 
+import java.util.Map.Entry;
+
 /**
  * This interface declares a map that permits duplicate keys, but no duplicate key->value pairs,
  * i.e. a key can map to an arbitrary set of values wherein no value occurs more than once
@@ -51,6 +53,21 @@ public interface MultiMap<K, V> extends AnyMap<K, V>, MultiReadMap<K, V> {
 	 * @return the value of any maplet removed as a result of this action
 	 */
 	@Override public V putIfAbsent(K key, V val) ;
+
+	/* (non-Javadoc)
+	 * @see org.jjoost.collections.AnyReadMap#values(java.lang.Object)
+	 */
+	@Override public Set<V> values(K key) ;
+
+	/* (non-Javadoc)
+	 * @see org.jjoost.collections.AnyReadMap#keys()
+	 */
+	@Override public MultiSet<K> keys() ;
+	
+	/* (non-Javadoc)
+	 * @see org.jjoost.collections.AnyReadMap#entries()
+	 */
+	@Override public Set<Entry<K, V>> entries() ;
 
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyMap#copy()

@@ -23,6 +23,8 @@
 package org.jjoost.collections;
 
 
+import java.util.Map.Entry;
+
 import org.jjoost.util.Factory;
 import org.jjoost.util.Function;
 
@@ -109,8 +111,23 @@ public interface Map<K, V> extends ReadMap<K, V>, AnyMap<K, V> {
 	
 
 	/* (non-Javadoc)
+	 * @see org.jjoost.collections.AnyMap#values(java.lang.Object)
+	 */
+	public abstract UnitarySet<V> values(K key);
+
+	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyMap#copy()
 	 */
 	public abstract Map<K, V> copy();
+
+	/* (non-Javadoc)
+	 * @see org.jjoost.collections.AnyMap#entries()
+	 */
+	public abstract Set<Entry<K, V>> entries();
+
+	/* (non-Javadoc)
+	 * @see org.jjoost.collections.AnyMap#keys()
+	 */
+	public abstract Set<K> keys();
 	
 }
