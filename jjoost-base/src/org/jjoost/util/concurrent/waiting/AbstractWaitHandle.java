@@ -53,6 +53,36 @@ public abstract class AbstractWaitHandle implements WaitHandle {
 		}
 		close() ;
 	}
+	
+	@Override
+	public final void awaitUninterruptibly(long time, TimeUnit units) {
+		awaitUntilUninterruptibly(System.currentTimeMillis() + units.toMillis(time)) ;
+	}
+	
+	@Override
+	public final void awaitUninterruptibly() {
+		while (stillWaiting())
+			pause() ;		
+		close() ;
+	}
+	
+	@Override
+	public final void awaitUntilUninterruptibly(long until) {
+		while (System.currentTimeMillis() < until && stillWaiting())
+			pauseUntil(until) ;		
+		close() ;
+	}
+	
+	@Override
+	public final void awaitNanosUninterruptibly(long nanos) {
+		long now = System.nanoTime() ;
+		final long start = now ;
+		while (now - start < nanos && stillWaiting()) {
+			pauseNanos(nanos - (now - start)) ;
+			now = System.nanoTime() ;
+		}
+		close() ;
+	}
 
 	protected abstract void close() ;
 	protected abstract void wake() ;

@@ -27,9 +27,13 @@ import java.util.concurrent.TimeUnit;
 public interface WaitHandle {	
 	
 	public void await() throws InterruptedException ;
+	public void awaitUninterruptibly() ;
 	public void await(long time, TimeUnit units) throws InterruptedException ;
+	public void awaitUninterruptibly(long time, TimeUnit units) ;
 	public void awaitUntil(long until) throws InterruptedException ;
+	public void awaitUntilUninterruptibly(long until) ;
 	public void awaitNanos(long nanos) throws InterruptedException ;
+	public void awaitNanosUninterruptibly(long nanos) ;
 	
 }
 
