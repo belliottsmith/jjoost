@@ -25,14 +25,14 @@ package org.jjoost.collections.base;
 import java.io.Serializable ;
 import java.lang.reflect.Field;
 import java.lang.reflect.UndeclaredThrowableException;
-import java.util.concurrent.locks.LockSupport;
 
 import org.jjoost.util.Functions ;
 import org.jjoost.util.Iters ;
 import org.jjoost.util.Rehasher ;
 import org.jjoost.util.Rehashers ;
-import org.jjoost.util.concurrent.CommunalThreadQueue ;
-import org.jjoost.util.concurrent.ExclusiveThreadQueue;
+import org.jjoost.util.concurrent.waiting.ParkingWaitQueue;
+import org.jjoost.util.concurrent.waiting.WaitHandle;
+import org.jjoost.util.concurrent.waiting.WaitQueue;
 
 @SuppressWarnings({ "restriction", "unchecked" })
 public abstract class AbstractConcurrentHashStore<
@@ -47,7 +47,6 @@ public abstract class AbstractConcurrentHashStore<
 		OFF, SAMPLED, PRECISE
 	}
 
-	protected final WaitingOnNode<N> waitingOnDelete = new WaitingOnNode<N>(null, null) ;
 	protected final float loadFactor ;
 	protected final Counter totalCounter ;
 	protected final Counter uniquePrefixCounter ;
@@ -287,16 +286,17 @@ public abstract class AbstractConcurrentHashStore<
 	}	
 	
 	protected static class BlockingTable<T extends Table> implements Table {
-		private final CommunalThreadQueue waiting = new CommunalThreadQueue(null) ;
+		private final WaitQueue waiting = new ParkingWaitQueue() ;
 		protected volatile T next = null ;
 		protected final void waitForNext() {
-			waiting.insert(new CommunalThreadQueue(Thread.currentThread())) ;
-			while (next == null)
-				LockSupport.park() ;
+			final WaitHandle wait = waiting.register() ;
+			if (next != null)
+				return ;
+			wait.awaitUninterruptibly() ;
 		}
 		public final void wake(T next) {
 			this.next = next ;
-			waiting.wakeAll() ;
+			waiting.wake() ;
 		}
 		public final int maxCapacity() {
 			waitForNext() ;
@@ -321,7 +321,7 @@ public abstract class AbstractConcurrentHashStore<
 		protected final int oldTableMask ;
 		protected final int newTableMask ;
 		protected int remainingSegments ;
-		protected final ExclusiveThreadQueue waitingForCompletion = new ExclusiveThreadQueue() ;
+		protected final WaitQueue waitingForCompletion = new ParkingWaitQueue() ;
 		protected final int capacity ;
 		
 		public ResizingTable(AbstractConcurrentHashStore<?, T> store, RegularTable table, int newLength) {
@@ -337,9 +337,10 @@ public abstract class AbstractConcurrentHashStore<
 		protected final void waitOnTableResize() {
 			if (store.getTableFresh() != this)
 				return ;
-			waitingForCompletion.amWaiting() ;
-			while (store.getTableFresh() == this)
-				LockSupport.park() ;
+			final WaitHandle wait = waitingForCompletion.register() ;
+			if (store.getTableFresh() != this)
+				return ;
+			wait.awaitUninterruptibly() ;
 		}
 		
 		@Override
@@ -366,7 +367,7 @@ public abstract class AbstractConcurrentHashStore<
 			}
 			if (remaining == 1) {
 				store.casTable(this, store.newRegularTable(newTable, capacity)) ;
-				waitingForCompletion.wakeAll() ;
+				waitingForCompletion.wake() ;
 			}
 		}
 		
@@ -388,46 +389,6 @@ public abstract class AbstractConcurrentHashStore<
 	// THREAD WAITING UTILITIES
 	// ********************************************
 	
-//	protected static final class WaitingOnGrow extends CommunalThreadQueue<WaitingOnGrow> {
-//		private final int oldTableIndex ;
-//		public WaitingOnGrow(Thread thread, int oldTableIndex) {
-//			super(thread) ;
-//			this.oldTableIndex = oldTableIndex;
-//		}
-//		void wake(int tableIndex) {
-//			WaitingOnGrow next = this.next ;
-//			while (next != null) {
-//				if (tableIndex == next.oldTableIndex) {
-//					final WaitingOnGrow prev = next ;
-//					next = next.next ;
-//					prev.wake() ;
-//				} else {
-//					next = next.next ;
-//				}
-//			}
-//		} 
-//	}
-//	
-	protected static final class WaitingOnNode<N> extends CommunalThreadQueue<WaitingOnNode<N>> {
-		private final N node ;
-		public WaitingOnNode(Thread thread, N node) {
-			super(thread) ;
-			this.node = node ;
-		}
-		void wake(N deleted) {
-			WaitingOnNode<N> next = this.next ;
-			while (next != null) {
-				if (deleted == next.node) {
-					final WaitingOnNode<N> prev = next ;
-					next = next.next ;
-					prev.wake() ;
-				} else {
-					next = next.next ;
-				}
-			}
-		}		 
-	}
-
 	// *************************************
 	// COUNTER DECLARATIONS
 	// *************************************

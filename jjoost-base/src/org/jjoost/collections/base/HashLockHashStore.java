@@ -4,13 +4,14 @@ import java.util.Collections;
 import java.util.Iterator ;
 import java.util.List ;
 import java.util.NoSuchElementException;
-import java.util.concurrent.locks.LockSupport;
 
 import org.jjoost.collections.base.AbstractConcurrentHashStore.ConcurrentHashNode;
 import org.jjoost.collections.lists.UniformList;
 import org.jjoost.util.Equality ;
 import org.jjoost.util.Function ;
-import org.jjoost.util.concurrent.ExclusiveThreadQueue;
+import org.jjoost.util.concurrent.waiting.ParkingWaitQueue;
+import org.jjoost.util.concurrent.waiting.WaitHandle;
+import org.jjoost.util.concurrent.waiting.WaitQueue;
 
 @SuppressWarnings("unchecked")
 public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends AbstractConcurrentHashStore<N, HashLockHashStore.Table<N>> {
@@ -602,7 +603,7 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 	
 	private static final class LockNode<N extends ConcurrentHashNode<N>> extends ConcurrentHashNode<N> {
 		private static final long serialVersionUID = 1L;
-		final ExclusiveThreadQueue waiting = new ExclusiveThreadQueue() ;
+		final WaitQueue waiting = new ParkingWaitQueue() ;
 		public LockNode(int hash) {
 			super(hash);
 		}
@@ -610,14 +611,11 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 		public N copy() {
 			throw new UnsupportedOperationException() ;
 		}
-		void startWaiting() {
-			waiting.amWaiting() ;
+		WaitHandle waitOn() {
+			return waiting.register() ;
 		}
 		void wakeAll() {
-			waiting.wakeAll() ;
-		}
-		void wakeAllQuick() {
-			waiting.wakeAllQuick() ;
+			waiting.wake() ;
 		}
 	}
 
@@ -794,15 +792,6 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 		}
 	}	
 	
-//	private static final class ResizingLock {
-//		private final LockNode lock ;
-//		private volatile int bucket ;
-//		public ResizingLock(LockNode lock, int bucket) {
-//			this.lock = lock;
-//			this.bucket = bucket;
-//		}
-//	}
-//	
 	private abstract class ResizingTable extends AbstractConcurrentHashStore.ResizingTable<Table<N>> implements Table<N> {
 
 		public ResizingTable(AbstractConcurrentHashStore<N, Table<N>> store,
@@ -828,7 +817,6 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 						if (i == from || startBucket(lock, i)) {
 							doBucket(lock, i) ;
 							lazySetNodeArray(oldTable, i, REHASHED_FLAG) ;
-							lock.wakeAllQuick() ;
 						}
 					}
 					lock.wakeAll() ;
@@ -985,9 +973,12 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 	}
 	
 	private void waitOnLock(ConcurrentHashNode[] table, ConcurrentHashNode lock, long directIndex) {
-		((LockNode) lock).startWaiting() ;
-		while (getNodeVolatileDirect(table, directIndex) == lock)
-			LockSupport.park() ;
+		while (true) {
+			final WaitHandle wait = ((LockNode) lock).waitOn() ;
+			if (getNodeVolatileDirect(table, directIndex) != lock)
+				return ;
+			wait.awaitUninterruptibly() ;
+		}
 	}
 	
 	private static ConcurrentHashNode copyChain(ConcurrentHashNode head, ConcurrentHashNode tail) {
