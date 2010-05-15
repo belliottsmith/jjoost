@@ -20,38 +20,35 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util.concurrent.waiting ;
+package org.jjoost.util.concurrent.waiting;
 
-import org.jjoost.util.Equality;
+/**
+ * @author b.elliottsmith
+ */
+public final class UnfairSpinningWaitQueue extends UnfairAbstractWaitQueue {
 
-public final class CommunalSpinningWaitQueue<E> extends CommunalAbstractWaitQueue<E> {
-
-	protected static final class Node<E> extends CommunalAbstractWaitQueue.Node<E> {
-
-		protected Node(Thread thread, E resource) {
-			super(thread, resource);
+	private final class Node extends UnfairAbstractWaitQueue.Node {
+		
+		private Node(Thread thread, UnfairAbstractWaitQueue.Node next) {
+			super(thread, next) ;
 		}
 
+		@Override protected void close() { }
 		@Override protected void pause() { }
 		@Override protected void pauseNanos(long nanos) { }
 		@Override protected void pauseUntil(long until) { }
-		@Override protected boolean stillWaiting() { return waiting ; }
-		@Override protected void wake() { waiting = false ; }
-		
+		@Override
+		protected boolean stillWaiting() {
+			return UnfairSpinningWaitQueue.this.stillWaiting(this) ;
+		}
+
 	}
 	
-	public CommunalSpinningWaitQueue() {
-		super();
-	}
-
-	public CommunalSpinningWaitQueue(Equality<? super E> equality) {
-		super(equality);
-	}
-
-	@Override
-	protected CommunalAbstractWaitQueue.Node<E> newNode( Thread thread, E resource) {
-		return new Node<E>(thread, resource) ;
+	protected final Node newNode(Thread thread, UnfairAbstractWaitQueue.Node next) {
+		return new Node(thread, next) ;
 	}
 	
+	protected final void wakeAll(UnfairAbstractWaitQueue.Node list) { }
+	protected final void wakeFirst(UnfairAbstractWaitQueue.Node list) { }
+
 }
-

@@ -85,7 +85,6 @@ public abstract class AbstractWaitHandle implements WaitHandle {
 	}
 
 	protected abstract void close() ;
-	protected abstract void wake() ;
 	protected abstract boolean stillWaiting() ;
 	protected abstract void pause() ;
 	protected abstract void pauseUntil(long until) ;

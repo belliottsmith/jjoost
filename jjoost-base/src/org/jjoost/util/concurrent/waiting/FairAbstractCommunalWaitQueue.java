@@ -22,6 +22,7 @@
 
 package org.jjoost.util.concurrent.waiting ;
 
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater ;
 
 import org.jjoost.util.Equalities;
@@ -50,7 +51,7 @@ import org.jjoost.util.Equality;
  * 
  * @author b.elliottsmith
  */
-public abstract class CommunalAbstractWaitQueue<E> implements CommunalWaitQueue<E> {
+public abstract class FairAbstractCommunalWaitQueue<E> implements CommunalWaitQueue<E> {
 	
 	protected static abstract class Node<E> extends AbstractWaitHandle {
 		
@@ -63,7 +64,7 @@ public abstract class CommunalAbstractWaitQueue<E> implements CommunalWaitQueue<
 
 		private volatile Node<E> next ;
 		private Node<E> prev ;
-		protected volatile boolean waiting = true ;
+		protected volatile int waiting = 1 ;
 		
 		/**
 		 * Remove this link from the chain
@@ -81,9 +82,19 @@ public abstract class CommunalAbstractWaitQueue<E> implements CommunalWaitQueue<
 				prev = prev.next ;
 			}
 		}
+		
+		protected boolean tryWake() {
+			return waitingUpdater.compareAndSet(this, 1, 0) ;
+		}
 
+		protected void forceWake() {
+			waiting = 0 ;
+		}
+		
 	}
 	
+	@SuppressWarnings("unchecked")
+	private static final AtomicIntegerFieldUpdater<Node> waitingUpdater=  AtomicIntegerFieldUpdater.newUpdater(Node.class, "waiting") ;
 	@SuppressWarnings("unchecked")
 	private static final AtomicReferenceFieldUpdater<Node, Node> nextUpdater = AtomicReferenceFieldUpdater.newUpdater(Node.class, Node.class, "next") ;
 	protected abstract Node<E> newNode(Thread thread, E resource) ;
@@ -91,39 +102,69 @@ public abstract class CommunalAbstractWaitQueue<E> implements CommunalWaitQueue<
 	private final Node<E> head = newNode(null, null) ;	
 	private final Equality<? super E> equality ;
 
-	public CommunalAbstractWaitQueue() {
+	public FairAbstractCommunalWaitQueue() {
 		this(Equalities.object()) ;
 	}
 	
-	public CommunalAbstractWaitQueue(Equality<? super E> equality) {
+	public FairAbstractCommunalWaitQueue(Equality<? super E> equality) {
 		this.equality = equality;
 	}
 
 	/**
 	 * Wakes up all threads in this queue 
 	 */
-	public void wake() {
+	public void wakeAll() {
 		Node<E> next = head.next ;
 		while (next != null) {
 			final Node<E> prev = next ;
 			next = next.next ;
-			prev.wake() ;
+			prev.forceWake() ;
 		}
 	}
 
+	public void wakeOne() {
+		while (true) {
+			Node<E> next = head.next ;
+			if (next == null)
+				return ;
+			if (next.tryWake())
+				return ;
+		}
+	}
+	
 	/**
 	 * wake up all links after this link on which application of the provided filter's accept()
 	 * method returns true 
 	 * 
 	 * @param wake filter indicating which links should be woken
 	 */
-	public void wake(E resource) {
+	public void wakeAll(E resource) {
 		Node<E> next = head.next ;
 		while (next != null) {
 			if (equality.equates(resource, next.resource)) {
 				final Node<E> prev = next ;
 				next = next.next ;
-				prev.wake() ;
+				prev.forceWake() ;
+			} else {
+				next = next.next ;
+			}
+		}
+	}
+	
+	/**
+	 * wake up all links after this link on which application of the provided filter's accept()
+	 * method returns true 
+	 * 
+	 * @param wake filter indicating which links should be woken
+	 */
+	public void wakeOne(E resource) {
+		Node<E> next = head.next ;
+		while (next != null) {
+			if (equality.equates(resource, next.resource)) {
+				final Node<E> prev = next ;
+				next = next.next ;
+				if (prev.tryWake())
+					return ;
 			} else {
 				next = next.next ;
 			}

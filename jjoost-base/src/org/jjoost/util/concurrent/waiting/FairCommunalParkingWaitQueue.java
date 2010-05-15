@@ -20,19 +20,18 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util.concurrent.waiting;
+package org.jjoost.util.concurrent.waiting ;
 
 import java.util.concurrent.locks.LockSupport;
 
-/**
- * @author b.elliottsmith
- */
-public final class ParkingWaitQueue extends AbstractWaitQueue {
+import org.jjoost.util.Equality;
 
-	private final class Node extends AbstractWaitQueue.Node {
-		
-		private Node(Thread thread, AbstractWaitQueue.Node next) {
-			super(thread, next) ;
+public final class FairCommunalParkingWaitQueue<E> extends FairAbstractCommunalWaitQueue<E> {
+
+	protected static final class Node<E> extends FairAbstractCommunalWaitQueue.Node<E> {
+
+		protected Node(Thread thread, E resource) {
+			super(thread, resource);
 		}
 
 		@Override
@@ -52,23 +51,23 @@ public final class ParkingWaitQueue extends AbstractWaitQueue {
 
 		@Override
 		protected boolean stillWaiting() {
-			return ParkingWaitQueue.this.stillWaiting(this) ;
+			return waiting != 0 ;
 		}
 
-		@Override protected void wake() { }
-		@Override protected void close() { }
-		
-	}
-
-	protected final Node newNode(Thread thread, AbstractWaitQueue.Node next) {
-		return new Node(thread, next) ;
 	}
 	
-	protected final void wake(AbstractWaitQueue.Node list) {
-		while (list != null) {
-			LockSupport.unpark(list.thread) ;
-			list = list.next ;
-		}
+	public FairCommunalParkingWaitQueue() {
+		super();
+	}
+
+	public FairCommunalParkingWaitQueue(Equality<? super E> equality) {
+		super(equality);
+	}
+
+	@Override
+	protected FairAbstractCommunalWaitQueue.Node<E> newNode( Thread thread, E resource) {
+		return new Node<E>(thread, resource) ;
 	}
 	
 }
+

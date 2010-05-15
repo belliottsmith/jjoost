@@ -22,56 +22,33 @@
 
 package org.jjoost.util.concurrent.waiting ;
 
-import java.util.concurrent.locks.LockSupport;
-
 import org.jjoost.util.Equality;
 
-public final class CommunalParkingWaitQueue<E> extends CommunalAbstractWaitQueue<E> {
+public final class FairCommunalSpinningWaitQueue<E> extends FairAbstractCommunalWaitQueue<E> {
 
-	protected static final class Node<E> extends CommunalAbstractWaitQueue.Node<E> {
+	protected static final class Node<E> extends FairAbstractCommunalWaitQueue.Node<E> {
 
 		protected Node(Thread thread, E resource) {
 			super(thread, resource);
 		}
 
-		@Override
-		protected void pause() {
-			LockSupport.park() ;
-		}
-
-		@Override
-		protected void pauseNanos(long nanos) {
-			LockSupport.parkNanos(nanos) ;
-		}
-
-		@Override
-		protected void pauseUntil(long until) {
-			LockSupport.parkUntil(until) ;
-		}
-
-		@Override
-		protected boolean stillWaiting() {
-			return waiting ;
-		}
-
-		@Override
-		protected void wake() {
-			waiting = false ;
-			LockSupport.unpark(thread) ;
-		}
+		@Override protected void pause() { }
+		@Override protected void pauseNanos(long nanos) { }
+		@Override protected void pauseUntil(long until) { }
+		@Override protected boolean stillWaiting() { return waiting != 0 ; }
 		
 	}
 	
-	public CommunalParkingWaitQueue() {
+	public FairCommunalSpinningWaitQueue() {
 		super();
 	}
 
-	public CommunalParkingWaitQueue(Equality<? super E> equality) {
+	public FairCommunalSpinningWaitQueue(Equality<? super E> equality) {
 		super(equality);
 	}
 
 	@Override
-	protected CommunalAbstractWaitQueue.Node<E> newNode( Thread thread, E resource) {
+	protected FairAbstractCommunalWaitQueue.Node<E> newNode( Thread thread, E resource) {
 		return new Node<E>(thread, resource) ;
 	}
 	

@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 /**
  * @author b.elliottsmith
  */
-public abstract class AbstractWaitQueue implements WaitQueue {
+public abstract class UnfairAbstractWaitQueue implements WaitQueue {
 
 	protected abstract class Node extends AbstractWaitHandle {
 		
@@ -41,7 +41,7 @@ public abstract class AbstractWaitQueue implements WaitQueue {
 	}
 
 	private volatile Node head;
-	private static final AtomicReferenceFieldUpdater<AbstractWaitQueue, Node> headUpdater = AtomicReferenceFieldUpdater.newUpdater(AbstractWaitQueue.class, Node.class, "head") ;
+	private static final AtomicReferenceFieldUpdater<UnfairAbstractWaitQueue, Node> headUpdater = AtomicReferenceFieldUpdater.newUpdater(UnfairAbstractWaitQueue.class, Node.class, "head") ;
 
 	abstract protected Node newNode(Thread thread, Node next) ;
 	
@@ -64,18 +64,31 @@ public abstract class AbstractWaitQueue implements WaitQueue {
 		}
 	}
 	
-	public void wake() {
+	public void wakeAll() {
 		while (true) {
 			final Node head = this.head ;
 			if (head == null)
 				break ;
 			if (headUpdater.compareAndSet(this, head, null)) {
-				wake(head) ;
+				wakeAll(head) ;
 				break ;
 			}
 		}
 	}
 	
-	protected abstract void wake(Node list) ;
-
+	public void wakeOne() {
+		while (true) {
+			final Node head = this.head ;
+			if (head == null)
+				break ;
+			if (headUpdater.compareAndSet(this, head, head.next)) {
+				wakeFirst(head) ;					
+				break ;
+			}
+		}
+	}
+	
+	protected abstract void wakeAll(UnfairAbstractWaitQueue.Node list) ;	
+	protected abstract void wakeFirst(UnfairAbstractWaitQueue.Node list) ;
+	
 }
