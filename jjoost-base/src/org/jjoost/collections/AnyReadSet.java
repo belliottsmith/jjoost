@@ -154,4 +154,6 @@ public interface AnyReadSet<V> extends Iterable<V>, Function<V, Boolean>, Serial
 	 */
 	public AnyReadSet<V> copy() ;
 	
+//	public ReadMap<V, Integer> counts() ;
+	
 }

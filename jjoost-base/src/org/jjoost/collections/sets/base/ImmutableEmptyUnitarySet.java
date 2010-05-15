@@ -20,35 +20,30 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.collections;
+package org.jjoost.collections.sets.base;
 
-/**
- * This interface represents the rather dubious concept of a set that may
- * contain at most one item. This set is primarily intended for use by
- * the method <code>values(key)</code> on regular (scalar) maps.
- * 
- * @author b.elliottsmith
- */
-public interface UnitaryReadSet<V> extends AnyReadSet<V> {
+import org.jjoost.collections.UnitaryReadSet;
 
-	/**
-	 * Returns the set's only value, if any
-	 * 
-	 * @return the set's value, or null if empty
-	 */
-	public V get() ;
+public abstract class ImmutableEmptyUnitarySet<V> extends ImmutableEmptySet<V> implements UnitaryReadSet<V> {
 
-	/**
-	 * Returns a copy of the set. This method may or may not return a set of the same class as the one it was
-	 * called on, however will return a <code>UnitarySet</code>
-	 */
-	@Override public UnitaryReadSet<V> copy() ;
+	private static final long serialVersionUID = -403057958480620667L;
+
+	@Override
+	public UnitaryReadSet<V> unique() {
+		return this ;
+	}
 	
-	/**
-	 * Returns <code>this</code>
-	 * 
-	 * @return <code>this</code>
-	 */
-	public UnitaryReadSet<V> unique() ;
+	@Override
+	public abstract UnitaryReadSet<V> copy() ;
+
+	@Override
+	public V get() {
+		return null ;
+	}
+
+	@Override
+	public boolean permitsDuplicates() {
+		return false ;
+	}
 
 }

@@ -22,43 +22,73 @@
 
 package org.jjoost.collections.sets.base;
 
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
 import org.jjoost.collections.AnyReadSet;
-import org.jjoost.collections.AnySet ;
 import org.jjoost.util.Iters;
 
-public abstract class AbstractSet<V> implements AnyReadSet<V> {
-	
-	private static final long serialVersionUID = -2269362435477906614L;
+public abstract class ImmutableEmptySet<V> extends AbstractSet<V> implements AnyReadSet<V> {
+
+	private static final long serialVersionUID = 103439040925077249L;
 
 	@Override
-	public String toString() {
-		return "{" + Iters.toString(this, ", ") + "}" ;
+	public abstract AnyReadSet<V> copy() ;
+
+	@Override
+	public AnyReadSet<V> unique() {
+		return this ;
 	}
-	
-	@SuppressWarnings("unchecked")
-	public boolean equals(Object that) {
-		return this == that || (that instanceof AnySet && equals((AnySet<V>) that)) ;
+
+	@Override
+	public Iterator<V> iterator() {
+		return Iters.emptyIterator() ;
 	}
-	
-	public boolean equals(AnySet<V> that) {
-		if (that.totalCount() != this.totalCount())
-			return false ;
-		if (that.permitsDuplicates() != this.permitsDuplicates())
-			return false ;
-		// retain some type safety of equals(Object) by confirming equalities are "equal" before comparing sets
-		if (!that.equality().equals(this.equality()))
-			return false ;
-		if (permitsDuplicates()) {
-			for (V v : that) {
-				if (this.count(v) != that.count(v))
-					return false ;
-			}
-		} else {
-			for (V v : that)
-				if (!contains(v))
-					return false ;
-		}
+
+	@Override
+	public Iterable<V> all(V find) {
+		return Iters.emptyIterable() ;
+	}
+
+	@Override
+	public boolean contains(V find) {
+		return false ;
+	}
+
+	@Override
+	public int count(V find) {
+		return 0 ;
+	}
+
+	@Override
+	public V first(V find) {
+		return null ;
+	}
+
+	@Override
+	public boolean isEmpty() {
 		return true ;
+	}
+
+	@Override
+	public List<V> list(V find) {
+		return Collections.emptyList() ;
+	}
+
+	@Override
+	public int totalCount() {
+		return 0 ;
+	}
+
+	@Override
+	public int uniqueCount() {
+		return 0 ;
+	}
+
+	@Override
+	public Boolean apply(V v) {
+		return Boolean.FALSE ;
 	}
 
 }
