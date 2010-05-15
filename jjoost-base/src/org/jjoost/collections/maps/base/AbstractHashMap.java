@@ -62,10 +62,8 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		}
 		@Override
 		public int hash(Entry<K, V> o) {
-			// TODO : implement
-			throw new UnsupportedOperationException() ;
-		}
-		
+			return keyEq.hash(o.getKey()) ;
+		}		
 	}
 	
 	protected static abstract class KeyEquality<K, V, N> implements HashNodeEquality<K, N> {
@@ -253,16 +251,17 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		
 		@Override
 		public boolean contains(V value) {
-			return AbstractHashMap.this.contains(key, value) ;
+			return store.count(hash, entry(key, value), nodeEq, 1) > 0 ;
 		}
 		
 		@Override
 		public int count(V value) {
-			return AbstractHashMap.this.count(key, value) ;			
+			return store.count(hash, entry(key, value), nodeEq, Integer.MAX_VALUE) ;
 		}
 		
 		@Override
-		public void shrink() {						
+		public void shrink() {
+			AbstractHashMap.this.shrink() ;
 		}
 		
 		@Override
