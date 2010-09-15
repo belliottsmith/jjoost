@@ -30,7 +30,7 @@ import org.jjoost.util.Functions ;
 import org.jjoost.util.Iters ;
 import org.jjoost.util.Rehasher ;
 import org.jjoost.util.Rehashers ;
-import org.jjoost.util.concurrent.waiting.ParkingWaitQueue;
+import org.jjoost.util.concurrent.waiting.UnfairParkingWaitQueue;
 import org.jjoost.util.concurrent.waiting.WaitHandle;
 import org.jjoost.util.concurrent.waiting.WaitQueue;
 
@@ -40,8 +40,6 @@ public abstract class AbstractConcurrentHashStore<
 	T extends AbstractConcurrentHashStore.Table> implements HashStore<N> {
 
 	private static final long serialVersionUID = -1578733824843315344L ;
-	protected static final int REHASH_SEGMENT_SIZE = 256 ;
-	protected static final int REHASH_SEGMENT_SHIFT = Integer.bitCount(REHASH_SEGMENT_SIZE - 1) ;
 	
 	public enum Counting {
 		OFF, SAMPLED, PRECISE
@@ -286,7 +284,7 @@ public abstract class AbstractConcurrentHashStore<
 	}	
 	
 	protected static class BlockingTable<T extends Table> implements Table {
-		private final WaitQueue waiting = new ParkingWaitQueue() ;
+		private final WaitQueue waiting = new UnfairParkingWaitQueue() ;
 		protected volatile T next = null ;
 		protected final void waitForNext() {
 			final WaitHandle wait = waiting.register() ;
@@ -296,7 +294,7 @@ public abstract class AbstractConcurrentHashStore<
 		}
 		public final void wake(T next) {
 			this.next = next ;
-			waiting.wake() ;
+			waiting.wakeAll() ;
 		}
 		public final int maxCapacity() {
 			waitForNext() ;
@@ -320,18 +318,18 @@ public abstract class AbstractConcurrentHashStore<
 		protected final ConcurrentHashNode[] newTable ;
 		protected final int oldTableMask ;
 		protected final int newTableMask ;
-		protected int remainingSegments ;
-		protected final WaitQueue waitingForCompletion = new ParkingWaitQueue() ;
+		protected final WaitQueue waitingForCompletion = new UnfairParkingWaitQueue() ;
 		protected final int capacity ;
+		protected int remainingSegments ;
 		
-		public ResizingTable(AbstractConcurrentHashStore<?, T> store, RegularTable table, int newLength) {
+		public ResizingTable(AbstractConcurrentHashStore<?, T> store, RegularTable table, int newLength, int segments) {
 			this.store = store ;
 			this.oldTable = table.table ;
 			this.oldTableMask = oldTable.length - 1 ;
 			this.newTable = new ConcurrentHashNode[newLength] ;
 			this.newTableMask = newTable.length - 1 ;
 			this.capacity = (int)(newTable.length * store.loadFactor) ;
-			Unsafe.INST.putIntVolatile(this, remainingSegmentsOffset, Math.max(1, oldTable.length >>> REHASH_SEGMENT_SHIFT)) ;
+			Unsafe.INST.putIntVolatile(this, remainingSegmentsOffset, segments) ;
 		}
 		
 		protected final void waitOnTableResize() {
@@ -367,7 +365,7 @@ public abstract class AbstractConcurrentHashStore<
 			}
 			if (remaining == 1) {
 				store.casTable(this, store.newRegularTable(newTable, capacity)) ;
-				waitingForCompletion.wake() ;
+				waitingForCompletion.wakeAll() ;
 			}
 		}
 		
@@ -383,12 +381,6 @@ public abstract class AbstractConcurrentHashStore<
 		
 	}
 
-	
-	
-	// ********************************************
-	// THREAD WAITING UTILITIES
-	// ********************************************
-	
 	// *************************************
 	// COUNTER DECLARATIONS
 	// *************************************

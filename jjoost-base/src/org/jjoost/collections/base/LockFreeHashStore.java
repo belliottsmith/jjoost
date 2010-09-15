@@ -35,8 +35,6 @@ import java.util.concurrent.locks.LockSupport;
 
 import org.jjoost.collections.lists.UniformList ;
 import org.jjoost.util.Equality ;
-import org.jjoost.util.Factories;
-import org.jjoost.util.Factory;
 import org.jjoost.util.Filter;
 import org.jjoost.util.Filters;
 import org.jjoost.util.Function ;
@@ -51,9 +49,6 @@ import sun.misc.Unsafe;
 @SuppressWarnings("restriction")
 public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> implements HashStore<N> {
 
-	@SuppressWarnings("unchecked")
-	private static final Factory NO_FILTER = Factories.constant(Filters.acceptAll()) ;
-	
 	private static final long serialVersionUID = -1578733824843315344L ;
 	
 	public enum Counting {
@@ -1263,13 +1258,12 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 		return new Search<NCmp, NCmp2, V>(hash, find, findEq, nodeEqualityProj, nodeEq, ret) ;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public <NCmp, V> Iterator<V> all(
 			Function<? super N, ? extends NCmp> nodeEqualityProj,
 			HashNodeEquality<? super NCmp, ? super N> nodeEquality, 
 			Function<? super N, ? extends V> ret) {
-		return new EagerAllIterator<NCmp, V>(nodeEqualityProj, nodeEquality, NO_FILTER, ret) ;
+		return new EagerAllIterator<NCmp, V>(nodeEqualityProj, nodeEquality, Filters.acceptAll(), ret) ;
 	}
 
 	@Override
@@ -1280,9 +1274,8 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			Function<? super N, ? extends NCmp2> nodeEqualityProj,
 			HashNodeEquality<? super NCmp2, ? super N> nodeEquality, 
 			Function<? super N, ? extends V> ret) {
-		final Factory<Filter<N>> filterFactory ;
-		filterFactory = HashStore.Helper.forUniqueness(uniquenessEqualityProj, uniquenessEquality, duplicateLocality) ;
-		return new EagerAllIterator<NCmp2, V>(nodeEqualityProj, nodeEquality, filterFactory, ret) ;
+		final Filter<N> filter = HashStore.Helper.forUniqueness(uniquenessEqualityProj, uniquenessEquality, duplicateLocality) ;
+		return new EagerAllIterator<NCmp2, V>(nodeEqualityProj, nodeEquality, filter, ret) ;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1315,7 +1308,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	@SuppressWarnings("unchecked")
 	@Override
 	public <NCmp> HashStore<N> copy(Function<? super N, ? extends NCmp> nodeEqualityProj, HashNodeEquality<? super NCmp, ? super N> nodeEquality) {
-		final Iterator<N> iter = new EagerAllIterator<N, N>(null, null, NO_FILTER, Functions.<N>identity()) ;
+		final Iterator<N> iter = new EagerAllIterator<N, N>(null, null, Filters.acceptAll(), Functions.<N>identity()) ;
 		final LockFreeHashNode<N> head = (LockFreeHashNode<N>) new EmptyNode() ;
 		N tail = (N) head ;
 		boolean countUniq = uniquePrefixCounter.on() ;
@@ -1705,16 +1698,16 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 		final HashIter32Bit indexIter ;
 		Table<N> tableCache = getTableUnsafe() ;
 		final List<N> list = new ArrayList<N>() ;
-		final Factory<? extends Filter<? super N>>  filterFactory ;
+		final Filter<? super N>  filter ;
 		Iterator<N> current ;
 		
 		public EagerAllIterator(Function<? super N, ? extends NCmp> nodeEqualityProj, 
 			HashNodeEquality<? super NCmp, ? super N> nodeEquality,
-			Factory<? extends Filter<? super N>> filterFactory,
+			Filter<? super N> filter,
 			Function<? super N, ? extends V> ret) {
 			super(nodeEqualityProj, nodeEquality, ret) ;
 			tableCache = getTableUnsafe() ;
-			this.filterFactory = filterFactory ;
+			this.filter = filter ;
 			final int bits = Integer.bitCount(tableCache.length() - 1) ;
 			indexIter = new HashIter32Bit(bits > 4 ? 4 : bits, bits) ;
 			moveNext() ;
@@ -1734,7 +1727,6 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 			if (current == null || !current.hasNext()) {
 				
 				final List<N> list = this.list ;
-				Filter<? super N> filter = filterFactory.create() ;
 				list.clear() ;
 				N prev2 = null, prev = null ;
 				N node ;
@@ -1784,7 +1776,6 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 							// we do not need to save previously visited nodes; the indexIter ensures we do not look at any hash that occured in 
 							// a previously visited bucket
 							list.clear() ;
-							filter = filterFactory.create() ;
 							tableCache = getTableFresh() ;
 							indexIter.resize(Integer.bitCount(tableCache.length() - 1)) ;
 							prev2 = prev = null ;

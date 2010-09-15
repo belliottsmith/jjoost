@@ -29,7 +29,6 @@ import java.util.List ;
 import java.util.NoSuchElementException;
 
 import org.jjoost.util.Equality ;
-import org.jjoost.util.Factory;
 import org.jjoost.util.Filter;
 import org.jjoost.util.Function;
 import org.jjoost.util.Functions;
@@ -563,9 +562,8 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 			Function<? super N, ? extends NCmp2> nodeEqualityProj, 
 			HashNodeEquality<? super NCmp2, ? super N> nodeEquality, 
 			Function<? super N, ? extends V> ret) {
-		final Factory<Filter<N>> filterFactory ;
-		filterFactory = HashStore.Helper.forUniqueness(uniquenessEqualityProj, uniquenessEquality, duplicateLocality) ;
-		return new UniqueIterator<NCmp, NCmp2, V>(filterFactory, nodeEqualityProj, nodeEquality, ret) ;
+		final Filter<N> filter = HashStore.Helper.forUniqueness(uniquenessEqualityProj, uniquenessEquality, duplicateLocality) ;
+		return new UniqueIterator<NCmp, NCmp2, V>(filter, nodeEqualityProj, nodeEquality, ret) ;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -588,82 +586,35 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	// public ITERATOR CLASSES
 	// **************************************************
 	
-	abstract class AbstractIterator<NCmp, V> implements Iterator<V> {
-		
-		final Function<? super N, ? extends NCmp> nodeEqualityProj ;
-		final HashNodeEquality<? super NCmp, ? super N> nodeEquality ;
-		final Function<? super N, ? extends V> ret ;
-		N[] nextNodes ;
-		int nextNodesCount ;
-		int nextNode = -1 ;
-		N[] prevNodes ;
-		int prevNode ;
-		N[] reuse ;
-		
-		AbstractIterator(
-				Function<? super N, ? extends NCmp> nodeEqualityProj, 
+	abstract class AbstractIterator<NCmp, V> extends AbstractHashNodeIterator<N, NCmp, V> {
+
+		public AbstractIterator(
+				Function<? super N, ? extends NCmp> nodeEqualityProj,
 				HashNodeEquality<? super NCmp, ? super N> nodeEquality,
 				Function<? super N, ? extends V> ret) {
-			this.nodeEqualityProj = nodeEqualityProj ;
-			this.nodeEquality = nodeEquality ;
-			this.ret = ret ;
+			super(nodeEqualityProj, nodeEquality, ret);
 		}
 		
-		protected abstract void nextHash() ;
-		protected abstract boolean accept(N node) ;
-		public boolean hasNext() {
-			int nextNode = this.nextNode ;
-			if (nextNode == -1) {
-				N[] nextNodes = this.nextNodes ;
-				while (nextNodes != null) {
-					final int nextNodesCount = this.nextNodesCount ;
-					if (prevNodes == nextNodes) {
-						nextNode = prevNode + 1 ;
-					} else {
-						nextNode = 0 ;
-					}
-					while (nextNode != nextNodesCount 
-							&& (nextNodes[nextNode].next == DELETED_FLAG
-							|| !accept(nextNodes[nextNode])))
-						nextNode++ ;
-					if (nextNode == nextNodesCount) {
-						nextHash() ;
-						nextNodes = this.nextNodes ;
-					} else {
-						break ;
-					}
-				}
-				this.nextNode = nextNode ;
-			}
-			return nextNodes != null ; 
-		}
-		public V next() {
-			if (nextNodes == null)
-				throw new NoSuchElementException() ;
-			if (prevNodes != nextNodes)
-				reuse = prevNodes ;
-			prevNode = nextNode ;			
-			prevNodes = nextNodes ;
-			nextNode = -1 ;
-			return ret.apply(prevNodes[prevNode]) ;
-		}
-		public void remove() {
-			if (prevNodes == null)
-				throw new NoSuchElementException() ;
-			if (prevNodes[prevNode].next == DELETED_FLAG)
-				throw new NoSuchElementException() ;
-			int prev = prevNode ;
+		@Override
+		protected void delete(N[] nodes, int node) {
+			int prev = node ;
 			while (prev != 0) {
 				prev -= 1 ;
-				if (prevNodes[prev].next == prevNodes[prevNode]) {
-					prevNodes[prev].next = prevNodes[prevNode].next ;
-					prevNodes[prevNode].flagDeleted() ;
-					removed(prevNodes[prevNode]) ;
+				if (nodes[prev].next == nodes[node]) {
+					nodes[prev].next = nodes[node].next ;
+					nodes[node].flagDeleted() ;
+					removed(nodes[node]) ;
 					return ;
 				}
 			}
-			removeNode(nodeEqualityProj, nodeEquality, prevNodes[prevNode]) ;
+			removeNode(nodeEqualityProj, nodeEquality, nodes[node]) ;
 		}
+		
+		@Override
+		protected boolean isDeleted(N[] prevs, int prev, N[] nodes, int node) {
+			return nodes[node].next == DELETED_FLAG ;
+		}
+		
 	}
 	
 	final class SearchIterator<NCmp, NCmp2, V> extends AbstractIterator<NCmp2, V> {
@@ -705,7 +656,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		}
 
 		@Override
-		protected void nextHash() {
+		protected void nextHash(N[] prevs, int prev) {
 			nextNodes = null ;
 		}
 		
@@ -722,7 +673,6 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 			final int numTotalBits = Integer.bitCount(table.length - 1) ;
 			if (numTotalBits >= 8) iter = new HashIter32Bit(8, numTotalBits) ;
 			else iter = new HashIter32Bit(numTotalBits, numTotalBits) ;
-			nextHash() ;
 		}
 		
 		@Override
@@ -732,18 +682,21 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		
 		@SuppressWarnings("unchecked")
 		@Override
-		protected void nextHash() {
+		protected void nextHash(N[] prevs, int prev) {
 			boolean resized = false ;
 			if (iter.size() != table.length) {
 				resized = true ;
 				iter.resize(Integer.bitCount(table.length - 1)) ;
 			}
-			N n = null ;			
-			if (prevNodes != null) {
-				int prev = prevNode ;
+			N n = null ;
+			if (prevs == null) {
+				// should only be executed on first call
+				n = table[iter.current()] ;
+			} else {
+				
 				while (n == null & prev >= 0) {
-					if (prevNodes[prev].next != DELETED_FLAG) {
-						n = prevNodes[prev] ;
+					if (prevs[prev].next != DELETED_FLAG) {
+						n = prevs[prev] ;
 						break ;
 					}
 					prev-- ;
@@ -753,9 +706,6 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 					n = table[iter.current()] ;
 				else if (n != null) 
 					n = n.next ;				
-			} else {
-				// should only be executed on first call
-				n = table[iter.current()] ;
 			}
 			
 			int hash = 0 ;
@@ -796,29 +746,20 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	
 	final class UniqueIterator<NCmp, NCmp2, V> extends AllIterator<NCmp2, V> {
 		
-		final Factory<Filter<N>> filterFactory;
-		Filter<N> filter ;
+		final Filter<N> filter ;
 		
 		UniqueIterator(
-				Factory<Filter<N>> filterFactory, 
+				Filter<N> filter, 
 				Function<? super N, ? extends NCmp2> nodeEqualityProj, 
 				HashNodeEquality<? super NCmp2, ? super N> nodeEquality, 
 				Function<? super N, ? extends V> ret) {
 			super(nodeEqualityProj, nodeEquality, ret) ;
-			this.filterFactory = filterFactory ;
-			this.filter = filterFactory.create() ;
+			this.filter = filter ;
 		}
 		
 		@Override
 		protected final boolean accept(N node) {
 			return filter.accept(node) ;
-		}
-		
-		@Override
-		protected final void nextHash() {			
-			super.nextHash() ;
-			if (filterFactory != null)
-				filter = filterFactory.create() ;
 		}
 		
 	}
@@ -859,10 +800,10 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		
 	}
 
-	protected static final class SimpleNodeIterable<N extends SerialHashNode<N>, V> implements Iterable<V> {
+	protected static final class NodeIterable<N extends SerialHashNode<N>, V> implements Iterable<V> {
 		private final N head ;
 		private final Function<? super N, ? extends V> f ;
-		public SimpleNodeIterable(N head, Function<? super N, ? extends V> f) {
+		public NodeIterable(N head, Function<? super N, ? extends V> f) {
 			this.head = head ;
 			this.f = f;
 		}
@@ -1049,7 +990,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	}
 
 	private static <N extends SerialHashNode<N>, V> Iterable<V> removedNodeIterable(N head, Function<? super N, ? extends V> f) {
-		return new SimpleNodeIterable<N, V>(head, f) ;
+		return new NodeIterable<N, V>(head, f) ;
 	}
 	public static Rehasher defaultRehasher() {
 		return Rehashers.jdkHashmapRehasher() ;

@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List ;
 
+import org.jjoost.collections.AnySet;
 import org.jjoost.collections.sets.serial.MultiArraySet;
 import org.jjoost.collections.sets.serial.SerialHashSet;
 import org.jjoost.util.Equality ;
@@ -33,8 +34,9 @@ import org.jjoost.util.Factory;
 import org.jjoost.util.Filter;
 import org.jjoost.util.Filters;
 import org.jjoost.util.Function;
+import org.jjoost.util.filters.MappedFilter;
 
-public interface HashStore<N extends HashNode<N>> extends Serializable {
+public interface HashStore<N> extends Serializable {
 
 	public static enum Locality {
 		ADJACENT, SAME_BUCKET, GLOBAL
@@ -45,66 +47,111 @@ public interface HashStore<N extends HashNode<N>> extends Serializable {
 	public boolean isEmpty() ;
 	public int clear() ;
 	public <V> Iterator<V> clearAndReturn(Function<? super N, ? extends V> f) ;
-	public <NCmp> HashStore<N> copy(Function<? super N, ? extends NCmp> nodeEqualityProj, HashNodeEquality<? super NCmp, ? super N> nodeEquality) ;
+	public <F> HashStore<N> copy(Function<? super N, ? extends F> nodeEqualityProj, HashNodeEquality<? super F, ? super N> nodeEquality) ;
 	public int capacity() ;
 	public void shrink() ;
 	public void resize(int size) ;
 	
-	public <NCmp, V> V put(NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) ;
-	public <NCmp, V> V putIfAbsent(NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) ;
-	public <NCmp, V> V putIfAbsent(int hash, NCmp put, HashNodeEquality<? super NCmp, ? super N> eq, HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret, boolean returnNewIfCreated) ;
+	public <F, V> V put(F find, N put, HashNodeEquality<? super F, ? super N> eq, Function<? super N, ? extends V> ret) ;
+	public <F, V> V putIfAbsent(F find, N put, HashNodeEquality<? super F, ? super N> eq, Function<? super N, ? extends V> ret) ;
+	public <F, V> V putIfAbsent(int hash, F put, HashNodeEquality<? super F, ? super N> eq, HashNodeFactory<? super F, N> factory, Function<? super N, ? extends V> ret, boolean returnNewIfCreated) ;
 	
-	public <NCmp> boolean removeNode(Function<? super N, ? extends NCmp> nodePrefixEqFunc, HashNodeEquality<? super NCmp, ? super N> nodePrefixEq, N n) ;
-	public <NCmp> int remove(int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) ;
-	public <NCmp, V> V removeAndReturnFirst(int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) ;
-	public <NCmp, V> Iterable<V> removeAndReturn(int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) ;
+	public <F> boolean removeNode(Function<? super N, ? extends F> nodePrefixEqFunc, HashNodeEquality<? super F, ? super N> nodePrefixEq, N n) ;
+	public <F> int remove(int hash, int removeAtMost, F find, HashNodeEquality<? super F, ? super N> eq) ;
+	public <F, V> V removeAndReturnFirst(int hash, int removeAtMost, F find, HashNodeEquality<? super F, ? super N> eq, Function<? super N, ? extends V> ret) ;
+	public <F, V> Iterable<V> removeAndReturn(int hash, int removeAtMost, F find, HashNodeEquality<? super F, ? super N> eq, Function<? super N, ? extends V> ret) ;
+
+	public <F> int count(int hash, F find, HashNodeEquality<? super F, ? super N> eq, int countUpTo) ;
+//	public <F> Iterator<Entry<F, Integer>> counts(HashNodeEquality<? super F, ? super N> eq, Function<? super N, ? extends F> r) ;
+	public <F, V> V first(int hash, F find, HashNodeEquality<? super F, ? super N> eq, Function<? super N, ? extends V> ret) ;
 	
-	public <NCmp> int count(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, int countUpTo) ;
-	public <NCmp, V> V first(int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) ;
-	
-	public <NCmp, V> List<V> findNow(
-			int hash, NCmp find, 
-			HashNodeEquality<? super NCmp, ? super N> findEq, 
+	public <F, V> List<V> findNow(
+			int hash, F find, 
+			HashNodeEquality<? super F, ? super N> findEq, 
 			Function<? super N, ? extends V> ret) ;
-	public <NCmp, NCmp2, V> Iterator<V> find(
-			int hash, NCmp find, 
-			HashNodeEquality<? super NCmp, ? super N> findEq, 
-			Function<? super N, ? extends NCmp2> nodeEqualityProj, 
-			HashNodeEquality<? super NCmp2, ? super N> nodeEq, 
-			Function<? super N, ? extends V> ret) ;
-	
-	public <NCmp, V> Iterator<V> all(
-			Function<? super N, ? extends NCmp> nodeEqualityProj, 
-			HashNodeEquality<? super NCmp, ? super N> nodeEquality, 
+	public <F, F2, V> Iterator<V> find(
+			int hash, F find, 
+			HashNodeEquality<? super F, ? super N> findEq, 
+			Function<? super N, ? extends F2> nodeEqualityProj, 
+			HashNodeEquality<? super F2, ? super N> nodeEq, 
 			Function<? super N, ? extends V> ret) ;
 	
-	public <NCmp, NCmp2, V> Iterator<V> unique(
-			Function<? super N, ? extends NCmp> uniquenessEqualityProj, 
-			Equality<? super NCmp> uniquenessEquality, 
+	public <F, V> Iterator<V> all(
+			Function<? super N, ? extends F> nodeEqualityProj, 
+			HashNodeEquality<? super F, ? super N> nodeEquality, 
+			Function<? super N, ? extends V> ret) ;
+	
+	public <F, F2, V> Iterator<V> unique(
+			Function<? super N, ? extends F> uniquenessEqualityProj, 
+			Equality<? super F> uniquenessEquality, 
 			Locality duplicateLocality,
-			Function<? super N, ? extends NCmp2> nodeEqualityProj, 
-			HashNodeEquality<? super NCmp2, ? super N> nodeEquality, 
+			Function<? super N, ? extends F2> nodeEqualityProj, 
+			HashNodeEquality<? super F2, ? super N> nodeEquality, 
 			Function<? super N, ? extends V> ret) ;
 	
 	
 	// helper classes for implementing unique() method
 	
 	static final class Helper {
-		public static <N, NCmp> Factory<Filter<N>> forUniqueness(
-				Function<? super N, ? extends NCmp> uniquenessEqualityProj,
-				Equality<? super NCmp> uniquenessEquality, 
+//		public static <N, F> Factory<Filter<N>> forUniqueness(
+//				Function<? super N, ? extends F> uniquenessEqualityProj,
+//				Equality<? super F> uniquenessEquality, 
+//				Locality duplicateLocality
+//			) {
+//			switch (duplicateLocality) {
+//			case ADJACENT: 
+//				return new UniqueSequenceFilterFactory<N, F>(uniquenessEquality, uniquenessEqualityProj) ; 
+//			case SAME_BUCKET: 
+//				return new UniqueLocalSetFilterFactory<N, F>(uniquenessEquality, uniquenessEqualityProj) ; 
+//			case GLOBAL: 
+//				return new UniqueGlobalSetFilterFactory<N, F>(uniquenessEquality, uniquenessEqualityProj) ; 
+//			default:
+//				throw new IllegalStateException() ;
+//			}			
+//		}
+		public static <N extends HashNode<N>, F> Filter<N> forUniqueness(
+				Function<? super N, ? extends F> uniquenessEqualityProj,
+				Equality<? super F> uniquenessEquality, 
 				Locality duplicateLocality
-			) {
+		) {
 			switch (duplicateLocality) {
 			case ADJACENT: 
-				return new UniqueSequenceFilterFactory<N, NCmp>(uniquenessEquality, uniquenessEqualityProj) ; 
+				return Filters.mapped(uniquenessEqualityProj, Filters.uniqueSeq(uniquenessEquality)) ; 
 			case SAME_BUCKET: 
-				return new UniqueLocalSetFilterFactory<N, NCmp>(uniquenessEquality, uniquenessEqualityProj) ; 
+				return new UniqueLocalSetFilter<N, F>(uniquenessEquality, uniquenessEqualityProj) ; 
 			case GLOBAL: 
-				return new UniqueGlobalSetFilterFactory<N, NCmp>(uniquenessEquality, uniquenessEqualityProj) ; 
+				return Filters.mapped(uniquenessEqualityProj, Filters.unique(new SerialHashSet<F>(uniquenessEquality))) ; 
 			default:
 				throw new IllegalStateException() ;
 			}			
+		}
+		
+		public static boolean cmp(int revA, int revB) {
+			return (revA < revB) ^ ((revB > 0) != (revA > 0));
+		}
+
+		public static boolean revThenCmp(int revA, int b) {
+			return cmp(revA, Integer.reverse(b)) ;
+		}
+
+	}
+	
+	static final class UniqueLocalSetFilter<N extends HashNode<N>, V> extends MappedFilter<N, V> {
+		private static final long serialVersionUID = 6287653437378935003L;
+		private final AnySet<V> set ;
+		private int previousHash = -1 ;
+		public UniqueLocalSetFilter(Equality<? super V> eq, Function<? super N, ? extends V> f) {
+			this(new MultiArraySet<V>(4, eq), f) ;
+		}
+		private UniqueLocalSetFilter(AnySet<V> set, Function<? super N, ? extends V> f) {
+			super(f, Filters.unique(set)) ;
+			this.set = set ;
+		}
+		@Override
+		public boolean accept(N n) {
+			if (previousHash != n.hash)
+				set.clear() ;
+			return super.accept(n) ;
 		}
 	}
 	
