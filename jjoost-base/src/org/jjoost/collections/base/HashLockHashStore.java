@@ -9,7 +9,7 @@ import org.jjoost.collections.base.AbstractConcurrentHashStore.ConcurrentHashNod
 import org.jjoost.collections.lists.UniformList;
 import org.jjoost.util.Equality ;
 import org.jjoost.util.Function ;
-import org.jjoost.util.concurrent.waiting.ParkingWaitQueue;
+import org.jjoost.util.concurrent.waiting.UnfairParkingWaitQueue;
 import org.jjoost.util.concurrent.waiting.WaitHandle;
 import org.jjoost.util.concurrent.waiting.WaitQueue;
 
@@ -19,6 +19,8 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 	private static final long serialVersionUID = -369208509152951474L;
 
 	private static ThreadLocal<LockNode> lockCache = new ThreadLocal<LockNode>() ;
+	protected static final int REHASH_SEGMENT_SIZE = 256 ;
+	protected static final int REHASH_SEGMENT_SHIFT = Integer.bitCount(REHASH_SEGMENT_SIZE - 1) ;
 
 	public HashLockHashStore(int initialCapacity, float loadFactor, Counting totalCounting, Counting uniquePrefixCounting) {
 		super(initialCapacity, loadFactor, totalCounting, uniquePrefixCounting) ;
@@ -454,7 +456,6 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 	public <NCmp> boolean removeNode(
 			Function<? super N, ? extends NCmp> nodePrefixEqFunc, 
 			HashNodeEquality<? super NCmp, ? super N> nodePrefixEq, N n) {
-
 		throw new UnsupportedOperationException() ;
 	}
 
@@ -603,7 +604,7 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 	
 	private static final class LockNode<N extends ConcurrentHashNode<N>> extends ConcurrentHashNode<N> {
 		private static final long serialVersionUID = 1L;
-		final WaitQueue waiting = new ParkingWaitQueue() ;
+		final WaitQueue waiting = new UnfairParkingWaitQueue() ;
 		public LockNode(int hash) {
 			super(hash);
 		}
@@ -615,7 +616,7 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 			return waiting.register() ;
 		}
 		void wakeAll() {
-			waiting.wake() ;
+			waiting.wakeAll() ;
 		}
 	}
 
@@ -796,7 +797,7 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 
 		public ResizingTable(AbstractConcurrentHashStore<N, Table<N>> store,
 				RegularTable table, int newLength) {
-			super(store, table, newLength);
+			super(store, table, newLength, Math.max(1, table.table.length >>> REHASH_SEGMENT_SHIFT)) ;
 		}
 
 		protected abstract void doBucket(ConcurrentHashNode lock, int oldTableIndex) ;
@@ -847,6 +848,7 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 					return lock ;
 			}
 		}
+		
 		
 		// returns a boolean indicating if work needs to be done
 		protected final boolean startBucket(ConcurrentHashNode lock, int oldTableIndex) {
@@ -962,6 +964,22 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 		}
 		
 	}
+
+	abstract class AbstractIterator<NCmp, V> extends AbstractHashNodeIterator<N, NCmp, V> {
+
+		public AbstractIterator(
+				Function<? super N, ? extends NCmp> nodeEqualityProj,
+				HashNodeEquality<? super NCmp, ? super N> nodeEquality,
+				Function<? super N, ? extends V> ret) {
+			super(nodeEqualityProj, nodeEquality, ret);
+		}
+		
+		@Override
+		protected void delete(N[] nodes, int node) {
+			removeNode(nodeEqualityProj, nodeEquality, nodes[node]) ;
+		}
+		
+	}
 	
 	final LockNode lockNode() {
 		LockNode lock = lockCache.get() ;
@@ -978,6 +996,8 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 			if (getNodeVolatileDirect(table, directIndex) != lock)
 				return ;
 			wait.awaitUninterruptibly() ;
+			if (getNodeVolatileDirect(table, directIndex) != lock)
+				return ;
 		}
 	}
 	
@@ -993,5 +1013,5 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 		}
 		return r ;
 	}
-	
+
 }
