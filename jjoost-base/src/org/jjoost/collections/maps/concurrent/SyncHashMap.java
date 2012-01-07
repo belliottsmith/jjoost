@@ -36,19 +36,19 @@ public class SyncHashMap<K, V> extends HashMap<K, V, SerialHashMap.Node<K, V>>{
 	private static final long serialVersionUID = 1051610520557989640L;
 
 	public SyncHashMap() {
-		this(16, 0.75f) ;
+		this(16, 0.75f);
 	}
 	public SyncHashMap(int minimumInitialCapacity, float loadFactor) {
-		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object(), Equalities.object()) ;
+		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object(), Equalities.object());
 	}	
 	public SyncHashMap(Equality<? super K> keyEquality) {
-		this(SerialHashStore.defaultRehasher(), keyEquality) ;
+		this(SerialHashStore.defaultRehasher(), keyEquality);
 	}	
 	public SyncHashMap(Rehasher rehasher, Equality<? super K> keyEquality) { 
-		this(16, 0.75f, rehasher, keyEquality, Equalities.object()) ;
+		this(16, 0.75f, rehasher, keyEquality, Equalities.object());
 	}	
 	public SyncHashMap(Rehasher rehasher, Equality<? super K> keyEquality, Equality<? super V> valEquality) { 
-		this(16, 0.75f, rehasher, keyEquality, valEquality) ;
+		this(16, 0.75f, rehasher, keyEquality, valEquality);
 	}
 	
 	public SyncHashMap( 
@@ -57,7 +57,7 @@ public class SyncHashMap<K, V> extends HashMap<K, V, SerialHashMap.Node<K, V>>{
 	{
 		super(rehasher, new SerialHashMap.KeyEquality<K, V>(keyEquality), new SerialHashMap.EntryEquality<K, V>(keyEquality, valEquality),
 			SerialHashMap.<K, V>serialNodeFactory(), 
-			new SynchronizedHashStore<Node<K, V>>(new SerialHashStore<Node<K, V>>(minimumInitialCapacity, loadFactor))) ;
+			new SynchronizedHashStore<Node<K, V>>(new SerialHashStore<Node<K, V>>(minimumInitialCapacity, loadFactor)));
 	}
 	
 }

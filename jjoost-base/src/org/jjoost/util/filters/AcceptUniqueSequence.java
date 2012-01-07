@@ -20,11 +20,11 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util.filters ;
+package org.jjoost.util.filters;
 
-import org.jjoost.util.Equalities ;
-import org.jjoost.util.Equality ;
-import org.jjoost.util.Filter ;
+import org.jjoost.util.Equalities;
+import org.jjoost.util.Equality;
+import org.jjoost.util.Filter;
 import org.jjoost.util.Objects;
 
 /**
@@ -33,15 +33,15 @@ import org.jjoost.util.Objects;
  */
 public class AcceptUniqueSequence<V> implements Filter<V> {
 
-	private static final long serialVersionUID = 4135610622081116945L ;
-	private final Equality<? super V> eq ;
+	private static final long serialVersionUID = 4135610622081116945L;
+	private final Equality<? super V> eq;
 
     /**
      * Construct a new <code>Filter</code> which returns <code>true</code> if and only if the previously tested value is not equal to the value
      * being tested, using regular object equality.
      */
 	public AcceptUniqueSequence() {
-		this(Equalities.object()) ;
+		this(Equalities.object());
 	}
 
     /**
@@ -49,20 +49,20 @@ public class AcceptUniqueSequence<V> implements Filter<V> {
      * being tested, using the provided definition of equality.
      */
 	public AcceptUniqueSequence(Equality<? super V> eq) {
-		this.eq = eq ;
+		this.eq = eq;
 	}
 
-	private V prev = Objects.initialisationSentinelWithObjectErasure() ;
+	private V prev = Objects.initialisationSentinelWithObjectErasure();
 	public boolean accept(V next) {
 		final boolean r = 
 			Objects.isInitialisationSentinelWithObjectErasure(prev) 
-			|| !eq.equates(next, prev) ;
-		prev = next ;
-		return r ;
+			|| !eq.equates(next, prev);
+		prev = next;
+		return r;
 	}
 	
 	public String toString() {
-		return "is not preceded by itself" ;
+		return "is not preceded by itself";
 	}
 
     /**
@@ -72,7 +72,7 @@ public class AcceptUniqueSequence<V> implements Filter<V> {
      * @return a filter rejecting any values equal to their predecessor
      */
 	public static <V> AcceptUniqueSequence<V> get() {
-		return new AcceptUniqueSequence<V>() ;
+		return new AcceptUniqueSequence<V>();
 	}
 	
 	/**
@@ -82,7 +82,7 @@ public class AcceptUniqueSequence<V> implements Filter<V> {
 	 * @return a filter rejecting any values equal to their predecessor
 	 */
 	public static <V> AcceptUniqueSequence<V> get(Equality<? super V> eq) {
-		return new AcceptUniqueSequence<V>(eq) ;
+		return new AcceptUniqueSequence<V>(eq);
 	}
 	
 }

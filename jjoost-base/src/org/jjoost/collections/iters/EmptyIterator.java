@@ -35,10 +35,10 @@ import java.util.NoSuchElementException;
 public final class EmptyIterator<E> implements Iterator<E> {
 
 	@SuppressWarnings("unchecked")
-	private static final EmptyIterator INSTANCE = new EmptyIterator() ;
+	private static final EmptyIterator INSTANCE = new EmptyIterator();
 	@SuppressWarnings("unchecked")
 	public static <E> EmptyIterator<E> get() {
-		return INSTANCE ;
+		return INSTANCE;
 	}
 
 	@Override
@@ -48,12 +48,12 @@ public final class EmptyIterator<E> implements Iterator<E> {
 
 	@Override
 	public E next() {
-		throw new NoSuchElementException() ;
+		throw new NoSuchElementException();
 	}
 
 	@Override
 	public void remove() {
-		throw new NoSuchElementException() ;
+		throw new NoSuchElementException();
 	}
 	
 }

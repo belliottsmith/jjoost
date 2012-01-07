@@ -34,16 +34,16 @@ import java.util.Iterator;
 public final class EmptyIterable<E> implements Iterable<E> {
 
 	@SuppressWarnings("unchecked")
-	private static final EmptyIterable INSTANCE = new EmptyIterable() ;
+	private static final EmptyIterable INSTANCE = new EmptyIterable();
 	
 	@SuppressWarnings("unchecked")
 	public static <E> EmptyIterable<E> get() {
-		return INSTANCE ;
+		return INSTANCE;
 	}
 
 	@Override
 	public Iterator<E> iterator() {
-		return EmptyIterator.get() ;
+		return EmptyIterator.get();
 	}
 
 }

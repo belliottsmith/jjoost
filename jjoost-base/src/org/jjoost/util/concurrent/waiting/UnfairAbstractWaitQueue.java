@@ -31,64 +31,64 @@ public abstract class UnfairAbstractWaitQueue implements WaitQueue {
 
 	protected abstract class Node extends AbstractWaitHandle {
 		
-		protected final Node next ;
+		protected final Node next;
 
 		protected Node(Thread thread, Node next) {
-			super(thread) ;
+			super(thread);
 			this.next = next;
 		}
 		
 	}
 
 	private volatile Node head;
-	private static final AtomicReferenceFieldUpdater<UnfairAbstractWaitQueue, Node> headUpdater = AtomicReferenceFieldUpdater.newUpdater(UnfairAbstractWaitQueue.class, Node.class, "head") ;
+	private static final AtomicReferenceFieldUpdater<UnfairAbstractWaitQueue, Node> headUpdater = AtomicReferenceFieldUpdater.newUpdater(UnfairAbstractWaitQueue.class, Node.class, "head");
 
-	abstract protected Node newNode(Thread thread, Node next) ;
+	abstract protected Node newNode(Thread thread, Node next);
 	
 	protected boolean stillWaiting(Node test) {
-		Node list = head ;
+		Node list = head;
 		while (list != null) {
 			if (test == list)
-				return true ;
-			list = list.next ;
+				return true;
+			list = list.next;
 		}
-		return false ;
+		return false;
 	}
 	
 	public WaitHandle register() {
 		final Thread thread = Thread.currentThread();
 		while (true) {
-			final Node handle = newNode(thread, head) ;
+			final Node handle = newNode(thread, head);
 			if (headUpdater.compareAndSet(this, handle.next, handle))
-				return handle ;
+				return handle;
 		}
 	}
 	
 	public void wakeAll() {
 		while (true) {
-			final Node head = this.head ;
+			final Node head = this.head;
 			if (head == null)
-				break ;
+				break;
 			if (headUpdater.compareAndSet(this, head, null)) {
-				wakeAll(head) ;
-				break ;
+				wakeAll(head);
+				break;
 			}
 		}
 	}
 	
 	public void wakeOne() {
 		while (true) {
-			final Node head = this.head ;
+			final Node head = this.head;
 			if (head == null)
-				break ;
+				break;
 			if (headUpdater.compareAndSet(this, head, head.next)) {
-				wakeFirst(head) ;					
-				break ;
+				wakeFirst(head);
+				break;
 			}
 		}
 	}
 	
-	protected abstract void wakeAll(UnfairAbstractWaitQueue.Node list) ;	
-	protected abstract void wakeFirst(UnfairAbstractWaitQueue.Node list) ;
+	protected abstract void wakeAll(UnfairAbstractWaitQueue.Node list);
+	protected abstract void wakeFirst(UnfairAbstractWaitQueue.Node list);
 	
 }

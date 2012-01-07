@@ -31,26 +31,26 @@ import java.util.Map.Entry;
 import org.jjoost.collections.AnyMap;
 import org.jjoost.collections.AnySet;
 import org.jjoost.collections.MultiSet;
-import org.jjoost.collections.base.HashNode ;
-import org.jjoost.collections.base.HashNodeEquality ;
-import org.jjoost.collections.base.HashStore ;
-import org.jjoost.collections.iters.AbstractIterable ;
-import org.jjoost.collections.maps.ImmutableMapEntry ;
+import org.jjoost.collections.base.HashNode;
+import org.jjoost.collections.base.HashNodeEquality;
+import org.jjoost.collections.base.HashStore;
+import org.jjoost.collections.iters.AbstractIterable;
+import org.jjoost.collections.maps.ImmutableMapEntry;
 import org.jjoost.collections.sets.base.AbstractSet;
 import org.jjoost.collections.sets.base.IterableSet;
-import org.jjoost.util.Equality ;
-import org.jjoost.util.Filters ;
-import org.jjoost.util.Function ;
+import org.jjoost.util.Equality;
+import org.jjoost.util.Filters;
+import org.jjoost.util.Function;
 import org.jjoost.util.Functions;
-import org.jjoost.util.Iters ;
+import org.jjoost.util.Iters;
 import org.jjoost.util.Rehasher;
 
 public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K, V>> implements AnyMap<K, V> {
 
 	protected static abstract class NodeEquality<K, V, N extends HashNode<N> & Map.Entry<K, V>> implements HashNodeEquality<Entry<K, V>, N>, Equality<Entry<K, V>> {
-		private static final long serialVersionUID = -4970889935020537472L ;
-    	protected final Equality<? super K> keyEq ;
-    	protected final Equality<? super V> valEq ;
+		private static final long serialVersionUID = -4970889935020537472L;
+    	protected final Equality<? super K> keyEq;
+    	protected final Equality<? super V> valEq;
 		public NodeEquality(Equality<? super K> keyEq,
 				Equality<? super V> valEq) {
 			this.keyEq = keyEq;
@@ -58,16 +58,16 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		}
 		@Override
 		public boolean equates(Entry<K, V> a, Entry<K, V> b) {
-			return keyEq.equates(a.getKey(), b.getKey()) && valEq.equates(a.getValue(), b.getValue()) ;
+			return keyEq.equates(a.getKey(), b.getKey()) && valEq.equates(a.getValue(), b.getValue());
 		}
 		@Override
 		public int hash(Entry<K, V> o) {
-			return keyEq.hash(o.getKey()) ;
+			return keyEq.hash(o.getKey());
 		}		
 	}
 	
 	protected static abstract class KeyEquality<K, V, N> implements HashNodeEquality<K, N> {
-		protected final Equality<? super K> keyEq ;
+		protected final Equality<? super K> keyEq;
 		public KeyEquality(Equality<? super K> keyEq) { this.keyEq = keyEq ; }
 		@Override 
 		public boolean suffixMatch(K key, N n) { return true ; }
@@ -76,12 +76,12 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 
 	private static final long serialVersionUID = 3187373892419456381L;
 	
-	protected final HashStore<N> store ;
-	protected final Rehasher rehasher ;
-	protected final KeyEquality<K, V, N> keyEq ;
-	protected final NodeEquality<K, V, N> nodeEq ;
-	protected final HashMapNodeFactory<K, V, N> nodeFactory ;
-	protected IterableSet<V> valueSet ;
+	protected final HashStore<N> store;
+	protected final Rehasher rehasher;
+	protected final KeyEquality<K, V, N> keyEq;
+	protected final NodeEquality<K, V, N> nodeEq;
+	protected final HashMapNodeFactory<K, V, N> nodeFactory;
+	protected IterableSet<V> valueSet;
 	
 	protected AbstractHashMap(
 			Rehasher rehasher, 
@@ -89,204 +89,204 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 			NodeEquality<K, V, N> entryEquality, 
 			HashMapNodeFactory<K, V, N> nodeFactory, 
 			HashStore<N> table) {
-		this.store = table ;
-		this.rehasher = rehasher ;
-		this.keyEq = keyEquality ;		
-		this.nodeEq = entryEquality ;
-		this.nodeFactory = nodeFactory ;
+		this.store = table;
+		this.rehasher = rehasher;
+		this.keyEq = keyEquality;
+		this.nodeEq = entryEquality;
+		this.nodeFactory = nodeFactory;
 	}
 
 	protected final Entry<K, V> entry(K key, V val) {
-		return new ImmutableMapEntry<K, V>(key, val) ;
+		return new ImmutableMapEntry<K, V>(key, val);
 	}
 	
 	protected final Function<Entry<K, V>, K> keyProj() {
-		return Functions.<K, Entry<K, V>>getMapEntryKeyProjection() ;
+		return Functions.<K, Entry<K, V>>getMapEntryKeyProjection();
 	}
 	
 	protected final Function<Entry<K, V>, V> valProj() {
-		return Functions.<V, Entry<K, V>>getMapEntryValueProjection() ;
+		return Functions.<V, Entry<K, V>>getMapEntryValueProjection();
 	}
 	
 	protected final Function<N, N> nodeProj() {
-		return Functions.<N>identity() ;
+		return Functions.<N>identity();
 	}
 	
 	protected final Function<Entry<K, V>, Entry<K, V>> entryProj() {
-		return Functions.<Entry<K, V>>identity() ;
+		return Functions.<Entry<K, V>>identity();
 	}
 	
 	public int capacity() {
-		return store.capacity() ;
+		return store.capacity();
 	}
 	
 	public void resize(int capacity) {
-		store.resize(capacity) ;
+		store.resize(capacity);
 	}
 	
 	protected final int hash(K key) {
-		return rehasher.rehash(keyEq.keyEq.hash(key)) ;
+		return rehasher.rehash(keyEq.keyEq.hash(key));
 	}
 	
 	@Override
 	public int remove(K key, V val) {
-		return store.remove(hash(key), Integer.MAX_VALUE, entry(key, val), nodeEq) ;
+		return store.remove(hash(key), Integer.MAX_VALUE, entry(key, val), nodeEq);
 	}
 	@Override
 	public V removeAndReturnFirst(K key) {
-		return store.removeAndReturnFirst(hash(key), Integer.MAX_VALUE, key, keyEq, valProj()) ;
+		return store.removeAndReturnFirst(hash(key), Integer.MAX_VALUE, key, keyEq, valProj());
 	}
 	@Override
 	public Iterable<Entry<K, V>> removeAndReturn(K key, V val) {
-		return store.removeAndReturn(hash(key), Integer.MAX_VALUE, entry(key, val), nodeEq, entryProj()) ;
+		return store.removeAndReturn(hash(key), Integer.MAX_VALUE, entry(key, val), nodeEq, entryProj());
 	}
 	@Override
 	public Iterable<Entry<K, V>> removeAndReturn(K key) {
-		return store.removeAndReturn(hash(key), Integer.MAX_VALUE, key, keyEq, entryProj()) ;
+		return store.removeAndReturn(hash(key), Integer.MAX_VALUE, key, keyEq, entryProj());
 	}
 	@Override
 	public int remove(K key) {
-		return store.remove(hash(key), Integer.MAX_VALUE, key, keyEq) ;
+		return store.remove(hash(key), Integer.MAX_VALUE, key, keyEq);
 	}
 	@Override
 	public boolean contains(K key, V val) {
-		return store.count(hash(key), entry(key, val), nodeEq, 1) > 0 ;
+		return store.count(hash(key), entry(key, val), nodeEq, 1) > 0;
 	}
 	@Override
 	public boolean contains(K key) {
-		return store.count(hash(key), key, keyEq, 1) > 0 ;
+		return store.count(hash(key), key, keyEq, 1) > 0;
 	}
 	@Override
 	public int count(K key, V val) {
-		return store.count(hash(key), entry(key, val), nodeEq, Integer.MAX_VALUE) ;
+		return store.count(hash(key), entry(key, val), nodeEq, Integer.MAX_VALUE);
 	}
 	@Override
 	public int count(K key) {
-		return store.count(hash(key), key, keyEq, Integer.MAX_VALUE) ;
+		return store.count(hash(key), key, keyEq, Integer.MAX_VALUE);
 	}
 	@Override
 	public Iterable<Entry<K, V>> entries(final K key) {
-		final int hash = hash(key) ;
+		final int hash = hash(key);
 		return new Iterable<Entry<K, V>>() {
 			@Override
 			public Iterator<Entry<K, V>> iterator() {
-				return store.find(hash, key, keyEq, nodeProj(), nodeEq, entryProj()) ;
+				return store.find(hash, key, keyEq, nodeProj(), nodeEq, entryProj());
 			}
-		} ;
+		};
 	}
 	@Override
 	public void shrink() {
-		store.shrink() ;
+		store.shrink();
 	}
 	@Override
 	public V first(K key) {
-		return store.first(hash(key), key, keyEq, valProj()) ;
+		return store.first(hash(key), key, keyEq, valProj());
 	}
 	@Override
 	public List<V> list(K key) {
-		return store.findNow(hash(key), key, keyEq, valProj()) ;
+		return store.findNow(hash(key), key, keyEq, valProj());
 	}
 	@Override
 	public int totalCount() {
-		return store.totalCount() ;
+		return store.totalCount();
 	}
 	@Override
 	public boolean isEmpty() {
-		return store.isEmpty() ;
+		return store.isEmpty();
 	}
 	@Override
 	public MultiSet<V> values() {
 		if (valueSet == null)
-			valueSet = new ValueSet() ;
-		return valueSet ;
+			valueSet = new ValueSet();
+		return valueSet;
 	}
 
 	@Override
 	public int clear() {
-		return store.clear() ;
+		return store.clear();
 	}
 	
 	@Override
 	public Iterator<Entry<K, V>> clearAndReturn() {
-		return store.clearAndReturn(entryProj()) ;
+		return store.clearAndReturn(entryProj());
 	}
 	
 	@Override
 	public AnyMap<V, K> inverse() {
-		throw new UnsupportedOperationException() ;
+		throw new UnsupportedOperationException();
 	}
 	
 	protected final class ValueSet extends IterableSet<V> implements MultiSet<V> {
 		private static final long serialVersionUID = -1124458438016390808L;
 		@Override
 		public Iterator<V> iterator() {
-			return store.all(keyProj(), keyEq, valProj()) ;
+			return store.all(keyProj(), keyEq, valProj());
 		}
-		@Override
-		public Equality<? super V> equality() {
-			return nodeEq.valEq  ;
-		}
-		@Override
-		public void put(V val, int numberOfTimes) {
-			throw new UnsupportedOperationException() ;
-		}
-	} ;
-
-	protected abstract class AbstractKeyValueSet extends AbstractSet<V> implements AnySet<V> {
-		
-		private static final long serialVersionUID = 1461826147890179114L ;
-		
-		protected final int hash ;
-		protected final K key ;
-		
-		public AbstractKeyValueSet(K key) {
-			this.key = key ;
-			this.hash = hash(key) ;
-		}
-		
 		@Override
 		public Equality<? super V> equality() {
 			return nodeEq.valEq ;
 		}
+		@Override
+		public void put(V val, int numberOfTimes) {
+			throw new UnsupportedOperationException();
+		}
+	};
+
+	protected abstract class AbstractKeyValueSet extends AbstractSet<V> implements AnySet<V> {
+		
+		private static final long serialVersionUID = 1461826147890179114L;
+		
+		protected final int hash;
+		protected final K key;
+		
+		public AbstractKeyValueSet(K key) {
+			this.key = key;
+			this.hash = hash(key);
+		}
+		
+		@Override
+		public Equality<? super V> equality() {
+			return nodeEq.valEq;
+		}
 		
 		@Override
 		public boolean contains(V value) {
-			return store.count(hash, entry(key, value), nodeEq, 1) > 0 ;
+			return store.count(hash, entry(key, value), nodeEq, 1) > 0;
 		}
 		
 		@Override
 		public int count(V value) {
-			return store.count(hash, entry(key, value), nodeEq, Integer.MAX_VALUE) ;
+			return store.count(hash, entry(key, value), nodeEq, Integer.MAX_VALUE);
 		}
 		
 		@Override
 		public void shrink() {
-			AbstractHashMap.this.shrink() ;
+			AbstractHashMap.this.shrink();
 		}
 		
 		@Override
 		public int totalCount() {
-			return store.count(hash, key, keyEq, Integer.MAX_VALUE) ;
+			return store.count(hash, key, keyEq, Integer.MAX_VALUE);
 		}
 		
 		@Override
 		public String toString() {
-			return "{" + Iters.toString(this, ", ") + "}" ;
+			return "{" + Iters.toString(this, ", ") + "}";
 		}
 		
 		@Override
 		public int clear() {
-			return store.remove(hash, Integer.MAX_VALUE, key, keyEq) ;
+			return store.remove(hash, Integer.MAX_VALUE, key, keyEq);
 		}
 		
 		@Override
 		public Iterator<V> clearAndReturn() {
-			return store.removeAndReturn(hash, Integer.MAX_VALUE, key, keyEq, valProj()).iterator() ;			
+			return store.removeAndReturn(hash, Integer.MAX_VALUE, key, keyEq, valProj()).iterator();
 		}
 		
 		@Override
 		public Boolean apply(V v) {
-			return store.count(hash, entry(key, v), nodeEq, 1) > 0 ;
+			return store.count(hash, entry(key, v), nodeEq, 1) > 0;
 		}
 		
 		@Override
@@ -294,65 +294,65 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 			return new AbstractIterable<V>() {
 				@Override
 				public Iterator<V> iterator() {
-					return store.find(hash, entry(key, v), nodeEq, entryProj(), nodeEq, valProj()) ;
+					return store.find(hash, entry(key, v), nodeEq, entryProj(), nodeEq, valProj());
 				}
-			} ;
+			};
 		}
 		
 		@Override
 		public V first(final V val) {
-			return store.first(hash, entry(key, val), nodeEq, valProj()) ;
+			return store.first(hash, entry(key, val), nodeEq, valProj());
 		}
 		
 		@Override
 		public List<V> list(final V val) {
-			return store.findNow(hash, entry(key, val), nodeEq, valProj()) ;
+			return store.findNow(hash, entry(key, val), nodeEq, valProj());
 		}
 		
 		@Override
 		public Iterator<V> iterator() {
-			return store.find(hash, key, keyEq, entryProj(), nodeEq, valProj()) ;
+			return store.find(hash, key, keyEq, entryProj(), nodeEq, valProj());
 		}
 		
 		@Override
 		public boolean isEmpty() {
-			return store.count(hash, key, keyEq, 1) > 0 ;
+			return store.count(hash, key, keyEq, 1) > 0;
 		}
 		
 		@Override
 		public int uniqueCount() {
 			if (nodeEq.isUnique())
-				return totalCount() ;
-			return Iters.count(Filters.apply(Filters.unique(nodeEq.valEq), iterator())) ;
+				return totalCount();
+			return Iters.count(Filters.apply(Filters.unique(nodeEq.valEq), iterator()));
 		}
 		
 		@Override
 		public boolean permitsDuplicates() {
-			return !nodeEq.isUnique() ;
+			return !nodeEq.isUnique();
 		}
 		
 		@Override
 		public final boolean add(V val) {
 			if (keyEq.isUnique())
-				throw new UnsupportedOperationException() ;
-			final N insert = nodeFactory.makeNode(hash, key, val) ;
-			return store.putIfAbsent(insert, insert, nodeEq, entryProj()) == null ;
+				throw new UnsupportedOperationException();
+			final N insert = nodeFactory.makeNode(hash, key, val);
+			return store.putIfAbsent(insert, insert, nodeEq, entryProj()) == null;
 		}
 		
 		@Override
 		public final V put(V val) {
 			if (keyEq.isUnique())
-				throw new UnsupportedOperationException() ;
-			final N insert = nodeFactory.makeNode(hash, key, val) ;
-			return store.put(insert, insert, nodeEq, valProj()) ;
+				throw new UnsupportedOperationException();
+			final N insert = nodeFactory.makeNode(hash, key, val);
+			return store.put(insert, insert, nodeEq, valProj());
 		}
 		
 		@Override
 		public final V putIfAbsent(V val) {
 			if (keyEq.isUnique())
-				throw new UnsupportedOperationException() ;
-			final N insert = nodeFactory.makeNode(hash, key, val) ;
-			return store.putIfAbsent(insert, insert, nodeEq, valProj()) ;
+				throw new UnsupportedOperationException();
+			final N insert = nodeFactory.makeNode(hash, key, val);
+			return store.putIfAbsent(insert, insert, nodeEq, valProj());
 		}
 		
 		@Override
@@ -372,7 +372,7 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		
 		@Override
 		public int putAll(Iterable<V> vals) {
-			throw new UnsupportedOperationException() ;
+			throw new UnsupportedOperationException();
 		}
 		
 		@Override
@@ -382,7 +382,7 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		
 		@Override
 		public V removeAndReturnFirst(V val, int atMost) {
-			return store.removeAndReturnFirst(hash, atMost, entry(key, val), nodeEq, valProj()) ;
+			return store.removeAndReturnFirst(hash, atMost, entry(key, val), nodeEq, valProj());
 		}
 		
 		@Override
@@ -394,101 +394,101 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 	
 	protected abstract class AbstractKeySet extends AbstractSet<K> implements AnySet<K> {
 		
-		private static final long serialVersionUID = 1461826147890179114L ;
+		private static final long serialVersionUID = 1461826147890179114L;
 
 		@Override
 		public Equality<? super K> equality() {
-			return nodeEq.keyEq ;
+			return nodeEq.keyEq;
 		}
 		
 		@Override
 		public boolean permitsDuplicates() {
-			return !keyEq.isUnique() ;
+			return !keyEq.isUnique();
 		}
 		@Override
 		public boolean contains(K value) {
-			return AbstractHashMap.this.contains(value) ;
+			return AbstractHashMap.this.contains(value);
 		}
 
 		@Override
 		public int count(K value) {
-			return AbstractHashMap.this.count(value) ;			
+			return AbstractHashMap.this.count(value);
 		}
 
 		@Override
 		public void shrink() {
-			AbstractHashMap.this.shrink() ;			
+			AbstractHashMap.this.shrink();
 		}
 		
 		@Override
 		public int totalCount() {
-			return AbstractHashMap.this.totalCount() ;			
+			return AbstractHashMap.this.totalCount();
 		}
 
 		@Override
 		public int clear() {
-			return AbstractHashMap.this.clear() ;			
+			return AbstractHashMap.this.clear();
 		}
 		
 		@Override
 		public Iterator<K> clearAndReturn() {
-			return store.clearAndReturn(Functions.<K, Entry<K, V>>getMapEntryKeyProjection()) ;			
+			return store.clearAndReturn(Functions.<K, Entry<K, V>>getMapEntryKeyProjection());
 		}
 
 		@Override
 		public Boolean apply(K v) {
-			return contains(v) ? Boolean.TRUE : Boolean.FALSE ;
+			return contains(v) ? Boolean.TRUE : Boolean.FALSE;
 		}
 
 		@Override
 		public Iterable<K> all(final K key) {
-			final int hash = hash(key) ;
+			final int hash = hash(key);
 			return new AbstractIterable<K>() {
 				@Override
 				public Iterator<K> iterator() {
-					return store.find(hash, key, keyEq, nodeProj(), nodeEq, keyProj()) ;
+					return store.find(hash, key, keyEq, nodeProj(), nodeEq, keyProj());
 				}
-			} ;
+			};
 		}
 		
 		@Override
 		public K first(final K key) {
-			return store.first(hash(key), key, keyEq, keyProj()) ;
+			return store.first(hash(key), key, keyEq, keyProj());
 		}
 		
 		@Override
 		public List<K> list(final K key) {
-			return store.findNow(hash(key), key, keyEq, keyProj()) ;
+			return store.findNow(hash(key), key, keyEq, keyProj());
 		}
 		
 		@Override
 		public Iterator<K> iterator() {
-			return store.all(keyProj(), keyEq, keyProj()) ;
+			return store.all(keyProj(), keyEq, keyProj());
 		}
 
 		@Override
 		public boolean isEmpty() {
-			return AbstractHashMap.this.isEmpty() ;
+			return AbstractHashMap.this.isEmpty();
 		}
 
 		@Override
 		public int uniqueCount() {
-			return AbstractHashMap.this.uniqueKeyCount() ;
+			return AbstractHashMap.this.uniqueKeyCount();
 		}
 
 		@Override
 		public final boolean add(K val) {
-			throw new UnsupportedOperationException() ;
+			throw new UnsupportedOperationException();
 		}
 		
 		@Override
 		public final K put(K val) {
-			throw new UnsupportedOperationException() ;
+			throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public final K putIfAbsent(K val) {
-			throw new UnsupportedOperationException() ;
+			throw new UnsupportedOperationException();
 		}
 		
 		@Override
@@ -498,27 +498,27 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		
 		@Override
 		public int remove(K key) {
-			return store.remove(hash(key), Integer.MAX_VALUE, key, keyEq) ;
+			return store.remove(hash(key), Integer.MAX_VALUE, key, keyEq);
 		}
 
 		@Override
 		public K removeAndReturnFirst(K key) {
-			return store.removeAndReturnFirst(hash(key), Integer.MAX_VALUE, key, keyEq, keyProj()) ;
+			return store.removeAndReturnFirst(hash(key), Integer.MAX_VALUE, key, keyEq, keyProj());
 		}
 		
 		@Override
 		public int putAll(Iterable<K> vals) {
-			throw new UnsupportedOperationException() ;
+			throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public int remove(K key, int atMost) {
-			return store.remove(hash(key), atMost, key, keyEq) ;
+			return store.remove(hash(key), atMost, key, keyEq);
 		}
 		
 		@Override
 		public K removeAndReturnFirst(K key, int atMost) {
-			return store.removeAndReturnFirst(hash(key), atMost, key, keyEq, keyProj()) ;
+			return store.removeAndReturnFirst(hash(key), atMost, key, keyEq, keyProj());
 		}
 		
 		@Override
@@ -527,144 +527,144 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		}
 		
 		public String toString() {
-			return "{" + Iters.toString(this, ", ") + "}" ;
+			return "{" + Iters.toString(this, ", ") + "}";
 		}
 		
 	}
 	
 	protected abstract class AbstractEntrySet extends AbstractSet<Entry<K, V>> implements AnySet<Entry<K, V>> {
 		
-		private static final long serialVersionUID = 4037233101289518536L ;
+		private static final long serialVersionUID = 4037233101289518536L;
 		
 		@Override
 		public Equality<? super Entry<K, V>> equality() {
-			return nodeEq ;
+			return nodeEq;
 		}
 		
 		@Override
 		public boolean add(Entry<K, V> entry) {
-			return put(entry) == null ;
+			return put(entry) == null;
 		}
 		
 		@Override
 		public boolean permitsDuplicates() {
-			return !nodeEq.isUnique() ;
+			return !nodeEq.isUnique();
 		}
 
 		@Override
 		public boolean contains(Entry<K, V> value) {
-			return AbstractHashMap.this.contains(value.getKey(), value.getValue()) ;
+			return AbstractHashMap.this.contains(value.getKey(), value.getValue());
 		}
 
 		@Override
 		public int count(Entry<K, V> value) {
-			return AbstractHashMap.this.count(value.getKey(), value.getValue()) ;
+			return AbstractHashMap.this.count(value.getKey(), value.getValue());
 		}
 
 		@Override
 		public int totalCount() {
-			return AbstractHashMap.this.totalCount() ;			
+			return AbstractHashMap.this.totalCount();
 		}
 
 		@Override
 		public int clear() {
-			return AbstractHashMap.this.clear() ;			
+			return AbstractHashMap.this.clear();
 		}
 
 		@Override
 		public Iterator<Entry<K, V>> clearAndReturn() {
-			return AbstractHashMap.this.clearAndReturn() ;			
+			return AbstractHashMap.this.clearAndReturn();
 		}
 
 		@Override
 		public void shrink() {
-			AbstractHashMap.this.shrink() ;			
+			AbstractHashMap.this.shrink();
 		}
 		
 		@Override
 		public Boolean apply(Entry<K, V> v) {
-			return contains(v) ? Boolean.TRUE : Boolean.FALSE ;
+			return contains(v) ? Boolean.TRUE : Boolean.FALSE;
 		}
 		
 		@SuppressWarnings("unchecked")
 		@Override
 		public Iterable<Entry<K, V>> all(final Entry<K, V> entry) {
-			final int hash = hash(entry.getKey()) ;
+			final int hash = hash(entry.getKey());
 			return (Iterable<Entry<K, V>>) 
 			new AbstractIterable<N>() {
 				@Override
 				public Iterator<N> iterator() {
-					return store.find(hash, entry, nodeEq, nodeProj(), nodeEq, nodeProj()) ;
+					return store.find(hash, entry, nodeEq, nodeProj(), nodeEq, nodeProj());
 				}
-			} ;
+			};
 		}
 
 		@Override
 		public Entry<K, V> first(Entry<K, V> entry) {
-			return store.first(hash(entry.getKey()), entry, nodeEq, nodeProj()) ;			
+			return store.first(hash(entry.getKey()), entry, nodeEq, nodeProj());
 		}
 
 		@Override
 		public List<Entry<K, V>> list(Entry<K, V> entry) {
-			return store.findNow(hash(entry.getKey()), entry, nodeEq, entryProj()) ;
+			return store.findNow(hash(entry.getKey()), entry, nodeEq, entryProj());
 		}
 
 		@Override
 		public Iterator<Entry<K, V>> iterator() {
-			return store.all(keyProj(), keyEq, entryProj()) ;
+			return store.all(keyProj(), keyEq, entryProj());
 		}
 		
 		@Override
 		public boolean isEmpty() {
-			return AbstractHashMap.this.isEmpty() ;
+			return AbstractHashMap.this.isEmpty();
 		}
 		
 		@Override
 		public int uniqueCount() {
-			return AbstractHashMap.this.totalCount() ;
+			return AbstractHashMap.this.totalCount();
 		}
 
 		@Override
 		public int putAll(Iterable<Entry<K, V>> vals) {
-			int c = 0 ;
+			int c = 0;
 			for (final Entry<K, V> val : vals)
 				if (put(val) == null)
-					c++ ;
-			return c ;
+					c++;
+			return c;
 		}
 		
 		@Override
 		public Entry<K, V> removeAndReturnFirst(Entry<K, V> entry, int atMost) {
-			return store.removeAndReturnFirst(hash(entry.getKey()), atMost, entry, nodeEq, entryProj()) ;
+			return store.removeAndReturnFirst(hash(entry.getKey()), atMost, entry, nodeEq, entryProj());
 		}
 		
 		@Override
 		public int remove(Map.Entry<K, V> entry, int atMost) {
-			return store.remove(hash(entry.getKey()), atMost, entry, nodeEq) ;
+			return store.remove(hash(entry.getKey()), atMost, entry, nodeEq);
 		}
 
 		@Override
 		public Iterable<Entry<K, V>> removeAndReturn(Entry<K, V> entry, int atMost) {
-			return store.removeAndReturn(hash(entry.getKey()), atMost, entry, nodeEq, entryProj()) ;
+			return store.removeAndReturn(hash(entry.getKey()), atMost, entry, nodeEq, entryProj());
 		}
 		
 		@Override
 		public Entry<K, V> removeAndReturnFirst(Entry<K, V> entry) {
-			return store.removeAndReturnFirst(hash(entry.getKey()), Integer.MAX_VALUE, entry, nodeEq, entryProj()) ;
+			return store.removeAndReturnFirst(hash(entry.getKey()), Integer.MAX_VALUE, entry, nodeEq, entryProj());
 		}
 		
 		@Override
 		public int remove(Map.Entry<K, V> entry) {
-			return store.remove(hash(entry.getKey()), Integer.MAX_VALUE, entry, nodeEq) ;
+			return store.remove(hash(entry.getKey()), Integer.MAX_VALUE, entry, nodeEq);
 		}
 		
 		@Override
 		public Iterable<Entry<K, V>> removeAndReturn(Entry<K, V> entry) {
-			return store.removeAndReturn(hash(entry.getKey()), Integer.MAX_VALUE, entry, nodeEq, entryProj()) ;
+			return store.removeAndReturn(hash(entry.getKey()), Integer.MAX_VALUE, entry, nodeEq, entryProj());
 		}
 		
 		public String toString() {
-			return "{" + Iters.toString(this, ", ") + "}" ;
+			return "{" + Iters.toString(this, ", ") + "}";
 		}
 		
 	}

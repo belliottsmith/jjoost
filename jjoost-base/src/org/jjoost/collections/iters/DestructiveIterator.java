@@ -26,7 +26,7 @@ import java.util.Iterator;
 
 public class DestructiveIterator<E> implements Iterator<E> {
 	
-	private final Iterator<E> delegate ;
+	private final Iterator<E> delegate;
 	public DestructiveIterator(Iterator<E> delegate) {
 		super();
 		this.delegate = delegate;
@@ -38,8 +38,8 @@ public class DestructiveIterator<E> implements Iterator<E> {
 
 	public E next() {
 		final E next = delegate.next();
-		delegate.remove() ;
-		return next ;
+		delegate.remove();
+		return next;
 	}
 
 	public void remove() {

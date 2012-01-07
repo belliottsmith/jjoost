@@ -28,10 +28,10 @@ import org.jjoost.collections.AnySet;
 import org.jjoost.collections.MultiSet;
 import org.jjoost.collections.Set;
 
-import org.jjoost.collections.base.HashNode ;
-import org.jjoost.collections.base.HashNodeEquality ;
-import org.jjoost.collections.base.HashNodeFactory ;
-import org.jjoost.collections.base.HashStore ;
+import org.jjoost.collections.base.HashNode;
+import org.jjoost.collections.base.HashNodeEquality;
+import org.jjoost.collections.base.HashNodeFactory;
+import org.jjoost.collections.base.HashStore;
 import org.jjoost.collections.base.HashStore.Locality;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Rehasher;
@@ -42,55 +42,55 @@ public class InlineMultiHashSet<V, N extends HashNode<N> & Value<V>> extends Abs
 	private static final long serialVersionUID = -6385620376018172675L;
 
 	public InlineMultiHashSet(Rehasher rehasher, Equality<? super V> equality, HashNodeFactory<V, N> nodeFactory, HashStore<N> table) {
-		super(rehasher, new ValueEquality<V>(equality), nodeFactory, table) ;
-		this.putEq = new PutEquality<V>(equality) ;
+		super(rehasher, new ValueEquality<V>(equality), nodeFactory, table);
+		this.putEq = new PutEquality<V>(equality);
 	}
 	
 	private InlineMultiHashSet(Rehasher rehasher, AbstractHashSet.ValueEquality<V> equality, HashNodeFactory<V, N> nodeFactory, PutEquality<V> putEq, HashStore<N> table) {
-		super(rehasher, equality, nodeFactory, table) ;
-		this.putEq = putEq ;
+		super(rehasher, equality, nodeFactory, table);
+		this.putEq = putEq;
 	}
 	
-	private final PutEquality<V> putEq ;
-	private UniqueSet unique ;
+	private final PutEquality<V> putEq;
+	private UniqueSet unique;
 	
 	@Override
 	public boolean add(V val) {
-		put(val) ;
-		return true ;
+		put(val);
+		return true;
 	}
 	
 	@Override
 	public V put(V val) {
-		return store.put(val, nodeFactory.makeNode(hash(val), val), putEq, valProj()) ;
+		return store.put(val, nodeFactory.makeNode(hash(val), val), putEq, valProj());
 	}
 	
 	@Override
 	public void put(V val, int count) {
 		for (int i = 0 ; i != count ; i++) {
-			store.put(val, nodeFactory.makeNode(hash(val), val), putEq, valProj()) ;
+			store.put(val, nodeFactory.makeNode(hash(val), val), putEq, valProj());
 		}
 	}
 	
 	@Override
 	public MultiSet<V> copy() {
-		return new InlineMultiHashSet<V, N>(rehasher, valEq, nodeFactory, putEq, store.copy(valProj(), valEq)) ;
+		return new InlineMultiHashSet<V, N>(rehasher, valEq, nodeFactory, putEq, store.copy(valProj(), valEq));
 	}
 
 	@Override
 	public boolean permitsDuplicates() {
-		return true ;
+		return true;
 	}
 	@Override
 	public int uniqueCount() {
-		return store.uniquePrefixCount() ;
+		return store.uniquePrefixCount();
 	}
 
 	@Override
 	public Set<V> unique() {
 		if (unique == null)
-			unique = new UniqueSet() ;
-		return unique ;
+			unique = new UniqueSet();
+		return unique;
 	}
 	
 	private final class UniqueSet extends AbstractUniqueSetAdapter<V> {
@@ -99,46 +99,46 @@ public class InlineMultiHashSet<V, N extends HashNode<N> & Value<V>> extends Abs
 
 		@Override
 		protected AnySet<V> set() {
-			return InlineMultiHashSet.this ;
+			return InlineMultiHashSet.this;
 		}
 
 		@Override
 		public Iterator<V> iterator() {
-			return wrap(store.unique(valProj(), valEq.getValueEquality(), Locality.ADJACENT, valProj(), valEq, valProj())) ;
+			return wrap(store.unique(valProj(), valEq.getValueEquality(), Locality.ADJACENT, valProj(), valEq, valProj()));
 		}
 		
 	}
 
 	private static final class ValueEquality<V> extends AbstractHashSet.ValueEquality<V> {
 		public ValueEquality(Equality<? super V> valEq) {
-			super(valEq) ;
+			super(valEq);
 		}
 		@Override
 		public boolean isUnique() {
-			return false ;
+			return false;
 		}
 	}
 
 	private static final class PutEquality<V> implements HashNodeEquality<V, Value<V>> {
-		final Equality<? super V> valEq ;
+		final Equality<? super V> valEq;
 		public PutEquality(Equality<? super V> valEq) { this.valEq = valEq ; }
 		@Override 
 		public boolean suffixMatch(V n1, Value<V> n2) { 
-			return false ;
+			return false;
 		}
 		@Override 
 		public boolean prefixMatch(V v, Value<V> v2) { 
-			return valEq.equates(v, v2.getValue()) ; 
+			return valEq.equates(v, v2.getValue());
 		}
 		@Override
 		public boolean isUnique() {
-			return false ;
+			return false;
 		}
 	}
 
 	@Override
 	public Equality<? super V> equality() {
-		return valEq.valEq ;
+		return valEq.valEq;
 	}
 	
 }

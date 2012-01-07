@@ -39,7 +39,7 @@ public interface ListMap<K, V> extends AnyMap<K, V>, ListReadMap<K, V> {
 	 * 
 	 * @return null
 	 */
-	@Override public V put(K key, V val) ;
+	@Override public V put(K key, V val);
 
 	/**
 	 * Appends the provided key->value pair to the map <b>if no pair exists where both
@@ -51,26 +51,26 @@ public interface ListMap<K, V> extends AnyMap<K, V>, ListReadMap<K, V> {
 	 * 
 	 * @return value of any existing pair where both key and value are equal
 	 */
-	@Override public V putIfAbsent(K key, V val) ;
+	@Override public V putIfAbsent(K key, V val);
 	
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyReadMap#values(java.lang.Object)
 	 */
-	@Override public MultiSet<V> values(K key) ;
+	@Override public MultiSet<V> values(K key);
 
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyReadMap#keys()
 	 */
-	@Override public MultiSet<K> keys() ;
+	@Override public MultiSet<K> keys();
 	
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyReadMap#entries()
 	 */
-	@Override public MultiSet<Entry<K, V>> entries() ;
+	@Override public MultiSet<Entry<K, V>> entries();
 	
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyMap#copy()
 	 */
-	@Override public ListMap<K, V> copy() ;
+	@Override public ListMap<K, V> copy();
 
 }

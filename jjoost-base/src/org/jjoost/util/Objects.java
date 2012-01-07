@@ -31,13 +31,13 @@ import java.util.Comparator;
  */
 public class Objects {
 
-	private static final Object INITIALISATION_SENTINEL_WITH_OBJECT_ERASURE_SENTINEL = new Object() ;
+	private static final Object INITIALISATION_SENTINEL_WITH_OBJECT_ERASURE_SENTINEL = new Object();
 	@SuppressWarnings("unchecked")
 	public static <E> E initialisationSentinelWithObjectErasure() {
-		return (E) INITIALISATION_SENTINEL_WITH_OBJECT_ERASURE_SENTINEL ;
+		return (E) INITIALISATION_SENTINEL_WITH_OBJECT_ERASURE_SENTINEL;
 	}
 	public static final boolean isInitialisationSentinelWithObjectErasure(Object o) {
-		return o == INITIALISATION_SENTINEL_WITH_OBJECT_ERASURE_SENTINEL ;
+		return o == INITIALISATION_SENTINEL_WITH_OBJECT_ERASURE_SENTINEL;
 	}
 	
     /**
@@ -50,16 +50,16 @@ public class Objects {
 	 * @return <code>true</code> if <code>a</code> and <code>b</code> are equal, <code>false</code> otherwise
 	 */
     public static boolean equalQuick(final Object a, final Object b) {
-    	return a == b || ((a != null & b != null) && a.equals(b)) ;
+    	return a == b || ((a != null & b != null) && a.equals(b));
     }
     
 	@SuppressWarnings("unchecked")
 	private static final Comparator<Comparable> COMPARABLE_COMPARATOR = new Comparator<Comparable>() {
 		@Override
 		public int compare(Comparable o1, Comparable o2) {
-			return o1.compareTo(o2) ;
+			return o1.compareTo(o2);
 		}
-	} ;
+	};
 	
 	/**
 	 * Return a <code>Comparator</code> which delegates to a <code>Comparable</code> object's <code>compareTo()</code> method
@@ -68,7 +68,7 @@ public class Objects {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <E extends Comparable<E>> Comparator<E> getComparableComparator() {
-		return (Comparator<E>) COMPARABLE_COMPARATOR ;
+		return (Comparator<E>) COMPARABLE_COMPARATOR;
 	}
 
 	/**
@@ -79,7 +79,7 @@ public class Objects {
 	 * @return <code>o == null ? "null" : o.toString()</code>
 	 */
 	public static String toString(Object o) {
-		return o == null ? "null" : o.toString() ;
+		return o == null ? "null" : o.toString();
 	}
 	
 }

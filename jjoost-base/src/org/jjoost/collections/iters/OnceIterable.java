@@ -32,12 +32,12 @@ import java.util.Iterator;
  */
 public class OnceIterable<E> implements Iterable<E> {
 
-    public final Iterator<E> iterator ;
+    public final Iterator<E> iterator;
     public OnceIterable(Iterator<E> iterator) {
         this.iterator = iterator;
     }
     public Iterator<E> iterator() {
-        return iterator ;
+        return iterator;
     }
     
 }

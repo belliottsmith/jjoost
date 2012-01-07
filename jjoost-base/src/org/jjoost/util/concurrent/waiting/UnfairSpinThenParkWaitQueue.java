@@ -29,13 +29,13 @@ import java.util.concurrent.locks.LockSupport;
  */
 public final class UnfairSpinThenParkWaitQueue extends UnfairAbstractWaitQueue {
 
-	public static final int DEFAULT_MAX_SPINS = 1000 ;
+	public static final int DEFAULT_MAX_SPINS = 1000;
 	
 	private final class Node extends UnfairAbstractWaitQueue.Node {
 		
-		private int spins ;
+		private int spins;
 		private Node(Thread thread, UnfairAbstractWaitQueue.Node next) {
-			super(thread, next) ;
+			super(thread, next);
 		}
 
 		@Override protected void close() { }
@@ -43,30 +43,30 @@ public final class UnfairSpinThenParkWaitQueue extends UnfairAbstractWaitQueue {
 		@Override 
 		protected void pause() { 
 			if (++spins > maxSpins)
-				LockSupport.park() ;
+				LockSupport.park();
 		}
 		@Override 
 		protected void pauseNanos(long nanos) { 
 			if (++spins > maxSpins)
-				LockSupport.parkNanos(nanos) ;
+				LockSupport.parkNanos(nanos);
 		}
 		
 		@Override 
 		protected void pauseUntil(long until) { 
 			if (++spins > maxSpins)
-				LockSupport.parkUntil(until) ;
+				LockSupport.parkUntil(until);
 		}
 		
 		@Override
 		protected boolean stillWaiting() {
-			return UnfairSpinThenParkWaitQueue.this.stillWaiting(this) ;
+			return UnfairSpinThenParkWaitQueue.this.stillWaiting(this);
 		}
 
 	}
 
-	private final int maxSpins ;	
+	private final int maxSpins;
 	public UnfairSpinThenParkWaitQueue() {
-		this(DEFAULT_MAX_SPINS) ;
+		this(DEFAULT_MAX_SPINS);
 	}
 
 	public UnfairSpinThenParkWaitQueue(int maxSpins) {
@@ -74,18 +74,18 @@ public final class UnfairSpinThenParkWaitQueue extends UnfairAbstractWaitQueue {
 	}
 
 	protected final Node newNode(Thread thread, UnfairAbstractWaitQueue.Node next) {
-		return new Node(thread, next) ;
+		return new Node(thread, next);
 	}
 	
 	protected final void wakeAll(UnfairAbstractWaitQueue.Node list) {
 		while (list != null) {
-			LockSupport.unpark(list.thread) ;
-			list = list.next ;
+			LockSupport.unpark(list.thread);
+			list = list.next;
 		}
 	}
 	
 	protected final void wakeFirst(UnfairAbstractWaitQueue.Node list) {
-		LockSupport.unpark(list.thread) ;
+		LockSupport.unpark(list.thread);
 	}
 	
 }

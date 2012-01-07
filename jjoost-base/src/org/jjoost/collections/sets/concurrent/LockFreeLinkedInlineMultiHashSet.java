@@ -36,18 +36,18 @@ public class LockFreeLinkedInlineMultiHashSet<V> extends InlineMultiHashSet<V, A
 	private static final long serialVersionUID = 1051610520557989640L;
 
 	public LockFreeLinkedInlineMultiHashSet() {
-		this(16, 0.75f) ;
+		this(16, 0.75f);
 	}
 	public LockFreeLinkedInlineMultiHashSet(int minimumInitialCapacity, float loadFactor) {
-		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object()) ;
+		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object());
 	}
 	
 	public LockFreeLinkedInlineMultiHashSet(Equality<? super V> keyEquality) {
-		this(SerialHashStore.defaultRehasher(), keyEquality) ;
+		this(SerialHashStore.defaultRehasher(), keyEquality);
 	}
 	
 	public LockFreeLinkedInlineMultiHashSet(Rehasher rehasher, Equality<? super V> keyEquality) { 
-		this(16, 0.75f, rehasher, keyEquality) ;
+		this(16, 0.75f, rehasher, keyEquality);
 	}
 	
 	public LockFreeLinkedInlineMultiHashSet( 
@@ -56,7 +56,7 @@ public class LockFreeLinkedInlineMultiHashSet<V> extends InlineMultiHashSet<V, A
 	{
 		super(rehasher, keyEquality, 
 			AbstractHashSet.<V>lockFreeLinkedNodeFactory(), 
-			new LockFreeLinkedHashStore<LockFreeLinkedHashSetNode<V>>(minimumInitialCapacity, loadFactor, Counting.PRECISE, Counting.PRECISE)) ;
+			new LockFreeLinkedHashStore<LockFreeLinkedHashSetNode<V>>(minimumInitialCapacity, loadFactor, Counting.PRECISE, Counting.PRECISE));
 	}
 
 }

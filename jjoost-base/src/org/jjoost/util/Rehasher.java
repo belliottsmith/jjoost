@@ -35,6 +35,6 @@ public interface Rehasher extends Serializable {
 	 * @param hash a hash
 	 * @return the re-hash of the provided hash
 	 */
-    public int rehash(int hash) ;
+    public int rehash(int hash);
 
 }

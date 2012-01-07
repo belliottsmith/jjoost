@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util ;
+package org.jjoost.util;
 
 import java.util.Comparator;
 
@@ -42,7 +42,7 @@ public interface FilterPartialOrder<P> {
      * 
      * @return true, if accepts
      */
-    boolean accept(P v, Comparator<? super P> cmp) ;
+    boolean accept(P v, Comparator<? super P> cmp);
     
     /**
      * Returns true if there exists (in the total order defined by the comparator, not necessarily in any concrete 
@@ -65,7 +65,7 @@ public interface FilterPartialOrder<P> {
      * @return true, if there may exists a value V such that lb <(/<=) V <(/<=) ub and accept(V, cmp) == true
      */
 
-    boolean mayAcceptBetween(P lb, boolean lbInclusive, P ub, boolean ubInclusive, Comparator<? super P> cmp) ;
+    boolean mayAcceptBetween(P lb, boolean lbInclusive, P ub, boolean ubInclusive, Comparator<? super P> cmp);
 
     /**
      * Returns true if there exists (in the total order defined by the comparator, not necessarily in any concrete 
@@ -88,6 +88,6 @@ public interface FilterPartialOrder<P> {
      * @return true, if there may exists a value V such that lb <(/<=) V <(/<=) ub and accept(V, cmp) == false
      */
     
-    boolean mayRejectBetween(P lb, boolean lbInclusive, P ub, boolean ubInclusive, Comparator<? super P> cmp) ;
+    boolean mayRejectBetween(P lb, boolean lbInclusive, P ub, boolean ubInclusive, Comparator<? super P> cmp);
     
 }

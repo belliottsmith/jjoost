@@ -49,7 +49,7 @@ public class ListMapNesting<V> {
 		 * Store the values for duplicates keys in a nested <code>MultiSet</code>. Typically this will be more efficient than
 		 * <code>INLINE</code> for moderate to large average numbers of duplicate keys. 
 		 */
-		NESTED ;
+		NESTED;
 	}
 	
 	/**
@@ -65,8 +65,8 @@ public class ListMapNesting<V> {
 	 */
 	public Factory<MultiSet<V>> factory() { return factory ; }
 	
-	private final Type type ;
-	private final Factory<MultiSet<V>> factory ;
+	private final Type type;
+	private final Factory<MultiSet<V>> factory;
 	
 	/**
 	 * Instantiates a new list map nesting.
@@ -76,14 +76,14 @@ public class ListMapNesting<V> {
 	 */
 	protected ListMapNesting(Factory<MultiSet<V>> factory, Type type) {
 		super();
-		this.factory = factory ;
-		this.type = type ;
+		this.factory = factory;
+		this.type = type;
 	}
 
 
 	/** The Constant INLINE */
 	@SuppressWarnings("unchecked")
-	private static final ListMapNesting INLINE = new ListMapNesting(null, Type.INLINE) ;
+	private static final ListMapNesting INLINE = new ListMapNesting(null, Type.INLINE);
 	
 	/**
 	 * Public method for retrieving the <code>ListMapNesting</code> that represents <code>INLINE</code> nesting
@@ -92,7 +92,7 @@ public class ListMapNesting<V> {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <V> ListMapNesting<V> inline() {
-		return INLINE ;
+		return INLINE;
 	}
 	
 	/**
@@ -103,8 +103,8 @@ public class ListMapNesting<V> {
 	 */
 	public static <V> ListMapNesting<V> nested(Factory<MultiSet<V>> factory) {
 		if (factory == null)
-			throw new IllegalArgumentException() ;
-		return new ListMapNesting<V>(factory, Type.NESTED) ;
+			throw new IllegalArgumentException();
+		return new ListMapNesting<V>(factory, Type.NESTED);
 	}
 	
 }

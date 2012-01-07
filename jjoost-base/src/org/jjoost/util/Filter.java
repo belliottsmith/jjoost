@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util ;
+package org.jjoost.util;
 
 import java.io.Serializable;
 
@@ -38,6 +38,6 @@ public interface Filter<E> extends Serializable {
 	 *            value <code>to</code> test
 	 * @return <code>true</code> if the filter accepts <code>test</code>; <code>false</code> otherwise
 	 */
-    public boolean accept(E test) ;
+    public boolean accept(E test);
 
 }

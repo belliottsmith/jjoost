@@ -36,18 +36,18 @@ public class LockFreeHashSet<V> extends HashSet<V, AbstractHashSet.LockFreeHashS
 	private static final long serialVersionUID = 1051610520557989640L;
 
 	public LockFreeHashSet() {
-		this(16, 0.75f) ;
+		this(16, 0.75f);
 	}
 	public LockFreeHashSet(int minimumInitialCapacity, float loadFactor) {
-		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object()) ;
+		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object());
 	}
 	
 	public LockFreeHashSet(Equality<? super V> keyEquality) {
-		this(SerialHashStore.defaultRehasher(), keyEquality) ;
+		this(SerialHashStore.defaultRehasher(), keyEquality);
 	}
 	
 	public LockFreeHashSet(Rehasher rehasher, Equality<? super V> keyEquality) { 
-		this(16, 0.75f, rehasher, keyEquality) ;
+		this(16, 0.75f, rehasher, keyEquality);
 	}
 	
 	public LockFreeHashSet( 
@@ -56,7 +56,7 @@ public class LockFreeHashSet<V> extends HashSet<V, AbstractHashSet.LockFreeHashS
 	{
 		super(rehasher, keyEquality, 
 			AbstractHashSet.<V>lockFreeNodeFactory(), 
-			new LockFreeHashStore<LockFreeHashSetNode<V>>(minimumInitialCapacity, loadFactor, Counting.PRECISE, Counting.OFF)) ;
+			new LockFreeHashStore<LockFreeHashSetNode<V>>(minimumInitialCapacity, loadFactor, Counting.PRECISE, Counting.OFF));
 	}
 
 }

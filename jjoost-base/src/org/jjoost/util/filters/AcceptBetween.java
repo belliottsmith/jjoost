@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util.filters ;
+package org.jjoost.util.filters;
 
 /**
  * A filter that accepts everything between the provided lower and upper bounds, as determined by the <code>Comparator</code> provided to its methods. 
@@ -28,7 +28,7 @@ package org.jjoost.util.filters ;
  */
 public class AcceptBetween<E extends Comparable<? super E>> extends PartialOrderAcceptBetween<E> implements BothFilter<E> {
 
-	private static final long serialVersionUID = 1064862673649778571L ;
+	private static final long serialVersionUID = 1064862673649778571L;
 
     /**
      * Constructs a new filter that accepts everything between the provided lower and upper bounds, as determined by the <code>Comparator</code> provided to its methods. 
@@ -44,13 +44,13 @@ public class AcceptBetween<E extends Comparable<? super E>> extends PartialOrder
      *            <code>true</code> if <code>ub</code> should be inclusive, <code>false</code> if exclusive
      */
 	public AcceptBetween(E lb, boolean lbIsInclusive, E ub, boolean ubIsInclusive) {
-		super(lb, lbIsInclusive, ub, ubIsInclusive) ;
+		super(lb, lbIsInclusive, ub, ubIsInclusive);
 	}
 
 	@Override
 	public boolean accept(E test) {
 		return (lb == null || lb.compareTo(test) < lbOffsetIfUbInclusive)
-			&& (ub == null || test.compareTo(ub) < ubOffsetIfLbInclusive) ;
+			&& (ub == null || test.compareTo(ub) < ubOffsetIfLbInclusive);
 	}
 
     /**
@@ -65,7 +65,7 @@ public class AcceptBetween<E extends Comparable<? super E>> extends PartialOrder
 	 * @return a filter that accepts everything in the range <code>[lb...ub)</code>
 	 */
 	public static <E extends Comparable<? super E>> AcceptBetween<E> get(E lb, E ub) {
-		return get(lb, true, ub, false) ;
+		return get(lb, true, ub, false);
 	}
 
     /**
@@ -83,11 +83,11 @@ public class AcceptBetween<E extends Comparable<? super E>> extends PartialOrder
      * @return a filter that accepts everything in the range <code>[lb...ub)</code>
      */
 	public static <E extends Comparable<? super E>> AcceptBetween<E> get(E lb, boolean lbIsInclusive, E ub, boolean ubIsInclusive) {
-		return new AcceptBetween<E>(lb, lbIsInclusive, ub, ubIsInclusive) ;
+		return new AcceptBetween<E>(lb, lbIsInclusive, ub, ubIsInclusive);
 	}
 
 	public String toString() {
-		return "is between " + lb + " and " + ub ;
+		return "is between " + lb + " and " + ub;
 	}
 
 }

@@ -20,10 +20,10 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util.filters ;
+package org.jjoost.util.filters;
 
-import org.jjoost.util.Filter ;
-import org.jjoost.util.Iters ;
+import org.jjoost.util.Filter;
+import org.jjoost.util.Iters;
 
 /**
  * A filter representing the conjunction (i.e. "and") of the supplied filters.
@@ -33,8 +33,8 @@ import org.jjoost.util.Iters ;
  */
 public class FilterMultiAnd<E> implements Filter<E> {
 
-	private static final long serialVersionUID = 7419162471960836459L ;
-	private final Filter<? super E>[] filters ;
+	private static final long serialVersionUID = 7419162471960836459L;
+	private final Filter<? super E>[] filters;
 
     /**
      * Constructs a new filter representing the conjunction (i.e. "and") of the supplied filters
@@ -42,7 +42,7 @@ public class FilterMultiAnd<E> implements Filter<E> {
      * @param filters filters to apply
      */
 	public FilterMultiAnd(Filter<? super E>... filters) {
-		this.filters = filters ;
+		this.filters = filters;
 	}
 
     /**
@@ -52,18 +52,18 @@ public class FilterMultiAnd<E> implements Filter<E> {
      */
 	@SuppressWarnings("unchecked")
 	public FilterMultiAnd(Iterable<? extends Filter<? super E>> filters) {
-		this.filters = Iters.toArray(filters, Filter.class) ;
+		this.filters = Iters.toArray(filters, Filter.class);
 	}
 
 	public boolean accept(E test) {
-		boolean r = true ;
+		boolean r = true;
 		for (int i = 0 ; r & i != filters.length ; i++)
-			r = filters[i].accept(test) ;
-		return r ;
+			r = filters[i].accept(test);
+		return r;
 	}
 
 	public String toString() {
-		return "all hold: " + filters ;
+		return "all hold: " + filters;
 	}
 
     /**
@@ -73,7 +73,7 @@ public class FilterMultiAnd<E> implements Filter<E> {
      * @return conjunction (i.e. "and") of provided filters
      */
 	public static <E> FilterMultiAnd<E> get(Filter<? super E>... filters) {
-		return new FilterMultiAnd<E>(filters) ;
+		return new FilterMultiAnd<E>(filters);
 	}
 
     /**
@@ -83,7 +83,7 @@ public class FilterMultiAnd<E> implements Filter<E> {
      * @return conjunction (i.e. "and") of provided filters
      */
 	public static <E> FilterMultiAnd<E> get(Iterable<? extends Filter<? super E>> filters) {
-		return new FilterMultiAnd<E>(filters) ;
+		return new FilterMultiAnd<E>(filters);
 	}
 
 }

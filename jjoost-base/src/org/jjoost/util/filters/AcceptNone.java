@@ -20,9 +20,9 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util.filters ;
+package org.jjoost.util.filters;
 
-import java.util.Comparator ;
+import java.util.Comparator;
 
 /**
  * A filter that accepts nothing (i.e. returns false for all input).
@@ -32,10 +32,10 @@ import java.util.Comparator ;
  */
 public class AcceptNone<E> implements BothFilter<E> {
 
-	private static final long serialVersionUID = 3620521225513318797L ;
+	private static final long serialVersionUID = 3620521225513318797L;
 
 	@SuppressWarnings("unchecked")
-	private static final AcceptNone INSTANCE = new AcceptNone() ;
+	private static final AcceptNone INSTANCE = new AcceptNone();
 
 	/**
 	 * Return the global instance of this filter
@@ -43,27 +43,27 @@ public class AcceptNone<E> implements BothFilter<E> {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <E> AcceptNone<E> get() {
-		return INSTANCE ;
+		return INSTANCE;
 	}
 
 	@Override
 	public boolean accept(E o) {
-		return false ;
+		return false;
 	}
 
 	@Override
 	public boolean accept(E o, Comparator<? super E> cmp) {
-		return false ;
+		return false;
 	}
 
 	@Override
 	public boolean mayAcceptBetween(E lb, boolean lbInclusive, E ub, boolean ubInclusive, Comparator<? super E> cmp) {
-		return false ;
+		return false;
 	}
 
 	@Override
 	public boolean mayRejectBetween(E lb, boolean lbInclusive, E ub, boolean ubInclusive, Comparator<? super E> cmp) {
-		return true ;
+		return true;
 	}
 	
 }

@@ -34,7 +34,7 @@ public class Rehashers {
 	 * @return a Rehasher which uses the same algorithm as java.util.HashMap
 	 */
 	public static Rehasher jdkHashmapRehasher() { return JDK_HASHMAP_REHASHER ; }
-	private static final Rehasher JDK_HASHMAP_REHASHER = new JDKHashMapRehasher() ;
+	private static final Rehasher JDK_HASHMAP_REHASHER = new JDKHashMapRehasher();
 	private static final class JDKHashMapRehasher implements Rehasher {
 		private static final long serialVersionUID = 6015257664082605934L;
 		@Override
@@ -49,7 +49,7 @@ public class Rehashers {
 	 * @return a Rehasher which uses the same algorithm as java.util.concurrent.ConcurrentHashMap
 	 */
 	public static Rehasher jdkConcurrentHashmapRehasher() { return JDK_CONCURRENT_HASHMAP_REHASHER ; }
-	private static final Rehasher JDK_CONCURRENT_HASHMAP_REHASHER = new JDKConcurrentHashMapRehasher() ;
+	private static final Rehasher JDK_CONCURRENT_HASHMAP_REHASHER = new JDKConcurrentHashMapRehasher();
 	private static final class JDKConcurrentHashMapRehasher implements Rehasher {
 		private static final long serialVersionUID = 6015257664082605934L;
 		@Override
@@ -68,12 +68,12 @@ public class Rehashers {
 	 * @return a Rehasher that does not modify its input
 	 */
 	public static Rehasher identity() { return IDENTITY_REHASHER ; }
-	private static final Rehasher IDENTITY_REHASHER = new IdentityRehasher() ;
+	private static final Rehasher IDENTITY_REHASHER = new IdentityRehasher();
 	private static final class IdentityRehasher implements Rehasher {
-		private static final long serialVersionUID = 4870639315784742277L ;
+		private static final long serialVersionUID = 4870639315784742277L;
 		@Override
 		public final int rehash(final int h) {
-	        return h ; 
+	        return h;
 		}
 	}
 
@@ -82,12 +82,12 @@ public class Rehashers {
 	 * @return a Rehasher that flips each 4 bit substring within the input
 	 */
 	public static Rehasher flipEveryHalfByte() { return FLIP_HALF_BYTES_REHASHER ; }
-	private static final Rehasher FLIP_HALF_BYTES_REHASHER = new FlipHalfBytesRehasher() ;
+	private static final Rehasher FLIP_HALF_BYTES_REHASHER = new FlipHalfBytesRehasher();
 	private static final class FlipHalfBytesRehasher implements Rehasher {
-		private static final long serialVersionUID = -4332293538549708634L ;
+		private static final long serialVersionUID = -4332293538549708634L;
 		@Override
 		public final int rehash(int h) {
-			h = Integer.reverse(Integer.reverseBytes(h)) ;
+			h = Integer.reverse(Integer.reverseBytes(h));
 			return ((h >> 4) & 0x0F0F0F0F) | ((h << 4) & 0xF0F0F0F0);
 		}
 	}
@@ -97,12 +97,12 @@ public class Rehashers {
 	 * @return a Rehasher that reverses the bit string of the input
 	 */
 	public static Rehasher flip() { return FLIP_REHASHER ; }
-	private static final Rehasher FLIP_REHASHER = new FlipRehasher() ;
+	private static final Rehasher FLIP_REHASHER = new FlipRehasher();
 	private static final class FlipRehasher implements Rehasher {
-		private static final long serialVersionUID = 3842239312530302269L ;
+		private static final long serialVersionUID = 3842239312530302269L;
 		@Override
 		public final int rehash(int h) {
-			return Integer.reverse(h) ;
+			return Integer.reverse(h);
 		}
 	}
 	
@@ -116,14 +116,14 @@ public class Rehashers {
 	private static final class RehashComposer implements Rehasher {
 		private static final long serialVersionUID = 6015257664082605934L;
 		private final Rehasher applySecond;
-		private final Rehasher applyFirst ;
+		private final Rehasher applyFirst;
 		public RehashComposer(Rehasher applySecond, Rehasher applyFirst) {
-			this.applySecond = applySecond ;
-			this.applyFirst = applyFirst ;
+			this.applySecond = applySecond;
+			this.applyFirst = applyFirst;
 		}
 		@Override
 		public final int rehash(final int h) {
-			return applySecond.rehash(applyFirst.rehash(h)) ;
+			return applySecond.rehash(applyFirst.rehash(h));
 		}
 	}
 	

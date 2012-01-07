@@ -27,16 +27,16 @@ import java.util.Iterator;
 
 public class RepeatIterable<E> implements Iterable<E> {
 
-	public final E repeat ;
-	public final int count ;
+	public final E repeat;
+	public final int count;
 	
 	public RepeatIterable(E repeat, int count) {
-		this.repeat = repeat ;
-		this.count = count ;
+		this.repeat = repeat;
+		this.count = count;
 	}
 
 	public Iterator<E> iterator() {
-		return new UniformIterator<E>(repeat, count) ;
+		return new UniformIterator<E>(repeat, count);
 	}	
 
 }

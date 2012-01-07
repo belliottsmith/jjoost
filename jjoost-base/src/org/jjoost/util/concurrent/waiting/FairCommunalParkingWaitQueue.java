@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util.concurrent.waiting ;
+package org.jjoost.util.concurrent.waiting;
 
 import java.util.concurrent.locks.LockSupport;
 
@@ -36,22 +36,22 @@ public final class FairCommunalParkingWaitQueue<E> extends FairAbstractCommunalW
 
 		@Override
 		protected void pause() {
-			LockSupport.park() ;
+			LockSupport.park();
 		}
 
 		@Override
 		protected void pauseNanos(long nanos) {
-			LockSupport.parkNanos(nanos) ;
+			LockSupport.parkNanos(nanos);
 		}
 
 		@Override
 		protected void pauseUntil(long until) {
-			LockSupport.parkUntil(until) ;
+			LockSupport.parkUntil(until);
 		}
 
 		@Override
 		protected boolean stillWaiting() {
-			return waiting != 0 ;
+			return waiting != 0;
 		}
 
 	}
@@ -66,7 +66,7 @@ public final class FairCommunalParkingWaitQueue<E> extends FairAbstractCommunalW
 
 	@Override
 	protected FairAbstractCommunalWaitQueue.Node<E> newNode( Thread thread, E resource) {
-		return new Node<E>(thread, resource) ;
+		return new Node<E>(thread, resource);
 	}
 	
 }

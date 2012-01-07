@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util.concurrent ;
+package org.jjoost.util.concurrent;
 
 import java.util.concurrent.locks.LockSupport;
 
@@ -31,48 +31,48 @@ import java.util.concurrent.locks.LockSupport;
 public class ExclusiveThreadQueue {
 	
 	private static final class Node {
-		final Thread thread ;
-		final Node next ;
+		final Thread thread;
+		final Node next;
 		public Node(Thread thread, Node next) {
 			this.thread = thread;
 			this.next = next;
 		}
 	}
 	
-	private Node head ;
+	private Node head;
 	
-	private static final long headOffset = Unsafe.fieldOffset(ExclusiveThreadQueue.class, "head") ;
+	private static final long headOffset = Unsafe.fieldOffset(ExclusiveThreadQueue.class, "head");
 	
 	@SuppressWarnings("restriction")
 	public void amWaiting() {
-		final Thread thread = Thread.currentThread() ;
-		Node head = this.head ;
+		final Thread thread = Thread.currentThread();
+		Node head = this.head;
 		while (true) {
-			final Node newHead = new Node(thread, head) ;
+			final Node newHead = new Node(thread, head);
 			if (Unsafe.INST.compareAndSwapObject(this, headOffset, head, newHead))
-				return ;
-			head = (Node) Unsafe.INST.getObjectVolatile(this, headOffset) ;
+				return;
+			head = (Node) Unsafe.INST.getObjectVolatile(this, headOffset);
 		}
 	}
 	
 	@SuppressWarnings("restriction")
 	public void wakeAll() {
 		while (true) {
-			Node head = this.head ;
+			Node head = this.head;
 			if (head == null)
-				head = (Node) Unsafe.INST.getObjectVolatile(this, headOffset) ;
+				head = (Node) Unsafe.INST.getObjectVolatile(this, headOffset);
 			if (head == null)
-				break ;
+				break;
 			while (true) {
 				if (Unsafe.INST.compareAndSwapObject(this, headOffset, head, null))
-					break ;
-				head = (Node) Unsafe.INST.getObjectVolatile(this, headOffset) ;
+					break;
+				head = (Node) Unsafe.INST.getObjectVolatile(this, headOffset);
 			}
 			if (head == null)
-				break ;
+				break;
 			while (head != null) {
-				LockSupport.unpark(head.thread) ;
-				head = head.next ;
+				LockSupport.unpark(head.thread);
+				head = head.next;
 			}
 		}
 	}
@@ -80,14 +80,14 @@ public class ExclusiveThreadQueue {
 	@SuppressWarnings("restriction")
 	public void wakeAllQuick() {
 		while (true) {
-			Node head = this.head ;
+			Node head = this.head;
 			if (head == null)
-				break ;
+				break;
 			if (!Unsafe.INST.compareAndSwapObject(this, headOffset, head, null))
-				return ;
+				return;
 			while (head != null) {
-				LockSupport.unpark(head.thread) ;
-				head = head.next ;
+				LockSupport.unpark(head.thread);
+				head = head.next;
 			}
 		}
 	}

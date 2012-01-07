@@ -37,6 +37,6 @@ public interface Function<X, Y> extends Serializable {
 	 * @param v something of type domain
 	 * @return the result of the function (something of type range)
 	 */
-    public Y apply(X v) ;
+    public Y apply(X v);
 
 }

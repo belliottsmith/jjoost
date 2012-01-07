@@ -30,20 +30,20 @@ public abstract class ImmutableEmptyUnitarySet<V> extends ImmutableEmptySet<V> i
 
 	@Override
 	public UnitaryReadSet<V> unique() {
-		return this ;
+		return this;
 	}
 	
 	@Override
-	public abstract UnitaryReadSet<V> copy() ;
+	public abstract UnitaryReadSet<V> copy();
 
 	@Override
 	public V get() {
-		return null ;
+		return null;
 	}
 
 	@Override
 	public boolean permitsDuplicates() {
-		return false ;
+		return false;
 	}
 
 }

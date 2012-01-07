@@ -28,13 +28,13 @@ import java.util.Map.Entry;
 
 import org.jjoost.collections.AnyMap;
 import org.jjoost.collections.AnySet;
-import org.jjoost.collections.base.SynchronizedDelegator ;
+import org.jjoost.collections.base.SynchronizedDelegator;
 
 public abstract class SynchronizedArbitraryMap<K, V, M extends AnyMap<K, V>> extends SynchronizedDelegator implements AnyMap<K, V> {
 	
-	private static final long serialVersionUID = -7183655836427941893L ;
+	private static final long serialVersionUID = -7183655836427941893L;
 	
-	final M delegate ;
+	final M delegate;
 	
 	public SynchronizedArbitraryMap(M delegate) {
 		this.delegate = delegate;
@@ -44,7 +44,7 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends AnyMap<K, V>> ext
 		return delegate.clear();
 	}
 	@Override public synchronized Iterator<Entry<K, V>> clearAndReturn() {
-		return wrap(delegate.clearAndReturn()) ;
+		return wrap(delegate.clearAndReturn());
 	}
 	@Override public synchronized boolean contains(K key, V val) {
 		return delegate.contains(key, val);
@@ -59,7 +59,7 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends AnyMap<K, V>> ext
 		return delegate.count(key);
 	}
 	@Override public synchronized Iterable<Entry<K, V>> entries(K key) {
-		return wrap(delegate.entries(key)) ;
+		return wrap(delegate.entries(key));
 	}
 	@Override public synchronized V first(K key) {
 		return delegate.first(key);
@@ -92,10 +92,10 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends AnyMap<K, V>> ext
 		return delegate.remove(key);
 	}
 	@Override public synchronized Iterable<Entry<K, V>> removeAndReturn(K key, V val) {
-		return wrap(delegate.removeAndReturn(key, val)) ;
+		return wrap(delegate.removeAndReturn(key, val));
 	}
 	@Override public synchronized Iterable<Entry<K, V>> removeAndReturn(K key) {
-		return wrap(delegate.removeAndReturn(key)) ;
+		return wrap(delegate.removeAndReturn(key));
 	}
 	@Override public synchronized V removeAndReturnFirst(K key) {
 		return delegate.removeAndReturnFirst(key);
@@ -110,7 +110,7 @@ public abstract class SynchronizedArbitraryMap<K, V, M extends AnyMap<K, V>> ext
 		return delegate.uniqueKeyCount();
 	}
 	@Override public synchronized AnySet<V> values() {
-		return wrap(delegate.values()) ;
+		return wrap(delegate.values());
 	}
 
 }

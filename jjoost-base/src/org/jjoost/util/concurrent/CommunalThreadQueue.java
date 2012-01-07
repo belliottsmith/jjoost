@@ -20,12 +20,12 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util.concurrent ;
+package org.jjoost.util.concurrent;
 
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater ;
-import java.util.concurrent.locks.LockSupport ;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+import java.util.concurrent.locks.LockSupport;
 
-import org.jjoost.util.Filter ;
+import org.jjoost.util.Filter;
 
 /**
  * A simple thread queue used by concurrent collections implementations to track threads that are waiting on conditions being met (e.g. in
@@ -36,10 +36,10 @@ import org.jjoost.util.Filter ;
  * <code>insert()</code> method returns a loop checking the state of the resource the thread is waiting on should be entered, within which
  * (if this check fails) the thread should be put to sleep using <code>LockSupport.park()</code>. Once the loop's condition is met, the
  * thread should call the remove() method on the link it inserted; e.g.
- * <pre> ThreadQueue waitLink = new ThreadQueue(Thead.currentThread()) ;
+ * <pre> ThreadQueue waitLink = new ThreadQueue(Thead.currentThread());
  * waitingOn.insert(waitLink) ; // waitingOn is head of queue 
  * while ( {resource is locked test} ) { 
- *     LockSupport.park() ; 
+ *     LockSupport.park();
  * } 
  * waitLink.remove() ;</pre>
  * <p>
@@ -54,22 +54,22 @@ import org.jjoost.util.Filter ;
 @Deprecated
 public class CommunalThreadQueue<Q extends CommunalThreadQueue<Q>> {
 	
-	final Thread thread ;
+	final Thread thread;
 	
 	/**
 	 * The next ThreadQueue in the chain
 	 */
 	
-	protected volatile Q next ;
-	CommunalThreadQueue<Q> prev ;
-	boolean removed = false ;
+	protected volatile Q next;
+	CommunalThreadQueue<Q> prev;
+	boolean removed = false;
 	
 	/**
 	 * Construct a new ThreadQueue item with the current thread as argument (this should not be used
 	 * for construction of the "head" of the queue); new ThreadQueue(null) is the correct constructor. 
 	 */
 	public CommunalThreadQueue() {
-		this(Thread.currentThread()) ;
+		this(Thread.currentThread());
 	}
 	
 	/**
@@ -86,11 +86,11 @@ public class CommunalThreadQueue<Q extends CommunalThreadQueue<Q>> {
 	 * Wakes up all threads in this queue 
 	 */
 	public void wakeAll() {
-		CommunalThreadQueue<Q> next = this.next ;
+		CommunalThreadQueue<Q> next = this.next;
 		while (next != null) {
-			final CommunalThreadQueue<Q> prev = next ;
-			next = next.next ;
-			prev.wake() ;
+			final CommunalThreadQueue<Q> prev = next;
+			next = next.next;
+			prev.wake();
 		}
 	}
 	
@@ -101,14 +101,14 @@ public class CommunalThreadQueue<Q extends CommunalThreadQueue<Q>> {
 	 * @param wake filter indicating which links should be woken
 	 */
 	public void wake(Filter<Q> wake) {
-		Q next = this.next ;
+		Q next = this.next;
 		while (next != null) {
 			if (wake.accept(next)) {
-				final Q prev = next ;
-				next = next.next ;
-				prev.wake() ;
+				final Q prev = next;
+				next = next.next;
+				prev.wake();
 			} else {
-				next = next.next ;
+				next = next.next;
 			}
 		}
 	}
@@ -117,7 +117,7 @@ public class CommunalThreadQueue<Q extends CommunalThreadQueue<Q>> {
 	 */
 	protected void wake() {
 		if (!removed)
-			LockSupport.unpark(thread) ;
+			LockSupport.unpark(thread);
 	}
 	
 	/**
@@ -125,19 +125,19 @@ public class CommunalThreadQueue<Q extends CommunalThreadQueue<Q>> {
 	 */
 	public void remove() {
 		if (removed == true)
-			return ;
-		CommunalThreadQueue<Q> next ;
+			return;
+		CommunalThreadQueue<Q> next;
 		while (true) {
-			next = this.next ;
+			next = this.next;
 			if (nextUpdater.compareAndSet(this, next, prev))
-				break ;
+				break;
 		}
 		// we have looped ourselves
-		CommunalThreadQueue<Q> prev = this.prev ;
+		CommunalThreadQueue<Q> prev = this.prev;
 		while (!nextUpdater.compareAndSet(prev, this, next)) {
-			prev = prev.next ;
+			prev = prev.next;
 		}
-		removed = true ;
+		removed = true;
 	}
 	
 	/**
@@ -146,21 +146,21 @@ public class CommunalThreadQueue<Q extends CommunalThreadQueue<Q>> {
 	 * @param insert the link to be inserted at the end of the chain
 	 */
 	public void insert(Q insert) {
-		CommunalThreadQueue<Q> node = this , next = node.next ;
+		CommunalThreadQueue<Q> node = this , next = node.next;
 		while (true) {
 			while (next != null) {
-				node = next ;
-				next = next.next ;
+				node = next;
+				next = next.next;
 			}
-			insert.prev = node ;
+			insert.prev = node;
 			if (nextUpdater.compareAndSet(node, null, insert)) 
-				return ;
-			next = node.next ;
+				return;
+			next = node.next;
 		}			
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static final AtomicReferenceFieldUpdater<CommunalThreadQueue, CommunalThreadQueue> nextUpdater = AtomicReferenceFieldUpdater.newUpdater(CommunalThreadQueue.class, CommunalThreadQueue.class, "next") ;
+	private static final AtomicReferenceFieldUpdater<CommunalThreadQueue, CommunalThreadQueue> nextUpdater = AtomicReferenceFieldUpdater.newUpdater(CommunalThreadQueue.class, CommunalThreadQueue.class, "next");
 	
 }
 

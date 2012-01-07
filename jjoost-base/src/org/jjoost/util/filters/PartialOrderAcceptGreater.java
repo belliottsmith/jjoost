@@ -20,11 +20,11 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util.filters ;
+package org.jjoost.util.filters;
 
-import java.util.Comparator ;
+import java.util.Comparator;
 
-import org.jjoost.util.FilterPartialOrder ;
+import org.jjoost.util.FilterPartialOrder;
 
 /**
  * A partial order filter that accepts everything greater than the provided value as determined by the <code>Comparator</code>
@@ -32,9 +32,9 @@ import org.jjoost.util.FilterPartialOrder ;
  */
 public class PartialOrderAcceptGreater<E> implements FilterPartialOrder<E> {
 
-	private static final long serialVersionUID = 1064862673649778571L ;
+	private static final long serialVersionUID = 1064862673649778571L;
 
-	final E than ;
+	final E than;
 
     /**
 	 * Constructs a new partial order filter that accepts everything greater than the provided value as determined by the <code>Comparator</code>
@@ -44,24 +44,24 @@ public class PartialOrderAcceptGreater<E> implements FilterPartialOrder<E> {
 	 *            exclusive lower limit of acceptable values
 	 */
 	public PartialOrderAcceptGreater(E than) {
-		super() ;
-		this.than = than ;
+		super();
+		this.than = than;
 	}
 
 	@Override
 	public boolean accept(E test, Comparator<? super E> cmp) {
-		return cmp.compare(than, test) > 0 ;
+		return cmp.compare(than, test) > 0;
 	}
 
 	@Override
 	public boolean mayAcceptBetween(E lb, boolean lbInclusive, E ub, boolean ubInclusive, Comparator<? super E> cmp) {
-		return ub == null || cmp.compare(than, ub) > 0 ;
+		return ub == null || cmp.compare(than, ub) > 0;
 	}
 
 	@Override
 	public boolean mayRejectBetween(E lb, boolean lbInclusive, E ub, boolean ubInclusive, Comparator<? super E> cmp) {
-		final int offset = lbInclusive ? 1 : 0 ;
-		return lb == null || cmp.compare(lb, than) < offset ;
+		final int offset = lbInclusive ? 1 : 0;
+		return lb == null || cmp.compare(lb, than) < offset;
 	}
 	
     /**
@@ -73,11 +73,11 @@ public class PartialOrderAcceptGreater<E> implements FilterPartialOrder<E> {
 	 * @return a partial order filter that accepts everything greater than the provided value
 	 */
 	public static <E> PartialOrderAcceptGreater<E> get(E than) {
-		return new PartialOrderAcceptGreater<E>(than) ;
+		return new PartialOrderAcceptGreater<E>(than);
 	}
 
 	public String toString() {
-		return "is less than " + than ;
+		return "is less than " + than;
 	}
 
 }

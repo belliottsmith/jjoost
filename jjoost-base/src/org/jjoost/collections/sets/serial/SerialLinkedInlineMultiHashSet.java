@@ -35,18 +35,18 @@ public class SerialLinkedInlineMultiHashSet<V> extends InlineMultiHashSet<V, Abs
 	private static final long serialVersionUID = 1051610520557989640L;
 
 	public SerialLinkedInlineMultiHashSet() {
-		this(16, 0.75f) ;
+		this(16, 0.75f);
 	}
 	public SerialLinkedInlineMultiHashSet(int minimumInitialCapacity, float loadFactor) {
-		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object()) ;
+		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object());
 	}
 	
 	public SerialLinkedInlineMultiHashSet(Equality<? super V> keyEquality) {
-		this(SerialHashStore.defaultRehasher(), keyEquality) ;
+		this(SerialHashStore.defaultRehasher(), keyEquality);
 	}
 	
 	public SerialLinkedInlineMultiHashSet(Rehasher rehasher, Equality<? super V> keyEquality) { 
-		this(16, 0.75f, rehasher, keyEquality) ;
+		this(16, 0.75f, rehasher, keyEquality);
 	}
 	
 	public SerialLinkedInlineMultiHashSet( 
@@ -55,7 +55,7 @@ public class SerialLinkedInlineMultiHashSet<V> extends InlineMultiHashSet<V, Abs
 	{
 		super(rehasher, keyEquality, 
 			AbstractHashSet.<V>serialLinkedNodeFactory(), 
-			new SerialLinkedHashStore<SerialLinkedHashSetNode<V>>(minimumInitialCapacity, loadFactor)) ;
+			new SerialLinkedHashStore<SerialLinkedHashSetNode<V>>(minimumInitialCapacity, loadFactor));
 	}
 
 }

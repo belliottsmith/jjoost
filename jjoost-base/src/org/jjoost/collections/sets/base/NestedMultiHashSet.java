@@ -29,12 +29,12 @@ import java.util.List;
 import org.jjoost.collections.AnySet;
 import org.jjoost.collections.MultiSet;
 import org.jjoost.collections.Set;
-import org.jjoost.collections.base.HashNode ;
-import org.jjoost.collections.base.HashNodeEquality ;
-import org.jjoost.collections.base.HashNodeFactory ;
-import org.jjoost.collections.base.HashStore ;
+import org.jjoost.collections.base.HashNode;
+import org.jjoost.collections.base.HashNodeEquality;
+import org.jjoost.collections.base.HashNodeFactory;
+import org.jjoost.collections.base.HashStore;
 import org.jjoost.collections.base.HashStore.Locality;
-import org.jjoost.collections.iters.EmptyIterator ;
+import org.jjoost.collections.iters.EmptyIterator;
 import org.jjoost.collections.iters.UniformIterator;
 import org.jjoost.util.Counter;
 import org.jjoost.util.Equality;
@@ -42,7 +42,7 @@ import org.jjoost.util.Filter;
 import org.jjoost.util.Filters;
 import org.jjoost.util.Function;
 import org.jjoost.util.Functions;
-import org.jjoost.util.Iters ;
+import org.jjoost.util.Iters;
 import org.jjoost.util.Rehasher;
 import org.jjoost.util.tuples.Value;
 
@@ -50,149 +50,149 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 
 	private static final long serialVersionUID = 3187373892419456381L;
 	
-	protected final HashStore<N> store ;
-	protected final Rehasher rehasher ;
-	protected final HashNodeFactory<V, N> nodeFactory ;
-	protected final ValueEquality<V, N> valEq ;
-	protected final Counter totalCount ;
-	private UniqueSet unique ;
+	protected final HashStore<N> store;
+	protected final Rehasher rehasher;
+	protected final HashNodeFactory<V, N> nodeFactory;
+	protected final ValueEquality<V, N> valEq;
+	protected final Counter totalCount;
+	private UniqueSet unique;
 	
 	protected NestedMultiHashSet(Counter counter, Rehasher rehasher, ValueEquality<V, N> equality, HashNodeFactory<V, N> nodeFactory, HashStore<N> table) {
-		this.store = table ;
-		this.totalCount = counter ;
-		this.rehasher = rehasher ;
-		this.nodeFactory = nodeFactory ;
-		this.valEq = equality ;
+		this.store = table;
+		this.totalCount = counter;
+		this.rehasher = rehasher;
+		this.nodeFactory = nodeFactory;
+		this.valEq = equality;
 	}
 
 	protected Function<N, N> nodeProj() {
-		return Functions.<N>identity() ;
+		return Functions.<N>identity();
 	}
 	
 	protected Function<Value<V>, V> valProj() {
-		return Functions.<V>getValueContentsProjection() ;
+		return Functions.<V>getValueContentsProjection();
 	}
 	
 	public int capacity() {
-		return store.capacity() ;
+		return store.capacity();
 	}
 	
 	public void resize(int capacity) {
-		store.resize(capacity) ;
+		store.resize(capacity);
 	}
 	
 	final int hash(V key) {
-		return rehasher.rehash(valEq.valEq.hash(key)) ;
+		return rehasher.rehash(valEq.valEq.hash(key));
 	}
 	
 	protected boolean removeNode(N node) {
-		return store.removeNode(valProj(), valEq, node) ;
+		return store.removeNode(valProj(), valEq, node);
 	}
 	
 	@Override
 	public Equality<? super V> equality() {
-		return valEq.valEq ;
+		return valEq.valEq;
 	}
 	
 	@Override
 	public boolean permitsDuplicates() {
-		return true ;
+		return true;
 	}
 
 	@Override
 	public boolean add(V val) {
-		put(val) ;
-		return true ;
+		put(val);
+		return true;
 	}
 	
 	@Override
 	public V put(V val) {
-		final int hash = hash(val) ;
+		final int hash = hash(val);
 		while (true) {
-			final N existing = store.putIfAbsent(hash, val, valEq, nodeFactory, nodeProj(), true) ;
+			final N existing = store.putIfAbsent(hash, val, valEq, nodeFactory, nodeProj(), true);
 			if (existing.put(val))
-				break ;
+				break;
 		}
-		totalCount.add(1) ;
-		return null ;
+		totalCount.add(1);
+		return null;
 	}
 	
 	@Override
 	public void put(V val, int count) {
-		final int hash = hash(val) ;
+		final int hash = hash(val);
 		while (true) {
-			final N existing = store.putIfAbsent(hash, val, valEq, nodeFactory, nodeProj(), true) ;
+			final N existing = store.putIfAbsent(hash, val, valEq, nodeFactory, nodeProj(), true);
 			if (existing.put(val, count))
-				break ;
+				break;
 		}
-		totalCount.add(count) ;
+		totalCount.add(count);
 	}
 	
 	@Override
 	public int putAll(Iterable<V> vals) {
-		int c = 0 ;
+		int c = 0;
 		for (V val : vals)
 			if (put(val) == null)
-				c++ ;
-		return c ;
+				c++;
+		return c;
 	}
 	
 	@Override
 	public V putIfAbsent(V val) {
-		final int hash = hash(val) ;
+		final int hash = hash(val);
 		while (true) {
-			final N existing = store.putIfAbsent(hash, val, valEq, nodeFactory, nodeProj(), true) ;
+			final N existing = store.putIfAbsent(hash, val, valEq, nodeFactory, nodeProj(), true);
 			if (existing.initialise()) {				
-				totalCount.add(1) ;
-				return null ;
+				totalCount.add(1);
+				return null;
 			} else if (existing.valid()) {
-				return existing.getValue() ;
+				return existing.getValue();
 			}
 		}
 	}
 	
 	@Override
 	public int remove(V val) {
-		final int hash = hash(val) ;
+		final int hash = hash(val);
 		while (true) {
-			final N r = store.removeAndReturnFirst(hash, 1, val, valEq, nodeProj()) ;
+			final N r = store.removeAndReturnFirst(hash, 1, val, valEq, nodeProj());
 			if (r == null)
-				return 0 ;
-			final int removed = r.remove(Integer.MAX_VALUE) ;
+				return 0;
+			final int removed = r.remove(Integer.MAX_VALUE);
 			if (removed > 0) {
-				totalCount.add(-removed) ;
-				return removed ;
+				totalCount.add(-removed);
+				return removed;
 			}
 		}		
 	}
 	
 	@Override
 	public V removeAndReturnFirst(V val) {
-		final int hash = hash(val) ;
+		final int hash = hash(val);
 		while (true) {
-			final N r = store.removeAndReturnFirst(hash, 1, val, valEq, nodeProj()) ;
+			final N r = store.removeAndReturnFirst(hash, 1, val, valEq, nodeProj());
 			if (r == null)
-				return null ;
-			final V v = r.getValue() ; 
-			final int removed = r.remove(Integer.MAX_VALUE) ;
+				return null;
+			final V v = r.getValue();
+			final int removed = r.remove(Integer.MAX_VALUE);
 			if (removed > 0) {
-				totalCount.add(-removed) ;
-				return v ;
+				totalCount.add(-removed);
+				return v;
 			}
 		}
 	}
 
 	@Override
 	public Iterable<V> removeAndReturn(V val) {
-		final int hash = hash(val) ;
+		final int hash = hash(val);
 		while (true) {
-			final N r = store.removeAndReturnFirst(hash, 1, val, valEq, nodeProj()) ;
+			final N r = store.removeAndReturnFirst(hash, 1, val, valEq, nodeProj());
 			if (r == null)
-				return Iters.emptyIterable() ;
-			final List<V> removed = r.removeAndReturn(Integer.MAX_VALUE) ;
+				return Iters.emptyIterable();
+			final List<V> removed = r.removeAndReturn(Integer.MAX_VALUE);
 			if (removed.size() > 0) {
-				totalCount.add(-removed.size()) ;
-				return removed ;
+				totalCount.add(-removed.size());
+				return removed;
 			}
 		}
 	}
@@ -201,20 +201,20 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public int remove(V val, int atMost) {
 		if (atMost < 1) {
 			if (atMost < 0)
-				throw new IllegalArgumentException("Cannot remove less than zero elements") ;
-			return 0 ;
+				throw new IllegalArgumentException("Cannot remove less than zero elements");
+			return 0;
 		}
-		final int hash = hash(val) ;
+		final int hash = hash(val);
 		while (true) {
-			final N r = store.first(hash, val, valEq, nodeProj()) ;
+			final N r = store.first(hash, val, valEq, nodeProj());
 			if (r == null)
-				return 0 ;
-			final int removed = r.remove(atMost) ;
+				return 0;
+			final int removed = r.remove(atMost);
 			if (removed != 0) {
 				if (removed < atMost || !r.valid())
-					store.removeNode(valProj(), valEq, r) ;				
-				totalCount.add(-removed) ;
-				return removed ;
+					store.removeNode(valProj(), valEq, r);
+				totalCount.add(-removed);
+				return removed;
 			}
 		}
 	}
@@ -223,20 +223,20 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public V removeAndReturnFirst(V val, int atMost) {
 		if (atMost < 1) {
 			if (atMost < 0)
-				throw new IllegalArgumentException("Cannot remove less than zero elements") ;
-			return null ;
+				throw new IllegalArgumentException("Cannot remove less than zero elements");
+			return null;
 		}
-		final int hash = hash(val) ;
+		final int hash = hash(val);
 		while (true) {
-			final N r = store.first(hash, val, valEq, nodeProj()) ;
+			final N r = store.first(hash, val, valEq, nodeProj());
 			if (r == null)
-				return null ;
-			final int removed = r.remove(atMost) ;
+				return null;
+			final int removed = r.remove(atMost);
 			if (removed != 0) {
 				if (removed < atMost || !r.valid())
-					store.removeNode(valProj(), valEq, r) ;
-				totalCount.add(-removed) ;
-				return r.getValue() ;
+					store.removeNode(valProj(), valEq, r);
+				totalCount.add(-removed);
+				return r.getValue();
 			}
 		}
 	}
@@ -245,83 +245,83 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public Iterable<V> removeAndReturn(V val, int atMost) {
 		if (atMost < 1) {
 			if (atMost < 0)
-				throw new IllegalArgumentException("Cannot remove less than zero elements") ;
-			return Iters.emptyIterable() ;
+				throw new IllegalArgumentException("Cannot remove less than zero elements");
+			return Iters.emptyIterable();
 		}
-		final int hash = hash(val) ;
+		final int hash = hash(val);
 		while (true) {
-			final N r = store.first(hash, val, valEq, nodeProj()) ;
+			final N r = store.first(hash, val, valEq, nodeProj());
 			if (r == null)
-				return Iters.emptyIterable() ;
-			final List<V> removed = r.removeAndReturn(atMost) ;
+				return Iters.emptyIterable();
+			final List<V> removed = r.removeAndReturn(atMost);
 			if (removed.size() != 0) {
 				if (removed.size() < atMost || !r.valid())
-					store.removeNode(valProj(), valEq, r) ;
-				totalCount.add(-removed.size()) ;
-				return removed ;
+					store.removeNode(valProj(), valEq, r);
+				totalCount.add(-removed.size());
+				return removed;
 			}
 		}
 	}
 	
 	@Override
 	public boolean contains(V val) {
-		final int hash = hash(val) ;
+		final int hash = hash(val);
 		while (true) {
-			final N r = store.first(hash, val, valEq, nodeProj()) ;
+			final N r = store.first(hash, val, valEq, nodeProj());
 			if (r == null)
-				return false ;
+				return false;
 			if (r.valid())
-				return true ;
+				return true;
 		}		
 	}
 	@Override
 	public int count(V val) {
-		final int hash = hash(val) ;
+		final int hash = hash(val);
 		while (true) {
-			final N r = store.first(hash, val, valEq, nodeProj()) ;
+			final N r = store.first(hash, val, valEq, nodeProj());
 			if (r == null)
-				return 0 ;
-			final int c = r.count() ;
+				return 0;
+			final int c = r.count();
 			if (c >= 0)
-				return c ;
+				return c;
 		}		
 	}
 	@Override
 	public void shrink() {
-		store.shrink() ;
+		store.shrink();
 	}
 	@Override
 	public V first(V val) {
-		return store.first(hash(val), val, valEq, valProj()) ;
+		return store.first(hash(val), val, valEq, valProj());
 	}
 	@Override
 	public List<V> list(V val) {
-		return Iters.toList(all(val)) ;
+		return Iters.toList(all(val));
 	}
 	@Override
 	public int totalCount() {
-		return totalCount.get() ;
+		return totalCount.get();
 	}
 	@Override
 	public int uniqueCount() {
-		return store.totalCount() ;
+		return store.totalCount();
 	}
 	@Override
 	public boolean isEmpty() {
-		return store.isEmpty() ;
+		return store.isEmpty();
 	}
 	@Override
 	public Iterable<V> all(final V val) {
-		final int hash = hash(val) ;
+		final int hash = hash(val);
 		return new Iterable<V>() {
 			@Override
 			public Iterator<V> iterator() {
-				final N n = store.first(hash, val, valEq, nodeProj()) ;
+				final N n = store.first(hash, val, valEq, nodeProj());
 				if (n == null)
-					return EmptyIterator.<V>get() ;
-				return n.iterator(NestedMultiHashSet.this) ;
+					return EmptyIterator.<V>get();
+				return n.iterator(NestedMultiHashSet.this);
 			}
-		} ;
+		};
 	}
 
 	@Override
@@ -329,14 +329,14 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 		
 		// TODO implement
 		// no way to guarantee totalCount is valid - must copy the table and then calculate a fresh total
-		throw new UnsupportedOperationException() ;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Set<V> unique() {
 		if (unique == null)
-			unique = new UniqueSet() ;
-		return unique ;
+			unique = new UniqueSet();
+		return unique;
 	}
 	
 	private final class UniqueSet extends AbstractUniqueSetAdapter<V> {
@@ -345,12 +345,12 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 
 		@Override
 		protected AnySet<V> set() {
-			return NestedMultiHashSet.this ;
+			return NestedMultiHashSet.this;
 		}
 
 		@Override
 		public Iterator<V> iterator() {
-			return wrap(Functions.apply(valProj(), Filters.apply(VALID, store.unique(valProj(), valEq.getEquality(), Locality.ADJACENT, valProj(), valEq, nodeProj())))) ;
+			return wrap(Functions.apply(valProj(), Filters.apply(VALID, store.unique(valProj(), valEq.getEquality(), Locality.ADJACENT, valProj(), valEq, nodeProj()))));
 		}
 		
 	}
@@ -359,52 +359,52 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 		private static final long serialVersionUID = -6361042110136400398L;
 		@Override
 		public boolean accept(INode<?, ?> test) {
-			return test.valid() ;
+			return test.valid();
 		}
-	} ;
+	};
 
 	@Override
 	public int clear() {
-		int c = 0 ;
-		final Iterator<N> iter = store.clearAndReturn(nodeProj()) ;
+		int c = 0;
+		final Iterator<N> iter = store.clearAndReturn(nodeProj());
 		while (iter.hasNext()) {
-			final N n = iter.next() ;
-			final int r = n.remove(Integer.MAX_VALUE) ;
-			totalCount.add(-r) ;
-			c += r ;
+			final N n = iter.next();
+			final int r = n.remove(Integer.MAX_VALUE);
+			totalCount.add(-r);
+			c += r;
 		}
-		return c ;
+		return c;
 	}
 
 	@Override
 	public Iterator<V> clearAndReturn() {
-		final List<Iterator<V>> ret = new ArrayList<Iterator<V>>() ;
-		final Iterator<N> iter = store.clearAndReturn(nodeProj()) ;
+		final List<Iterator<V>> ret = new ArrayList<Iterator<V>>();
+		final Iterator<N> iter = store.clearAndReturn(nodeProj());
 		while (iter.hasNext()) {
-			final N n = iter.next() ;
-			final int r = n.remove(Integer.MAX_VALUE) ;
+			final N n = iter.next();
+			final int r = n.remove(Integer.MAX_VALUE);
 			if (r != 0) {
-				ret.add(new UniformIterator<V>(n.getValue(), r)) ;
-				totalCount.add(-r) ;
+				ret.add(new UniformIterator<V>(n.getValue(), r));
+				totalCount.add(-r);
 			}
 		}
-		return Iters.concat(ret.iterator()) ;
+		return Iters.concat(ret.iterator());
 	}
 
 	@Override
 	public Iterator<V> iterator() {
-		final NodeContentsIterator<V, N> f = new NodeContentsIterator<V, N>(this) ;
-		final Iterator<Iterator<V>> iters = store.all(valProj(), valEq, f) ;
-		return Iters.concat(iters) ;
+		final NodeContentsIterator<V, N> f = new NodeContentsIterator<V, N>(this);
+		final Iterator<Iterator<V>> iters = store.all(valProj(), valEq, f);
+		return Iters.concat(iters);
 	}
 
 	@Override
 	public Boolean apply(V v) {
-		return contains(v) ;
+		return contains(v);
 	}
 	
 	public String toString() {
-		return "{" + Iters.toString(this.iterator(), ", ") + "}" ;
+		return "{" + Iters.toString(this.iterator(), ", ") + "}";
 	}
 	
 	// **********************************
@@ -412,34 +412,34 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	// **********************************
 	
 	public static interface INode<V, N extends HashNode<N> & INode<V, N>> extends Value<V> {
-		public boolean put(V v, int count) ;
-		public boolean put(V v) ;
-		public boolean valid() ;
-		public int count() ;
-		public int remove(int target) ;
-		public List<V> removeAndReturn(int target) ;
-		public Iterator<V> iterator(NestedMultiHashSet<V, N> set) ;	
-		public boolean initialise() ;
+		public boolean put(V v, int count);
+		public boolean put(V v);
+		public boolean valid();
+		public int count();
+		public int remove(int target);
+		public List<V> removeAndReturn(int target);
+		public Iterator<V> iterator(NestedMultiHashSet<V, N> set);
+		public boolean initialise();
 	}
 
 	public static final class ValueEquality<V, N extends HashNode<N> & INode<V, N>> implements HashNodeEquality<V, N> {
-		protected final Equality<? super V> valEq ;
+		protected final Equality<? super V> valEq;
 		public ValueEquality(Equality<? super V> valEq) {
-			this.valEq = valEq ;
+			this.valEq = valEq;
 		}
 		public final Equality<? super V> getEquality() {
-			return valEq ;
+			return valEq;
 		}
 		public final boolean isUnique() {
-			return true ;
+			return true;
 		}
 		@Override
 		public boolean prefixMatch(V cmp, N n) {
-			return valEq.equates(cmp, n.getValue()) ;
+			return valEq.equates(cmp, n.getValue());
 		}
 		@Override
 		public boolean suffixMatch(V cmp, N n) {
-			return true ;
+			return true;
 		}
 	}
 	
@@ -448,26 +448,26 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	// *******************************
 	
 //	private static final <V, N extends HashNode<N> & INode<V, N>> Destroyer<V, N> destroyer() {
-//		return new Destroyer<V, N>() ;
+//		return new Destroyer<V, N>();
 //	}
 //	
 //	private static final class Destroyer<V, N extends HashNode<N> & INode<V, N>> implements Function<N, Iterator<V>> {
 //		private static final long serialVersionUID = -965724235732791909L;
 //		@Override
 //		public Iterator<V> apply(N n) {
-//			return n.removeAndReturn(Integer.MAX_VALUE).iterator() ;
+//			return n.removeAndReturn(Integer.MAX_VALUE).iterator();
 //		}
 //	}
 
 	private static final class NodeContentsIterator<V, N extends HashNode<N> & INode<V, N>> implements Function<N, Iterator<V>> {
 		private static final long serialVersionUID = -965724235732791909L;
-		final NestedMultiHashSet<V, N> set ;
+		final NestedMultiHashSet<V, N> set;
 		public NodeContentsIterator(NestedMultiHashSet<V, N> set) {
 			this.set = set;
 		}
 		@Override
 		public Iterator<V> apply(N n) {
-			return n.iterator(set) ;
+			return n.iterator(set);
 		}
 	}
 

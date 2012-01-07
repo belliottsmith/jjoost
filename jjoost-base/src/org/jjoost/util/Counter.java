@@ -36,18 +36,18 @@ public interface Counter {
 	 * @param i to add
 	 * @return true, if successful
 	 */
-	public boolean add(int i) ;
+	public boolean add(int i);
 	
 	/**
 	 * Gets the current value of the <code>Counter</code>
 	 * @return current value
 	 */
-	public int get() ;
+	public int get();
 	
 	/**
 	 * returns a new <code>Counter</code> of the same type as this one, with a value of zero
 	 * @return new <code>Counter</code>
 	 */
-	public Counter newInstance() ;
+	public Counter newInstance();
 	
 }

@@ -37,19 +37,19 @@ public class SyncLinkedInlineListHashMap<K, V> extends InlineListHashMap<K, V, S
 	private static final long serialVersionUID = 1051610520557989640L;
 
 	public SyncLinkedInlineListHashMap() {
-		this(16, 0.75f) ;
+		this(16, 0.75f);
 	}
 	public SyncLinkedInlineListHashMap(int minimumInitialCapacity, float loadFactor) {
-		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object(), Equalities.object()) ;
+		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object(), Equalities.object());
 	}
 	public SyncLinkedInlineListHashMap(Equality<? super K> keyEquality) {
-		this(SerialHashStore.defaultRehasher(), keyEquality) ;
+		this(SerialHashStore.defaultRehasher(), keyEquality);
 	}	
 	public SyncLinkedInlineListHashMap(Rehasher rehasher, Equality<? super K> keyEquality) { 
-		this(16, 0.75f, rehasher, keyEquality, Equalities.object()) ;
+		this(16, 0.75f, rehasher, keyEquality, Equalities.object());
 	}	
 	public SyncLinkedInlineListHashMap(Rehasher rehasher, Equality<? super K> keyEquality, Equality<? super V> valEquality) { 
-		this(16, 0.75f, rehasher, keyEquality, valEquality) ;
+		this(16, 0.75f, rehasher, keyEquality, valEquality);
 	}
 	
 	public SyncLinkedInlineListHashMap( 
@@ -58,7 +58,7 @@ public class SyncLinkedInlineListHashMap<K, V> extends InlineListHashMap<K, V, S
 	{
 		super(rehasher, new SerialLinkedInlineListHashMap.KeyEquality<K, V>(keyEquality), new SerialLinkedInlineListHashMap.EntryEquality<K, V>(keyEquality, valEquality),
 			SerialLinkedInlineListHashMap.<K, V>factory(), 
-			new SynchronizedHashStore<Node<K, V>>(new SerialLinkedHashStore<Node<K, V>>(minimumInitialCapacity, loadFactor))) ;
+			new SynchronizedHashStore<Node<K, V>>(new SerialLinkedHashStore<Node<K, V>>(minimumInitialCapacity, loadFactor)));
 	}
 
 }

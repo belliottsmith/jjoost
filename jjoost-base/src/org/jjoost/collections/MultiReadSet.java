@@ -42,7 +42,7 @@ public interface MultiReadSet<V> extends AnyReadSet<V> {
 	 * Returns a copy of the set. This method may or may not return a set of the same class as the one it was
 	 * called on, however must return a <code>MultiSet</code>
 	 */
-	@Override public MultiReadSet<V> copy() ;
+	@Override public MultiReadSet<V> copy();
 
 	/**
 	 * Returns a <code>Set</code> representing only the unique values present in this set. 
@@ -51,6 +51,6 @@ public interface MultiReadSet<V> extends AnyReadSet<V> {
 	 * 
 	 * @return unique values
 	 */
-	public ReadSet<V> unique() ;
+	public ReadSet<V> unique();
 
 }

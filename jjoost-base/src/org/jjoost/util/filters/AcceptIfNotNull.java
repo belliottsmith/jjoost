@@ -20,9 +20,9 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util.filters ;
+package org.jjoost.util.filters;
 
-import org.jjoost.util.Filter ;
+import org.jjoost.util.Filter;
 
 /**
  * A filter accepting everything except null
@@ -31,14 +31,14 @@ import org.jjoost.util.Filter ;
  */
 public class AcceptIfNotNull<E> implements Filter<E> {
 
-	private static final long serialVersionUID = -6305241848003882379L ;
+	private static final long serialVersionUID = -6305241848003882379L;
 
 	public boolean accept(E test) {
-		return test != null ;
+		return test != null;
 	}
 
 	public String toString() {
-		return "is not null" ;
+		return "is not null";
 	}
 	
     /**
@@ -47,7 +47,7 @@ public class AcceptIfNotNull<E> implements Filter<E> {
      * @return a filter accepting everything except null
      */
 	public static <E> AcceptIfNotNull<E> get() {
-		return new AcceptIfNotNull<E>() ;
+		return new AcceptIfNotNull<E>();
 	}
 
 }

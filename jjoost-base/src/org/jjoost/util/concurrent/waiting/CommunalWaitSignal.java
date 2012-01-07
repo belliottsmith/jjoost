@@ -24,7 +24,7 @@ package org.jjoost.util.concurrent.waiting;
 
 public interface CommunalWaitSignal<E> extends WaitSignal {
 	
-	public void wakeAll(E resource) ;
-	public void wakeOne(E resource) ;
+	public void wakeAll(E resource);
+	public void wakeOne(E resource);
 
 }

@@ -20,10 +20,10 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util.concurrent.waiting ;
+package org.jjoost.util.concurrent.waiting;
 
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater ;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
@@ -37,10 +37,10 @@ import org.jjoost.util.Equality;
  * <code>insert()</code> method returns a loop checking the state of the resource the thread is waiting on should be entered, within which
  * (if this check fails) the thread should be put to sleep using <code>LockSupport.park()</code>. Once the loop's condition is met, the
  * thread should call the remove() method on the link it inserted; e.g.
- * <pre> ThreadQueue waitLink = new ThreadQueue(Thead.currentThread()) ;
+ * <pre> ThreadQueue waitLink = new ThreadQueue(Thead.currentThread());
  * waitingOn.insert(waitLink) ; // waitingOn is head of queue 
  * while ( {resource is locked test} ) { 
- *     LockSupport.park() ; 
+ *     LockSupport.park();
  * } 
  * waitLink.remove() ;</pre>
  * <p>
@@ -55,55 +55,55 @@ public abstract class FairAbstractCommunalWaitQueue<E> implements CommunalWaitQu
 	
 	protected static abstract class Node<E> extends AbstractWaitHandle {
 		
-		final E resource ;
+		final E resource;
 		
 		protected Node(Thread thread, E resource) {
 			super(thread);
 			this.resource = resource;
 		}
 
-		private volatile Node<E> next ;
-		private Node<E> prev ;
-		protected volatile int waiting = 1 ;
+		private volatile Node<E> next;
+		private Node<E> prev;
+		protected volatile int waiting = 1;
 		
 		/**
 		 * Remove this link from the chain
 		 */
 		protected final void close() {
-			Node<E> next ;
+			Node<E> next;
 			while (true) {
-				next = this.next ;
+				next = this.next;
 				if (nextUpdater.compareAndSet(this, next, prev))
-					break ;
+					break;
 			}
 			// we have looped ourselves
-			Node<E> prev = this.prev ;
+			Node<E> prev = this.prev;
 			while (!nextUpdater.compareAndSet(prev, this, next)) {
-				prev = prev.next ;
+				prev = prev.next;
 			}
 		}
 		
 		protected boolean tryWake() {
-			return waitingUpdater.compareAndSet(this, 1, 0) ;
+			return waitingUpdater.compareAndSet(this, 1, 0);
 		}
 
 		protected void forceWake() {
-			waiting = 0 ;
+			waiting = 0;
 		}
 		
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static final AtomicIntegerFieldUpdater<Node> waitingUpdater=  AtomicIntegerFieldUpdater.newUpdater(Node.class, "waiting") ;
+	private static final AtomicIntegerFieldUpdater<Node> waitingUpdater=  AtomicIntegerFieldUpdater.newUpdater(Node.class, "waiting");
 	@SuppressWarnings("unchecked")
-	private static final AtomicReferenceFieldUpdater<Node, Node> nextUpdater = AtomicReferenceFieldUpdater.newUpdater(Node.class, Node.class, "next") ;
-	protected abstract Node<E> newNode(Thread thread, E resource) ;
+	private static final AtomicReferenceFieldUpdater<Node, Node> nextUpdater = AtomicReferenceFieldUpdater.newUpdater(Node.class, Node.class, "next");
+	protected abstract Node<E> newNode(Thread thread, E resource);
 	
-	private final Node<E> head = newNode(null, null) ;	
-	private final Equality<? super E> equality ;
+	private final Node<E> head = newNode(null, null);
+	private final Equality<? super E> equality;
 
 	public FairAbstractCommunalWaitQueue() {
-		this(Equalities.object()) ;
+		this(Equalities.object());
 	}
 	
 	public FairAbstractCommunalWaitQueue(Equality<? super E> equality) {
@@ -114,21 +114,21 @@ public abstract class FairAbstractCommunalWaitQueue<E> implements CommunalWaitQu
 	 * Wakes up all threads in this queue 
 	 */
 	public void wakeAll() {
-		Node<E> next = head.next ;
+		Node<E> next = head.next;
 		while (next != null) {
-			final Node<E> prev = next ;
-			next = next.next ;
-			prev.forceWake() ;
+			final Node<E> prev = next;
+			next = next.next;
+			prev.forceWake();
 		}
 	}
 
 	public void wakeOne() {
 		while (true) {
-			Node<E> next = head.next ;
+			Node<E> next = head.next;
 			if (next == null)
-				return ;
+				return;
 			if (next.tryWake())
-				return ;
+				return;
 		}
 	}
 	
@@ -139,14 +139,14 @@ public abstract class FairAbstractCommunalWaitQueue<E> implements CommunalWaitQu
 	 * @param wake filter indicating which links should be woken
 	 */
 	public void wakeAll(E resource) {
-		Node<E> next = head.next ;
+		Node<E> next = head.next;
 		while (next != null) {
 			if (equality.equates(resource, next.resource)) {
-				final Node<E> prev = next ;
-				next = next.next ;
-				prev.forceWake() ;
+				final Node<E> prev = next;
+				next = next.next;
+				prev.forceWake();
 			} else {
-				next = next.next ;
+				next = next.next;
 			}
 		}
 	}
@@ -158,27 +158,27 @@ public abstract class FairAbstractCommunalWaitQueue<E> implements CommunalWaitQu
 	 * @param wake filter indicating which links should be woken
 	 */
 	public void wakeOne(E resource) {
-		Node<E> next = head.next ;
+		Node<E> next = head.next;
 		while (next != null) {
 			if (equality.equates(resource, next.resource)) {
-				final Node<E> prev = next ;
-				next = next.next ;
+				final Node<E> prev = next;
+				next = next.next;
 				if (prev.tryWake())
-					return ;
+					return;
 			} else {
-				next = next.next ;
+				next = next.next;
 			}
 		}
 	}
 	
 	public WaitHandle register() {
-		return register(null) ;
+		return register(null);
 	}
 	
 	public WaitHandle register(E resource) {
-		final Node<E> handle = newNode(Thread.currentThread(), resource) ;
-		insert(handle) ;
-		return handle ;
+		final Node<E> handle = newNode(Thread.currentThread(), resource);
+		insert(handle);
+		return handle;
 	}
 	
 	/**
@@ -187,16 +187,16 @@ public abstract class FairAbstractCommunalWaitQueue<E> implements CommunalWaitQu
 	 * @param insert the link to be inserted at the end of the chain
 	 */
 	private void insert(Node<E> insert) {
-		Node<E> node = head , next = node.next ;
+		Node<E> node = head , next = node.next;
 		while (true) {
 			while (next != null) {
-				node = next ;
-				next = next.next ;
+				node = next;
+				next = next.next;
 			}
-			insert.prev = node ;
+			insert.prev = node;
 			if (nextUpdater.compareAndSet(node, null, insert)) 
-				return ;
-			next = node.next ;
+				return;
+			next = node.next;
 		}			
 	}
 	

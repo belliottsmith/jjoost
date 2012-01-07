@@ -32,27 +32,27 @@ public final class UnfairParkingWaitQueue extends UnfairAbstractWaitQueue {
 	private final class Node extends UnfairAbstractWaitQueue.Node {
 		
 		private Node(Thread thread, UnfairAbstractWaitQueue.Node next) {
-			super(thread, next) ;
+			super(thread, next);
 		}
 
 		@Override
 		protected void pause() {
-			LockSupport.park() ;
+			LockSupport.park();
 		}
 
 		@Override
 		protected void pauseNanos(long nanos) {
-			LockSupport.parkNanos(nanos) ;
+			LockSupport.parkNanos(nanos);
 		}
 
 		@Override
 		protected void pauseUntil(long until) {
-			LockSupport.parkUntil(until) ;
+			LockSupport.parkUntil(until);
 		}
 
 		@Override
 		protected boolean stillWaiting() {
-			return UnfairParkingWaitQueue.this.stillWaiting(this) ;
+			return UnfairParkingWaitQueue.this.stillWaiting(this);
 		}
 
 		@Override protected void close() { }
@@ -60,18 +60,18 @@ public final class UnfairParkingWaitQueue extends UnfairAbstractWaitQueue {
 	}
 
 	protected final Node newNode(Thread thread, UnfairAbstractWaitQueue.Node next) {
-		return new Node(thread, next) ;
+		return new Node(thread, next);
 	}
 	
 	protected final void wakeAll(UnfairAbstractWaitQueue.Node list) {
 		while (list != null) {
-			LockSupport.unpark(list.thread) ;
-			list = list.next ;
+			LockSupport.unpark(list.thread);
+			list = list.next;
 		}
 	}
 	
 	protected final void wakeFirst(UnfairAbstractWaitQueue.Node list) {
-		LockSupport.unpark(list.thread) ;
+		LockSupport.unpark(list.thread);
 	}
 	
 }

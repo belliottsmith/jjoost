@@ -35,8 +35,8 @@ import org.jjoost.util.Filter;
  */
 public class FilteredIterable<E> implements Iterable<E> {
 
-    private Iterable<? extends E> wrapped ;
-    private Filter<? super E> filter ;
+    private Iterable<? extends E> wrapped;
+    private Filter<? super E> filter;
 
     public FilteredIterable(Iterable<? extends E> wrapped, Filter<? super E> filter) {
         this.wrapped = wrapped;
@@ -44,7 +44,7 @@ public class FilteredIterable<E> implements Iterable<E> {
     }
 
     public Iterator<E> iterator() {
-        return new FilteredIterator<E>(wrapped.iterator(), filter) ;
+        return new FilteredIterator<E>(wrapped.iterator(), filter);
     }
 
 }

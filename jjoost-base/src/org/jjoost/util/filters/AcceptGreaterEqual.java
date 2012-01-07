@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util.filters ;
+package org.jjoost.util.filters;
 
 /**
  * A partial order filter that accepts everything greater than or equal to the provided value, as determined by the <code>Comparator</code>
@@ -32,7 +32,7 @@ package org.jjoost.util.filters ;
  */
 public class AcceptGreaterEqual<E extends Comparable<? super E>> extends PartialOrderAcceptGreaterEqual<E> implements BothFilter<E> {
 
-	private static final long serialVersionUID = 1064862673649778571L ;
+	private static final long serialVersionUID = 1064862673649778571L;
 
 	/**
 	 * Constructs a partial order filter that accepts everything greater than the provided value as determined by the <code>Comparator</code>
@@ -42,11 +42,11 @@ public class AcceptGreaterEqual<E extends Comparable<? super E>> extends Partial
 	 *            inclusive lower limit of acceptable values
 	 */
 	public AcceptGreaterEqual(E than) {
-		super(than) ;
+		super(than);
 	}
 
 	public boolean accept(E test) {
-		return test.compareTo(than) >= 0 ;
+		return test.compareTo(than) >= 0;
 	}
 
 	/**
@@ -62,11 +62,11 @@ public class AcceptGreaterEqual<E extends Comparable<? super E>> extends Partial
 	 * @return a filter that accepts everything greater than or equal to the provided value
 	 */
 	public static <E extends Comparable<? super E>> AcceptGreaterEqual<E> get(E than) {
-		return new AcceptGreaterEqual<E>(than) ;
+		return new AcceptGreaterEqual<E>(than);
 	}
 
 	public String toString() {
-		return "is greater or equal to " + than ;
+		return "is greater or equal to " + than;
 	}
 
 }

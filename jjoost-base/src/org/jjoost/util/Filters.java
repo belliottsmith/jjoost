@@ -24,17 +24,17 @@ package org.jjoost.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator ;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.jjoost.util.filters.* ;
-import org.jjoost.collections.AnySet ;
-import org.jjoost.collections.iters.ClosableIterator ;
-import org.jjoost.collections.iters.FilteredClosableIterator ;
-import org.jjoost.collections.iters.FilteredIterable ;
-import org.jjoost.collections.iters.FilteredIterator ;
+import org.jjoost.util.filters.*;
+import org.jjoost.collections.AnySet;
+import org.jjoost.collections.iters.ClosableIterator;
+import org.jjoost.collections.iters.FilteredClosableIterator;
+import org.jjoost.collections.iters.FilteredIterable;
+import org.jjoost.collections.iters.FilteredIterator;
 
 /**
  * A class providing methods acting on filters, and default filter implementations 
@@ -67,7 +67,7 @@ public class Filters {
 	 * @return negation of the supplied filter
 	 */
     public static <E> Filter<E> not(Filter<E> filter) {
-        return FilterNot.get(filter) ;
+        return FilterNot.get(filter);
     }
 
     /**
@@ -78,7 +78,7 @@ public class Filters {
 	 * @return negation of the supplied partial order filter
      */
     public static <E> FilterPartialOrder<E> not(FilterPartialOrder<E> filter) {
-        return PartialOrderNot.get(filter) ;
+        return PartialOrderNot.get(filter);
     }
 
     /**
@@ -89,9 +89,9 @@ public class Filters {
 	 *            filter to negate
 	 * @return negation of the supplied filter implementing both <code>Filter</code> and <code>PartialOrder</code>
 	 */
-    public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> not(F filter) {
-    	return BothFilterNot.get(filter) ;
-    }
+//    public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> not(F filter) {
+//    	return BothFilterNot.get(filter);
+//    }
     
     /**
      * Returns the conjunction (i.e. "and") of the supplied filters; filters are evaluated in the order they are provided (left-to-right) and are evaluated if and only if previous filters passed
@@ -101,7 +101,7 @@ public class Filters {
      * @return conjunction (i.e. "and") of a and b
      */
     public static <E> Filter<E> and(Filter<? super E> a, Filter<? super E> b) {
-    	return FilterAnd.get(a, b) ;
+    	return FilterAnd.get(a, b);
     }
     
     /**
@@ -111,7 +111,7 @@ public class Filters {
      * @return conjunction (i.e. "and") of provided filters
      */
     public static <E> Filter<E> and(Filter<? super E> ... filters) {
-        return FilterMultiAnd.get(filters) ;
+        return FilterMultiAnd.get(filters);
     }
     
     /**
@@ -121,7 +121,7 @@ public class Filters {
      * @return conjunction (i.e. "and") of provided filters
      */
     public static <E> Filter<E> and(Iterable<Filter<? super E>> filters) {
-        return FilterMultiAnd.get(filters) ;
+        return FilterMultiAnd.get(filters);
     }
 
     /**
@@ -132,7 +132,7 @@ public class Filters {
      * @return conjunction (i.e. "and") of a and b
      */
     public static <E> FilterPartialOrder<E> and(FilterPartialOrder<E> a, FilterPartialOrder<E> b) {
-        return PartialOrderAnd.get(a, b) ;
+        return PartialOrderAnd.get(a, b);
     }
     
     /**
@@ -142,7 +142,7 @@ public class Filters {
      * @return conjunction (i.e. "and") of provided filters
      */
     public static <E> FilterPartialOrder<E> and(FilterPartialOrder<E> ... filters) {
-    	return PartialOrderMultiAnd.get(filters) ;
+    	return PartialOrderMultiAnd.get(filters);
     }
     
     /**
@@ -151,9 +151,9 @@ public class Filters {
      * @param filters filters to apply
      * @return conjunction (i.e. "and") of provided filters
      */
-    public static <E> FilterPartialOrder<E> and(Iterable<? extends FilterPartialOrder<E>> filters) {
-        return PartialOrderMultiAnd.get(filters) ;
-    }
+//    public static <E> FilterPartialOrder<E> and(Iterable<? extends FilterPartialOrder<E>> filters) {
+//        return PartialOrderMultiAnd.get(filters);
+//    }
 
     /**
 	 * Returns the conjunction (i.e. "and") of the supplied filters implementing both <code>Filter</code> and <code>FilterPartialOrder</code>; filters
@@ -165,9 +165,9 @@ public class Filters {
 	 *            filter to apply second
 	 * @return conjunction (i.e. "and") of a and b
 	 */
-    public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> and(F a, F b) {
-    	return BothFilterAnd.get(a, b) ;
-    }
+//    public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> and(F a, F b) {
+//    	return BothFilterAnd.get(a, b);
+//    }
     
     /**
 	 * Returns the conjunction (i.e. "and") of the supplied filters implementing both <code>Filter</code> and <code>FilterPartialOrder</code>; filters
@@ -176,9 +176,9 @@ public class Filters {
      * @param filters filters to apply
      * @return conjunction (i.e. "and") of provided filters
      */
-    public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> and(F ... filters) {
-        return BothFilterMultiAnd.get(filters) ;
-    }
+//    public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> and(F ... filters) {
+//        return BothFilterMultiAnd.get(filters);
+//    }
     
     /**
 	 * Returns the conjunction (i.e. "and") of the supplied filters implementing both <code>Filter</code> and <code>FilterPartialOrder</code>; filters
@@ -187,9 +187,9 @@ public class Filters {
      * @param filters filters to apply
      * @return conjunction (i.e. "and") of provided filters
      */
-    public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> and(Iterable<? extends F> filters) {
-        return BothFilterMultiAnd.get(filters) ;
-    }
+//    public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> and(Iterable<? extends F> filters) {
+//        return BothFilterMultiAnd.get(filters);
+//    }
 
     /**
      * Returns the disjunction (i.e. "or") of the supplied filters; filters are evaluated in the order they are provided (left-to-right) and are evaluated if and only if previous filters passed
@@ -199,7 +199,7 @@ public class Filters {
      * @return disjunction (i.e. "or") of a and b
      */
     public static <E> Filter<E> or(Filter<? super E> a, Filter<? super E> b) {
-    	return FilterOr.get(a, b) ;
+    	return FilterOr.get(a, b);
     }
     
     /**
@@ -209,7 +209,7 @@ public class Filters {
      * @return disjunction (i.e. "or") of provided filters
      */
     public static <E> Filter<E> or(Filter<? super E> ... filters) {
-        return FilterMultiOr.get(filters) ;
+        return FilterMultiOr.get(filters);
     }
     
     /**
@@ -219,7 +219,7 @@ public class Filters {
      * @return disjunction (i.e. "or") of provided filters
      */
     public static <E> Filter<E> or(Iterable<? extends Filter<? super E>> filters) {
-        return FilterMultiOr.get(filters) ;
+        return FilterMultiOr.get(filters);
     }
 
     /**
@@ -233,7 +233,7 @@ public class Filters {
 	 * @return disjunction (i.e. "or") of a and b
      */
     public static <E> FilterPartialOrder<E> or(FilterPartialOrder<E> a, FilterPartialOrder<E> b) {
-    	return PartialOrderOr.get(a, b) ;
+    	return PartialOrderOr.get(a, b);
     }
     
     /**
@@ -244,7 +244,7 @@ public class Filters {
      * @return disjunction (i.e. "or") of provided filters
 	 */
     public static <E> FilterPartialOrder<E> or(FilterPartialOrder<E> ... filters) {
-        return PartialOrderMultiOr.get(filters) ;
+        return PartialOrderMultiOr.get(filters);
     }
     
     /**
@@ -254,9 +254,9 @@ public class Filters {
      * @param filters filters to apply
      * @return disjunction (i.e. "or") of provided filters
      */
-    public static <E> FilterPartialOrder<E> or(Iterable<? extends FilterPartialOrder<E>> filters) {
-        return PartialOrderMultiOr.get(filters) ;
-    }
+//    public static <E> FilterPartialOrder<E> or(Iterable<? extends FilterPartialOrder<E>> filters) {
+//        return PartialOrderMultiOr.get(filters);
+//    }
 
 
     /**
@@ -269,9 +269,9 @@ public class Filters {
 	 *            filter to apply second
 	 * @return disjunction (i.e. "or") of a and b
 	 */
-    public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> or(F a, F b) {
-    	return BothFilterOr.get(a, b) ;
-    }
+//    public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> or(F a, F b) {
+//    	return BothFilterOr.get(a, b);
+//    }
     
     /**
 	 * Returns the disjunction (i.e. "or") of the supplied filters that implement <code>Filter</code> and <code>FilterPartialOrder</code>; filters are
@@ -280,9 +280,9 @@ public class Filters {
      * @param filters filters to apply
      * @return disjunction (i.e. "or") of provided filters
      */
-    public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> or(F ... filters) {
-        return BothFilterMultiOr.get(filters) ;
-    }
+//    public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> or(F ... filters) {
+//        return BothFilterMultiOr.get(filters);
+//    }
     
     /**
 	 * Returns the disjunction (i.e. "or") of the supplied filters that implement <code>Filter</code> and <code>FilterPartialOrder</code>; filters are
@@ -291,9 +291,9 @@ public class Filters {
      * @param filters filters to apply
      * @return disjunction (i.e. "or") of provided filters
      */
-    public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> or(Iterable<? extends F> filters) {
-        return BothFilterMultiOr.get(filters) ;
-    }
+//    public static <E, F extends Filter<? super E> & FilterPartialOrder<E>> BothFilter<E> or(Iterable<? extends F> filters) {
+//        return BothFilterMultiOr.get(filters);
+//    }
 
     /**
 	 * Returns a filter accepting only values equal to the one provided, using default object equality. The filter implements both
@@ -304,7 +304,7 @@ public class Filters {
 	 * @return a filter accepting only values equal to the one provided, using default object equality.
 	 */
     public static <E> BothFilter<E> isEqualTo(E val) {
-    	return AcceptEqual.get(val) ;
+    	return AcceptEqual.get(val);
     }
     
     /**
@@ -315,7 +315,7 @@ public class Filters {
      * @return a filter accepting only values equal to the one provided, using the provided equality
      */
     public static <E> BothFilter<E> isEqualTo(E val, Equality<? super E> equality) {
-    	return AcceptEqual.get(val, equality) ;
+    	return AcceptEqual.get(val, equality);
     }
     
     /**
@@ -327,7 +327,7 @@ public class Filters {
 	 * @return a partial order filter that accepts everything less than the provided value
 	 */
     public static <E> FilterPartialOrder<E> isLess(E val) {
-        return PartialOrderAcceptLess.get(val) ;
+        return PartialOrderAcceptLess.get(val);
     }
 
     /**
@@ -343,7 +343,7 @@ public class Filters {
 	 * @return a filter that accepts everything less than the provided value
 	 */
     public static <E extends Comparable<? super E>> BothFilter<E> isLess(E val) {
-    	return AcceptLess.get(val) ;
+    	return AcceptLess.get(val);
     }
     
     /**
@@ -355,7 +355,7 @@ public class Filters {
 	 * @return a partial order filter that accepts everything less than or equal to the provided value
 	 */
     public static <E> FilterPartialOrder<E> isLessEq(E val) {
-    	return PartialOrderAcceptLessEqual.get(val) ;
+    	return PartialOrderAcceptLessEqual.get(val);
     }
     
     /**
@@ -371,7 +371,7 @@ public class Filters {
 	 * @return a filter that accepts everything less than or equal to the provided value
 	 */
     public static <E extends Comparable<? super E>> BothFilter<E> isLessEq(E val) {
-    	return AcceptLessEqual.get(val) ;
+    	return AcceptLessEqual.get(val);
     }
     
     /**
@@ -383,7 +383,7 @@ public class Filters {
 	 * @return a partial order filter that accepts everything greater than the provided value
 	 */
     public static <E> FilterPartialOrder<E> isGreater(E val) {
-    	return PartialOrderAcceptGreater.get(val) ;
+    	return PartialOrderAcceptGreater.get(val);
     }
     
     /**
@@ -399,7 +399,7 @@ public class Filters {
 	 * @return a filter that accepts everything greater than the provided value
 	 */
     public static <E extends Comparable<? super E>> BothFilter<E> isGreater(E val) {
-    	return AcceptGreater.get(val) ;
+    	return AcceptGreater.get(val);
     }
     
     /**
@@ -411,7 +411,7 @@ public class Filters {
 	 * @return a partial order filter that accepts everything greater than or equal to the provided value
 	 */
     public static <E> FilterPartialOrder<E> isGreaterEq(E val) {
-    	return PartialOrderAcceptGreaterEqual.get(val) ;
+    	return PartialOrderAcceptGreaterEqual.get(val);
     }
     
     /**
@@ -427,7 +427,7 @@ public class Filters {
 	 * @return a filter that accepts everything greater than or equal to the provided value
 	 */
     public static <E extends Comparable<? super E>> BothFilter<E> isGreaterEq(E val) {
-    	return AcceptGreaterEqual.get(val) ;
+    	return AcceptGreaterEqual.get(val);
     }
     
     /**
@@ -442,7 +442,7 @@ public class Filters {
 	 * @return a filter that accepts everything in the range <code>[lb...ub)</code>
 	 */
     public static <E> FilterPartialOrder<E> isBetween(E lb, E ub) {
-    	return PartialOrderAcceptBetween.get(lb, ub) ;
+    	return PartialOrderAcceptBetween.get(lb, ub);
     }
     
     
@@ -461,7 +461,7 @@ public class Filters {
      * @return a filter that accepts everything in the range <code>[lb...ub)</code>
      */
     public static <E> FilterPartialOrder<E> isBetween(E lb, boolean lbIsInclusive, E ub, boolean ubIsInclusive) {
-    	return PartialOrderAcceptBetween.get(lb, lbIsInclusive, ub, ubIsInclusive) ;
+    	return PartialOrderAcceptBetween.get(lb, lbIsInclusive, ub, ubIsInclusive);
     }
     
     /**
@@ -480,7 +480,7 @@ public class Filters {
 	 * @return a filter that accepts everything in the range <code>[lb...ub)</code>
 	 */
     public static <E extends Comparable<? super E>> BothFilter<E> isBetween(E lb, E ub) {
-    	return AcceptBetween.get(lb, ub) ;
+    	return AcceptBetween.get(lb, ub);
     }
     
     /**
@@ -502,7 +502,7 @@ public class Filters {
      * @return a filter that accepts everything in the range <code>[lb...ub)</code>
      */
     public static <E extends Comparable<? super E>> BothFilter<E> isBetween(E lb, boolean lbIsInclusive, E ub, boolean ubIsInclusive) {
-    	return AcceptBetween.get(lb, lbIsInclusive, ub, ubIsInclusive) ;
+    	return AcceptBetween.get(lb, lbIsInclusive, ub, ubIsInclusive);
     }
     
     /**
@@ -517,7 +517,7 @@ public class Filters {
 	 * @return a <code>FilterPartialOrder</code> which always uses the provided comparator
 	 */
     public static <E> FilterPartialOrder<E> forceComparator(FilterPartialOrder<E> filter, Comparator<? super E> cmp) {
-    	return forceComparator(filter, cmp, Functions.<E>identity()) ;
+    	return forceComparator(filter, cmp, Functions.<E>identity());
     }
     
     /**
@@ -536,7 +536,7 @@ public class Filters {
 	 * @return a <code>FilterPartialOrder</code> which always uses the provided comparator
 	 */
     public static <S, T> FilterPartialOrder<T> forceComparator(FilterPartialOrder<S> filter, Comparator<? super S> cmp, Function<? super T, ? extends S> f) {
-    	return PartialOrderOverride.get(filter, cmp, f) ;
+    	return PartialOrderOverride.get(filter, cmp, f);
     }
     
     /**
@@ -546,7 +546,7 @@ public class Filters {
      * @return a filter rejecting any values equal to their predecessor
      */
     public static final <E> Filter<E> uniqueSeq() {
-    	return AcceptUniqueSequence.<E>get() ;
+    	return AcceptUniqueSequence.<E>get();
     }
     
     /**
@@ -556,7 +556,7 @@ public class Filters {
      * @return a filter rejecting any values equal to their predecessor
      */
     public static final <E> Filter<E> uniqueSeq(Equality<? super E> eq) {
-    	return AcceptUniqueSequence.<E>get(eq) ;
+    	return AcceptUniqueSequence.<E>get(eq);
     }
     
     /**
@@ -566,7 +566,7 @@ public class Filters {
 	 * @return a filter accepting only unique values
 	 */
     public static final <E> Filter<E> unique() {
-    	return AcceptUnique.<E>get() ;
+    	return AcceptUnique.<E>get();
     }
     
     /**
@@ -577,7 +577,7 @@ public class Filters {
 	 * @return a filter accepting only unique values
 	 */
     public static final <E> Filter<E> unique(Equality<? super E> eq) {
-    	return AcceptUnique.<E>get(eq) ;
+    	return AcceptUnique.<E>get(eq);
     }
     
     /**
@@ -588,7 +588,7 @@ public class Filters {
 	 * @return a filter accepting only unique values
 	 */
     public static final <E> Filter<E> unique(AnySet<E> set) {
-    	return AcceptUnique.<E>get(set) ;
+    	return AcceptUnique.<E>get(set);
     }
     
     /**
@@ -599,7 +599,7 @@ public class Filters {
      * @return a filter accepting a unique sequence if applied in ascending order
      */
     public static final <E> FilterPartialOrder<E> uniqueAsc() {
-		return AcceptUniqueAscendingSequence.<E>get() ;
+		return AcceptUniqueAscendingSequence.<E>get();
 	}
 	
     /**
@@ -610,7 +610,7 @@ public class Filters {
      * @return a filter accepting a unique sequence if applied in descending order
      */
 	public static final <E> FilterPartialOrder<E> uniqueDesc() {
-		return AcceptUniqueDescendingSequence.<E>get() ;
+		return AcceptUniqueDescendingSequence.<E>get();
 	}
 	
     /**
@@ -618,7 +618,7 @@ public class Filters {
      * @return a filter accepting everything that is not null
      */    
 	public static <E> Filter<E> notNull() {
-    	return AcceptIfNotNull.get() ;
+    	return AcceptIfNotNull.get();
     }
 
     /**
@@ -626,7 +626,7 @@ public class Filters {
      * @return a filter accepting only values that are null
      */
 	public static <E> Filter<E> isNull() {
-    	return AcceptIfNull.get() ;
+    	return AcceptIfNull.get();
     }
 
     /**
@@ -637,7 +637,7 @@ public class Filters {
      * @return a filter that applies the provided function to its input before delegating to the provided filter
      */
     public static <X, Y> MappedFilter<X, Y> mapped(Function<? super X, ? extends Y> mapping, Filter<? super Y> filter) {
-    	return MappedFilter.get(mapping, filter) ;
+    	return MappedFilter.get(mapping, filter);
     }
     
     /**
@@ -647,7 +647,7 @@ public class Filters {
      * @return a filter accepting strings that match the provided pattern
      */
     public static Filter<String> matches(Pattern pattern) {
-    	return new FilterPattern(pattern) ;
+    	return new FilterPattern(pattern);
     }
     
     /**
@@ -657,7 +657,7 @@ public class Filters {
      * @return a filter accepting strings that match the supplied pattern
      */
     public static Filter<String> matches(String pattern) {
-    	return matches(Pattern.compile(pattern)) ;
+    	return matches(Pattern.compile(pattern));
     }
 
     /**
@@ -666,7 +666,7 @@ public class Filters {
      * @return a filter accepting values that are members of the provided set
      */
     public static <E> Filter<E> isMemberOf(AnySet<E> set) {
-    	return new AcceptIfMember<E>(set) ;
+    	return new AcceptIfMember<E>(set);
     }
 
     /**
@@ -679,7 +679,7 @@ public class Filters {
 	 * @return a filter accepting values that occur in the provided <code>Iterable</code>
 	 */
     public static <E> Filter<E> isMemberOf(Iterable<E> set) {
-    	return new AcceptIfMember<E>(set) ;
+    	return new AcceptIfMember<E>(set);
     }
 
 	/**
@@ -693,7 +693,7 @@ public class Filters {
 	 * @return an eagerly filtered copy of the provided collection
 	 */
     public static <E> List<E> apply(Collection<E> coll, Filter<? super E> filter) {
-        return apply(filter, coll) ;
+        return apply(filter, coll);
     }
 
 	/**
@@ -707,7 +707,7 @@ public class Filters {
 	 * @return a filtering <code>Iterable</code>
 	 */
     public static <E> FilteredIterable<E> apply(Iterable<E> iter, Filter<? super E> filter) {
-        return apply(filter, iter) ;
+        return apply(filter, iter);
     }
     
     /**
@@ -721,7 +721,7 @@ public class Filters {
 	 * @return a filtered <code>Iterator</code>
 	 */
     public static <E> FilteredIterator<E> apply(Iterator<E> iter, Filter<? super E> filter) {
-        return apply(filter, iter) ;
+        return apply(filter, iter);
     }
     
     /**
@@ -734,7 +734,7 @@ public class Filters {
 	 * @return a filtered <code>ClosableIterator</code>
 	 */
     public static <E> FilteredClosableIterator<E> apply(ClosableIterator<E> iter, Filter<? super E> filter) {
-        return apply(filter, iter) ;
+        return apply(filter, iter);
     }
 
 	/**
@@ -748,9 +748,9 @@ public class Filters {
 	 * @return an eagerly filtered copy of the provided collection
 	 */
     public static <E> List<E> apply(Filter<? super E> filter, Collection<E> coll) {
-    	List<E> ret = new ArrayList<E>(coll.size()) ;
-    	for (E e : coll) if (filter.accept(e)) ret.add(e) ;
-    	return ret ;
+    	List<E> ret = new ArrayList<E>(coll.size());
+    	for (E e : coll) if (filter.accept(e)) ret.add(e);
+    	return ret;
     }
     
 	/**
@@ -764,7 +764,7 @@ public class Filters {
 	 * @return a filtering <code>Iterable</code>
 	 */
     public static <E> FilteredIterable<E> apply(Filter<? super E> filter, Iterable<E> iter) {
-    	return new FilteredIterable<E>(iter, filter) ;
+    	return new FilteredIterable<E>(iter, filter);
     }
     
     /**
@@ -778,7 +778,7 @@ public class Filters {
 	 * @return a filtered <code>Iterator</code>
 	 */
     public static <E> FilteredIterator<E> apply(Filter<? super E> filter, Iterator<E> iter) {
-    	return new FilteredIterator<E>(iter, filter) ;
+    	return new FilteredIterator<E>(iter, filter);
     }
     
     /**
@@ -792,7 +792,7 @@ public class Filters {
 	 * @return a filtered <code>ClosableIterator</code>
 	 */
     public static <E> FilteredClosableIterator<E> apply(Filter<? super E> filter, ClosableIterator<E> iter) {
-    	return new FilteredClosableIterator<E>(iter, filter) ;
+    	return new FilteredClosableIterator<E>(iter, filter);
     }
     
 	/**
@@ -810,15 +810,15 @@ public class Filters {
 	 */
 	public static <V> int remove(Filter<? super V> removeMatches, int removeAtMost, Iterator<V> iter) {
 		if (removeAtMost < 0)
-			throw new IllegalArgumentException("Cannot remove fewer than zero elements") ;
-		int c = 0 ;
+			throw new IllegalArgumentException("Cannot remove fewer than zero elements");
+		int c = 0;
 		while (c != removeAtMost & iter.hasNext()) {
 			if (removeMatches.accept(iter.next())) {
-				iter.remove() ;
-				c += 1 ;
+				iter.remove();
+				c += 1;
 			}
 		}
-		return c ;
+		return c;
 	}
 
 	/**
@@ -837,19 +837,19 @@ public class Filters {
 	 */
 	public static <V> V removeAndReturnFirst(Filter<? super V> removeMatches, int removeAtMost, Iterator<V> iter) {
 		if (removeAtMost < 0)
-			throw new IllegalArgumentException("Cannot remove fewer than zero elements") ;
-		int c = 0 ;
-		V r = null ;
+			throw new IllegalArgumentException("Cannot remove fewer than zero elements");
+		int c = 0;
+		V r = null;
 		while (c != removeAtMost & iter.hasNext()) {
-			final V next = iter.next() ;
+			final V next = iter.next();
 			if (removeMatches.accept(next)) {
-				iter.remove() ;
+				iter.remove();
 				if (c == 0)
-					r = next ; 
-				c += 1 ;
+					r = next;
+				c += 1;
 			}
 		}
-		return r ;
+		return r;
 	}
 	
 	/**
@@ -866,8 +866,8 @@ public class Filters {
 	 */
 	public static <V> Iterator<V> removeAndReturn(Filter<? super V> removeMatches, int removeAtMost, Iterator<V> iter) {
 		if (removeAtMost < 0)
-			throw new IllegalArgumentException("Cannot remove fewer than zero elements") ;
-		return Iters.head(removeAtMost, Iters.destroyAsConsumed(apply(removeMatches, iter))) ;
+			throw new IllegalArgumentException("Cannot remove fewer than zero elements");
+		return Iters.head(removeAtMost, Iters.destroyAsConsumed(apply(removeMatches, iter)));
 	}
 	
 }

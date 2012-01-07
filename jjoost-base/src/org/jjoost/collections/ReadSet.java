@@ -42,26 +42,26 @@ public interface ReadSet<V> extends AnyReadSet<V> {
 	 *            value to find
 	 * @return first matching value
 	 */
-	public V get(V find) ;
+	public V get(V find);
 
 	/**
 	 * A convenience method returning the size of the set; this is equivalent to
 	 * <code>totalCount()</code> or <code>uniqueCount()</code> 
 	 * @return size of the set
 	 */
-	public int size() ;
+	public int size();
 	
 	/**
 	 * Returns a copy of the set. This method may or may not return a set of the same class as the one it was
 	 * called on, however return a <code>Set</code>
 	 */
-	@Override public ReadSet<V> copy() ;
+	@Override public ReadSet<V> copy();
 	
 	/**
 	 * Returns <code>this</code>
 	 * 
 	 * @return <code>this</code>
 	 */
-	public ReadSet<V> unique() ;
+	public ReadSet<V> unique();
 
 }

@@ -46,7 +46,7 @@ public interface MultiSet<V> extends MultiReadSet<V>, AnySet<V> {
 	 * 
 	 * @return null
 	 */
-	@Override public V put(V val) ;
+	@Override public V put(V val);
 
 	/**
 	 * Insert the value into the set the specified number of times.
@@ -54,14 +54,14 @@ public interface MultiSet<V> extends MultiReadSet<V>, AnySet<V> {
 	 * @param val the val
 	 * @param numberOfTimes the number of times
 	 */
-	public void put(V val, int numberOfTimes) ;
+	public void put(V val, int numberOfTimes);
 	
 	
 	/**
 	 * Returns a copy of the set. This method may or may not return a set of the same class as the one it was
 	 * called on, however must return a <code>MultiSet</code>
 	 */
-	@Override public MultiSet<V> copy() ;
+	@Override public MultiSet<V> copy();
 
 	/**
 	 * Returns a <code>Set</code> representing only the unique values present in this set. 
@@ -70,6 +70,6 @@ public interface MultiSet<V> extends MultiReadSet<V>, AnySet<V> {
 	 * 
 	 * @return unique values
 	 */
-	public Set<V> unique() ;
+	public Set<V> unique();
 
 }

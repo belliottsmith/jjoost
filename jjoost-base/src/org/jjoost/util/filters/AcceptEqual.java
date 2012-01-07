@@ -20,9 +20,9 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util.filters ;
+package org.jjoost.util.filters;
 
-import java.util.Comparator ;
+import java.util.Comparator;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
 
@@ -32,10 +32,10 @@ import org.jjoost.util.Equality;
  */
 public class AcceptEqual<E> implements BothFilter<E> {
 
-	private static final long serialVersionUID = 1064862673649778571L ;
+	private static final long serialVersionUID = 1064862673649778571L;
 
-	final E than ;
-	final Equality<? super E> equality ;
+	final E than;
+	final Equality<? super E> equality;
 
     /**
 	 * Constructs a new filter accepting only values equal to the one provided, using the provided definition of equality. The filter implements both
@@ -47,24 +47,24 @@ public class AcceptEqual<E> implements BothFilter<E> {
 	 *            the definition of equality
 	 */
 	public AcceptEqual(E than, Equality<? super E> equality) {
-		this.than = than ;
-		this.equality = equality ;
+		this.than = than;
+		this.equality = equality;
 	}
 
 	public boolean accept(E test) {
-		return equality.equates(test, than) ;
+		return equality.equates(test, than);
 	}
 
 	public boolean accept(E test, Comparator<? super E> cmp) {
-		return cmp.compare(test, than) == 0 ;
+		return cmp.compare(test, than) == 0;
 	}
 
 	public boolean mayAcceptBetween(E lb, boolean lbInclusive, E ub, boolean ubInclusive, Comparator<? super E> cmp) {
-		return (lb == null || (cmp.compare(lb, than) < (lbInclusive ? 1 : 0))) && (ub == null || (cmp.compare(than, ub) < (ubInclusive ? 1 : 0))) ;
+		return (lb == null || (cmp.compare(lb, than) < (lbInclusive ? 1 : 0))) && (ub == null || (cmp.compare(than, ub) < (ubInclusive ? 1 : 0)));
 	}
 
 	public boolean mayRejectBetween(E lb, boolean lbInclusive, E ub, boolean ubInclusive, Comparator<? super E> cmp) {
-		return lb == null || ub == null || (cmp.compare(lb, than) < (lbInclusive ? 0 : 1)) || (cmp.compare(than, ub) < (ubInclusive ? 0 : 1)) ;
+		return lb == null || ub == null || (cmp.compare(lb, than) < (lbInclusive ? 0 : 1)) || (cmp.compare(than, ub) < (ubInclusive ? 0 : 1));
 	}
 	
     /**
@@ -75,7 +75,7 @@ public class AcceptEqual<E> implements BothFilter<E> {
 	 *            value to accept
 	 */
 	public static <E> AcceptEqual<E> get(E than) {
-		return new AcceptEqual<E>(than, Equalities.object()) ;
+		return new AcceptEqual<E>(than, Equalities.object());
 	}
 
     /**
@@ -88,11 +88,11 @@ public class AcceptEqual<E> implements BothFilter<E> {
 	 *            the definition of equality
 	 */
 	public static <E> AcceptEqual<E> get(E than, Equality<? super E> equality) {
-		return new AcceptEqual<E>(than, equality) ;
+		return new AcceptEqual<E>(than, equality);
 	}
 	
 	public String toString() {
-		return "equals " + than ;
+		return "equals " + than;
 	}
 
 }

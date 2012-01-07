@@ -44,7 +44,7 @@ public interface Map<K, V> extends ReadMap<K, V>, AnyMap<K, V> {
 	 * 
 	 * @return the value of any maplet removed as a result of this action
 	 */
-	public V put(K key, V val) ;
+	public V put(K key, V val);
 	
 	/**
 	 * Attempts to bind the provided key to the provided value. If the key does not occur
@@ -57,7 +57,7 @@ public interface Map<K, V> extends ReadMap<K, V>, AnyMap<K, V> {
 	 * 
 	 * @return the value already associated with the key in the map, or null if none
 	 */
-	public V putIfAbsent(K key, V val) ;
+	public V putIfAbsent(K key, V val);
 	
 	/**
 	 * Equivalent to <code>putIfAbsent(key, putIfNotPresent.create())</code>, except that 
@@ -71,7 +71,7 @@ public interface Map<K, V> extends ReadMap<K, V>, AnyMap<K, V> {
 	 * 
 	 * @return the value associated with the provided key pre method
 	 */
-	public V putIfAbsent(K key, Function<? super K, ? extends V> putIfNotPresent) ;
+	public V putIfAbsent(K key, Function<? super K, ? extends V> putIfNotPresent);
 	
 	/**
 	 * Equivalent to putIfAbsent(key, putIfNotPresent), except that instead of returning
@@ -85,7 +85,7 @@ public interface Map<K, V> extends ReadMap<K, V>, AnyMap<K, V> {
 	 * 
 	 * @return the value associated with the provided key post method
 	 */
-	public V ensureAndGet(K key, Factory<? extends V> putIfNotPresent) ;
+	public V ensureAndGet(K key, Factory<? extends V> putIfNotPresent);
 	
 	/**
 	 * Equivalent to putIfAbsent(key, putIfNotPresent.create(key)), except that <br />
@@ -107,7 +107,7 @@ public interface Map<K, V> extends ReadMap<K, V>, AnyMap<K, V> {
 	 * @param putIfNotPresent put if not present
 	 * @return the value associated with the key post method
 	 */
-	public V ensureAndGet(K key, Function<? super K, ? extends V> putIfNotPresent) ;
+	public V ensureAndGet(K key, Function<? super K, ? extends V> putIfNotPresent);
 	
 
 	/* (non-Javadoc)

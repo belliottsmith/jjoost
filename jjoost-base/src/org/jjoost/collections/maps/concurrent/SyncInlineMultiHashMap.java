@@ -36,19 +36,19 @@ public class SyncInlineMultiHashMap<K, V> extends InlineMultiHashMap<K, V, Seria
 	private static final long serialVersionUID = 1051610520557989640L;
 
 	public SyncInlineMultiHashMap() {
-		this(16, 0.75f) ;
+		this(16, 0.75f);
 	}	
 	public SyncInlineMultiHashMap(int minimumInitialCapacity, float loadFactor) {
-		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object(), Equalities.object()) ;
+		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object(), Equalities.object());
 	}
 	public SyncInlineMultiHashMap(Equality<? super K> keyEquality) {
-		this(SerialHashStore.defaultRehasher(), keyEquality) ;
+		this(SerialHashStore.defaultRehasher(), keyEquality);
 	}	
 	public SyncInlineMultiHashMap(Rehasher rehasher, Equality<? super K> keyEquality) { 
-		this(16, 0.75f, rehasher, keyEquality, Equalities.object()) ;
+		this(16, 0.75f, rehasher, keyEquality, Equalities.object());
 	}	
 	public SyncInlineMultiHashMap(Rehasher rehasher, Equality<? super K> keyEquality, Equality<? super V> valEquality) { 
-		this(16, 0.75f, rehasher, keyEquality, valEquality) ;
+		this(16, 0.75f, rehasher, keyEquality, valEquality);
 	}
 
 	public SyncInlineMultiHashMap( 
@@ -57,7 +57,7 @@ public class SyncInlineMultiHashMap<K, V> extends InlineMultiHashMap<K, V, Seria
 	{
 		super(rehasher, new SerialInlineMultiHashMap.KeyEquality<K, V>(keyEquality), new SerialInlineMultiHashMap.EntryEquality<K, V>(keyEquality, valEquality),
 			SerialInlineMultiHashMap.<K, V>factory(), 
-			new SynchronizedHashStore<Node<K, V>>(new SerialHashStore<Node<K, V>>(minimumInitialCapacity, loadFactor))) ;
+			new SynchronizedHashStore<Node<K, V>>(new SerialHashStore<Node<K, V>>(minimumInitialCapacity, loadFactor)));
 	}
 
 }

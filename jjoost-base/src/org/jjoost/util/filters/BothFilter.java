@@ -22,8 +22,8 @@
 
 package org.jjoost.util.filters;
 
-import org.jjoost.util.Filter ;
-import org.jjoost.util.FilterPartialOrder ;
+import org.jjoost.util.Filter;
+import org.jjoost.util.FilterPartialOrder;
 
 /**
  * A convenience interface for classes implementing both <code>Filter</code> and <code>FilterPartialOrder</code>

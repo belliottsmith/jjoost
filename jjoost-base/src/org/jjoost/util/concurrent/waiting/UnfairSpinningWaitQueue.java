@@ -30,7 +30,7 @@ public final class UnfairSpinningWaitQueue extends UnfairAbstractWaitQueue {
 	private final class Node extends UnfairAbstractWaitQueue.Node {
 		
 		private Node(Thread thread, UnfairAbstractWaitQueue.Node next) {
-			super(thread, next) ;
+			super(thread, next);
 		}
 
 		@Override protected void close() { }
@@ -39,13 +39,13 @@ public final class UnfairSpinningWaitQueue extends UnfairAbstractWaitQueue {
 		@Override protected void pauseUntil(long until) { }
 		@Override
 		protected boolean stillWaiting() {
-			return UnfairSpinningWaitQueue.this.stillWaiting(this) ;
+			return UnfairSpinningWaitQueue.this.stillWaiting(this);
 		}
 
 	}
 	
 	protected final Node newNode(Thread thread, UnfairAbstractWaitQueue.Node next) {
-		return new Node(thread, next) ;
+		return new Node(thread, next);
 	}
 	
 	protected final void wakeAll(UnfairAbstractWaitQueue.Node list) { }

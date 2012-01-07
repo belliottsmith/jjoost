@@ -27,31 +27,31 @@ import java.util.NoSuchElementException;
 
 public class HeadIterator<E> implements Iterator<E> {
 
-	final Iterator<E> iterator ;
-	private int take ;
-	private int count ;
+	final Iterator<E> iterator;
+	private int take;
+	private int count;
 	
 	public HeadIterator(Iterator<E> iterator, int take) {
 		if (take < 0)
-			throw new IllegalArgumentException(String.format("HeadIterator cannot limit itself to fewer than zero items (%d requested)", take)) ;
-		this.iterator = iterator ;
-		this.take = take ;
+			throw new IllegalArgumentException(String.format("HeadIterator cannot limit itself to fewer than zero items (%d requested)", take));
+		this.iterator = iterator;
+		this.take = take;
 	}
 	
 	public boolean hasNext() {
-		return count != take && iterator.hasNext() ;
+		return count != take && iterator.hasNext();
 	}
 
 	public E next() {
 		if (count == take)
-			throw new NoSuchElementException() ;
-		count++ ;
-		E next = iterator.next() ;
-		return next ;
+			throw new NoSuchElementException();
+		count++;
+		E next = iterator.next();
+		return next;
 	}
 
 	public void remove() {
-		iterator.remove() ;
+		iterator.remove();
 	}
 
 	/**
@@ -59,7 +59,7 @@ public class HeadIterator<E> implements Iterator<E> {
 	 * @return
 	 */
 	public int count() {
-		return count ;
+		return count;
 	}
 	
 }

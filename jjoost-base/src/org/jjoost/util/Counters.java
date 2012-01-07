@@ -22,7 +22,7 @@
 
 package org.jjoost.util;
 
-import java.util.concurrent.atomic.AtomicIntegerFieldUpdater ;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 /**
  * Some default <code>Counter</code> implementations
@@ -37,7 +37,7 @@ public class Counters {
 	 * @return a new thread safe <code>Counter</code> which uses compare and set operations to modify its value
 	 */
 	public static Counter newThreadSafeCounter() {
-		return new ThreadSafeCounter() ;
+		return new ThreadSafeCounter();
 	}
 	
 	/**
@@ -45,7 +45,7 @@ public class Counters {
 	 * @return a <code>Counter</code> which ignores all updates to its value and always returns a value less than zero.
 	 */
 	public static Counter newDoNothingCounter() {
-		return new DontCounter() ;
+		return new DontCounter();
 	}
 	
 	/**
@@ -53,7 +53,7 @@ public class Counters {
 	 * @return a regular <code>Counter</code> which performs ordinary addition with no concurrency guarantees
 	 */
 	public static Counter newCounter() {
-		return new SerialCounter() ;
+		return new SerialCounter();
 	}
 	
 	/**
@@ -63,29 +63,29 @@ public class Counters {
 	 */
 	public static class ThreadSafeCounter implements Counter {
 
-		private volatile int count ;
-		private static final AtomicIntegerFieldUpdater<ThreadSafeCounter> countUpdater = AtomicIntegerFieldUpdater.newUpdater(ThreadSafeCounter.class, "count") ;
+		private volatile int count;
+		private static final AtomicIntegerFieldUpdater<ThreadSafeCounter> countUpdater = AtomicIntegerFieldUpdater.newUpdater(ThreadSafeCounter.class, "count");
 		
 		@Override
 		public boolean add(int i) {
 			while (true) {
-				final int c = count ;
-				final int n = c + i ;
+				final int c = count;
+				final int n = c + i;
 				if (n < 0)
-					return false ;
+					return false;
 				if (countUpdater.compareAndSet(this, c, n))
-					return true ;
+					return true;
 			}
 		}
 
 		@Override
 		public int get() {
-			return count ;
+			return count;
 		}
 
 		@Override
 		public Counter newInstance() {
-			return new ThreadSafeCounter() ;
+			return new ThreadSafeCounter();
 		}
 
 	}
@@ -97,26 +97,26 @@ public class Counters {
 	 */
 	public static class SerialCounter implements Counter {
 
-		private int count ;
+		private int count;
 		
 		@Override
 		public boolean add(int i) {
-			final int n = count + i ;
+			final int n = count + i;
 			if (n >= 0) {
-				count = n ;
-				return true ;
+				count = n;
+				return true;
 			}
-			return false ;
+			return false;
 		}
 
 		@Override
 		public int get() {
-			return count ;
+			return count;
 		}
 		
 		@Override
 		public Counter newInstance() {
-			return new SerialCounter() ;
+			return new SerialCounter();
 		}
 		
 	}
@@ -129,15 +129,15 @@ public class Counters {
 	public static class DontCounter implements Counter {
 		@Override
 		public boolean add(int i) {
-			return true ;
+			return true;
 		}
 		@Override
 		public int get() {
-			return Integer.MIN_VALUE ;
+			return Integer.MIN_VALUE;
 		}
 		@Override
 		public Counter newInstance() {
-			return new DontCounter() ;
+			return new DontCounter();
 		}
 	}
 	

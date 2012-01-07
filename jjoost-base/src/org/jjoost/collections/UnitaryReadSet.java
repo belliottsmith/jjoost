@@ -36,19 +36,19 @@ public interface UnitaryReadSet<V> extends AnyReadSet<V> {
 	 * 
 	 * @return the set's value, or null if empty
 	 */
-	public V get() ;
+	public V get();
 
 	/**
 	 * Returns a copy of the set. This method may or may not return a set of the same class as the one it was
 	 * called on, however will return a <code>UnitarySet</code>
 	 */
-	@Override public UnitaryReadSet<V> copy() ;
+	@Override public UnitaryReadSet<V> copy();
 	
 	/**
 	 * Returns <code>this</code>
 	 * 
 	 * @return <code>this</code>
 	 */
-	public UnitaryReadSet<V> unique() ;
+	public UnitaryReadSet<V> unique();
 
 }

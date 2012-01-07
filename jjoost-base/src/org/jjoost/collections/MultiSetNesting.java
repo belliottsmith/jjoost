@@ -54,7 +54,7 @@ public class MultiSetNesting<V> {
 		 * Store duplicate values in a nested set or list. 
 		 * Typically this will be more efficient than <code>INLINE</code> for moderate to large numbers of duplicates (e.g. above 3 on average)
 		 */
-		NESTED ;
+		NESTED;
 	}
 	
 	/**
@@ -62,20 +62,17 @@ public class MultiSetNesting<V> {
 	 * @return the MultiSetNesting.Type type of this MultiSetNesting
 	 */
 	public Type type() { return type ; }
-	private final Type type ;
+	private final Type type;
 	MultiSetNesting(Type type) {
 		super();
 		this.type = type;
 	}
 	
-	@SuppressWarnings("unchecked")
-	private static final MultiSetNesting INLINE = new MultiSetNesting(Type.INLINE) ;
+	private static final MultiSetNesting<?> INLINE = new MultiSetNesting<Object>(Type.INLINE);
 	
-	@SuppressWarnings("unchecked")
-	private static final MultiSetNesting COUNTING = new MultiSetNesting(Type.COUNTING) ;
+	private static final MultiSetNesting<?> COUNTING = new MultiSetNesting<Object>(Type.COUNTING);
 	
-	@SuppressWarnings("unchecked")
-	private static final MultiSetNesting NESTED = new MultiSetNesting(Type.NESTED) ;
+	private static final MultiSetNesting<?> NESTED = new MultiSetNesting<Object>(Type.NESTED);
 	
 	/**
 	 * Return a MultiSetNesting whose type is INLINE
@@ -83,7 +80,7 @@ public class MultiSetNesting<V> {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <V> MultiSetNesting<V> inline() {
-		return INLINE ;
+		return (MultiSetNesting<V>) INLINE;
 	}
 
 	/**
@@ -92,7 +89,7 @@ public class MultiSetNesting<V> {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <V> MultiSetNesting<V> counting() {
-		return COUNTING ;
+		return (MultiSetNesting<V>) COUNTING;
 	}
 	
 	/**
@@ -101,7 +98,7 @@ public class MultiSetNesting<V> {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <V> MultiSetNesting<V> nested() {
-		return NESTED ;
+		return (MultiSetNesting<V>) NESTED;
 	}
 	
 }

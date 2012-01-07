@@ -61,7 +61,7 @@ public interface AnyMap<K, V> extends AnyReadMap<K, V> {
 	 *            value to insert
 	 * @return <code>true</code> if the map was modified, <code>false</code> otherwise
 	 */
-	public boolean add(K key, V value) ;	
+	public boolean add(K key, V value);
 	
 	/**
 	 * Ensures that the provided key binds to the provided value at least once;
@@ -76,7 +76,7 @@ public interface AnyMap<K, V> extends AnyReadMap<K, V> {
 	 * 
 	 * @return the value of any maplet removed as a result of this action
 	 */
-	public V put(K key, V val) ;
+	public V put(K key, V val);
 	
 	/**
 	 * Attempts to bind the provided key to the provided value. If the key does not occur
@@ -92,12 +92,12 @@ public interface AnyMap<K, V> extends AnyReadMap<K, V> {
 	 * 
 	 * @return implementation dependent
 	 */
-	public V putIfAbsent(K key, V val) ;
+	public V putIfAbsent(K key, V val);
 	
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyReadMap#values(java.lang.Object)
 	 */
-	@Override public AnySet<V> values(K key) ;
+	@Override public AnySet<V> values(K key);
 	
 	/**
 	 * Removes all occurrences of the provided key from domain of the map,
@@ -107,7 +107,7 @@ public interface AnyMap<K, V> extends AnyReadMap<K, V> {
 	 * 
 	 * @return the number removed
 	 */
-	public int remove(K key) ;	
+	public int remove(K key);
 	
 	/**
 	 * Removes all occurrences of the provided key->value pair from the map,
@@ -118,7 +118,7 @@ public interface AnyMap<K, V> extends AnyReadMap<K, V> {
 	 * 
 	 * @return the number removed
 	 */
-	public int remove(K key, V val) ;
+	public int remove(K key, V val);
 	
 	/**
 	 * Removes all occurrences of the provided key from domain of the map,
@@ -128,7 +128,7 @@ public interface AnyMap<K, V> extends AnyReadMap<K, V> {
 	 * 
 	 * @return entries removed
 	 */
-	public Iterable<Entry<K, V>> removeAndReturn(K key) ;	
+	public Iterable<Entry<K, V>> removeAndReturn(K key);
 	
 	/**
 	 * Removes all occurrences of the provided key->value pair from the map,
@@ -139,7 +139,7 @@ public interface AnyMap<K, V> extends AnyReadMap<K, V> {
 	 * 
 	 * @return entries removed
 	 */
-	public Iterable<Entry<K, V>> removeAndReturn(K key, V val) ;
+	public Iterable<Entry<K, V>> removeAndReturn(K key, V val);
 	
 	/**
 	 * Removes all occurrences of the provided key from domain of the map,
@@ -149,17 +149,17 @@ public interface AnyMap<K, V> extends AnyReadMap<K, V> {
 	 * 
 	 * @return the value associated with the first key removed, or null if none
 	 */
-	public V removeAndReturnFirst(K key) ;	
+	public V removeAndReturnFirst(K key);
 	
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyReadMap#keys()
 	 */
-	@Override public AnySet<K> keys() ;
+	@Override public AnySet<K> keys();
 	
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyReadMap#entries()
 	 */
-	@Override public AnySet<Entry<K, V>> entries() ;
+	@Override public AnySet<Entry<K, V>> entries();
 
 	/**
 	 * Clears the map, returning the number of elements removed from it. In a concurrent map, whilst there
@@ -168,7 +168,7 @@ public interface AnyMap<K, V> extends AnyReadMap<K, V> {
 	 * 
 	 * @return the int
 	 */
-	public int clear() ;
+	public int clear();
 	
 	/**
 	 * Clears the map, returning the entries removed from it. In a concurrent map the <code>Iterator</code> will accurately
@@ -177,12 +177,12 @@ public interface AnyMap<K, V> extends AnyReadMap<K, V> {
 	 * 
 	 * @return the iterator< entry< k, v>>
 	 */
-	public Iterator<Entry<K, V>> clearAndReturn() ;
+	public Iterator<Entry<K, V>> clearAndReturn();
 
 	/**
 	 * Attempts to make the map use less memory, if possible.
 	 */
-	public void shrink() ;
+	public void shrink();
 	
 	/**
 	 * Returns a copy of the map. Note that this method may not necessarily return an object of the same
@@ -191,7 +191,7 @@ public interface AnyMap<K, V> extends AnyReadMap<K, V> {
 	 * 
 	 * @return the any map< k, v>
 	 */
-	public AnyMap<K, V> copy() ;
+	public AnyMap<K, V> copy();
 	
 	/**
 	 * Returns a map representing the inverse function of this map. This
@@ -202,7 +202,7 @@ public interface AnyMap<K, V> extends AnyReadMap<K, V> {
 	 * 
 	 * @return the inverse map/function of the one called upon
 	 */
-	public AnyMap<V, K> inverse() ;
+	public AnyMap<V, K> inverse();
 
 	/**
 	 * Returns a set representing the range of the map. Operations on this
@@ -210,6 +210,6 @@ public interface AnyMap<K, V> extends AnyReadMap<K, V> {
 	 * 
 	 * @return the range of the map
 	 */
-	public AnySet<V> values() ;	
+	public AnySet<V> values();
 	
 }

@@ -24,6 +24,6 @@ package org.jjoost.util.concurrent.waiting;
 
 public interface WaitQueue extends WaitSignal {
 	
-	public WaitHandle register() ;
+	public WaitHandle register();
 
 }

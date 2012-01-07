@@ -36,154 +36,154 @@ public abstract class AbstractBiMap<
 	I extends AnyMap<V, K>> 
 implements AnyMap<K, V> {
 	
-	private static final long serialVersionUID = 2790620014005060840L ;
+	private static final long serialVersionUID = 2790620014005060840L;
 	
-	protected final M map ;
-	protected abstract AbstractBiMap<V, K, I, M> partner() ;
+	protected final M map;
+	protected abstract AbstractBiMap<V, K, I, M> partner();
 	
 	protected AbstractBiMap(M forwards) {
 		super();
-		this.map = forwards ;
+		this.map = forwards;
 	}
 	
 	@Override
 	public int clear() {
-		partner().map.clear() ;
-		return map.clear() ;
+		partner().map.clear();
+		return map.clear();
 	}
 	@Override
 	public Iterator<Entry<K, V>> clearAndReturn() {
 		// TODO implement
-		throw new UnsupportedOperationException() ;
+		throw new UnsupportedOperationException();
 	}
 	@Override
 	public AnyMap<V, K> inverse() {
-		return partner() ;
+		return partner();
 	}
 	private void check(K key, V val) {
 		if (key == null)
-			throw new IllegalArgumentException("Key cannot be null in a BiMap") ;
+			throw new IllegalArgumentException("Key cannot be null in a BiMap");
 		if (val == null)
-			throw new IllegalArgumentException("Value cannot be null in a BiMap") ;
+			throw new IllegalArgumentException("Value cannot be null in a BiMap");
 	}
 	@Override
 	public boolean add(K key, V val) {
-		return put(key, val) != null ;
+		return put(key, val) != null;
 	}
 	@Override
 	public V put(K key, V val) {
-		check(key, val) ;
-		final V v = map.put(key, val) ;
+		check(key, val);
+		final V v = map.put(key, val);
 		if (v != null)
-			partner().map.remove(v, key) ;
-		final K k = partner().map.put(val, key) ;
+			partner().map.remove(v, key);
+		final K k = partner().map.put(val, key);
 		if (k != null)
-			map.remove(k, val) ;
-		return v ;
+			map.remove(k, val);
+		return v;
 	}
 	@Override
 	public V putIfAbsent(K key, V val) {
-		check(key, val) ;
-		final V v = map.putIfAbsent(key, val) ;
+		check(key, val);
+		final V v = map.putIfAbsent(key, val);
 		if (v != null)
-			return v ;
-		final K k = partner().map.put(val, key) ;
+			return v;
+		final K k = partner().map.put(val, key);
 		if (k != null) {
-			map.remove(key, val) ;
-			return val ;
+			map.remove(key, val);
+			return val;
 		}
-		return null ;
+		return null;
 	}
 	@Override
 	public int remove(K key, V val) {
-		check(key, val) ;
-		partner().map.remove(val, key) ;
-		return map.remove(key, val) ;
+		check(key, val);
+		partner().map.remove(val, key);
+		return map.remove(key, val);
 	}
 	@Override
 	public int remove(K key) {
-		int c = 0 ;
+		int c = 0;
 		for (Entry<K, V> entry : map.removeAndReturn(key)) {
-			c++ ;
-			partner().map.remove(entry.getValue(), entry.getKey()) ;
+			c++;
+			partner().map.remove(entry.getValue(), entry.getKey());
 		}
-		return c ;
+		return c;
 	}
 	@Override
 	public Iterable<Entry<K, V>> removeAndReturn(K key, V val) {
-		partner().map.remove(val, key) ;
-		return map.removeAndReturn(key, val) ;
+		partner().map.remove(val, key);
+		return map.removeAndReturn(key, val);
 	}
 	@Override
 	public Iterable<Entry<K, V>> removeAndReturn(K key) {
-		final Iterable<Entry<K, V>> removed = map.removeAndReturn(key) ;
+		final Iterable<Entry<K, V>> removed = map.removeAndReturn(key);
 		for (Entry<K, V> entry : removed) {
-			partner().map.remove(entry.getValue(), entry.getKey()) ;
+			partner().map.remove(entry.getValue(), entry.getKey());
 		}
-		return removed ;
+		return removed;
 	}
 	@Override
 	public V removeAndReturnFirst(K key) {
-		V first = null ;
-		final Iterable<Entry<K, V>> removed = map.removeAndReturn(key) ;
+		V first = null;
+		final Iterable<Entry<K, V>> removed = map.removeAndReturn(key);
 		for (Entry<K, V> entry : removed) {
-			first = entry.getValue() ;
-			partner().map.remove(entry.getValue(), entry.getKey()) ;
+			first = entry.getValue();
+			partner().map.remove(entry.getValue(), entry.getKey());
 		}
-		return first ;
+		return first;
 	}
 	@Override
 	public void shrink() {
-		partner().map.shrink() ;
-		map.shrink() ;
+		partner().map.shrink();
+		map.shrink();
 	}
 	@Override
 	public boolean contains(K key, V val) {
-		return map.contains(key, val) ;
+		return map.contains(key, val);
 	}
 	@Override
 	public boolean contains(K key) {
-		return map.contains(key) ;
+		return map.contains(key);
 	}
 	@Override
 	public int count(K key, V val) {
-		return map.count(key, val) ;
+		return map.count(key, val);
 	}
 	@Override
 	public int count(K key) {
-		return map.count(key) ;
+		return map.count(key);
 	}
 	@Override
 	public Iterable<Entry<K, V>> entries(K key) {
-		return map.entries(key) ;
+		return map.entries(key);
 	}
 	@Override
 	public V first(K key) {
-		return map.first(key) ;
+		return map.first(key);
 	}
 	@Override
 	public boolean isEmpty() {
-		return map.isEmpty() ;
+		return map.isEmpty();
 	}
 	@Override
 	public List<V> list(K key) {
-		return map.list(key) ;
+		return map.list(key);
 	}
 	@Override
 	public boolean permitsDuplicateKeys() {
-		return map.permitsDuplicateKeys() ;
+		return map.permitsDuplicateKeys();
 	}
 	@Override
 	public int totalCount() {
-		return map.totalCount() ;
+		return map.totalCount();
 	}
 	@Override
 	public int uniqueKeyCount() {
-		return map.uniqueKeyCount() ;
+		return map.uniqueKeyCount();
 	}
 	@Override
 	public AnySet<V> values() {
-		return map.values() ;
+		return map.values();
 	}
 	
 }

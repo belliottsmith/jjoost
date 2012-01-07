@@ -39,111 +39,111 @@ public abstract class AnySetToCountsAdapter<V> implements ReadMap<V, Integer> {
 	
 	private static final long serialVersionUID = 5610603388897525494L;
 
-	protected abstract MultiSet<V> set() ;
-	public abstract Iterator<Entry<V, Integer>> clearAndReturn() ;
-	protected abstract Iterator<Entry<V, Integer>> entryIterator() ;
-	protected abstract Entry<V, Integer> getEntry() ;
+	protected abstract MultiSet<V> set();
+	public abstract Iterator<Entry<V, Integer>> clearAndReturn();
+	protected abstract Iterator<Entry<V, Integer>> entryIterator();
+	protected abstract Entry<V, Integer> getEntry();
 	
 	@Override
 	public Set<Entry<V, Integer>> entries() {
-		throw new UnsupportedOperationException() ;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Set<V> keys() {
-		return set().unique() ;
+		return set().unique();
 	}
 
 	@Override
 	public ReadMap<V, Integer> copy() {
-		throw new UnsupportedOperationException() ;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Integer get(V key) {
-		return set().count(key) ;
+		return set().count(key);
 	}
 
 	@Override
 	public int size() {
-		return set().uniqueCount() ;
+		return set().uniqueCount();
 	}
 
 	@Override
 	public UnitarySet<Integer> values(V key) {
-		throw new UnsupportedOperationException() ;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public AnySet<Integer> values() {
-		return null ;
+		return null;
 	}
 
 	@Override
 	public Integer apply(V v) {
-		return get(v) ;
+		return get(v);
 	}
 
 	@Override
 	public boolean contains(V key, Integer val) {
-		final int count = set().count(key) ;
+		final int count = set().count(key);
 		if (count == 0)
-			return val == null || val == 0 ;
-		return val != null && val == count ;
+			return val == null || val == 0;
+		return val != null && val == count;
 	}
 
 	@Override
 	public boolean contains(V key) {
-		return set().contains(key) ;
+		return set().contains(key);
 	}
 
 	@Override
 	public int count(V key, Integer val) {
 		if (contains(key, val))
-			return 1 ;
-		return 0 ;
+			return 1;
+		return 0;
 	}
 
 	@Override
 	public int count(V key) {
 		if (set().contains(key))
-			return 1 ;
-		return 0 ;
+			return 1;
+		return 0;
 	}
 
 	@Override
 	public Iterable<Entry<V, Integer>> entries(V key) {
-		return new UniformList<Entry<V, Integer>>(new ImmutableMapEntry<V, Integer>(key, set().count(key)), 1) ;
+		return new UniformList<Entry<V, Integer>>(new ImmutableMapEntry<V, Integer>(key, set().count(key)), 1);
 	}
 
 	@Override
 	public Integer first(V key) { 
-		return get(key) ;
+		return get(key);
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return set().isEmpty() ;
+		return set().isEmpty();
 	}
 
 	@Override
 	public List<Integer> list(V key) {
-		return Arrays.asList(get(key)) ;
+		return Arrays.asList(get(key));
 	}
 
 	@Override
 	public boolean permitsDuplicateKeys() {
-		return false ;
+		return false;
 	}
 
 	@Override
 	public int totalCount() {
-		return set().uniqueCount() ;
+		return set().uniqueCount();
 	}
 
 	@Override
 	public int uniqueKeyCount() {
-		return set().uniqueCount() ;
+		return set().uniqueCount();
 	}
 	
 }

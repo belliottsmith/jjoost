@@ -22,105 +22,105 @@
 
 package org.jjoost.collections.sets.wrappers;
 
-import java.util.Collection ;
-import java.util.Iterator ;
+import java.util.Collection;
+import java.util.Iterator;
 
-import org.jjoost.collections.Set ;
-import org.jjoost.util.Iters ;
+import org.jjoost.collections.Set;
+import org.jjoost.util.Iters;
 
 public class AdapterToJDKSet<V> implements java.util.Set<V> {
 
-	private final Class<V> clazz ;
-	private final Set<V> set ;
+	private final Class<V> clazz;
+	private final Set<V> set;
 	
 	public AdapterToJDKSet(Class<V> clazz, Set<V> set) {
-		super() ;
-		this.clazz = clazz ;
-		this.set = set ;
+		super();
+		this.clazz = clazz;
+		this.set = set;
 	}
 
 	@Override
 	public boolean add(V v) {
-		return set.add(v) ;
+		return set.add(v);
 	}
 
 	@Override
 	public boolean addAll(Collection<? extends V> c) {
-		boolean r = false ;
+		boolean r = false;
 		for (V v : c) {
-			r |= set.add(v) ;
+			r |= set.add(v);
 		}
-		return r ;
+		return r;
 	}
 
 	@Override
 	public void clear() {
-		set.clear() ;
+		set.clear();
 	}
 
 	@Override
 	public boolean contains(Object o) {
-		return set.contains(clazz.cast(o)) ;
+		return set.contains(clazz.cast(o));
 	}
 
 	@Override
 	public boolean containsAll(Collection<?> c) {
-		boolean r = true ;
-		Iterator<?> iter = c.iterator() ;
+		boolean r = true;
+		Iterator<?> iter = c.iterator();
 		while (r && iter.hasNext())
-			r = contains(iter.next()) ;
-		return r ;
+			r = contains(iter.next());
+		return r;
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return set.isEmpty() ;
+		return set.isEmpty();
 	}
 
 	@Override
 	public Iterator<V> iterator() {
-		return set.iterator() ;
+		return set.iterator();
 	}
 
 	@Override
 	public boolean remove(Object o) {
-		return set.remove(clazz.cast(o)) != 0 ;
+		return set.remove(clazz.cast(o)) != 0;
 	}
 
 	@Override
 	public boolean removeAll(Collection<?> c) {
-		boolean r = false ;
+		boolean r = false;
 		for (Object o : c)
-			r |= remove(o) ;
-		return r ;
+			r |= remove(o);
+		return r;
 	}
 
 	@Override
 	public boolean retainAll(Collection<?> c) {
-		boolean r = false ;
-		Iterator<V> vs = iterator() ;
+		boolean r = false;
+		Iterator<V> vs = iterator();
 		while (vs.hasNext()) {
 			if (c.contains(vs.next())) {
-				vs.remove() ;
-				r = true ;
+				vs.remove();
+				r = true;
 			}
 		}
-		return r ;
+		return r;
 	}
 
 	@Override
 	public int size() {
-		return set.size() ;
+		return set.size();
 	}
 
 	@Override
 	public Object[] toArray() {
-		return Iters.toArray(this) ;
+		return Iters.toArray(this);
 	}
 
 	@Override
 	public <T> T[] toArray(T[] a) {
-		return Iters.toArray(this, a) ;
+		return Iters.toArray(this, a);
 	}
 	
 

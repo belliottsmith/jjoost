@@ -51,7 +51,7 @@ public class MultiMapNesting<V> {
 		 * Store the values for duplicates keys in a nested <code>Set</code>. Typically this will be more efficient than
 		 * <code>INLINE</code> for moderate to large average numbers of duplicate keys. 
 		 */
-		NESTED ;
+		NESTED;
 	}
 	
 	/**
@@ -67,18 +67,17 @@ public class MultiMapNesting<V> {
 	 */
 	public Factory<Set<V>> factory() { return factory ; }
 	
-	private final Type type ;
-	private final Factory<Set<V>> factory ;
+	private final Type type;
+	private final Factory<Set<V>> factory;
 	
 	MultiMapNesting(Factory<Set<V>> factory, Type type) {
 		super();
 		this.factory = factory;
-		this.type = type ;
+		this.type = type;
 	}
 
 
-	@SuppressWarnings("unchecked")
-	private static final MultiMapNesting INLINE = new MultiMapNesting(null, Type.INLINE) ;
+	private static final MultiMapNesting<?> INLINE = new MultiMapNesting<Object>(null, Type.INLINE);
 	
 	/**
 	 * Public method for retrieving the <code>MultiMapNesting</code> that represents <code>INLINE</code> nesting
@@ -87,7 +86,7 @@ public class MultiMapNesting<V> {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <V> MultiMapNesting<V> inline() {
-		return INLINE ;
+		return (MultiMapNesting<V>) INLINE;
 	}
 	
 	/**
@@ -98,8 +97,8 @@ public class MultiMapNesting<V> {
 	 */
 	public static <V> MultiMapNesting<V> nested(Factory<Set<V>> factory) {
 		if (factory == null)
-			throw new IllegalArgumentException() ;
-		return new MultiMapNesting<V>(factory, Type.NESTED) ;
+			throw new IllegalArgumentException();
+		return new MultiMapNesting<V>(factory, Type.NESTED);
 	}
 	
 	/**
@@ -113,7 +112,7 @@ public class MultiMapNesting<V> {
 					.equality(Equalities.rehashing(
 						Equalities.object(), 
 						Rehashers.jdkConcurrentHashmapRehasher())
-				).newSetFactory()) ;
+				).newSetFactory());
 	}
 	
 }

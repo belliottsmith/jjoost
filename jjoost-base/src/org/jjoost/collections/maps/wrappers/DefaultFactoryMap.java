@@ -27,9 +27,9 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.jjoost.collections.AnyMap;
-import org.jjoost.collections.AnySet ;
+import org.jjoost.collections.AnySet;
 import org.jjoost.collections.Map;
-import org.jjoost.collections.Set ;
+import org.jjoost.collections.Set;
 import org.jjoost.collections.UnitarySet;
 import org.jjoost.util.Factory;
 import org.jjoost.util.Function;
@@ -37,8 +37,8 @@ import org.jjoost.util.Function;
 public class DefaultFactoryMap<K, V> implements Map<K, V> {
 
 	private static final long serialVersionUID = 7778573411318310241L;
-	private final Map<K, V> delegate ;
-	private final Factory<V> defaultFactory ;
+	private final Map<K, V> delegate;
+	private final Factory<V> defaultFactory;
 
 	public DefaultFactoryMap(Map<K, V> delegate,
 			Factory<V> defaultFactory) {
@@ -48,7 +48,7 @@ public class DefaultFactoryMap<K, V> implements Map<K, V> {
 	}
 
 	public V apply(K v) {
-		return delegate.ensureAndGet(v, defaultFactory) ;
+		return delegate.ensureAndGet(v, defaultFactory);
 	}
 
 	public int clear() {

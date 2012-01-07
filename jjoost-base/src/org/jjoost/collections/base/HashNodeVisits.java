@@ -20,30 +20,30 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.collections.base ;
+package org.jjoost.collections.base;
 
-import org.jjoost.util.Function ;
+import org.jjoost.util.Function;
 
 abstract class HashNodeVisits<N extends HashNode<N>, NCmp> {
 	
-	int hash ;
+	int hash;
 	public HashNodeVisits(int hash) {
-		super() ;
-		this.hash = hash ;
+		super();
+		this.hash = hash;
 	}
 
-	abstract void visit(N n) ;
+	abstract void visit(N n);
 
-	abstract void removeLast() ;
+	abstract void removeLast();
 
-	abstract void reset(int hash) ;
+	abstract void reset(int hash);
 
-	abstract boolean isEmpty() ;
+	abstract boolean isEmpty();
 
-	abstract N last() ;
+	abstract N last();
 
-	abstract void revisit() ;
+	abstract void revisit();
 
-	abstract boolean haveVisitedAlready(N n, Function<? super N, ? extends NCmp> nodeEqualityProj, HashNodeEquality<? super NCmp, ? super N> nodeEquality) ;
+	abstract boolean haveVisitedAlready(N n, Function<? super N, ? extends NCmp> nodeEqualityProj, HashNodeEquality<? super NCmp, ? super N> nodeEquality);
 
 }

@@ -36,7 +36,7 @@ import org.jjoost.collections.maps.ImmutableMapEntry;
 
 public abstract class MultiSetToCountMapAdapter<V> implements Map<V, Integer> {
 	
-	protected abstract MultiSet<V> set() ;
+	protected abstract MultiSet<V> set();
 
 	@Override
 	public Map<V, Integer> copy() {
@@ -47,17 +47,17 @@ public abstract class MultiSetToCountMapAdapter<V> implements Map<V, Integer> {
 	@Override
 	public Set<Entry<V, Integer>> entries() {
 		// TODO Auto-generated method stub
-		return null ;
+		return null;
 	}
 
 	@Override
 	public Integer get(V key) {
-		return set().count(key) ;
+		return set().count(key);
 	}
 
 	@Override
 	public int size() {
-		return set().uniqueCount() ;
+		return set().uniqueCount();
 	}
 
 	@Override
@@ -68,7 +68,7 @@ public abstract class MultiSetToCountMapAdapter<V> implements Map<V, Integer> {
 
 	@Override
 	public int clear() {
-		return set().unique().clear() ;
+		return set().unique().clear();
 	}
 
 	@Override
@@ -80,27 +80,27 @@ public abstract class MultiSetToCountMapAdapter<V> implements Map<V, Integer> {
 	@Override
 	public AnyMap<Integer, V> inverse() {
 		// TODO Auto-generated method stub
-		return null ;
+		return null;
 	}
 
 	@Override
 	public int remove(V key) {
-		return Math.min(1, set().remove(key)) ;
+		return Math.min(1, set().remove(key));
 	}
 
 	@Override
 	public Iterable<Entry<V, Integer>> removeAndReturn(V key) {
-		return Arrays.asList((Entry<V, Integer>)new ImmutableMapEntry<V, Integer>(key, set().remove(key))) ;
+		return Arrays.asList((Entry<V, Integer>)new ImmutableMapEntry<V, Integer>(key, set().remove(key)));
 	}
 
 	@Override
 	public Integer removeAndReturnFirst(V key) {
-		return set().remove(key) ;
+		return set().remove(key);
 	}
 
 	@Override
 	public void shrink() {
-		set().shrink() ;
+		set().shrink();
 	}
 
 	@Override
@@ -110,69 +110,69 @@ public abstract class MultiSetToCountMapAdapter<V> implements Map<V, Integer> {
 
 	@Override
 	public Integer apply(V v) {
-		return get(v) ;
+		return get(v);
 	}
 
 	@Override
 	public boolean contains(V key, Integer val) {
-		final int count = set().count(key) ;
+		final int count = set().count(key);
 		if (count == 0)
-			return val == null || val == 0 ;
-		return val != null && val == count ;
+			return val == null || val == 0;
+		return val != null && val == count;
 	}
 
 	@Override
 	public boolean contains(V key) {
-		return set().contains(key) ;
+		return set().contains(key);
 	}
 
 	@Override
 	public int count(V key, Integer val) {
 		if (contains(key, val))
-			return 1 ;
-		return 0 ;
+			return 1;
+		return 0;
 	}
 
 	@Override
 	public int count(V key) {
 		if (set().contains(key))
-			return 1 ;
-		return 0 ;
+			return 1;
+		return 0;
 	}
 
 	@Override
 	public Iterable<Entry<V, Integer>> entries(V key) {
-		return Arrays.asList((Entry<V, Integer>)new ImmutableMapEntry<V, Integer>(key, set().count(key))) ;
+		return Arrays.asList((Entry<V, Integer>)new ImmutableMapEntry<V, Integer>(key, set().count(key)));
 	}
 
 	@Override
 	public Integer first(V key) { 
-		return get(key) ;
+		return get(key);
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return set().isEmpty() ;
+		return set().isEmpty();
 	}
 
 	@Override
 	public List<Integer> list(V key) {
-		return Arrays.asList(get(key)) ;
+		return Arrays.asList(get(key));
 	}
 
 	@Override
 	public boolean permitsDuplicateKeys() {
-		return false ;
+		return false;
 	}
 
 	@Override
 	public int totalCount() {
-		return set().uniqueCount() ;
+		return set().uniqueCount();
 	}
 
 	@Override
 	public int uniqueKeyCount() {
-		return set().uniqueCount() ;
+		return set().uniqueCount();
 	}
 	
 }

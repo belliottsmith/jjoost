@@ -36,11 +36,11 @@ import org.jjoost.util.Function;
 public class MappedClosableIterator<X, Y> extends MappedIterator<X, Y> implements ClosableIterator<Y> {
 
     public MappedClosableIterator(ClosableIterator<? extends X> base, Function<? super X, ? extends Y> function) {
-    	super(base, function) ;
+    	super(base, function);
     }
 
 	public void close() {
-		((ClosableIterator<? extends X>) base).close() ;
+		((ClosableIterator<? extends X>) base).close();
 	}
 	
 }

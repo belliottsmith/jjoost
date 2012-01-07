@@ -37,19 +37,19 @@ public class SerialHashMap<K, V> extends HashMap<K, V, SerialHashMap.Node<K, V>>
 	private static final long serialVersionUID = 1051610520557989640L;
 
 	public SerialHashMap() {
-		this(16, 0.75f) ;
+		this(16, 0.75f);
 	}
 	public SerialHashMap(int minimumInitialCapacity, float loadFactor) {
-		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object(), Equalities.object()) ;
+		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object(), Equalities.object());
 	}	
 	public SerialHashMap(Equality<? super K> keyEquality) {
-		this(SerialHashStore.defaultRehasher(), keyEquality) ;
+		this(SerialHashStore.defaultRehasher(), keyEquality);
 	}	
 	public SerialHashMap(Rehasher rehasher, Equality<? super K> keyEquality) { 
-		this(16, 0.75f, rehasher, keyEquality, Equalities.object()) ;
+		this(16, 0.75f, rehasher, keyEquality, Equalities.object());
 	}	
 	public SerialHashMap(Rehasher rehasher, Equality<? super K> keyEquality, Equality<? super V> valEquality) { 
-		this(16, 0.75f, rehasher, keyEquality, valEquality) ;
+		this(16, 0.75f, rehasher, keyEquality, valEquality);
 	}
 	
 	public SerialHashMap( 
@@ -58,7 +58,7 @@ public class SerialHashMap<K, V> extends HashMap<K, V, SerialHashMap.Node<K, V>>
 	{
 		super(rehasher, new KeyEquality<K, V>(keyEquality), new EntryEquality<K, V>(keyEquality, valEquality),
 			SerialHashMap.<K, V>serialNodeFactory(), 
-			new SerialHashStore<Node<K, V>>(minimumInitialCapacity, loadFactor)) ;
+			new SerialHashStore<Node<K, V>>(minimumInitialCapacity, loadFactor));
 	}
 	
 	public static final class Node<K, V> extends SerialHashNode<Node<K, V>> implements Entry<K, V> {
@@ -68,8 +68,8 @@ public class SerialHashMap<K, V> extends HashMap<K, V, SerialHashMap.Node<K, V>>
 			this.key = key;
 			this.value = value;
 		}
-		protected final K key ;
-		protected V value ;		
+		protected final K key;
+		protected V value;
 		@Override public final K getKey() { return key ; }
 		@Override public final V getValue() { return value ; }
 		@Override public final V setValue(V value) { final V r = this.value ; this.value = value ; return r ; }
@@ -78,42 +78,41 @@ public class SerialHashMap<K, V> extends HashMap<K, V, SerialHashMap.Node<K, V>>
 		
 	}
 	
-	@SuppressWarnings("unchecked")
-	private static final NodeFactory SERIAL_SCALAR_HASH_NODE_FACTORY = new NodeFactory() ;
+	private static final NodeFactory SERIAL_SCALAR_HASH_NODE_FACTORY = new NodeFactory();
 	@SuppressWarnings("unchecked")
 	public static <K, V> NodeFactory<K, V> serialNodeFactory() {
-		return SERIAL_SCALAR_HASH_NODE_FACTORY ;
+		return SERIAL_SCALAR_HASH_NODE_FACTORY;
 	}
 	public static final class NodeFactory<K, V> implements HashMapNodeFactory<K, V, Node<K, V>> {
 		@Override
 		public final Node<K, V> makeNode(final int hash, final K key, final V value) {
-			return new Node<K, V>(hash, key, value) ;
+			return new Node<K, V>(hash, key, value);
 		}
 	}
 
 	public static final class KeyEquality<K, V> extends HashMap.KeyEquality<K, V, Node<K, V>> {
 		public KeyEquality(Equality<? super K> keyEq) {
-			super(keyEq) ;
+			super(keyEq);
 		}
 		@Override
 		public boolean prefixMatch(K cmp, Node<K, V> n) {
-			return keyEq.equates(cmp, n.key) ;
+			return keyEq.equates(cmp, n.key);
 		}
 	}
 
 	public static final class EntryEquality<K, V> extends HashMap.NodeEquality<K, V, Node<K, V>> {
-		private static final long serialVersionUID = -8668943955126687051L ;
+		private static final long serialVersionUID = -8668943955126687051L;
 
 		public EntryEquality(Equality<? super K> keyEq, Equality<? super V> valEq) {
-			super(keyEq, valEq) ;
+			super(keyEq, valEq);
 		}
 		@Override
 		public boolean prefixMatch(Entry<K, V> cmp, Node<K, V> n) {
-			return keyEq.equates(cmp.getKey(), n.key) ;
+			return keyEq.equates(cmp.getKey(), n.key);
 		}
 		@Override
 		public boolean suffixMatch(Entry<K, V> cmp, Node<K, V> n) {
-			return valEq.equates(cmp.getValue(), n.value) ;
+			return valEq.equates(cmp.getValue(), n.value);
 		}
 	}
 	

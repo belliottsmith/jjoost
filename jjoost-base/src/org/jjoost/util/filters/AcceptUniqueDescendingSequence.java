@@ -20,11 +20,11 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util.filters ;
+package org.jjoost.util.filters;
 
-import java.util.Comparator ;
+import java.util.Comparator;
 
-import org.jjoost.util.FilterPartialOrder ;
+import org.jjoost.util.FilterPartialOrder;
 
 /**
  * A partial order filter which will accept a value only if it has never previously seen a value less than or equal to the value being tested;
@@ -35,29 +35,29 @@ import org.jjoost.util.FilterPartialOrder ;
  */
 public class AcceptUniqueDescendingSequence<V> implements FilterPartialOrder<V> {
 
-	private static final long serialVersionUID = 4135610622081116945L ;
+	private static final long serialVersionUID = 4135610622081116945L;
 
-	private V prev = null ;
+	private V prev = null;
 	
 	@Override
 	public boolean accept(V next, Comparator<? super V> cmp) {
-		final boolean r = cmp.compare(prev, next) > 0 ;
-		prev = next ;
-		return r ;
+		final boolean r = cmp.compare(prev, next) > 0;
+		prev = next;
+		return r;
 	}
 
 	@Override
 	public boolean mayAcceptBetween(V lb, boolean lbInclusive, V ub, boolean ubInclusive, Comparator<? super V> cmp) {
-		return 	(prev == null | lb == null) || cmp.compare(lb, prev) < 0 ;
+		return 	(prev == null | lb == null) || cmp.compare(lb, prev) < 0;
 	}
 
 	@Override
 	public boolean mayRejectBetween(V lb, boolean lbInclusive, V ub, boolean ubInclusive, Comparator<? super V> cmp) {
-		return !mayAcceptBetween(lb, lbInclusive, ub, ubInclusive, cmp) ;
+		return !mayAcceptBetween(lb, lbInclusive, ub, ubInclusive, cmp);
 	}
 	
 	public String toString() {
-		return "is not preceded by itself" ;
+		return "is not preceded by itself";
 	}
 	
     /**
@@ -68,7 +68,7 @@ public class AcceptUniqueDescendingSequence<V> implements FilterPartialOrder<V> 
      * @return a filter accepting a unique sequence if applied in descending order
      */
 	public static <V> AcceptUniqueDescendingSequence<V> get() {
-		return new AcceptUniqueDescendingSequence<V>() ;
+		return new AcceptUniqueDescendingSequence<V>();
 	}
 
 }

@@ -55,7 +55,7 @@ public interface AnyReadSet<V> extends Iterable<V>, Function<V, Boolean>, Serial
 	 *            value to look for
 	 * @return first matching value
 	 */
-	public V first(V find) ;
+	public V first(V find);
 	
 	/**
 	 * Returns an <code>Iterable</code> of all values contained in the set which are equal to the parameter, as determined by the set's
@@ -72,7 +72,7 @@ public interface AnyReadSet<V> extends Iterable<V>, Function<V, Boolean>, Serial
 	 *            value to look for
 	 * @return matching values
 	 */
-	public Iterable<V> all(V find) ;
+	public Iterable<V> all(V find);
 	
 	/**
 	 * Returns a <code>List</code> of all values contained in the set which are equal to the parameter, as determined by the set's
@@ -83,7 +83,7 @@ public interface AnyReadSet<V> extends Iterable<V>, Function<V, Boolean>, Serial
 	 *            value to look for
 	 * @return matching values
 	 */
-	public List<V> list(V find) ;
+	public List<V> list(V find);
 	
 	/**
 	 * Returns a <code>boolean</code> indicating if the parameter occurs in the set at least once.
@@ -92,7 +92,7 @@ public interface AnyReadSet<V> extends Iterable<V>, Function<V, Boolean>, Serial
 	 *            value to look for
 	 * @return <code>true</code>, if present
 	 */
-	public boolean contains(V find) ;
+	public boolean contains(V find);
 	
 	/**
 	 * Returns an integer representing the number of occurrences of the value in the set
@@ -101,7 +101,7 @@ public interface AnyReadSet<V> extends Iterable<V>, Function<V, Boolean>, Serial
 	 *            value to look for
 	 * @return number of occurrences
 	 */
-	public int count(V find) ;
+	public int count(V find);
 	
 	/**
 	 * Returns an <code>Iterable</code> of only unique values in the set, as determined by
@@ -110,35 +110,35 @@ public interface AnyReadSet<V> extends Iterable<V>, Function<V, Boolean>, Serial
 	 * 
 	 * @return unique values
 	 */
-	public Iterable<V> unique() ;
+	public Iterable<V> unique();
 	
 	/**
 	 * Returns the total number of values (including duplicates) in the set
 	 * 
 	 * @return total number of values in the set
 	 */
-	public int totalCount() ;
+	public int totalCount();
 	
 	/**
 	 * Returns the number of unique values in the set
 	 * 
 	 * @return number of unique values in the set
 	 */
-	public int uniqueCount() ;	
+	public int uniqueCount();
 	
 	/**
 	 * Indicates if the set is empty
 	 * 
 	 * @return true, if is empty
 	 */
-	public boolean isEmpty() ;
+	public boolean isEmpty();
 	
 	/**
 	 * Indicates if the set permits a value to occur more than once
 	 * 
 	 * @return true, if successful
 	 */
-	public boolean permitsDuplicates() ;
+	public boolean permitsDuplicates();
 	
 	/**
 	 * Returns an object that represents the definition of equality used
@@ -146,14 +146,14 @@ public interface AnyReadSet<V> extends Iterable<V>, Function<V, Boolean>, Serial
 	 * 
 	 * @return an object representing the equality used by this set
 	 */
-	public Equality<? super V> equality() ;
+	public Equality<? super V> equality();
 	
 	/**
 	 * Returns a copy of the set. This method may or may not return a set of the same class as the one it was
 	 * called on, however must be of the same basic interface (either <code>Set</code> or <code>MultiSet</code>).
 	 */
-	public AnyReadSet<V> copy() ;
+	public AnyReadSet<V> copy();
 	
-//	public ReadMap<V, Integer> counts() ;
+//	public ReadMap<V, Integer> counts();
 	
 }

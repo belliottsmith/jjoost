@@ -20,11 +20,11 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util.filters ;
+package org.jjoost.util.filters;
 
-import java.util.regex.Pattern ;
+import java.util.regex.Pattern;
 
-import org.jjoost.util.Filter ;
+import org.jjoost.util.Filter;
 
 /**
  * A filter accepting strings that match the provided pattern
@@ -33,9 +33,9 @@ import org.jjoost.util.Filter ;
  */
 public class FilterPattern implements Filter<String> {
 
-	private static final long serialVersionUID = 2312285149003933324L ;
+	private static final long serialVersionUID = 2312285149003933324L;
 
-	private final Pattern pattern ;
+	private final Pattern pattern;
 
     /**
      * Constructs a new filter accepting strings that match the provided pattern
@@ -43,7 +43,7 @@ public class FilterPattern implements Filter<String> {
      * @param pattern the pattern to filter by
      */
 	public FilterPattern(Pattern pattern) {
-		this.pattern = pattern ;
+		this.pattern = pattern;
 	}
 
     /**
@@ -52,15 +52,15 @@ public class FilterPattern implements Filter<String> {
      * @param pattern the pattern to filter by
      */
 	public FilterPattern(String pattern) {
-		this.pattern = Pattern.compile(pattern) ;
+		this.pattern = Pattern.compile(pattern);
 	}
 
 	public boolean accept(String test) {
-		return pattern.matcher(test).matches() ;
+		return pattern.matcher(test).matches();
 	}
 
 	public String toString() {
-		return "matches \"" + pattern.toString() + "\"" ;
+		return "matches \"" + pattern.toString() + "\"";
 	}
 	
     /**
@@ -70,7 +70,7 @@ public class FilterPattern implements Filter<String> {
      * @return a filter accepting strings that match the provided pattern
      */
 	public static FilterPattern get(Pattern pattern) {
-		return new FilterPattern(pattern) ;
+		return new FilterPattern(pattern);
 	}
 
     /**
@@ -80,7 +80,7 @@ public class FilterPattern implements Filter<String> {
      * @return a filter accepting strings that match the provided pattern
      */
 	public static FilterPattern get(String pattern) {
-		return new FilterPattern(pattern) ;
+		return new FilterPattern(pattern);
 	}
 	
 }

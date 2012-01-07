@@ -25,11 +25,11 @@ package org.jjoost.collections.maps.base;
 import java.util.Map.Entry;
 
 import org.jjoost.collections.Map;
-import org.jjoost.collections.Set ;
+import org.jjoost.collections.Set;
 import org.jjoost.collections.UnitarySet;
-import org.jjoost.collections.base.HashNode ;
-import org.jjoost.collections.base.HashNodeFactory ;
-import org.jjoost.collections.base.HashStore ;
+import org.jjoost.collections.base.HashNode;
+import org.jjoost.collections.base.HashNodeFactory;
+import org.jjoost.collections.base.HashStore;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Factory;
 import org.jjoost.util.Function;
@@ -42,45 +42,45 @@ public class HashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Abstract
 			AbstractHashMap.KeyEquality<K, V, N> keyEquality, 
 			AbstractHashMap.NodeEquality<K, V, N> entryEquality,
 			HashMapNodeFactory<K, V, N> nodeFactory, HashStore<N> table) {
-		super(rehasher, keyEquality, entryEquality, nodeFactory, table) ;
+		super(rehasher, keyEquality, entryEquality, nodeFactory, table);
 	}
 	
 	private static final long serialVersionUID = -6385620376018172675L;
 
-	private Set<Entry<K, V>> entrySet ;
-	private Set<K> keySet ;
+	private Set<Entry<K, V>> entrySet;
+	private Set<K> keySet;
 	
 	@Override
 	public Set<Entry<K, V>> entries() {
 		// don't care if we create multiple of these with multiple threads - eventually all but one of them will disappear and don't want to synchronize on every call
-		Set<Entry<K, V>> r = entrySet ;
+		Set<Entry<K, V>> r = entrySet;
 		if (r == null)
-			entrySet = r = new EntrySet() ;
-		return r ;
+			entrySet = r = new EntrySet();
+		return r;
 	}
 	@Override
 	public Set<K> keys() {
 		// don't care if we create multiple of these with multiple threads - eventually all but one of them will disappear and don't want to synchronize on every call
-		Set<K> r = keySet ;
+		Set<K> r = keySet;
 		if (r == null) {
-			keySet = r = new KeySet() ;
+			keySet = r = new KeySet();
 		}
-		return r ;
+		return r;
 	}
 	
 	@Override
 	public boolean add(K key, V val) {
-		return store.putIfAbsent(key, nodeFactory.makeNode(hash(key), key, val), keyEq, nodeProj()) == null ;
+		return store.putIfAbsent(key, nodeFactory.makeNode(hash(key), key, val), keyEq, nodeProj()) == null;
 	}
 	
 	@Override
 	public V put(K key, V val) {
-		return store.put(key, nodeFactory.makeNode(hash(key), key, val), keyEq, valProj()) ;
+		return store.put(key, nodeFactory.makeNode(hash(key), key, val), keyEq, valProj());
 	}
 
 	@Override
 	public V putIfAbsent(K key, V val) {
-		return store.putIfAbsent(key, nodeFactory.makeNode(hash(key), key, val), keyEq, valProj()) ;
+		return store.putIfAbsent(key, nodeFactory.makeNode(hash(key), key, val), keyEq, valProj());
 	}
 
 	@Override
@@ -89,9 +89,9 @@ public class HashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Abstract
 			private static final long serialVersionUID = 1L;
 			@Override
 			public N makeNode(int hash, K key) {
-				return nodeFactory.makeNode(hash, key, putIfNotPresent.create()) ;
+				return nodeFactory.makeNode(hash, key, putIfNotPresent.create());
 			}
-		}, valProj(), true) ;
+		}, valProj(), true);
 	}
 
 	@Override
@@ -100,24 +100,24 @@ public class HashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Abstract
 			private static final long serialVersionUID = 526770033919300687L;
 			@Override
 			public N makeNode(int hash, K key) {
-				return nodeFactory.makeNode(hash, key, putIfNotPresent.apply(key)) ;
+				return nodeFactory.makeNode(hash, key, putIfNotPresent.apply(key));
 			}
 		}, valProj(), true);
 	}
 
 	@Override
 	public UnitarySet<V> values(K key) {
-		return new KeyValueSet(key) ;
+		return new KeyValueSet(key);
 	}	
 
 	@Override
 	public V get(K key) {
-		return first(key) ;
+		return first(key);
 	}
 
 	@Override
 	public V apply(K k) {
-		return first(k) ;
+		return first(k);
 	}
 	
 	@Override
@@ -126,42 +126,42 @@ public class HashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Abstract
 			private static final long serialVersionUID = 3624491527804791117L;
 			@Override
 			public N makeNode(int hash, K key) {
-				return nodeFactory.makeNode(hash, key, putIfNotPresent.apply(key)) ;
+				return nodeFactory.makeNode(hash, key, putIfNotPresent.apply(key));
 			}
-		}, valProj(), false) ;
+		}, valProj(), false);
 	}
 
 	@Override
 	public boolean permitsDuplicateKeys() {
-		return false ;
+		return false;
 	}
 	
 	@Override
 	public int size() {
-		return totalCount() ;
+		return totalCount();
 	}
 
 	@Override
 	public int uniqueKeyCount() {
-		return totalCount() ;
+		return totalCount();
 	}
 	
 	final class KeyValueSet extends AbstractKeyValueSet implements UnitarySet<V> {
 		private static final long serialVersionUID = 2741936401896784235L;
 		public KeyValueSet(K key) {
-			super(key) ;
+			super(key);
 		}
 		@Override
 		public V get() {
-			return HashMap.this.first(key) ;
+			return HashMap.this.first(key);
 		}
 		@Override
 		public UnitarySet<V> copy() {
-			throw new UnsupportedOperationException() ;
+			throw new UnsupportedOperationException();
 		}
 		@Override
 		public UnitarySet<V> unique() {
-			return this ;
+			return this;
 		}
 	}
 	
@@ -169,19 +169,19 @@ public class HashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Abstract
 		private static final long serialVersionUID = 2741936401896784235L;
 		@Override
 		public K get(K key) {
-			return first(key) ;
+			return first(key);
 		}
 		@Override
 		public int size() {
-			return totalCount() ;
+			return totalCount();
 		}
 		@Override
 		public Set<K> copy() {
-			return HashMap.this.copy().keys() ;
+			return HashMap.this.copy().keys();
 		}
 		@Override
 		public Set<K> unique() {
-			return this ;
+			return this;
 		}
 	}
 
@@ -189,32 +189,32 @@ public class HashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Abstract
 		private static final long serialVersionUID = 2741936401896784235L;
 		@Override
 		public Entry<K, V> put(Entry<K, V> entry) {
-			throw new UnsupportedOperationException() ;
+			throw new UnsupportedOperationException();
 		}
 		@Override
 		public Entry<K, V> putIfAbsent(Entry<K, V> val) {
-			throw new UnsupportedOperationException() ;
+			throw new UnsupportedOperationException();
 		}
 		@Override
 		public Entry<K, V> get(Entry<K, V> key) {
-			return first(key) ;
+			return first(key);
 		}
 		@Override
 		public int size() {
-			return totalCount() ;
+			return totalCount();
 		}
 		public Set<Entry<K, V>> copy() {
-			return HashMap.this.copy().entries() ;
+			return HashMap.this.copy().entries();
 		}
 		@Override
 		public Set<Entry<K, V>> unique() {
-			return this ;
+			return this;
 		}
 	}
 
 	@Override
 	public Map<K, V> copy() {
-		return new HashMap<K, V, N>(rehasher, keyEq, nodeEq, nodeFactory, store.copy(nodeProj(), nodeEq)) ;
+		return new HashMap<K, V, N>(rehasher, keyEq, nodeEq, nodeFactory, store.copy(nodeProj(), nodeEq));
 	}
 
 	// **********************************
@@ -222,23 +222,23 @@ public class HashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Abstract
 	// **********************************
 	
 	public static abstract class NodeEquality<K, V, N extends HashNode<N> & Entry<K, V>> extends  AbstractHashMap.NodeEquality<K, V, N> {
-		private static final long serialVersionUID = -4970889935020537472L ;
+		private static final long serialVersionUID = -4970889935020537472L;
 		public NodeEquality(Equality<? super K> keyEq, Equality<? super V> valEq) {
-			super(keyEq, valEq) ;
+			super(keyEq, valEq);
 		}
 		@Override
 		public boolean isUnique() {
-			return true ;
+			return true;
 		}
 	}	
 	
 	public static abstract class KeyEquality<K, V, N> extends AbstractHashMap.KeyEquality<K, V, N> {
 		public KeyEquality(Equality<? super K> keyEq) {
-			super(keyEq) ;
+			super(keyEq);
 		}
 		@Override
 		public boolean isUnique() {
-			return true ;
+			return true;
 		}
 	}
 

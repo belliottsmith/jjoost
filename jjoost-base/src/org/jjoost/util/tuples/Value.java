@@ -32,6 +32,6 @@ public interface Value<V> {
 	/**
 	 * @return the value contained by this Value
 	 */
-	V getValue() ;
+	V getValue();
 	
 }

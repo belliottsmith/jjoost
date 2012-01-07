@@ -40,7 +40,7 @@ public interface MultiMap<K, V> extends AnyMap<K, V>, MultiReadMap<K, V> {
 	 * 
 	 * @return the value of any maplet removed as a result of this action
 	 */
-	@Override public V put(K key, V val) ;
+	@Override public V put(K key, V val);
 	
 	/**
 	 * Attempts to bind the provided key to the provided value. If the key->value pair already 
@@ -52,26 +52,26 @@ public interface MultiMap<K, V> extends AnyMap<K, V>, MultiReadMap<K, V> {
 	 * 
 	 * @return the value of any maplet removed as a result of this action
 	 */
-	@Override public V putIfAbsent(K key, V val) ;
+	@Override public V putIfAbsent(K key, V val);
 
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyReadMap#values(java.lang.Object)
 	 */
-	@Override public Set<V> values(K key) ;
+	@Override public Set<V> values(K key);
 
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyReadMap#keys()
 	 */
-	@Override public MultiSet<K> keys() ;
+	@Override public MultiSet<K> keys();
 	
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyReadMap#entries()
 	 */
-	@Override public Set<Entry<K, V>> entries() ;
+	@Override public Set<Entry<K, V>> entries();
 
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyMap#copy()
 	 */
-	@Override public MultiMap<K, V> copy() ;
+	@Override public MultiMap<K, V> copy();
 
 }

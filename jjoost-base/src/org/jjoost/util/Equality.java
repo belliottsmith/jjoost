@@ -40,7 +40,7 @@ public interface Equality<E> extends Serializable {
 	 *            another <code>Object</code> of type <code>E</code>
 	 * @return <code>true</code> if this equality equates the two arguments
 	 */
-    public boolean equates(E a, E b) ;
+    public boolean equates(E a, E b);
     
     /**
 	 * Returns the hash value of the object as defined by this <code>Equality</code>. For all objects this <code>Equality</code> can be
@@ -50,6 +50,6 @@ public interface Equality<E> extends Serializable {
 	 *            an <code>Object</code> of type E
 	 * @return the hash of the parameter
 	 */
-    public int hash(E o) ;
+    public int hash(E o);
 
 }

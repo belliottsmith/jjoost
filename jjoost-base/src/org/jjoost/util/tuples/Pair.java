@@ -34,11 +34,11 @@ public interface Pair<A, B> extends Serializable {
 	/**
 	 * @return the first value of the pair
 	 */
-	public A first() ;
+	public A first();
 	
 	/**
 	 * @return the second value of the pair
 	 */
-	public B second() ;
+	public B second();
 	
 }

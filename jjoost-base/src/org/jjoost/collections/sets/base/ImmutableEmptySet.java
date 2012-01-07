@@ -34,61 +34,61 @@ public abstract class ImmutableEmptySet<V> extends AbstractSet<V> implements Any
 	private static final long serialVersionUID = 103439040925077249L;
 
 	@Override
-	public abstract AnyReadSet<V> copy() ;
+	public abstract AnyReadSet<V> copy();
 
 	@Override
 	public AnyReadSet<V> unique() {
-		return this ;
+		return this;
 	}
 
 	@Override
 	public Iterator<V> iterator() {
-		return Iters.emptyIterator() ;
+		return Iters.emptyIterator();
 	}
 
 	@Override
 	public Iterable<V> all(V find) {
-		return Iters.emptyIterable() ;
+		return Iters.emptyIterable();
 	}
 
 	@Override
 	public boolean contains(V find) {
-		return false ;
+		return false;
 	}
 
 	@Override
 	public int count(V find) {
-		return 0 ;
+		return 0;
 	}
 
 	@Override
 	public V first(V find) {
-		return null ;
+		return null;
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return true ;
+		return true;
 	}
 
 	@Override
 	public List<V> list(V find) {
-		return Collections.emptyList() ;
+		return Collections.emptyList();
 	}
 
 	@Override
 	public int totalCount() {
-		return 0 ;
+		return 0;
 	}
 
 	@Override
 	public int uniqueCount() {
-		return 0 ;
+		return 0;
 	}
 
 	@Override
 	public Boolean apply(V v) {
-		return Boolean.FALSE ;
+		return Boolean.FALSE;
 	}
 
 }

@@ -33,7 +33,7 @@ import java.util.List;
  */
 public class Ordering<E> {
 
-	private final Comparator<E> cmp ;
+	private final Comparator<E> cmp;
 
 	/**
 	 * Construct a new Ordering from the provided comparator 
@@ -57,19 +57,19 @@ public class Ordering<E> {
      */
     public int floor(final List<? extends E> a, final E key, final int fromIndex, final int toIndex) {
 
-        int i = fromIndex - 1 ;
-        int j = toIndex ;
+        int i = fromIndex - 1;
+        int j = toIndex;
         // a[-1] ^= -infinity
 
         while (i < j - 1) {
 
             // { a[i] <= v ^ a[j] > v }
 
-            final int m = (i + j) >>> 1 ;
-            final E v = a.get(m) ;
+            final int m = (i + j) >>> 1;
+            final E v = a.get(m);
 
-            if (cmp.compare(v, key) <= 0) i = m ;
-            else j = m ;
+            if (cmp.compare(v, key) <= 0) i = m;
+            else j = m;
 
             // { a[m] > v  =>        a[j] > v        =>      a[i] <= v ^ a[j] > v }
             // { a[m] <= v =>        a[i] <= v       =>      a[i] <= v ^ a[j] > v }
@@ -77,7 +77,7 @@ public class Ordering<E> {
         }
         
         // { a[i] <= v ^ a[i+1] > v }
-        return i ;
+        return i;
 
     }
     
@@ -94,26 +94,26 @@ public class Ordering<E> {
      */
     public int ceil(final List<? extends E> a, final E key, final int fromIndex, final int toIndex) {
 
-    	final Comparator<E> comparator = this.cmp ;
+    	final Comparator<E> comparator = this.cmp;
     	
-        int i = fromIndex -1 ;
-        int j = toIndex ;
+        int i = fromIndex -1;
+        int j = toIndex;
 
         while (i < j - 1) {
 
             // { a[i] < v ^ a[j] >= v }
 
-            final int m = (i + j) >>> 1 ;
-            final E v = a.get(m) ;
+            final int m = (i + j) >>> 1;
+            final E v = a.get(m);
 
-            if (comparator.compare(v, key) >= 0) j = m ;
-            else i = m ;
+            if (comparator.compare(v, key) >= 0) j = m;
+            else i = m;
 
             // { a[m] >= v  =>        a[j] >= v       =>      a[i] < v ^ a[j] >= v }
             // { a[m] < v   =>        a[i] < v        =>      a[i] < v ^ a[j] >= v }
 
         }
-        return j ;
+        return j;
 
     }
 
@@ -127,7 +127,7 @@ public class Ordering<E> {
      * @return maximum index in the range containing a value that is less than or equal to the provided key 
      */
     public int floor(List<? extends E> a, E key) {
-        return floor(a, key, 0, a.size()) ;
+        return floor(a, key, 0, a.size());
     }
 
     /**
@@ -140,7 +140,7 @@ public class Ordering<E> {
      * @return minimum index in the range containing a value that is greater than or equal to the provided key 
      */
     public int ceil(List<? extends E> a, E key) {
-        return ceil(a, key, 0, a.size()) ;
+        return ceil(a, key, 0, a.size());
     }
 
     
@@ -157,25 +157,25 @@ public class Ordering<E> {
      */
     public int floor(final E[] a, final E key, final int fromIndex, final int toIndex) {
     	
-    	int i = fromIndex - 1 ;
-    	int j = toIndex ;
+    	int i = fromIndex - 1;
+    	int j = toIndex;
     	// a[-1] ^= -infinity
     	
     	while (i < j - 1) {
     		
     		// { a[i] <= v ^ a[j] > v }
     		
-    		final int m = (i + j) >>> 1 ;
-    		final E v = a[m] ;
+    		final int m = (i + j) >>> 1;
+    		final E v = a[m];
     		
-    		if (cmp.compare(v, key) <= 0) i = m ;
-    		else j = m ;
+    		if (cmp.compare(v, key) <= 0) i = m;
+    		else j = m;
     		
     		// { a[m] > v  =>        a[j] > v        =>      a[i] <= v ^ a[j] > v }
     		// { a[m] <= v =>        a[i] <= v       =>      a[i] <= v ^ a[j] > v }
     		
     	}
-    	return i ;
+    	return i;
     	
     }
     
@@ -192,26 +192,26 @@ public class Ordering<E> {
      */
     public int ceil(final E[] a, final E key, final int fromIndex, final int toIndex) {
     	
-    	final Comparator<E> comparator = this.cmp ;
+    	final Comparator<E> comparator = this.cmp;
     	
-    	int i = fromIndex -1 ;
-    	int j = toIndex ;
+    	int i = fromIndex -1;
+    	int j = toIndex;
     	
     	while (i < j - 1) {
     		
     		// { a[i] < v ^ a[j] >= v }
     		
-    		final int m = (i + j) >>> 1 ;
-    		final E v = a[m] ;
+    		final int m = (i + j) >>> 1;
+    		final E v = a[m];
     		
-    		if (comparator.compare(v, key) >= 0) j = m ;
-    		else i = m ;
+    		if (comparator.compare(v, key) >= 0) j = m;
+    		else i = m;
     		
     		// { a[m] >= v  =>        a[j] >= v       =>      a[i] < v ^ a[j] >= v }
     		// { a[m] < v   =>        a[i] < v        =>      a[i] < v ^ a[j] >= v }
     		
     	}
-    	return j ;
+    	return j;
     	
     }
     
@@ -225,7 +225,7 @@ public class Ordering<E> {
      * @return maximum index in the range containing a value that is less than or equal to the provided key 
      */
     public int floor(E[] a, E key) {
-    	return floor(a, key, 0, a.length) ;
+    	return floor(a, key, 0, a.length);
     }
     
     /**
@@ -238,7 +238,7 @@ public class Ordering<E> {
      * @return minimum index in the range containing a value that is greater than or equal to the provided key 
      */
     public int ceil(E[] a, E key) {
-    	return ceil(a, key, 0, a.length) ;
+    	return ceil(a, key, 0, a.length);
     }
 
     /**
@@ -249,7 +249,7 @@ public class Ordering<E> {
      * @return a matching value
      */
     public E binarySearch(E[] a, E key) {
-    	return binarySearch(a, key, 0, a.length) ; 
+    	return binarySearch(a, key, 0, a.length);
     }
     
     /**
@@ -262,8 +262,8 @@ public class Ordering<E> {
      * @return a matching value
      */
     public E binarySearch(E[] a, E key, int fromIndex, int toIndex) {
-    	final int floor = floor(a, key) ;
-    	return floor >= fromIndex ? a[floor] : null ;
+    	final int floor = floor(a, key);
+    	return floor >= fromIndex ? a[floor] : null;
     }
     
     /**
@@ -274,7 +274,7 @@ public class Ordering<E> {
      * @return a matching value
      */
     public E binarySearch(List<? extends E> a, E key) {
-    	return binarySearch(a, key, 0, a.size()) ; 
+    	return binarySearch(a, key, 0, a.size());
     }
     
     /**
@@ -287,8 +287,8 @@ public class Ordering<E> {
      * @return a matching value
      */
     public E binarySearch(List<? extends E> a, E key, int fromIndex, int toIndex) {
-    	final int floor = floor(a, key) ;
-    	return floor >= fromIndex ? a.get(floor) : null ;
+    	final int floor = floor(a, key);
+    	return floor >= fromIndex ? a.get(floor) : null;
     }
     
     /**
@@ -298,7 +298,7 @@ public class Ordering<E> {
      * @return maximum of a and b
      */
     public E max(E a, E b) {
-    	return cmp.compare(a, b) > 0 ? b : a ;
+    	return cmp.compare(a, b) > 0 ? b : a;
     }
     
     /**
@@ -308,7 +308,7 @@ public class Ordering<E> {
      * @return minimum of a and b
      */
     public E min(E a, E b) {
-    	return cmp.compare(a, b) < 0 ? b : a ;
+    	return cmp.compare(a, b) < 0 ? b : a;
     }
     
     /**
@@ -318,14 +318,14 @@ public class Ordering<E> {
      */
     public E max(Iterator<E> iter) {
     	if (!iter.hasNext())
-    		return null ;
-    	E max = iter.next() ;
+    		return null;
+    	E max = iter.next();
     	while (iter.hasNext()) {
-    		final E next = iter.next() ;
+    		final E next = iter.next();
     		if (cmp.compare(next, max) > 0)
-    			max = next ;
+    			max = next;
     	}
-    	return max ;
+    	return max;
     }
     
     /**
@@ -335,14 +335,14 @@ public class Ordering<E> {
      */
     public E min(Iterator<E> iter) {
     	if (!iter.hasNext())
-    		return null ;
-    	E min = iter.next() ;
+    		return null;
+    	E min = iter.next();
     	while (iter.hasNext()) {
-    		final E next = iter.next() ;
+    		final E next = iter.next();
     		if (cmp.compare(next, min) < 0)
-    			min = next ;
+    			min = next;
     	}
-    	return min ;
+    	return min;
     }
     
     /**
@@ -351,15 +351,15 @@ public class Ordering<E> {
      * @return the maximum non-null value of those provided
      */
     public E maxIgnoreNulls(Iterator<E> iter) {
-    	E max = null ;
+    	E max = null;
     	while (max == null && iter.hasNext())
-    		max = iter.next() ;
+    		max = iter.next();
     	while (iter.hasNext()) {
-    		final E next = iter.next() ;
+    		final E next = iter.next();
     		if (next != null && cmp.compare(next, max) > 0)
-    			max = next ;
+    			max = next;
     	}
-    	return max ;
+    	return max;
     }
     
     /**
@@ -368,39 +368,39 @@ public class Ordering<E> {
      * @return the minimum non-null value of those provided
      */
     public E minIgnoreNulls(Iterator<E> iter) {
-    	E min = null ;
+    	E min = null;
     	while (min == null && iter.hasNext())
-    		min = iter.next() ;
+    		min = iter.next();
     	while (iter.hasNext()) {
-    		final E next = iter.next() ;
+    		final E next = iter.next();
     		if (next != null && cmp.compare(next, min) < 0)
-    			min = next ;
+    			min = next;
     	}
-    	return min ;
+    	return min;
     }
     
 //    public E max(E a, E b, int treatNullAsCompareResultIfOnLeft) {
-//    	final int c ;
-//    	if (a == null) c = treatNullAsCompareResultIfOnLeft ;
-//    	else if (b == null) c = -treatNullAsCompareResultIfOnLeft ;
-//    	else c = cmp.compare(a, b) ;
-//    	return c > 0 ? b : a ;
+//    	final int c;
+//    	if (a == null) c = treatNullAsCompareResultIfOnLeft;
+//    	else if (b == null) c = -treatNullAsCompareResultIfOnLeft;
+//    	else c = cmp.compare(a, b);
+//    	return c > 0 ? b : a;
 //    }
 //    
 //    public E min(E a, E b, int treatNullAsCompareResultIfOnLeft) {
-//    	final int c ;
-//    	if (a == null) c = treatNullAsCompareResultIfOnLeft ;
-//    	else if (b == null) c = -treatNullAsCompareResultIfOnLeft ;
-//    	else c = cmp.compare(a, b) ;
-//    	return c < 0 ? b : a ;
+//    	final int c;
+//    	if (a == null) c = treatNullAsCompareResultIfOnLeft;
+//    	else if (b == null) c = -treatNullAsCompareResultIfOnLeft;
+//    	else c = cmp.compare(a, b);
+//    	return c < 0 ? b : a;
 //    }
 //    
 //    public E min(E a, E b, boolean treatNullAsPositiveInfinity) {
-//    	return min(a, b, -1) ;
+//    	return min(a, b, -1);
 //    }
 //    
 //    public E max(E a, E b, boolean treatNullAsNegativeInfinity) {
-//    	return max(a, b, 1) ;
+//    	return max(a, b, 1);
 //    }
 //    
     
@@ -411,15 +411,15 @@ public class Ordering<E> {
      */
     public boolean isOrdered(Iterator<E> iter) {
     	if (!iter.hasNext())
-    		return true ;
-    	E last = iter.next() ;
+    		return true;
+    	E last = iter.next();
     	while (iter.hasNext()) {
-    		final E next = iter.next() ;
+    		final E next = iter.next();
     		if (!(cmp.compare(last, next) <= 0))
-    			return false ;
-    		last = next ;
+    			return false;
+    		last = next;
     	}
-    	return true ;
+    	return true;
     }
     
     /**
@@ -428,7 +428,7 @@ public class Ordering<E> {
      * @return true if in ascending order
      */
     public boolean isOrdered(Iterable<E> iter) {
-    	return isOrdered(iter.iterator()) ;
+    	return isOrdered(iter.iterator());
     }
     
     /**
@@ -438,15 +438,15 @@ public class Ordering<E> {
      */
     public boolean isOrdered(E[] a) {
     	if (a.length <= 1)
-    		return true ;
-    	E last = a[0] ;
+    		return true;
+    	E last = a[0];
     	for (int i = 1 ; i != a.length ; i++) {
-    		final E next = a[i] ;
+    		final E next = a[i];
     		if (!(cmp.compare(last, next) <= 0))
-    			return false ;
-    		last = next ;
+    			return false;
+    		last = next;
     	}
-    	return true ;
+    	return true;
     }
     
     /**
@@ -456,15 +456,15 @@ public class Ordering<E> {
      */
     public boolean isStrictlyOrdered(Iterator<E> iter) {
     	if (!iter.hasNext())
-    		return true ;
-    	E last = iter.next() ;
+    		return true;
+    	E last = iter.next();
     	while (iter.hasNext()) {
-    		final E next = iter.next() ;
+    		final E next = iter.next();
     		if (!(cmp.compare(last, next) < 0))
-    			return false ;
-    		last = next ;
+    			return false;
+    		last = next;
     	}
-    	return true ;
+    	return true;
     }
     
     /**
@@ -473,7 +473,7 @@ public class Ordering<E> {
      * @return true if in strictly ascending order
      */
     public boolean isStrictlyOrdered(Iterable<E> iter) {
-    	return isOrdered(iter.iterator()) ;
+    	return isOrdered(iter.iterator());
     }
     
     /**
@@ -483,26 +483,26 @@ public class Ordering<E> {
      */
     public boolean isStrictlyOrdered(E[] a) {
     	if (a.length <= 1)
-    		return true ;
-    	E last = a[0] ;
+    		return true;
+    	E last = a[0];
     	for (int i = 1 ; i != a.length ; i++) {
-    		final E next = a[i] ;
+    		final E next = a[i];
     		if (!(cmp.compare(last, next) < 0))
-    			return false ;
-    		last = next ;
+    			return false;
+    		last = next;
     	}
-    	return true ;
+    	return true;
     }
     
     /**
      * @return this Ordering's Comparator 
      */
     public Comparator<E> getComparator() {
-    	return cmp ;
+    	return cmp;
     }
     
     @SuppressWarnings("unchecked")
-	private static final Ordering FOR_COMPARABLE = new Ordering(Objects.<Comparable>getComparableComparator()) ;
+	private static final Ordering FOR_COMPARABLE = new Ordering(Objects.<Comparable>getComparableComparator());
 
 	/**
 	 * Return an Ordering over Comparable objects of the type specified by the type parameter
@@ -511,7 +511,7 @@ public class Ordering<E> {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <E extends Comparable<E>> Ordering<E> forComparable() {
-		return FOR_COMPARABLE ;
+		return FOR_COMPARABLE;
 	}
 	
 	/**
@@ -520,7 +520,7 @@ public class Ordering<E> {
 	 * @return an Ordering for the provided Comparator
 	 */
 	public Ordering<E> from(Comparator<E> cmp) {
-		return new Ordering<E>(cmp) ;
+		return new Ordering<E>(cmp);
 	}
 	
 }

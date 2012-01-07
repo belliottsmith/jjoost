@@ -23,7 +23,7 @@
 package org.jjoost.collections.sets.base;
 
 import org.jjoost.collections.AnyReadSet;
-import org.jjoost.collections.AnySet ;
+import org.jjoost.collections.AnySet;
 import org.jjoost.util.Iters;
 
 public abstract class AbstractSet<V> implements AnyReadSet<V> {
@@ -32,33 +32,33 @@ public abstract class AbstractSet<V> implements AnyReadSet<V> {
 
 	@Override
 	public String toString() {
-		return "{" + Iters.toString(this, ", ") + "}" ;
+		return "{" + Iters.toString(this, ", ") + "}";
 	}
 	
 	@SuppressWarnings("unchecked")
 	public boolean equals(Object that) {
-		return this == that || (that instanceof AnySet && equals((AnySet<V>) that)) ;
+		return this == that || (that instanceof AnySet && equals((AnySet<V>) that));
 	}
 	
 	public boolean equals(AnySet<V> that) {
 		if (that.totalCount() != this.totalCount())
-			return false ;
+			return false;
 		if (that.permitsDuplicates() != this.permitsDuplicates())
-			return false ;
+			return false;
 		// retain some type safety of equals(Object) by confirming equalities are "equal" before comparing sets
 		if (!that.equality().equals(this.equality()))
-			return false ;
+			return false;
 		if (permitsDuplicates()) {
 			for (V v : that) {
 				if (this.count(v) != that.count(v))
-					return false ;
+					return false;
 			}
 		} else {
 			for (V v : that)
 				if (!contains(v))
-					return false ;
+					return false;
 		}
-		return true ;
+		return true;
 	}
 
 }

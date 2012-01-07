@@ -25,17 +25,17 @@ package org.jjoost.util;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.UndeclaredThrowableException ;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
 import org.jjoost.util.tuples.Value;
-import org.jjoost.collections.iters.ClosableIterator ;
-import org.jjoost.collections.iters.MappedClosableIterator ;
-import org.jjoost.collections.iters.MappedIterable ;
-import org.jjoost.collections.iters.MappedIterator ;
+import org.jjoost.collections.iters.ClosableIterator;
+import org.jjoost.collections.iters.MappedClosableIterator;
+import org.jjoost.collections.iters.MappedIterable;
+import org.jjoost.collections.iters.MappedIterator;
 
 /**
  * A class defining simple functions, and methods for working with functions
@@ -45,29 +45,29 @@ import org.jjoost.collections.iters.MappedIterator ;
  */
 public class Functions {
 
-	private static final Function<Object, Object> IDENTITY = new Identity<Object>() ; 
+	private static final Function<Object, Object> IDENTITY = new Identity<Object>();
 	private static final class Identity<E> implements Function<E, E> {
-		private static final long serialVersionUID = 5801405085506068892L ;
+		private static final long serialVersionUID = 5801405085506068892L;
 		public E apply(E v) { return v ; }
 	}
 	
-	private static final Function<Object, String> TO_STRING = new ToString<Object>() ;
+	private static final Function<Object, String> TO_STRING = new ToString<Object>();
 	private static final class ToString<E> implements Function<E, String> {
-		private static final long serialVersionUID = 5801405085506068892L ;
+		private static final long serialVersionUID = 5801405085506068892L;
 		public String apply(E v) { return v == null ? null : v.toString() ; }
 	}
 		
-	private static final Function<Object, String> TO_STRING_REPLACENULLS = new ToStringReplaceNulls<Object>() ;
+	private static final Function<Object, String> TO_STRING_REPLACENULLS = new ToStringReplaceNulls<Object>();
 	private static final class ToStringReplaceNulls<E> implements Function<E, String> {
-		private static final long serialVersionUID = 5801405085506068892L ;
+		private static final long serialVersionUID = 5801405085506068892L;
 		public String apply(E v) { return v == null ? "null" : v.toString() ; }
 	}
 	
 	private static final class ReplaceNulls<E> implements Function<E, E> {
-		private static final long serialVersionUID = 5801405085506068892L ;
-		private final E replace ;
+		private static final long serialVersionUID = 5801405085506068892L;
+		private final E replace;
 		public ReplaceNulls(E val) {
-			this.replace = val ;
+			this.replace = val;
 		}
 		public E apply(E v) { return v == null ? replace : v ; }
 	}
@@ -79,7 +79,7 @@ public class Functions {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <E> Function<E, E> identity() {
-		return (Function<E, E>) IDENTITY ;
+		return (Function<E, E>) IDENTITY;
 	}
 	
 	/**
@@ -92,7 +92,7 @@ public class Functions {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <E> Function<E, String> toString(boolean replaceNulls) {
-		return (Function<E, String>) (replaceNulls ? TO_STRING_REPLACENULLS : TO_STRING) ;
+		return (Function<E, String>) (replaceNulls ? TO_STRING_REPLACENULLS : TO_STRING);
 	}
 	
 	/**
@@ -103,7 +103,7 @@ public class Functions {
 	 * @return a function replacing nulls with the provided value
 	 */
 	public static <E> Function<E, E> replaceNullWith(E val) {
-		return new ReplaceNulls<E>(val) ;
+		return new ReplaceNulls<E>(val);
 	}
 	
 	/**
@@ -122,9 +122,9 @@ public class Functions {
 			private static final long serialVersionUID = 3725675651261795247L;
 			@Override
 			public G apply(E v) {
-				return f2.apply(f1.apply(v)) ;
+				return f2.apply(f1.apply(v));
 			}
-		} ;
+		};
 	}
 	
 	/**
@@ -138,9 +138,9 @@ public class Functions {
 	 * @throws NoSuchMethodException if no no-args method of the provided name can be found in the provided class' hierarchy
 	 */
 	public static <E, F> Function<E, F> getMethodProjection(Class<E> clazz, String methodName, final Class<F> returnType) throws SecurityException, NoSuchMethodException {
-		final Method m = clazz.getMethod(methodName, new Class[0]) ;
-		final Object[] args = new Object[0] ;
-		return new MethodProjection<E, F>(returnType, m, args) ;
+		final Method m = clazz.getMethod(methodName, new Class[0]);
+		final Object[] args = new Object[0];
+		return new MethodProjection<E, F>(returnType, m, args);
 	}
 	
 	/**
@@ -150,10 +150,10 @@ public class Functions {
 	 * @author b.elliottsmith
 	 */
 	public static final class MethodProjection<E, F> implements Function<E, F> {
-		private static final long serialVersionUID = -2627623099906029633L ;
-		final Class<F> returnType ;
-		final Method m ;
-		final Object[] args ;
+		private static final long serialVersionUID = -2627623099906029633L;
+		final Class<F> returnType;
+		final Method m;
+		final Object[] args;
 		/**
 		 * Create a new MethodProjection class, which executes the provided method on any input object, using the provided arguments
 		 * @param returnType the return type of the provided method, provided for type safety
@@ -168,11 +168,11 @@ public class Functions {
 		}
 		public F apply(E v) {
 			try {
-				return returnType.cast(m.invoke(v, args)) ;
+				return returnType.cast(m.invoke(v, args));
 			} catch (IllegalAccessException e) {
-				throw new UndeclaredThrowableException(e) ;
+				throw new UndeclaredThrowableException(e);
 			} catch (InvocationTargetException e) {
-				throw new UndeclaredThrowableException(e) ;
+				throw new UndeclaredThrowableException(e);
 			}
 		}
 	}
@@ -187,10 +187,10 @@ public class Functions {
 	 * @throws NoSuchFieldException if a field of the provided name could not be found in the provided class
 	 */
 	public static <E, F> Function<E, F> getFieldProjection(Class<E> clazz, String propertyName, final Class<F> propertyType) throws SecurityException, NoSuchFieldException {
-		final Field f = clazz.getField(propertyName) ;
+		final Field f = clazz.getField(propertyName);
 		if (!propertyType.isAssignableFrom(f.getType()))
-			throw new IllegalArgumentException("") ;
-		return new FieldProjection<E, F>(propertyType, f) ;
+			throw new IllegalArgumentException("");
+		return new FieldProjection<E, F>(propertyType, f);
 	}
 	
 	/**
@@ -200,9 +200,9 @@ public class Functions {
 	 * @author b.elliottsmith
 	 */
 	public static final class FieldProjection<E, F> implements Function<E, F> {
-		private static final long serialVersionUID = -2627623099906029633L ;
-		final Class<F> returnType ;
-		final Field f ;
+		private static final long serialVersionUID = -2627623099906029633L;
+		final Class<F> returnType;
+		final Field f;
 		/**
 		 * Create a new <code>FieldProjection</code>
 		 * 
@@ -218,9 +218,9 @@ public class Functions {
 		}
 		public F apply(E v) {
 			try {
-				return returnType.cast(f.get(v)) ;
+				return returnType.cast(f.get(v));
 			} catch (IllegalAccessException e) {
-				throw new UndeclaredThrowableException(e) ;
+				throw new UndeclaredThrowableException(e);
 			}
 		}
 	}
@@ -232,17 +232,17 @@ public class Functions {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <V, E extends Entry<?, ? extends V>> Function<E, V> getMapEntryValueProjection() {
-		return MAP_ENTRY_VALUE_PROJECTION ;
+		return MAP_ENTRY_VALUE_PROJECTION;
 	}
 	@SuppressWarnings("unchecked")
-	private static final MapEntryValueProjection MAP_ENTRY_VALUE_PROJECTION = new MapEntryValueProjection() ; 
+	private static final MapEntryValueProjection MAP_ENTRY_VALUE_PROJECTION = new MapEntryValueProjection();
 	/**
 	 * A function that retrieves the value portion of a <code>Map.Entry</code>
 	 * 
 	 * @author b.elliottsmith
 	 */
 	public static final class MapEntryValueProjection<E extends Entry<?, V>, V> implements Function<E, V> {
-		private static final long serialVersionUID = -2627623099906029633L ;
+		private static final long serialVersionUID = -2627623099906029633L;
 		public V apply(E v) { return v.getValue() ; }
 	}
 	
@@ -253,17 +253,17 @@ public class Functions {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <K, E extends Entry<? extends K, ?>> Function<E, K> getMapEntryKeyProjection() {
-		return MAP_ENTRY_KEY_PROJECTION ;
+		return MAP_ENTRY_KEY_PROJECTION;
 	}
 	@SuppressWarnings("unchecked")
-	private static final MapEntryValueProjection MAP_ENTRY_KEY_PROJECTION = new MapEntryValueProjection() ; 
+	private static final MapEntryValueProjection MAP_ENTRY_KEY_PROJECTION = new MapEntryValueProjection();
 	/**
 	 * A function that retrieves the key portion of a <code>Map.Entry</code>
 	 * 
 	 * @author b.elliottsmith
 	 */
 	public static final class MapEntryKeyProjection<E extends Entry<K, ?>, K> implements Function<E, K> {
-		private static final long serialVersionUID = -2627623099906029633L ;
+		private static final long serialVersionUID = -2627623099906029633L;
 		public K apply(E v) { return v.getKey() ; }
 	}
 	
@@ -274,17 +274,17 @@ public class Functions {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <V> Function<Value<V>, V> getValueContentsProjection() {
-		return ABSTRACT_VALUE_PROJECTION ;
+		return ABSTRACT_VALUE_PROJECTION;
 	}
 	@SuppressWarnings("unchecked")
-	private static final AbstractValueProjection ABSTRACT_VALUE_PROJECTION = new AbstractValueProjection() ; 
+	private static final AbstractValueProjection ABSTRACT_VALUE_PROJECTION = new AbstractValueProjection();
 	/**
 	 * A function that retrieves the value from a <code>Value</code>
 	 * 
 	 * @author b.elliottsmith
 	 */
 	public static final class AbstractValueProjection<E extends Value<V>, V> implements Function<E, V> {
-		private static final long serialVersionUID = -2627623099906029633L ;
+		private static final long serialVersionUID = -2627623099906029633L;
 		public V apply(E v) { return v.getValue() ; }
 	}
 
@@ -300,9 +300,9 @@ public class Functions {
 	 * @return a new <code>ArrayList</code> that contains the result of applying the provided function to every element in the provided list
 	 */
     public static <E, F> List<F> apply(Function<? super E, ? extends F> f, List<? extends E> list) {
-    	List<F> ret = new ArrayList<F>(list.size()) ;
-    	for (E e : list) ret.add(f.apply(e)) ;
-    	return ret ;
+    	List<F> ret = new ArrayList<F>(list.size());
+    	for (E e : list) ret.add(f.apply(e));
+    	return ret;
     }
     
     /**
@@ -316,7 +316,7 @@ public class Functions {
 	 * @return a new <code>ArrayList</code> that contains the result of applying the provided function to every element in the provided list
 	 */
     public static <E, F> List<F> apply(List<? extends E> list, Function<? super E, ? extends F> f) {
-        return apply(f, list) ;
+        return apply(f, list);
     }
     
     /**
@@ -330,7 +330,7 @@ public class Functions {
 	 * @return a new <code>Iterable</code> which lazily applies the provided function to all iterators constructed from it
 	 */
     public static <E, F> Iterable<F> apply(Function<? super E, ? extends F> f, Iterable<? extends E> iter) {
-    	return new MappedIterable<E, F>(iter, f) ;
+    	return new MappedIterable<E, F>(iter, f);
     }
     
     /**
@@ -344,7 +344,7 @@ public class Functions {
 	 * @return a new <code>Iterable</code> which lazily applies the provided function to all iterators constructed from it
 	 */
     public static <E, F> Iterable<F> apply(Iterable<? extends E> iter, Function<? super E, ? extends F> f) {
-    	return apply(f, iter) ;
+    	return apply(f, iter);
     }
     
     /**
@@ -358,7 +358,7 @@ public class Functions {
 	 * @return a new iterator which return <code>f.f(iter.next())</code> for each call to <code>next()</code>
 	 */
     public static <E, F> Iterator<F> apply(Iterator<? extends E> iter, Function<? super E, ? extends F> f) {
-    	return apply(f, iter) ;
+    	return apply(f, iter);
     }
 
     /**
@@ -372,7 +372,7 @@ public class Functions {
 	 * @return a new iterator which return <code>f.f(iter.next())</code> for each call to <code>next()</code>
 	 */
     public static <E, F> Iterator<F> apply(Function<? super E, ? extends F> f, Iterator<? extends E> iter) {
-    	return new MappedIterator<E, F>(iter, f) ;
+    	return new MappedIterator<E, F>(iter, f);
     }
     
     /**
@@ -387,7 +387,7 @@ public class Functions {
 	 * @return a new iterator which return <code>f.f(iter.next())</code> for each call to <code>next()</code>
 	 */
     public static <E, F> ClosableIterator<F> apply(ClosableIterator<? extends E> iter, Function<? super E, ? extends F> f) {
-    	return apply(f, iter) ;
+    	return apply(f, iter);
     }
 
     /**
@@ -401,7 +401,7 @@ public class Functions {
 	 * @return a new iterator which return <code>f.f(iter.next())</code> for each call to <code>next()</code>
 	 */
     public static <E, F> ClosableIterator<F> apply(Function<? super E, ? extends F> f, ClosableIterator<? extends E> iter) {
-    	return new MappedClosableIterator<E, F>(iter, f) ;
+    	return new MappedClosableIterator<E, F>(iter, f);
     }
     
 

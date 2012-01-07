@@ -51,7 +51,7 @@ public interface AnySet<V> extends AnyReadSet<V> {
 	 *            value to insert
 	 * @return <code>true</code> if the set was modified, <code>false</code> otherwise
 	 */
-	public boolean add(V value) ;	
+	public boolean add(V value);
 	
 	/**
 	 * Insert the value into the set, returning any value that was evicted as a result or null if none (note that if the value to insert is
@@ -63,7 +63,7 @@ public interface AnySet<V> extends AnyReadSet<V> {
 	 *            value to insert
 	 * @return value that was evicted from the set as a result of the action
 	 */
-	public V put(V value) ;	
+	public V put(V value);
 	
 	/**
 	 * Performs the equivalent of a <code>put()</code> operation for every value provided, returning an int representing the total number of
@@ -74,7 +74,7 @@ public interface AnySet<V> extends AnyReadSet<V> {
 	 *            values to insert
 	 * @return number that did not displace existing values
 	 */
-	public int putAll(Iterable<V> values) ;	
+	public int putAll(Iterable<V> values);
 	
 	/**
 	 * Inserts the value and returns <code>null</code> if an equal value does not already occur in the set; otherwise returns the first such
@@ -84,7 +84,7 @@ public interface AnySet<V> extends AnyReadSet<V> {
 	 *            value to insert
 	 * @return existing value, or null if none
 	 */
-	public V putIfAbsent(V value) ;
+	public V putIfAbsent(V value);
 	
 	/**
 	 * Removes <b>all occurrences</b> of values equal to the parameter from the set, as determined by the set's definition of equality and
@@ -94,7 +94,7 @@ public interface AnySet<V> extends AnyReadSet<V> {
 	 *            remove equal to
 	 * @return number removed
 	 */
-	public int remove(V value) ;
+	public int remove(V value);
 	
 	/**
 	 * Removes at most the prescribed number of values equal to the parameter from the set; which values are removed is implementation
@@ -106,7 +106,7 @@ public interface AnySet<V> extends AnyReadSet<V> {
 	 *            remove at most
 	 * @return the number removed
 	 */
-	public int remove(V value, int removeAtMost) ;	
+	public int remove(V value, int removeAtMost);
 	
 	/**
 	 * Removes all occurrences of values equal to the parameter and returns an <code>Iterable</code> of the values removed. Equivalent to
@@ -116,7 +116,7 @@ public interface AnySet<V> extends AnyReadSet<V> {
 	 *            remove equal to
 	 * @return values removed
 	 */
-	public Iterable<V> removeAndReturn(V value) ;	
+	public Iterable<V> removeAndReturn(V value);
 	
 	/**
 	 * Removes at most the prescribed number of values equal to the parameter from the set and returns them to the user; which values are
@@ -128,7 +128,7 @@ public interface AnySet<V> extends AnyReadSet<V> {
 	 *            remove at most
 	 * @return values removed
 	 */
-	public Iterable<V> removeAndReturn(V value, int removeAtMost) ;	
+	public Iterable<V> removeAndReturn(V value, int removeAtMost);
 	
 	/**
 	 * Removes <b>all occurrences</b> of values equal to the parameter from the set, as determined by the set's definition of equality, and
@@ -138,7 +138,7 @@ public interface AnySet<V> extends AnyReadSet<V> {
 	 *            remove
 	 * @return first value removed
 	 */
-	public V removeAndReturnFirst(V value) ;	
+	public V removeAndReturnFirst(V value);
 	
 	/**
 	 * Removes at most the prescribed number of values equal to the parameter from the set and returns the first one encountered to the
@@ -150,7 +150,7 @@ public interface AnySet<V> extends AnyReadSet<V> {
 	 *            remove at most
 	 * @return first value removed
 	 */
-	public V removeAndReturnFirst(V value, int removeAtMost) ;
+	public V removeAndReturnFirst(V value, int removeAtMost);
 	
 	/**
 	 * Removes all values from the set and return the number of values removed. In a concurrent set this
@@ -159,7 +159,7 @@ public interface AnySet<V> extends AnyReadSet<V> {
 	 * 
 	 * @return number removed
 	 */
-	public int clear() ;	
+	public int clear();
 	
 	/**
 	 * Removes all values from the set and returns an <code>Iterator</code> over them. This <code>Iterator</code>
@@ -169,7 +169,7 @@ public interface AnySet<V> extends AnyReadSet<V> {
 	 * 
 	 * @return values removed
 	 */
-	public Iterator<V> clearAndReturn() ;
+	public Iterator<V> clearAndReturn();
 	
 	/**
 	 * Returns an <code>AnySet</code> (usually a <code>Set</code>) representing only the unique values 
@@ -179,17 +179,17 @@ public interface AnySet<V> extends AnyReadSet<V> {
 	 * 
 	 * @return unique values
 	 */
-	public AnySet<V> unique() ;
+	public AnySet<V> unique();
 	
 	/**
 	 * This method attempts to minimise the resource utilisation of the set. It may be a no-op.
 	 */
-	public void shrink() ;	
+	public void shrink();
 	
 	/**
 	 * Returns a copy of the set. This method may or may not return a set of the same class as the one it was
 	 * called on, however must be of the same basic interface (either <code>Set</code> or <code>MultiSet</code>).
 	 */
-	@Override public AnySet<V> copy() ;
+	@Override public AnySet<V> copy();
 	
 }

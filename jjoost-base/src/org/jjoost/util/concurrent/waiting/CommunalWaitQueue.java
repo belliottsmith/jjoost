@@ -24,6 +24,6 @@ package org.jjoost.util.concurrent.waiting;
 
 public interface CommunalWaitQueue<E> extends CommunalWaitSignal<E>, WaitQueue {
 	
-	public WaitHandle register(E waitingFor) ;
+	public WaitHandle register(E waitingFor);
 
 }

@@ -20,12 +20,12 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util.filters ;
+package org.jjoost.util.filters;
 
 import org.jjoost.collections.AnySet;
-import org.jjoost.collections.sets.serial.SerialHashSet ;
-import org.jjoost.util.Equality ;
-import org.jjoost.util.Filter ;
+import org.jjoost.collections.sets.serial.SerialHashSet;
+import org.jjoost.util.Equality;
+import org.jjoost.util.Filter;
 
 /**
  * A <code>Filter</code> which returns <code>true</code> if and only if it has never seen the value being tested before, 
@@ -35,29 +35,29 @@ import org.jjoost.util.Filter ;
  */
 public class AcceptUnique<V> implements Filter<V> {
 
-	private static final long serialVersionUID = 4135610622081116945L ;
-	private final AnySet<V> seen ;
+	private static final long serialVersionUID = 4135610622081116945L;
+	private final AnySet<V> seen;
 
 	/**
 	 * Construct a new <code>AcceptUnique</code> using default propreties (hash set using Object.equals() and Object.hashCode())
 	 */
 	public AcceptUnique() {
-		this(new SerialHashSet<V>(8, 0.75f)) ;
+		this(new SerialHashSet<V>(8, 0.75f));
 	}
 	
 	/**
 	 * Construct a new <code>AcceptUnique</code> using the provided set to maintain the previously visited set of values 
 	 */
 	public AcceptUnique(AnySet<V> set) {
-		this.seen = set ;
+		this.seen = set;
 	}
 
 	public boolean accept(V next) {
-		return seen.add(next) ;
+		return seen.add(next);
 	}
 	
 	public String toString() {
-		return "is first occurence of" ;
+		return "is first occurence of";
 	}
 
     /**
@@ -67,7 +67,7 @@ public class AcceptUnique<V> implements Filter<V> {
 	 * @return a filter accepting only unique values
 	 */
 	public static <V> AcceptUnique<V> get() {
-		return new AcceptUnique<V>() ;
+		return new AcceptUnique<V>();
 	}
 	
     /**
@@ -78,7 +78,7 @@ public class AcceptUnique<V> implements Filter<V> {
 	 * @return a filter accepting only unique values
 	 */
 	public static <V> AcceptUnique<V> get(Equality<? super V> eq) {
-		return get(new SerialHashSet<V>(eq)) ;
+		return get(new SerialHashSet<V>(eq));
 	}
 	
     /**
@@ -89,7 +89,7 @@ public class AcceptUnique<V> implements Filter<V> {
 	 * @return a filter accepting only unique values
 	 */
 	public static <V> AcceptUnique<V> get(AnySet<V> set) {
-		return new AcceptUnique<V>(set) ;
+		return new AcceptUnique<V>(set);
 	}
 	
 }

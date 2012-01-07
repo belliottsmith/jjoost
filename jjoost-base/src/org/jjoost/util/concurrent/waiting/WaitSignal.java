@@ -24,7 +24,7 @@ package org.jjoost.util.concurrent.waiting;
 
 public interface WaitSignal {
 	
-	public void wakeAll() ;
-	public void wakeOne() ;
+	public void wakeAll();
+	public void wakeOne();
 
 }

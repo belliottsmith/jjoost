@@ -22,7 +22,7 @@
 
 package org.jjoost.collections;
 
-import java.util.Map.Entry ;
+import java.util.Map.Entry;
 
 import org.jjoost.util.Function;
 
@@ -35,21 +35,21 @@ public interface MultiReadMap<K, V> extends AnyReadMap<K, V>, Function<K, Iterab
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyReadMap#values(java.lang.Object)
 	 */
-	@Override public ReadSet<V> values(K key) ;
+	@Override public ReadSet<V> values(K key);
 
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyReadMap#keys()
 	 */
-	@Override public MultiReadSet<K> keys() ;
+	@Override public MultiReadSet<K> keys();
 	
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyReadMap#entries()
 	 */
-	@Override public ReadSet<Entry<K, V>> entries() ;
+	@Override public ReadSet<Entry<K, V>> entries();
 	
 	/* (non-Javadoc)
 	 * @see org.jjoost.collections.AnyMap#copy()
 	 */
-	@Override public MultiReadMap<K, V> copy() ;
+	@Override public MultiReadMap<K, V> copy();
 
 }

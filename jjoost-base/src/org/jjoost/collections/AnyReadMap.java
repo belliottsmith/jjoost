@@ -59,7 +59,7 @@ public interface AnyReadMap<K, V> extends Serializable {
 	 * 
 	 * @return true, if present
 	 */
-	public boolean contains(K key) ;	
+	public boolean contains(K key);
 	
 	/**
 	 * Returns true iff a (key,value) pair occurs in the map that is equal to those
@@ -70,7 +70,7 @@ public interface AnyReadMap<K, V> extends Serializable {
 	 * 
 	 * @return true, if present
 	 */
-	public boolean contains(K key, V val) ;
+	public boolean contains(K key, V val);
 	
 	/**
 	 * Returns the number of occurrences of keys present in the map that are equal to the 
@@ -80,7 +80,7 @@ public interface AnyReadMap<K, V> extends Serializable {
 	 * 
 	 * @return number of occurrences
 	 */
-	public int count(K key) ;	
+	public int count(K key);
 	
 	/**
 	 * Returns the number of occurrences of (key, value) pairs present in the map that are 
@@ -91,7 +91,7 @@ public interface AnyReadMap<K, V> extends Serializable {
 	 * 
 	 * @return number of occurrences
 	 */
-	public int count(K key, V val) ;
+	public int count(K key, V val);
 	
 	/**
 	 * Returns the value associated with the first key that is equal to the one provided,
@@ -102,7 +102,7 @@ public interface AnyReadMap<K, V> extends Serializable {
 	 * 
 	 * @return the value associated with the first matching key
 	 */
-	public V first(K key) ;	
+	public V first(K key);
 	
 	/**
 	 * Returns a set representing the values associated with the provided key in
@@ -117,7 +117,7 @@ public interface AnyReadMap<K, V> extends Serializable {
 	 * 
 	 * @return the set of values mapped to by provided key
 	 */
-	public AnyReadSet<V> values(K key) ;
+	public AnyReadSet<V> values(K key);
 	
 	/**
 	 * Returns a <code>List</code> of all values in the map which are mapped to by 
@@ -129,7 +129,7 @@ public interface AnyReadMap<K, V> extends Serializable {
 	 * 
 	 * @return the list< v>
 	 */
-	public List<V> list(K key) ;
+	public List<V> list(K key);
 	
 	/**
 	 * Returns a set representing all the keys in the domain of this map. In a
@@ -149,7 +149,7 @@ public interface AnyReadMap<K, V> extends Serializable {
 	 * 
 	 * @return the key set< k>
 	 */
-	public AnyReadSet<K> keys() ;
+	public AnyReadSet<K> keys();
 	
 	/**
 	 * Returns a set representing all the key->value pairs in this map. In a
@@ -160,7 +160,7 @@ public interface AnyReadMap<K, V> extends Serializable {
 	 * 
 	 * @return the entry set< k>
 	 */
-	public AnyReadSet<? extends Entry<K, V>> entries() ;	
+	public AnyReadSet<? extends Entry<K, V>> entries();
 	
 	/**
 	 * Returns a set representing the range of the map. Operations on this
@@ -169,7 +169,7 @@ public interface AnyReadMap<K, V> extends Serializable {
 	 * 
 	 * @return the range of the map
 	 */
-	public AnyReadSet<V> values() ;	
+	public AnyReadSet<V> values();
 	
 	/**
 	 * Returns an <code>Iterable</code> over all key->value maplets in the map
@@ -180,7 +180,7 @@ public interface AnyReadMap<K, V> extends Serializable {
 	 * 
 	 * @return maplets with the provided key
 	 */
-	public Iterable<Entry<K, V>> entries(K key) ;
+	public Iterable<Entry<K, V>> entries(K key);
 	
 	/**
 	 * Return an integer representing the total number of maplets (i.e. counting
@@ -188,7 +188,7 @@ public interface AnyReadMap<K, V> extends Serializable {
 	 * 
 	 * @return the total number of maplets
 	 */
-	public int totalCount() ;
+	public int totalCount();
 	
 	/**
 	 * Return an integer representing the number of unique keys in the domain of
@@ -196,21 +196,21 @@ public interface AnyReadMap<K, V> extends Serializable {
 	 * 
 	 * @return number of unique keys
 	 */
-	public int uniqueKeyCount() ;
+	public int uniqueKeyCount();
 	
 	/**
 	 * Returns true iff the map is empty
 	 * 
 	 * @return true, if empty
 	 */
-	public boolean isEmpty() ;
+	public boolean isEmpty();
 	
 	/**
 	 * Returns true if a key can map to more than one value
 	 * 
 	 * @return true, if keys can map to more than one value
 	 */
-	public boolean permitsDuplicateKeys() ;
+	public boolean permitsDuplicateKeys();
 
 	/**
 	 * Returns a copy of the map. Note that this method may not necessarily return an object of the same
@@ -219,6 +219,6 @@ public interface AnyReadMap<K, V> extends Serializable {
 	 * 
 	 * @return the any map< k, v>
 	 */
-	public AnyReadMap<K, V> copy() ;
+	public AnyReadMap<K, V> copy();
 	
 }

@@ -43,8 +43,8 @@ import org.jjoost.collections.maps.serial.SerialLinkedInlineListHashMap;
 import org.jjoost.collections.maps.serial.SerialLinkedInlineMultiHashMap;
 import org.jjoost.collections.maps.serial.SerialLinkedHashMap;
 import org.jjoost.collections.maps.serial.SerialHashMap;
-import org.jjoost.collections.maps.wrappers.DefaultFactoryMap ;
-import org.jjoost.collections.maps.wrappers.DefaultFunctionMap ;
+import org.jjoost.collections.maps.wrappers.DefaultFactoryMap;
+import org.jjoost.collections.maps.wrappers.DefaultFunctionMap;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Factory;
@@ -67,7 +67,7 @@ public abstract class MapMaker<K, V> {
 	 * 
 	 * @return a new <code>Map</code>
 	 */
-	public abstract Map<K, V> newMap() ;
+	public abstract Map<K, V> newMap();
 	
 	/**
 	 * Return a new <code>ListMap</code> with <code>INLINE</code> nesting
@@ -75,7 +75,7 @@ public abstract class MapMaker<K, V> {
 	 * @return a new <code>ListMap</code>
 	 */
 	public ListMap<K, V> newListMap() {
-		return newListMap(ListMapNesting.<V>inline()) ;
+		return newListMap(ListMapNesting.<V>inline());
 	}
 	
 	/**
@@ -85,7 +85,7 @@ public abstract class MapMaker<K, V> {
 	 *            nesting
 	 * @return a new <code>ListMap</code> with the provided nesting settings
 	 */
-	public abstract ListMap<K, V> newListMap(ListMapNesting<V> nesting) ;
+	public abstract ListMap<K, V> newListMap(ListMapNesting<V> nesting);
 	
 	/**
 	 * Return a new <code>MultiMap</code> with <code>INLINE</code> nesting
@@ -93,7 +93,7 @@ public abstract class MapMaker<K, V> {
 	 * @return a new <code>MultiMap</code> with <code>INLINE</code> nesting
 	 */
 	public MultiMap<K, V> newMultiMap() {
-		return newMultiMap(MultiMapNesting.<V>inline()) ;			
+		return newMultiMap(MultiMapNesting.<V>inline());
 	}
 	
 	/**
@@ -103,14 +103,14 @@ public abstract class MapMaker<K, V> {
 	 *            nesting
 	 * @return a new <code>MultiMap</code> with the provided nesting settings
 	 */
-	public abstract MultiMap<K, V> newMultiMap(MultiMapNesting<V> nesting) ;
+	public abstract MultiMap<K, V> newMultiMap(MultiMapNesting<V> nesting);
 
 	/**
 	 * Return a new <code>MapMaker</code> with the same properties as this one
 	 * 
 	 * @return a copy of this <code>MapMaker</code>
 	 */
-	protected abstract MapMaker<K, V> copy() ;
+	protected abstract MapMaker<K, V> copy();
 	
 	/**
 	 * Return a new <code>Factory</code> whose create() method returns the result of <code>this.newMap()</code>. Changes to this
@@ -119,7 +119,7 @@ public abstract class MapMaker<K, V> {
 	 * @return a factory of type <code>Map</code>
 	 */
 	public Factory<Map<K, V>> newMapFactory() {
-		return new ScalarMapFactory<K, V>(this) ;
+		return new ScalarMapFactory<K, V>(this);
 	}
 	/**
 	 * Return a new <code>Factory</code> whose create() method returns the result of <code>this.newListMap(nesting)</code>. Changes to this
@@ -130,7 +130,7 @@ public abstract class MapMaker<K, V> {
 	 * @return a factory of type <code>ListMap</code>
 	 */
 	public Factory<ListMap<K, V>> newListMapFactory(ListMapNesting<V> nesting) {
-		return new ListMapFactory<K, V>(this, nesting) ;
+		return new ListMapFactory<K, V>(this, nesting);
 	}
 	/**
 	 * Return a new <code>Factory</code> whose <code>create()</code> method returns the result of <code>this.newMultiMap(nesting)</code>.
@@ -142,7 +142,7 @@ public abstract class MapMaker<K, V> {
 	 * @return a factory of type <code>MultiMap</code>
 	 */
 	public Factory<MultiMap<K, V>> newMultiMapFactory(MultiMapNesting<V> nesting) {
-		return new MultiMapFactory<K, V>(this, nesting) ;
+		return new MultiMapFactory<K, V>(this, nesting);
 	}
 		
 	/**
@@ -150,7 +150,7 @@ public abstract class MapMaker<K, V> {
 	 * @return <code>HashMapMaker</code>
 	 */
 	public static <K, V> HashMapMaker<K, V> hash() {
-		return new HashMapMaker<K, V>() ;
+		return new HashMapMaker<K, V>();
 	}
 	
 	/**
@@ -161,14 +161,14 @@ public abstract class MapMaker<K, V> {
 	 * @author b.elliottsmith
 	 */
 	public static class HashMapMaker<K, V> extends MapMaker<K, V> {
-		private Rehasher rehasher = null ;
-		private Equality<? super K> keyEquality = Equalities.object() ;
-		private Equality<? super V> valEquality = Equalities.object() ;
-		private HashStoreType type = HashStoreType.serial() ;
-		private int initialCapacity = 16 ;
-		private float loadFactor = 0.75f ;
-		private Function<K, V> factoryFunction ;
-		private Factory<V> factory ;
+		private Rehasher rehasher = null;
+		private Equality<? super K> keyEquality = Equalities.object();
+		private Equality<? super V> valEquality = Equalities.object();
+		private HashStoreType type = HashStoreType.serial();
+		private int initialCapacity = 16;
+		private float loadFactor = 0.75f;
+		private Function<K, V> factoryFunction;
+		private Factory<V> factory;
 		/**
 		 * create a new HashMapMaker
 		 */
@@ -276,79 +276,79 @@ public abstract class MapMaker<K, V> {
 		 */
 		public HashMapMaker<K, V> defaultsTo(Function<K, V> function) { this.factoryFunction = function ; this.factory = null ; return this ; }
 		public Map<K, V> newMap() {
-			final Map<K, V> r ;
+			final Map<K, V> r;
 			switch(type.type()) {
 			case SERIAL:
 				r = new SerialHashMap<K, V>(
 					initialCapacity, loadFactor,  
-					rehasher(), keyEquality, valEquality) ;
-				break ;
+					rehasher(), keyEquality, valEquality);
+				break;
 			case SYNCHRONIZED:
 				r = new SyncHashMap<K, V>(
 						initialCapacity, loadFactor,  
-						rehasher(), keyEquality, valEquality) ;
-				break ;
+						rehasher(), keyEquality, valEquality);
+				break;
 			case LINKED_SERIAL:
 				r = new SerialLinkedHashMap<K, V>(
 					initialCapacity, loadFactor, 
-					rehasher(), keyEquality, valEquality) ;
-				break ;
+					rehasher(), keyEquality, valEquality);
+				break;
 			case LINKED_SYNCHRONIZED:
 				r = new SyncLinkedHashMap<K, V>(
 						initialCapacity, loadFactor,  
-						rehasher(), keyEquality, valEquality) ;
-				break ;
+						rehasher(), keyEquality, valEquality);
+				break;
 			case LOCK_FREE:
 				r = new LockFreeHashMap<K, V>(
 					initialCapacity, loadFactor,  
-					rehasher(), keyEquality, valEquality) ;
-				break ;
+					rehasher(), keyEquality, valEquality);
+				break;
 			case LINKED_LOCK_FREE:
 				r = new LockFreeLinkedHashMap<K, V>(
 					initialCapacity, loadFactor,  
-					rehasher(), keyEquality, valEquality) ;
-				break ;
+					rehasher(), keyEquality, valEquality);
+				break;
 			default:
-				throw new UnsupportedOperationException() ;
+				throw new UnsupportedOperationException();
 			}
 			if (factory != null)
-				return new DefaultFactoryMap<K, V>(r, factory) ;
+				return new DefaultFactoryMap<K, V>(r, factory);
 			if (factoryFunction != null)
-				return new DefaultFunctionMap<K, V>(r, factoryFunction) ;
-			return r ;
+				return new DefaultFunctionMap<K, V>(r, factoryFunction);
+			return r;
 		}
 		public MultiMap<K, V> newMultiMap(MultiMapNesting<V> nesting) {
 			if (factory != null || factoryFunction != null)
-				throw new IllegalArgumentException("Default values cannot be used in MultiMap or ListMap") ;
+				throw new IllegalArgumentException("Default values cannot be used in MultiMap or ListMap");
 			switch (nesting.type()) {
 			case INLINE:
 				switch(type.type()) {
 				case SERIAL:
 					return new SerialInlineMultiHashMap<K, V>(
 						initialCapacity, loadFactor, 
-						rehasher(), keyEquality, valEquality) ;
+						rehasher(), keyEquality, valEquality);
 				case SYNCHRONIZED:
 					return new SyncInlineMultiHashMap<K, V>(
 							initialCapacity, loadFactor, 
-							rehasher(), keyEquality, valEquality) ;
+							rehasher(), keyEquality, valEquality);
 				case LINKED_SERIAL:
 					return new SerialLinkedInlineMultiHashMap<K, V>(
 						initialCapacity, loadFactor, 
-						rehasher(), keyEquality, valEquality) ;
+						rehasher(), keyEquality, valEquality);
 				case LINKED_SYNCHRONIZED:
 					return new SyncLinkedInlineMultiHashMap<K, V>(
 							initialCapacity, loadFactor, 
-							rehasher(), keyEquality, valEquality) ;
+							rehasher(), keyEquality, valEquality);
 				case LOCK_FREE:
 					return new LockFreeInlineMultiHashMap<K, V>(
 						initialCapacity, loadFactor, 
-						rehasher(), keyEquality, valEquality) ;
+						rehasher(), keyEquality, valEquality);
 				case LINKED_LOCK_FREE:
 					return new LockFreeLinkedInlineMultiHashMap<K, V>(
 						initialCapacity, loadFactor, 
-						rehasher(), keyEquality, valEquality) ;
+						rehasher(), keyEquality, valEquality);
 				default:
-					throw new UnsupportedOperationException() ;
+					throw new UnsupportedOperationException();
 				}			
 			case NESTED:
 				switch (type.type()) {
@@ -364,48 +364,48 @@ public abstract class MapMaker<K, V> {
 								.type(type)
 								.newMap(), 
 								valEquality, 
-								nesting.factory()) ;
+								nesting.factory());
 				default:
 					// TODO : NestedSetMultiMap only really supports SERIAL and SYNCHRONIZED; need a new threadsafe version
-					throw new UnsupportedOperationException("NestedSetMultiMap is not concurrency safe, and there is not yet an equivalent class providing this functionality. You could try an Inline multi map instead.") ;
+					throw new UnsupportedOperationException("NestedSetMultiMap is not concurrency safe, and there is not yet an equivalent class providing this functionality. You could try an Inline multi map instead.");
 				}
 			default:
-					throw new UnsupportedOperationException() ;
+					throw new UnsupportedOperationException();
 			}
 		}
 		public ListMap<K, V> newListMap(ListMapNesting<V> nesting) {
 			if (factory != null || factoryFunction != null)
-				throw new IllegalArgumentException("Default values cannot be used in MultiMap or ListMap") ;
+				throw new IllegalArgumentException("Default values cannot be used in MultiMap or ListMap");
 			switch (nesting.type()) {
 			case INLINE:
 				switch(type.type()) {
 				case SERIAL:
 					return new SerialInlineListHashMap<K, V>(
 						initialCapacity, loadFactor, 
-						rehasher(),  keyEquality, valEquality) ;
+						rehasher(),  keyEquality, valEquality);
 				case SYNCHRONIZED:
 					// TODO : SynchronizedHashStore class so that we need fewer wrapping classes
 					return new SyncInlineListHashMap<K, V>(
 							initialCapacity, loadFactor, 
-							rehasher(),  keyEquality, valEquality) ;
+							rehasher(),  keyEquality, valEquality);
 				case LINKED_SERIAL:
 					return new SerialLinkedInlineListHashMap<K, V>(
 						initialCapacity, loadFactor, 
-						rehasher(),  keyEquality, valEquality) ;
+						rehasher(),  keyEquality, valEquality);
 				case LINKED_SYNCHRONIZED:
 					return new SyncLinkedInlineListHashMap<K, V>(
 							initialCapacity, loadFactor, 
-							rehasher(),  keyEquality, valEquality) ;
+							rehasher(),  keyEquality, valEquality);
 				case LOCK_FREE:
 					return new LockFreeInlineListHashMap<K, V>(
 						initialCapacity, loadFactor, 
-						rehasher(),  keyEquality, valEquality) ;
+						rehasher(),  keyEquality, valEquality);
 				case LINKED_LOCK_FREE:
 					return new LockFreeLinkedInlineListHashMap<K, V>(
 						initialCapacity, loadFactor, 
-						rehasher(),  keyEquality, valEquality) ;
+						rehasher(),  keyEquality, valEquality);
 				default:
-					throw new UnsupportedOperationException() ;
+					throw new UnsupportedOperationException();
 				}			
 			case NESTED:
 				switch (type.type()) {
@@ -418,13 +418,13 @@ public abstract class MapMaker<K, V> {
 						.type(type)
 						.newMap(),
 						valEquality,
-						nesting.factory()) ;
+						nesting.factory());
 				default:
 					// TODO : NestedSetListMap only really supports SERIAL and SYNCHRONIZED; need a new threadsafe version
-					throw new UnsupportedOperationException("NestedSetListMap is not concurrency safe, and there is not yet an equivalent class providing this functionality. You could try an Inline list map instead.") ;
+					throw new UnsupportedOperationException("NestedSetListMap is not concurrency safe, and there is not yet an equivalent class providing this functionality. You could try an Inline list map instead.");
 				}
 			default:
-				throw new UnsupportedOperationException() ;
+				throw new UnsupportedOperationException();
 			}
 		}
 		/**
@@ -433,59 +433,59 @@ public abstract class MapMaker<K, V> {
 		 */
 		protected Rehasher rehasher() {
 			if (rehasher != null)
-				return rehasher ;
+				return rehasher;
 			switch(type.type()) {
 			case SERIAL:
 			case SYNCHRONIZED:
 			case LOCK_FREE:
 			default:
-				return Rehashers.jdkHashmapRehasher() ;
+				return Rehashers.jdkHashmapRehasher();
 			}
 		}
 		public HashMapMaker<K, V> copy() {
 			return new HashMapMaker<K, V>(rehasher, keyEquality,
 					valEquality, type, initialCapacity, loadFactor,
-					factoryFunction, factory) ;
+					factoryFunction, factory);
 		}		
 	}
 
 	private static final class ListMapFactory<K, V> implements Factory<ListMap<K, V>> {
 		private static final long serialVersionUID = 475702452749567764L;
-		private final MapMaker<K, V> maker ;
-		private final ListMapNesting<V> type ;
+		private final MapMaker<K, V> maker;
+		private final ListMapNesting<V> type;
 		public ListMapFactory(MapMaker<K, V> maker, ListMapNesting<V> type) {
-			this.maker = maker.copy() ;
-			this.type = type ;
+			this.maker = maker.copy();
+			this.type = type;
 		}
 		@Override
 		public ListMap<K, V> create() {
-			return maker.newListMap(type) ;
+			return maker.newListMap(type);
 		}
 	}
 	
 	private static final class ScalarMapFactory<K, V> implements Factory<Map<K, V>> {
 		private static final long serialVersionUID = 475702452749567764L;
-		private final MapMaker<K, V> maker ;
+		private final MapMaker<K, V> maker;
 		public ScalarMapFactory(MapMaker<K, V> maker) {
-			this.maker = maker.copy() ;
+			this.maker = maker.copy();
 		}
 		@Override
 		public Map<K, V> create() {
-			return maker.newMap() ;
+			return maker.newMap();
 		}
 	}
 	
 	private static final class MultiMapFactory<K, V> implements Factory<MultiMap<K, V>> {
 		private static final long serialVersionUID = 475702452749567764L;
-		private final MapMaker<K, V> maker ;
-		private final MultiMapNesting<V> type ;
+		private final MapMaker<K, V> maker;
+		private final MultiMapNesting<V> type;
 		public MultiMapFactory(MapMaker<K, V> maker, MultiMapNesting<V> type) {
-			this.maker = maker.copy() ;
-			this.type = type ;
+			this.maker = maker.copy();
+			this.type = type;
 		}
 		@Override
 		public MultiMap<K, V> create() {
-			return maker.newMultiMap(type) ;
+			return maker.newMultiMap(type);
 		}
 	}
 

@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util.concurrent.waiting ;
+package org.jjoost.util.concurrent.waiting;
 
 import java.util.concurrent.locks.LockSupport;
 
@@ -31,60 +31,60 @@ public final class FairCommunalSpinThenParkWaitQueue<E> extends FairAbstractComm
 
 	protected static final class Node<E> extends FairAbstractCommunalWaitQueue.Node<E> {
 
-		final int maxSpins ;
-		int spins ;
+		final int maxSpins;
+		int spins;
 		
 		protected Node(Thread thread, E resource, int maxSpins) {
-			super(thread, resource) ;
-			this.maxSpins = maxSpins ;
+			super(thread, resource);
+			this.maxSpins = maxSpins;
 		}
 
 		@Override
 		protected void pause() {
 			if (++spins > maxSpins)
-				LockSupport.park() ;
+				LockSupport.park();
 		}
 
 		@Override
 		protected void pauseNanos(long nanos) {
 			if (++spins > maxSpins)
-				LockSupport.parkNanos(nanos) ;
+				LockSupport.parkNanos(nanos);
 		}
 
 		@Override
 		protected void pauseUntil(long until) {
 			if (++spins > maxSpins)
-				LockSupport.parkUntil(until) ;
+				LockSupport.parkUntil(until);
 		}
 
 		@Override
 		protected boolean stillWaiting() {
-			return waiting != 0 ;
+			return waiting != 0;
 		}
 
 	}
 	
-	public static final int DEFAULT_MAX_SPINS = 1000 ;
+	public static final int DEFAULT_MAX_SPINS = 1000;
 
-	private final int maxSpins ;
+	private final int maxSpins;
 	
 	public FairCommunalSpinThenParkWaitQueue() {
 		this(DEFAULT_MAX_SPINS);
 	}
 	public FairCommunalSpinThenParkWaitQueue(int maxSpins) {
-		this(maxSpins, Equalities.object()) ;
+		this(maxSpins, Equalities.object());
 	}
 	public FairCommunalSpinThenParkWaitQueue(Equality<? super E> equality) {
-		this(DEFAULT_MAX_SPINS, equality) ;
+		this(DEFAULT_MAX_SPINS, equality);
 	}
 	public FairCommunalSpinThenParkWaitQueue(int maxSpins, Equality<? super E> equality) {
-		super(equality) ;
-		this.maxSpins = maxSpins ;
+		super(equality);
+		this.maxSpins = maxSpins;
 	}
 
 	@Override
 	protected FairAbstractCommunalWaitQueue.Node<E> newNode( Thread thread, E resource) {
-		return new Node<E>(thread, resource, maxSpins) ;
+		return new Node<E>(thread, resource, maxSpins);
 	}
 	
 }

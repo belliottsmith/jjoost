@@ -47,82 +47,82 @@ public class NestedSetListMap<K, V> extends NestedSetMap<K, V, MultiSet<V>> impl
 		super(map, valueEq, factory);
 	}
 
-	protected MultiSet<Entry<K, V>> entrySet ;	
+	protected MultiSet<Entry<K, V>> entrySet;
 	@Override
 	public MultiSet<Entry<K, V>> entries() {
 		if (entrySet == null) {
-			entrySet = new EntrySet() ;
+			entrySet = new EntrySet();
 		}
-		return entrySet ;
+		return entrySet;
 	}
 
 	@Override
 	public Iterable<V> apply(K v) {
-		return values(v) ;
+		return values(v);
 	}
 
 	@Override
 	public ListMap<K, V> copy() {
-		final Map<K, MultiSet<V>> copy = map.copy() ;
+		final Map<K, MultiSet<V>> copy = map.copy();
 		for (Entry<K, MultiSet<V>> entry : copy.entries())
-			entry.setValue(entry.getValue().copy()) ;
-		return new NestedSetListMap<K, V>(copy, valueEq, factory) ;
+			entry.setValue(entry.getValue().copy());
+		return new NestedSetListMap<K, V>(copy, valueEq, factory);
 	}
 	
 	protected final class EntrySet extends AbstractEntrySet implements MultiSet<Entry<K, V>> {
 
 		private static final long serialVersionUID = 8122351713234623044L;
-		private UniqueEntrySet unique ;
+		private UniqueEntrySet unique;
 		
 		@Override
 		public Entry<K, V> put(Entry<K, V> entry) {
-			NestedSetListMap.this.put(entry.getKey(), entry.getValue()) ;
-			return null ;
+			NestedSetListMap.this.put(entry.getKey(), entry.getValue());
+			return null;
 		}
 		
 		@Override
 		public boolean add(Entry<K, V> entry) {
-			NestedSetListMap.this.put(entry.getKey(), entry.getValue()) ;
-			return true ;
+			NestedSetListMap.this.put(entry.getKey(), entry.getValue());
+			return true;
 		}
 
 				@Override
 		public Entry<K, V> putIfAbsent(Entry<K, V> entry) {
-			final V r = NestedSetListMap.this.put(entry.getKey(), entry.getValue()) ;
-			return r == null ? null : new ImmutableMapEntry<K, V>(entry.getKey(), r) ;
+			final V r = NestedSetListMap.this.put(entry.getKey(), entry.getValue());
+			return r == null ? null : new ImmutableMapEntry<K, V>(entry.getKey(), r);
 		}
 		
 		@Override
 		public boolean permitsDuplicates() {
-			return true ;
+			return true;
 		}
 
 		@Override
 		public MultiSet<Entry<K, V>> copy() {
-			throw new UnsupportedOperationException() ;
+			throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public void put(Entry<K, V> entry, int numberOfTimes) {
 			for (int i = 0 ; i != numberOfTimes ; i++)
-				NestedSetListMap.this.put(entry.getKey(), entry.getValue()) ;
+				NestedSetListMap.this.put(entry.getKey(), entry.getValue());
 		}
 		
 		public Set<Entry<K, V>> unique() {
 			if (unique == null)
-				unique = new UniqueEntrySet() ;
-			return unique ;
+				unique = new UniqueEntrySet();
+			return unique;
 		}
 
 		private final class UniqueEntrySet extends AbstractUniqueSetAdapter<Entry<K, V>> {
 			private static final long serialVersionUID = 686867617922872433L;
 			@Override
 			protected AnySet<Entry<K, V>> set() {
-				return EntrySet.this ;
+				return EntrySet.this;
 			}
 			@Override
 			public Iterator<Entry<K, V>> iterator() {
-				return Iters.concat(Functions.apply(new UniqueMultiEntryMaker<K, V>(), map.entries())).iterator() ;
+				return Iters.concat(Functions.apply(new UniqueMultiEntryMaker<K, V>(), map.entries())).iterator();
 			}
 		}
 		
@@ -130,11 +130,11 @@ public class NestedSetListMap<K, V> extends NestedSetMap<K, V, MultiSet<V>> impl
 	
 	private static final class UniqueMultiEntryMaker<K, V> implements Function<Entry<K, ? extends AnySet<V>>, Iterable<Entry<K, V>>> {
 		private static final long serialVersionUID = -965724235732791909L;
-		private final UpdateableEntryMaker<K, V> f = new UpdateableEntryMaker<K, V>() ;
+		private final UpdateableEntryMaker<K, V> f = new UpdateableEntryMaker<K, V>();
 		@Override
 		public Iterable<Entry<K, V>> apply(Entry<K, ? extends AnySet<V>> entry) {
-			f.update(entry.getKey()) ;
-			return Functions.apply(f, entry.getValue().unique()) ;
+			f.update(entry.getKey());
+			return Functions.apply(f, entry.getValue().unique());
 		}
 
 	}

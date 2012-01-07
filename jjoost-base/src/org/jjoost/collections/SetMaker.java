@@ -61,7 +61,7 @@ public abstract class SetMaker<V> {
 	 * 
 	 * @return a new <code>Set</code>
 	 */
-	public abstract Set<V> newSet() ;
+	public abstract Set<V> newSet();
 	
 	/**
 	 * Construct and return a new <code>MultiSet</code> with <code>INLINE</code> nesting
@@ -69,7 +69,7 @@ public abstract class SetMaker<V> {
 	 * @return a new <code>MultiSet</code> with <code>INLINE</code> nesting
 	 */
 	public MultiSet<V> newMultiSet() {
-		return newMultiSet(MultiSetNesting.<V>inline()) ;
+		return newMultiSet(MultiSetNesting.<V>inline());
 	}
 	
 	/**
@@ -79,14 +79,14 @@ public abstract class SetMaker<V> {
 	 *            nesting
 	 * @return a new <code>MultiSet</code> with the provided nesting settings
 	 */
-	public abstract MultiSet<V> newMultiSet(MultiSetNesting<V> nesting) ;
+	public abstract MultiSet<V> newMultiSet(MultiSetNesting<V> nesting);
 	
 	/**
 	 * Return a new <code>SetMaker</code> with the same properties as this one
 	 * 
 	 * @return a copy of this <code>SetMaker</code>
 	 */
-	protected abstract SetMaker<V> copy() ;
+	protected abstract SetMaker<V> copy();
 	
 	/**
 	 * Return a new <code>Factory</code> whose <code>create()</code> method returns the result of <code>this.newSet()</code>. Changes to
@@ -96,7 +96,7 @@ public abstract class SetMaker<V> {
 	 * @return a factory of type <code>Set</code>
 	 */
 	public Factory<Set<V>> newSetFactory() {
-		return new ScalarSetFactory<V>(this) ;
+		return new ScalarSetFactory<V>(this);
 	}
 	
 	/**
@@ -107,7 +107,7 @@ public abstract class SetMaker<V> {
 	 * @return a factory of type <code>MultiSet</code>
 	 */
 	public Factory<MultiSet<V>> newMultiSetFactory(MultiSetNesting<V> nesting) {
-		return new MultiSetFactory<V>(this, nesting) ;
+		return new MultiSetFactory<V>(this, nesting);
 	}
 	
 	/**
@@ -115,7 +115,7 @@ public abstract class SetMaker<V> {
 	 * @return <code>HashSetMaker</code>
 	 */
 	public static <V> HashSetMaker<V> hash() {
-		return new HashSetMaker<V>() ;
+		return new HashSetMaker<V>();
 	}
 	
 	/**
@@ -126,11 +126,11 @@ public abstract class SetMaker<V> {
 	 * @author b.elliottsmith
 	 */
 	public static class HashSetMaker<V> extends SetMaker<V> {
-		private Rehasher rehasher = null ;
-		private Equality<? super V> eq = Equalities.object() ;
-		private HashStoreType type = HashStoreType.serial() ;
-		private int initialCapacity = 16 ;
-		private float loadFactor = 0.75f ;
+		private Rehasher rehasher = null;
+		private Equality<? super V> eq = Equalities.object();
+		private HashStoreType type = HashStoreType.serial();
+		private int initialCapacity = 16;
+		private float loadFactor = 0.75f;
 		/**
 		 * create a new HashSetMaker
 		 */
@@ -140,7 +140,7 @@ public abstract class SetMaker<V> {
 				int initialCapacity, float loadFactor) {
 			super();
 			this.rehasher = rehasher;
-			this.eq = eq ;
+			this.eq = eq;
 			this.type = type;
 			this.initialCapacity = initialCapacity;
 			this.loadFactor = loadFactor;
@@ -202,31 +202,31 @@ public abstract class SetMaker<V> {
 			case SERIAL:
 				return new SerialHashSet<V>(
 					initialCapacity, loadFactor, 
-					rehasher(), eq) ;
+					rehasher(), eq);
 			case SYNCHRONIZED:
 				return new SynchronizedSet<V>(
 					new SerialHashSet<V>(
 						initialCapacity, loadFactor, 
-						rehasher(), eq)) ;
+						rehasher(), eq));
 			case LINKED_SERIAL:
 				return new SerialLinkedHashSet<V>(
 					initialCapacity, loadFactor, 
-					rehasher(), eq) ;
+					rehasher(), eq);
 			case LINKED_SYNCHRONIZED:
 				return new SynchronizedSet<V>(
 					new SerialLinkedHashSet<V>(
 						initialCapacity, loadFactor, 
-						rehasher(), eq)) ;
+						rehasher(), eq));
 			case LOCK_FREE:
 				return new LockFreeHashSet<V>(
 					initialCapacity, loadFactor, 
-					rehasher(), eq) ;
+					rehasher(), eq);
 			case LINKED_LOCK_FREE:
 				return new LockFreeLinkedHashSet<V>(
 					initialCapacity, loadFactor, 
-					rehasher(), eq) ;
+					rehasher(), eq);
 			default:
-				throw new IllegalArgumentException(type.toString()) ;
+				throw new IllegalArgumentException(type.toString());
 			}			
 		}
 		public MultiSet<V> newMultiSet(MultiSetNesting<V> nesting) {
@@ -236,96 +236,96 @@ public abstract class SetMaker<V> {
 				case SERIAL:
 					return new SerialInlineMultiHashSet<V>(
 						initialCapacity, loadFactor, 
-						rehasher(), eq) ;
+						rehasher(), eq);
 				case SYNCHRONIZED:
 					return new SynchronizedMultiSet<V>(
 						new SerialInlineMultiHashSet<V>(
 							initialCapacity, loadFactor, 
-							rehasher(), eq)) ;
+							rehasher(), eq));
 				case LINKED_SERIAL:
 					return new SerialLinkedInlineMultiHashSet<V>(
 						initialCapacity, loadFactor, 
-						rehasher(), eq) ;
+						rehasher(), eq);
 				case LINKED_SYNCHRONIZED:
 					return new SynchronizedMultiSet<V>(
 						new SerialLinkedInlineMultiHashSet<V>(
 							initialCapacity, loadFactor, 
-							rehasher(), eq)) ;
+							rehasher(), eq));
 				case LOCK_FREE:
 					return new LockFreeInlineMultiHashSet<V>(
 						initialCapacity, loadFactor, 
-						rehasher(), eq) ;
+						rehasher(), eq);
 				case LINKED_LOCK_FREE:
 					return new LockFreeLinkedInlineMultiHashSet<V>(
 						initialCapacity, loadFactor, 
-						rehasher(), eq) ;
+						rehasher(), eq);
 				default:
-					throw new IllegalArgumentException(type.toString()) ;
+					throw new IllegalArgumentException(type.toString());
 				}			
 			case NESTED:
 				switch(type.type()) {
 				case SERIAL:
 					return new SerialNestedMultiHashSet<V>(
 						initialCapacity, loadFactor, 
-						rehasher(), eq) ;
+						rehasher(), eq);
 				case SYNCHRONIZED:
 					return new SynchronizedMultiSet<V>(
 						new SerialNestedMultiHashSet<V>(
 							initialCapacity, loadFactor, 
-							rehasher(), eq)) ;
+							rehasher(), eq));
 				case LINKED_SERIAL:
 					return new SerialLinkedNestedMultiHashSet<V>(
 						initialCapacity, loadFactor, 
-						rehasher(), eq) ;
+						rehasher(), eq);
 				case LINKED_SYNCHRONIZED:
 					return new SynchronizedMultiSet<V>(
 						new SerialLinkedNestedMultiHashSet<V>(
 							initialCapacity, loadFactor, 
-							rehasher(), eq)) ;
+							rehasher(), eq));
 				case LOCK_FREE:
 					return new LockFreeNestedMultiHashSet<V>(
 						initialCapacity, loadFactor, 
-						rehasher(), eq) ;
+						rehasher(), eq);
 				case LINKED_LOCK_FREE:
 					return new LockFreeLinkedNestedMultiHashSet<V>(
 						initialCapacity, loadFactor, 
-						rehasher(), eq) ;
+						rehasher(), eq);
 				default:
-					throw new IllegalArgumentException(type.toString()) ;
+					throw new IllegalArgumentException(type.toString());
 				}			
 			case COUNTING:
 				switch(type.type()) {
 				case SERIAL:
 					return new SerialCountingMultiHashSet<V>(
 						initialCapacity, loadFactor, 
-						rehasher(), eq) ;
+						rehasher(), eq);
 				case SYNCHRONIZED:
 					return new SynchronizedMultiSet<V>(
 						new SerialCountingMultiHashSet<V>(
 							initialCapacity, loadFactor, 
-							rehasher(), eq)) ;
+							rehasher(), eq));
 				case LINKED_SERIAL:
 					return new SerialLinkedCountingMultiHashSet<V>(
 						initialCapacity, loadFactor, 
-						rehasher(), eq) ;
+						rehasher(), eq);
 				case LINKED_SYNCHRONIZED:
 					return new SynchronizedMultiSet<V>(
 						new SerialLinkedCountingMultiHashSet<V>(
 							initialCapacity, loadFactor, 
-							rehasher(), eq)) ;
+							rehasher(), eq));
 				case LOCK_FREE:
 					return new LockFreeCountingMultiHashSet<V>(
 						initialCapacity, loadFactor, 
-						rehasher(), eq) ;
+						rehasher(), eq);
 				case LINKED_LOCK_FREE:
 					return new LockFreeLinkedCountingMultiHashSet<V>(
 						initialCapacity, loadFactor, 
-						rehasher(), eq) ;
+						rehasher(), eq);
 				default:
-					throw new IllegalArgumentException(type.toString()) ;
+					throw new IllegalArgumentException(type.toString());
 				}			
 			}
-			throw new IllegalArgumentException() ;
+			throw new IllegalArgumentException();
 		}
 		/**
 		 * @return the rehasher to use for the set we are constructing; if the rehasher field is not null, it should return the value of
@@ -333,44 +333,44 @@ public abstract class SetMaker<V> {
 		 */
 		protected Rehasher rehasher() {
 			if (rehasher != null)
-				return rehasher ;
+				return rehasher;
 			switch(type.type()) {
 			case SERIAL:
 			case SYNCHRONIZED:
 			case LOCK_FREE:
 			default:
-				return Rehashers.jdkHashmapRehasher() ;
+				return Rehashers.jdkHashmapRehasher();
 			}
 		}
 		public HashSetMaker<V> copy() {
 			return new HashSetMaker<V>(rehasher, eq,
-					type, initialCapacity, loadFactor) ;
+					type, initialCapacity, loadFactor);
 		}
 	}
 
 	private static final class MultiSetFactory<V> implements Factory<MultiSet<V>> {
 		private static final long serialVersionUID = 475702452749567764L;
-		private final SetMaker<V> maker ;
-		private final MultiSetNesting<V> type ;
+		private final SetMaker<V> maker;
+		private final MultiSetNesting<V> type;
 		public MultiSetFactory(SetMaker<V> maker, MultiSetNesting<V> type) {
-			this.maker = maker.copy() ;
-			this.type = type ;
+			this.maker = maker.copy();
+			this.type = type;
 		}
 		@Override
 		public MultiSet<V> create() {
-			return maker.newMultiSet(type) ;
+			return maker.newMultiSet(type);
 		}
 	}
 	
 	private static final class ScalarSetFactory<V> implements Factory<Set<V>> {
 		private static final long serialVersionUID = 475702452749567764L;
-		private final SetMaker<V> maker ;
+		private final SetMaker<V> maker;
 		public ScalarSetFactory(SetMaker<V> maker) {
-			this.maker = maker.copy() ;
+			this.maker = maker.copy();
 		}
 		@Override
 		public Set<V> create() {
-			return maker.newSet() ;
+			return maker.newSet();
 		}
 	}
 

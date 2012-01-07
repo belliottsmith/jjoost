@@ -20,12 +20,12 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util.filters ;
+package org.jjoost.util.filters;
 
-import java.util.Comparator ;
+import java.util.Comparator;
 
-import org.jjoost.util.FilterPartialOrder ;
-import org.jjoost.util.Function ;
+import org.jjoost.util.FilterPartialOrder;
+import org.jjoost.util.Function;
 
 /**
  * Constructs a <code>FilterPartialOrder</code> which delegates to the provided filter, but ignores the comparator provided to it, always
@@ -36,10 +36,10 @@ import org.jjoost.util.Function ;
  */
 public class PartialOrderOverride<S, T> implements FilterPartialOrder<T> {
 
-	private static final long serialVersionUID = 454908176068653901L ;
-	final FilterPartialOrder<S> underlying ;
-	final Comparator<? super S> cmp ;
-	final Function<? super T, ? extends S> f ;
+	private static final long serialVersionUID = 454908176068653901L;
+	final FilterPartialOrder<S> underlying;
+	final Comparator<? super S> cmp;
+	final Function<? super T, ? extends S> f;
 
     /**
 	 * Constructs a <code>FilterPartialOrder</code> which delegates to the provided filter, but ignores the comparator provided to it, always
@@ -56,24 +56,24 @@ public class PartialOrderOverride<S, T> implements FilterPartialOrder<T> {
 	 *            a function whose range is the input type of the provided filter, and whose domain will be the input type of the filter returned
 	 */
 	public PartialOrderOverride(FilterPartialOrder<S> underlying, Comparator<? super S> cmp, Function<? super T, ? extends S> f) {
-		this.underlying = underlying ;
-		this.cmp = cmp ;
-		this.f = f ;
+		this.underlying = underlying;
+		this.cmp = cmp;
+		this.f = f;
 	}
 
 	@Override
 	public boolean mayAcceptBetween(T lb, boolean lbInclusive, T ub, boolean ubInclusive, Comparator<? super T> _) {
-		return underlying.mayAcceptBetween(f.apply(lb), lbInclusive, f.apply(ub), ubInclusive, cmp) ;
+		return underlying.mayAcceptBetween(f.apply(lb), lbInclusive, f.apply(ub), ubInclusive, cmp);
 	}
 
 	@Override
 	public boolean mayRejectBetween(T lb, boolean lbInclusive, T ub, boolean ubInclusive, Comparator<? super T> _) {
-		return underlying.mayRejectBetween(f.apply(lb), lbInclusive, f.apply(ub), ubInclusive, cmp) ;
+		return underlying.mayRejectBetween(f.apply(lb), lbInclusive, f.apply(ub), ubInclusive, cmp);
 	}
 	
 	@Override
 	public boolean accept(T test, Comparator<? super T> _) {
-		return underlying.accept(f.apply(test), cmp) ;
+		return underlying.accept(f.apply(test), cmp);
 	}
 
     /**
@@ -92,7 +92,7 @@ public class PartialOrderOverride<S, T> implements FilterPartialOrder<T> {
 	 * @return a <code>FilterPartialOrder</code> which always uses the provided comparator
 	 */
 	public static <S, T> PartialOrderOverride<S, T> get(FilterPartialOrder<S> filter, Comparator<? super S> cmp, Function<? super T, ? extends S> f) {
-		return new PartialOrderOverride<S, T>(filter, cmp, f) ;
+		return new PartialOrderOverride<S, T>(filter, cmp, f);
 	}
 
 }

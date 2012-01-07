@@ -20,11 +20,11 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util.filters ;
+package org.jjoost.util.filters;
 
-import java.util.Comparator ;
+import java.util.Comparator;
 
-import org.jjoost.util.FilterPartialOrder ;
+import org.jjoost.util.FilterPartialOrder;
 
 /**
  * Returns a filter that accepts everything between the provided lower and upper bounds, as determined by the <code>Comparator</code> provided to its methods. 
@@ -32,12 +32,12 @@ import org.jjoost.util.FilterPartialOrder ;
  */
 public class PartialOrderAcceptBetween<E> implements FilterPartialOrder<E> {
 
-	private static final long serialVersionUID = 1064862673649778571L ;
+	private static final long serialVersionUID = 1064862673649778571L;
 
-	final E lb ;
-	final E ub ;
-	final int lbOffsetIfUbInclusive ;
-	final int ubOffsetIfLbInclusive ;
+	final E lb;
+	final E ub;
+	final int lbOffsetIfUbInclusive;
+	final int ubOffsetIfLbInclusive;
 
     /**
      * Constructs a new filter that accepts everything between the provided lower and upper bounds, as determined by the <code>Comparator</code> provided to its methods. 
@@ -53,29 +53,29 @@ public class PartialOrderAcceptBetween<E> implements FilterPartialOrder<E> {
      *            <code>true</code> if <code>ub</code> should be inclusive, <code>false</code> if exclusive
      */
 	public PartialOrderAcceptBetween(E lb, boolean lbIsInclusive, E ub, boolean ubIsInclusive) {
-		super() ;
-		this.lb = lb ;
-		this.ub = ub ;
-		lbOffsetIfUbInclusive = lbIsInclusive ? 1 : 0 ;
-		ubOffsetIfLbInclusive = ubIsInclusive ? 1 : 0 ;
+		super();
+		this.lb = lb;
+		this.ub = ub;
+		lbOffsetIfUbInclusive = lbIsInclusive ? 1 : 0;
+		ubOffsetIfLbInclusive = ubIsInclusive ? 1 : 0;
 	}
 
 	@Override
 	public boolean accept(E test, Comparator<? super E> cmp) {
 		return (lb == null || cmp.compare(test, lb) > lbOffsetIfUbInclusive)
-				&& (ub == null || cmp.compare(test, ub) < ubOffsetIfLbInclusive) ;
+				&& (ub == null || cmp.compare(test, ub) < ubOffsetIfLbInclusive);
 	}
 
 	@Override
 	public boolean mayAcceptBetween(E lb, boolean lbInclusive, E ub, boolean ubInclusive, Comparator<? super E> cmp) {
 		return (this.lb == null || ub == null || cmp.compare(this.lb, ub) < (lbInclusive ? lbOffsetIfUbInclusive : 0))
-				&& (this.ub == null || lb == null || cmp.compare(lb, this.ub) < (ubInclusive ? ubOffsetIfLbInclusive : 0)) ;
+				&& (this.ub == null || lb == null || cmp.compare(lb, this.ub) < (ubInclusive ? ubOffsetIfLbInclusive : 0));
 	}
 
 	@Override
 	public boolean mayRejectBetween(E lb, boolean lbInclusive, E ub, boolean ubInclusive, Comparator<? super E> cmp) {
 		return (lb == null || (this.lb != null && cmp.compare(lb, this.lb) < (lbInclusive ? 0 : lbOffsetIfUbInclusive)))
-		|| (ub == null || (this.ub != null && cmp.compare(this.ub, ub) < (ubInclusive ? 0 : ubOffsetIfLbInclusive ))) ;
+		|| (ub == null || (this.ub != null && cmp.compare(this.ub, ub) < (ubInclusive ? 0 : ubOffsetIfLbInclusive )));
 	}
 	
     /**
@@ -90,7 +90,7 @@ public class PartialOrderAcceptBetween<E> implements FilterPartialOrder<E> {
 	 * @return a filter that accepts everything in the range <code>[lb...ub)</code>
 	 */
 	public static <E> PartialOrderAcceptBetween<E> get(E lb, E ub) {
-		return get(lb, true, ub, false) ;
+		return get(lb, true, ub, false);
 	}
 
     /**
@@ -112,11 +112,11 @@ public class PartialOrderAcceptBetween<E> implements FilterPartialOrder<E> {
      * @return a filter that accepts everything in the range <code>[lb...ub)</code>
      */
 	public static <E> PartialOrderAcceptBetween<E> get(E lb, boolean lbIsInclusive, E ub, boolean ubIsInclusive) {
-		return new PartialOrderAcceptBetween<E>(lb, lbIsInclusive, ub, ubIsInclusive) ;
+		return new PartialOrderAcceptBetween<E>(lb, lbIsInclusive, ub, ubIsInclusive);
 	}
 
 	public String toString() {
-		return "is between " + lb + " and " + ub ;
+		return "is between " + lb + " and " + ub;
 	}
 
 }

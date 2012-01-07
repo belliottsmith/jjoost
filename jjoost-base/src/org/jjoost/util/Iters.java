@@ -22,26 +22,26 @@
 
 package org.jjoost.util;
 
-import java.lang.reflect.Array ;
-import java.util.ArrayList ;
-import java.util.Arrays ;
-import java.util.Enumeration ;
-import java.util.Iterator ;
-import java.util.List ;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
 
-import org.jjoost.collections.iters.ArrayIterator ;
-import org.jjoost.collections.iters.ClosableIterator ;
-import org.jjoost.collections.iters.ConcatIterable ;
-import org.jjoost.collections.iters.ConcatIterator ;
+import org.jjoost.collections.iters.ArrayIterator;
+import org.jjoost.collections.iters.ClosableIterator;
+import org.jjoost.collections.iters.ConcatIterable;
+import org.jjoost.collections.iters.ConcatIterator;
 import org.jjoost.collections.iters.DestructiveIterator;
-import org.jjoost.collections.iters.DropIterable ;
-import org.jjoost.collections.iters.EmptyIterable ;
+import org.jjoost.collections.iters.DropIterable;
+import org.jjoost.collections.iters.EmptyIterable;
 import org.jjoost.collections.iters.EmptyIterator;
-import org.jjoost.collections.iters.EnumerationIterator ;
-import org.jjoost.collections.iters.HeadClosableIterator ;
-import org.jjoost.collections.iters.HeadIterable ;
-import org.jjoost.collections.iters.HeadIterator ;
-import org.jjoost.collections.iters.OnceIterable ;
+import org.jjoost.collections.iters.EnumerationIterator;
+import org.jjoost.collections.iters.HeadClosableIterator;
+import org.jjoost.collections.iters.HeadIterable;
+import org.jjoost.collections.iters.HeadIterator;
+import org.jjoost.collections.iters.OnceIterable;
 
 /**
  * A class declaring useful methods for working with <code>Iterator</code> and <code>Iterable</code> objects
@@ -56,7 +56,7 @@ public class Iters {
 	 * @return an <code>Iterator</code> which contains no values
 	 */
 	public static <E> Iterator<E> emptyIterator() {
-		return EmptyIterator.<E>get() ;
+		return EmptyIterator.<E>get();
 	}
 	
 	/**
@@ -65,7 +65,7 @@ public class Iters {
 	 * @return an <code>Iterator</code> which contains no values
 	 */
 	public static <E> Iterable<E> emptyIterable() {
-		return EmptyIterable.<E>get() ;
+		return EmptyIterable.<E>get();
 	}
 	
 	/**
@@ -76,7 +76,7 @@ public class Iters {
 	 * @return an <code>Iterator</code> representing the provided array
 	 */
 	public static <E> Iterator<E> iterator(final E[] array) {
-		return new ArrayIterator<E>(array) ;
+		return new ArrayIterator<E>(array);
 	}
 	
 	/**
@@ -89,7 +89,7 @@ public class Iters {
 	 * @return an <code>Iterator</code> representing the first <code>count</code> elements of the <code>array</code>
 	 */
 	public static <E> Iterator<E> iterator(final E[] array, int count) {
-		return new ArrayIterator<E>(array, 0, count) ;
+		return new ArrayIterator<E>(array, 0, count);
 	}
 	
 	/**
@@ -105,7 +105,7 @@ public class Iters {
 	 *         (excl)
 	 */
 	public static <E> Iterator<E> iterator(final E[] array, int lb, int ub) {
-		return new ArrayIterator<E>(array, lb, ub) ;
+		return new ArrayIterator<E>(array, lb, ub);
 	}
 	
 	/**
@@ -116,7 +116,7 @@ public class Iters {
 	 * @return an <code>Iterator</code> wrapping the provided Enumeration
 	 */
     public static <E> Iterator<E> iterator(final Enumeration<E> enumeration) {
-    	return new EnumerationIterator<E>(enumeration) ;
+    	return new EnumerationIterator<E>(enumeration);
     }
     
     /**
@@ -127,7 +127,7 @@ public class Iters {
 	 * @return the number of elements in the provided <code>Iterable</code>
 	 */
     public static int count(final Iterable<?> iter) {
-    	return count(iter.iterator()) ;
+    	return count(iter.iterator());
     }
     
     /**
@@ -138,12 +138,12 @@ public class Iters {
 	 * @return the number of elements in the provided <code>Iterator</code>
 	 */
     public static int count(final Iterator<?> iter) {
-    	int count = 0 ;
+    	int count = 0;
     	while (iter.hasNext()) {
-    		iter.next() ;
-    		count++ ;
+    		iter.next();
+    		count++;
     	}
-    	return count ;
+    	return count;
     }
     
     /**
@@ -159,7 +159,7 @@ public class Iters {
 	 *         equality (<code>Equalities.object()</code>)
 	 */
     public static boolean equal(Iterator<?> a, Iterator<?> b) {
-    	return equal(Equalities.object(), a, b) ;
+    	return equal(Equalities.object(), a, b);
     }
     /**
 	 * Returns a <code>boolean</code> indicating if the two provided <code>Iterators</code> are "equal", using the provided
@@ -178,9 +178,9 @@ public class Iters {
     public static <E> boolean equal(Equality<? super E> eq, Iterator<? extends E> a, Iterator<? extends E> b) {
     	while (a.hasNext() && b.hasNext()) {
     		if (!eq.equates(a.next(), b.next()))
-    			return false ;
+    			return false;
     	}
-    	return a.hasNext() == b.hasNext() ;
+    	return a.hasNext() == b.hasNext();
     }
     
     /**
@@ -196,7 +196,7 @@ public class Iters {
 	 * @return a <code>boolean</code> indicating if the <code>Iterable</code> contains the provided value
 	 */
     public static <E> boolean contains(final E find, final Iterable<E> iter) {
-    	return contains(Equalities.object(), find, iter.iterator()) ;
+    	return contains(Equalities.object(), find, iter.iterator());
     }
     
     /**
@@ -211,7 +211,7 @@ public class Iters {
 	 * @return a <code>boolean</code> indicating if the <code>Iterator</code> contains the provided value
 	 */
     public static <E> boolean contains(final E find, final Iterator<E> iter) {
-    	return contains(Equalities.object(), find, iter) ;
+    	return contains(Equalities.object(), find, iter);
     }
     
     /**
@@ -228,7 +228,7 @@ public class Iters {
 	 * @return a <code>boolean</code> indicating if the <code>Iterable</code> contains the provided value
 	 */
     public static <E> boolean contains(final Equality<? super E> eq, final E find, final Iterable<E> iter) {
-    	return contains(eq, find, iter.iterator()) ;
+    	return contains(eq, find, iter.iterator());
     }
     
     /**
@@ -247,9 +247,9 @@ public class Iters {
     public static <E> boolean contains(final Equality<? super E> eq, final E find, final Iterator<E> iter) {
     	while (iter.hasNext()) {
     		if (eq.equates(find, iter.next()))
-    			return true ;
+    			return true;
     	}
-    	return false ;
+    	return false;
     }
 
     /**
@@ -265,7 +265,7 @@ public class Iters {
 	 * @return an <code>int</code> representing the number of occurrences in the <code>Iterable</code> of the provided value
 	 */
     public static <E> int count(final E find, final Iterable<? extends E> iter) {
-    	return count(find, iter.iterator()) ;
+    	return count(find, iter.iterator());
     }
     
     /**
@@ -280,7 +280,7 @@ public class Iters {
 	 * @return an <code>int</code> representing the number of occurrences in the <code>Iterable</code> of the provided value
 	 */
     public static <E> int count(final E find, final Iterator<? extends E> iter) {
-    	return count(Equalities.object(), find, iter) ;
+    	return count(Equalities.object(), find, iter);
     }    
     /**
 	 * Returns an <code>int</code> representing the number of occurrences, in the provided <code>Iterable</code>, of elements equal to the
@@ -296,7 +296,7 @@ public class Iters {
 	 * @return an <code>int</code> representing the number of occurrences in the <code>Iterable</code> of the provided value
 	 */
     public static <E> int count(final Equality<? super E> eq, final E find, final Iterable<? extends E> iter) {
-    	return count(eq, find, iter.iterator()) ;
+    	return count(eq, find, iter.iterator());
     }
     /**
 	 * Returns an <code>int</code> representing the number of occurrences, in the provided <code>Iterator</code>, of elements equal to the
@@ -312,12 +312,12 @@ public class Iters {
 	 * @return an <code>int</code> representing the number of occurrences in the <code>Iterable</code> of the provided value
 	 */
     public static <E> int count(final Equality<? super E> eq, final E find, final Iterator<? extends E> iter) {
-    	int c = 0 ;
+    	int c = 0;
     	while (iter.hasNext()) {
     		if (eq.equates(find, iter.next()))
-    			c++ ;
+    			c++;
     	}
-    	return c ;
+    	return c;
     }
     
     /**
@@ -330,7 +330,7 @@ public class Iters {
 	 *         every successful call of <code>next()</code>
 	 */
     public static <E> Iterator<E> destroyAsConsumed(Iterator<E> iter) {
-    	return new DestructiveIterator<E>(iter) ;
+    	return new DestructiveIterator<E>(iter);
     }
     
     /**
@@ -344,7 +344,7 @@ public class Iters {
 	 */
     @SuppressWarnings("unchecked")
 	public static <E> ConcatIterable<E> concat(Iterable<E> a, Iterable<E> b) {
-    	return new ConcatIterable<E>(a, b) ;
+    	return new ConcatIterable<E>(a, b);
     }
 
     /**
@@ -355,7 +355,7 @@ public class Iters {
 	 * @return the concatenation of all provided <code>Iterable</code> objects, returned in the order they appear in the array
 	 */
 	public static <E> ConcatIterable<E> concat(Iterable<E> ... a) {
-    	return new ConcatIterable<E>(a) ;
+    	return new ConcatIterable<E>(a);
     }
 	
     /**
@@ -367,7 +367,7 @@ public class Iters {
 	 *         Iterable
 	 */
 	public static <E> ConcatIterable<E> concat(Iterable<? extends Iterable<E>> a) {
-		return new ConcatIterable<E>(a) ;
+		return new ConcatIterable<E>(a);
 	}
 	
     /**
@@ -379,7 +379,7 @@ public class Iters {
 	 *         <code>Iterator</code>
 	 */
 	public static <E> ConcatIterator<E> concat(Iterator<? extends Iterator<E>> a) {
-		return new ConcatIterator<E>(a) ;
+		return new ConcatIterator<E>(a);
 	}
 	
 	/**
@@ -390,7 +390,7 @@ public class Iters {
 	 * @return an <code>Iterable</code> which returns the provided <code>Iterator</code> for every call to <code>iterator()</code>
 	 */
 	public static <E> Iterable<E> onceIterable(Iterator<E> iter) {
-		return new OnceIterable<E>(iter) ; 
+		return new OnceIterable<E>(iter);
 	}
 	
 	/**
@@ -404,7 +404,7 @@ public class Iters {
 	 * @return an <code>Iterator</code> returning the first <code>count</code> elements of the supplied <code>Iterator</code>
 	 */
 	public static <E> HeadIterator<E> head(Iterator<E> iter, int count) {
-		return new HeadIterator<E>(iter, count) ;
+		return new HeadIterator<E>(iter, count);
 	}
 
 	/**
@@ -418,7 +418,7 @@ public class Iters {
 	 * @return an <code>Iterator</code> returning the first <code>count</code> elements of the supplied <code>Iterator</code>
 	 */
 	public static <E> HeadIterator<E> head(int count, Iterator<E> iter) {
-		return new HeadIterator<E>(iter, count) ;
+		return new HeadIterator<E>(iter, count);
 	}
 	
 	/**
@@ -432,7 +432,7 @@ public class Iters {
 	 * @return an <code>Iterator</code> returning the first <code>count</code> elements of the supplied <code>Iterator</code>
 	 */
     public static <E> HeadClosableIterator<E> head(ClosableIterator<E> iter, int count) {
-    	return new HeadClosableIterator<E>(iter, count) ;
+    	return new HeadClosableIterator<E>(iter, count);
     }
     
     /**
@@ -446,7 +446,7 @@ public class Iters {
      * @return an <code>Iterator</code> returning the first <code>count</code> elements of the supplied <code>Iterator</code>
      */
     public static <E> HeadClosableIterator<E> head(int count, ClosableIterator<E> iter) {
-    	return new HeadClosableIterator<E>(iter, count) ;
+    	return new HeadClosableIterator<E>(iter, count);
     }
     
 	/**
@@ -460,7 +460,7 @@ public class Iters {
 	 * @return an <code>Iterable</code> returning the first <code>count</code> elements of the supplied <code>Iterable</code>
 	 */
 	public static <E> HeadIterable<E> head(Iterable<E> iter, int count) {
-		return new HeadIterable<E>(iter, count) ;
+		return new HeadIterable<E>(iter, count);
 	}
 
 	/**
@@ -474,7 +474,7 @@ public class Iters {
 	 * @return an <code>Iterable</code> returning the first <code>count</code> elements of the supplied <code>Iterable</code>
 	 */
 	public static <E> HeadIterable<E> head(int count, Iterable<E> iter) {
-		return new HeadIterable<E>(iter, count) ;
+		return new HeadIterable<E>(iter, count);
 	}
 	
 	/**
@@ -488,7 +488,7 @@ public class Iters {
 	 * @return a <code>List</code> returning the first <code>count</code> elements of the supplied <code>List</code>
 	 */
     public static <E> List<E> head(List<E> list, int count) {
-    	return list.subList(0, Math.max(0, Math.min(list.size(), count < 0 ? list.size() + count : count))) ;
+    	return list.subList(0, Math.max(0, Math.min(list.size(), count < 0 ? list.size() + count : count)));
     }
     
     /**
@@ -503,8 +503,8 @@ public class Iters {
 	 */
     public static <E> Iterator<E> drop(Iterator<E> iter, int count) {
     	while (iter.hasNext() && count > 0)
-    		iter.next() ;
-    	return iter ;
+    		iter.next();
+    	return iter;
     }
     
     /**
@@ -519,8 +519,8 @@ public class Iters {
 	 */
     public static <E> Iterator<E> drop(int count, Iterator<E> iter) {
     	while (iter.hasNext() && count > 0)
-    		iter.next() ;
-    	return iter ;
+    		iter.next();
+    	return iter;
     }
     
     /**
@@ -535,8 +535,8 @@ public class Iters {
 	 */
     public static <E> ClosableIterator<E> drop(ClosableIterator<E> iter, int count) {
     	while (iter.hasNext() && count > 0)
-    		iter.next() ;
-    	return iter ;
+    		iter.next();
+    	return iter;
     }
     
     /**
@@ -551,8 +551,8 @@ public class Iters {
      */
     public static <E> ClosableIterator<E> drop(int count, ClosableIterator<E> iter) {
     	while (iter.hasNext() && count > 0)
-    		iter.next() ;
-    	return iter ;
+    		iter.next();
+    	return iter;
     }
     
 	/**
@@ -567,7 +567,7 @@ public class Iters {
 	 * @return an <code>Iterable</code> returning <b>all but</b> the first <code>count</code> elements of the supplied <code>Iterable</code>
 	 */
     public static <E> DropIterable<E> drop(Iterable<E> iter, int count) {
-    	return new DropIterable<E>(iter, count) ;
+    	return new DropIterable<E>(iter, count);
     }
     
     /**
@@ -582,7 +582,7 @@ public class Iters {
      * @return an <code>Iterable</code> returning <b>all but</b> the first <code>count</code> elements of the supplied <code>Iterable</code>
      */
     public static <E> DropIterable<E> drop(int count, Iterable<E> iter) {
-    	return new DropIterable<E>(iter, count) ;
+    	return new DropIterable<E>(iter, count);
     }
     
     /**
@@ -596,7 +596,7 @@ public class Iters {
      * @return an <code>List</code> returning <b>all but</b> the first <code>count</code> elements of the supplied <code>List</code>
      */
     public static <E> List<E> drop(List<E> list, int count) {
-    	return list.subList(count, list.size()) ;
+    	return list.subList(count, list.size());
     }
     
     /**
@@ -610,7 +610,7 @@ public class Iters {
      * @return an <code>List</code> returning <b>all but</b> the first <code>count</code> elements of the supplied <code>List</code>
      */
     public static <E> List<E> tail(List<E> list, int count) {
-    	return list.subList(Math.max(count < 0 ? -count : list.size() - count, 0), list.size()) ;
+    	return list.subList(Math.max(count < 0 ? -count : list.size() - count, 0), list.size());
     }
     
     /**
@@ -624,7 +624,7 @@ public class Iters {
 	 * @return the final array
 	 */
 	public static <T> T[] toArray(Iterable<?> iter, T[] a) {
-		return toArray(iter.iterator(), a) ;
+		return toArray(iter.iterator(), a);
 	}
 	
     /**
@@ -640,17 +640,17 @@ public class Iters {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T> T[] toArray(Iterator<?> iter, T[] a) {
-		T[] b = a ;
-		int i = 0 ;
+		T[] b = a;
+		int i = 0;
 		while (iter.hasNext()) {
 			if (i == b.length)
-				b = Arrays.copyOf(b, b.length << 1) ;
-			b[i] = (T) iter.next() ;
-			i++ ;
+				b = Arrays.copyOf(b, b.length << 1);
+			b[i] = (T) iter.next();
+			i++;
 		}
 		if (a == b || i == b.length)
-			return b ;
-		return Arrays.copyOf(b, i) ;
+			return b;
+		return Arrays.copyOf(b, i);
 	}
 
     /**
@@ -664,7 +664,7 @@ public class Iters {
 	 * @return the final array
 	 */
     public static <T> T[] toArray(Iterable<?> iter, Class<T> clazz) {
-		return toArray(iter.iterator(), clazz) ;
+		return toArray(iter.iterator(), clazz);
     }
 
     /**
@@ -680,17 +680,17 @@ public class Iters {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T> T[] toArray(Iterator<?> iter, Class<T> clazz) {
-		T[] b = (T[]) Array.newInstance(clazz, 10) ;
-		int i = 0 ;
+		T[] b = (T[]) Array.newInstance(clazz, 10);
+		int i = 0;
 		while (iter.hasNext()) {
 			if (i == b.length)
-				b = Arrays.copyOf(b, b.length << 1) ;
-			b[i] = clazz.cast(iter.next()) ;
-			i++ ;
+				b = Arrays.copyOf(b, b.length << 1);
+			b[i] = clazz.cast(iter.next());
+			i++;
 		}
 		if (i == b.length)
-			return b ;
-		return Arrays.copyOf(b, i) ;
+			return b;
+		return Arrays.copyOf(b, i);
 	}
 
 	/**
@@ -701,7 +701,7 @@ public class Iters {
 	 * @return an <code>Object[] </code>of the contents of the supplied <code>Iterator</code>
 	 */
 	public static Object[] toArray(Iterable<?> iter) {
-		return toArray(iter.iterator()) ;
+		return toArray(iter.iterator());
     }
 
 	/**
@@ -713,7 +713,7 @@ public class Iters {
 	 * @return an <code>Object[] </code>of the contents of the supplied <code>Iterator</code>
 	 */
 	public static Object[] toArray(Iterator<?> iter) {
-		return toArray(iter, Object.class) ;
+		return toArray(iter, Object.class);
     }
 
 	/**
@@ -724,7 +724,7 @@ public class Iters {
 	 * @return an <code>Arraylist</code> of the contents of the supplied <code>Iterable</code>
 	 */
 	public static <E> List<E> toList(Iterable<E> iter) {
-		return toList(iter.iterator()) ; 
+		return toList(iter.iterator());
 	}
 
 	/**
@@ -736,9 +736,9 @@ public class Iters {
 	 * @return an <code>Arraylist</code> of the contents of the supplied <code>Iterator</code>
 	 */
 	public static <E> List<E> toList(Iterator<E> iter) {
-		List<E> result = new ArrayList<E>() ;
-		toList(iter, result) ;
-		return result ;
+		List<E> result = new ArrayList<E>();
+		toList(iter, result);
+		return result;
 	}
 	
 	/**
@@ -751,7 +751,7 @@ public class Iters {
 	 */
 	public static <E> void toList(Iterator<E> iter, List<E> list) {
 		while(iter.hasNext()) 
-			list.add(iter.next()) ;
+			list.add(iter.next());
 	}
 	
     /**
@@ -766,7 +766,7 @@ public class Iters {
 	 * @return a <code>List</code> of strings constructed from the provided <code>List</code>
 	 */
     public static List<String> toStrings(List<?> list, boolean replaceNulls) {
-    	return Functions.apply(Functions.<Object>toString(replaceNulls), list) ;
+    	return Functions.apply(Functions.<Object>toString(replaceNulls), list);
     }
     
     /**
@@ -781,7 +781,7 @@ public class Iters {
 	 * @return an <code>Iterable</code> lazily converting the values of the one provided to strings
 	 */
     public static Iterable<String> toStrings(Iterable<?> iter, boolean replaceNulls) {
-    	return Functions.apply(Functions.<Object>toString(replaceNulls), iter) ;
+    	return Functions.apply(Functions.<Object>toString(replaceNulls), iter);
     }
 
     /**
@@ -796,7 +796,7 @@ public class Iters {
 	 * @return an <code>Iterator</code> lazily converting the values of the one provided to strings
 	 */
     public static Iterator<String> toStrings(Iterator<?> iter, boolean replaceNulls) {
-    	return Functions.apply(Functions.<Object>toString(replaceNulls), iter) ;
+    	return Functions.apply(Functions.<Object>toString(replaceNulls), iter);
     }
     
     /**
@@ -811,7 +811,7 @@ public class Iters {
 	 * @return an <code>Iterator</code> lazily converting the values of the one provided to strings
 	 */
     public static ClosableIterator<String> toStrings(ClosableIterator<?> iter, boolean replaceNulls) {
-    	return Functions.apply(Functions.<Object>toString(replaceNulls), iter) ;
+    	return Functions.apply(Functions.<Object>toString(replaceNulls), iter);
     }
     
     /**
@@ -822,7 +822,7 @@ public class Iters {
 	 * @return a string representation of the argument
 	 */
     public static String toString(Iterable<?> iter) {
-    	return "[" + toString(iter.iterator(), ", ") + "]" ;
+    	return "[" + toString(iter.iterator(), ", ") + "]";
     }
     
     /**
@@ -834,7 +834,7 @@ public class Iters {
 	 * @return a string representation of the argument
 	 */
     public static String toString(Iterator<?> iter) {
-    	return "[" + toString(iter, ", ") + "]" ;
+    	return "[" + toString(iter, ", ") + "]";
     }
     
     /**
@@ -847,7 +847,7 @@ public class Iters {
 	 * @return a string representation of the argument
 	 */
     public static String toString(Iterable<?> iter, String delimiter) {
-    	return toString(iter.iterator(), delimiter) ;
+    	return toString(iter.iterator(), delimiter);
     }
     /**
 	 * Concatenates the elements of the provided <code>Iterator</code> using the provided delimiter. The <code>Iterator</code> is fully
@@ -861,19 +861,19 @@ public class Iters {
 	 */
     @SuppressWarnings("unchecked")
 	public static String toString(Iterator<?> iter, String delimiter) {
-    	StringBuffer buffer = new StringBuffer() ;
-    	boolean doneFirst = false ;
+    	StringBuffer buffer = new StringBuffer();
+    	boolean doneFirst = false;
     	while (iter.hasNext()) {
-    		if (doneFirst) buffer.append(delimiter) ;
-    		final Object next = iter.next() ;
-    		final String str ;
-    		if (next instanceof Iterable) str = toString((Iterable<?>) next, delimiter) ;
-    		else if (next instanceof Iterator) str = toString((Iterator<?>) next, delimiter) ;
-    		else str = Objects.toString(next) ;
-    		buffer.append(str) ;
-    		doneFirst = true ;
+    		if (doneFirst) buffer.append(delimiter);
+    		final Object next = iter.next();
+    		final String str;
+    		if (next instanceof Iterable) str = toString((Iterable<?>) next, delimiter);
+    		else if (next instanceof Iterator) str = toString((Iterator<?>) next, delimiter);
+    		else str = Objects.toString(next);
+    		buffer.append(str);
+    		doneFirst = true;
     	}
-    	return buffer.toString() ;
+    	return buffer.toString();
     }
     
 }

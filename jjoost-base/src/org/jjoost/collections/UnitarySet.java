@@ -38,19 +38,19 @@ public interface UnitarySet<V> extends UnitaryReadSet<V>, AnySet<V> {
 	 *            value to insert
 	 * @return set's previous value, if any
 	 */
-	@Override public V put(V value) ;
+	@Override public V put(V value);
 	
 	/**
 	 * Returns a copy of the set. This method may or may not return a set of the same class as the one it was
 	 * called on, however will return a <code>UnitarySet</code>
 	 */
-	@Override public UnitarySet<V> copy() ;
+	@Override public UnitarySet<V> copy();
 	
 	/**
 	 * Returns <code>this</code>
 	 * 
 	 * @return <code>this</code>
 	 */
-	public UnitarySet<V> unique() ;
+	public UnitarySet<V> unique();
 
 }

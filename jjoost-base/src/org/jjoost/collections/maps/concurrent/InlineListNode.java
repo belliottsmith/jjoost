@@ -38,8 +38,8 @@ final class InlineListNode<K, V> extends ConcurrentHashNode<InlineListNode<K, V>
 		this.key = key;
 		this.value = value;
 	}
-	private final K key ;
-	private V value ;		
+	private final K key;
+	private V value;
 	@Override public K getKey() { return key ; }
 	@Override public V getValue() { return value ; }
 	@Override public V setValue(V value) { final V r = this.value ; this.value = value ; return r ; }
@@ -47,42 +47,42 @@ final class InlineListNode<K, V> extends ConcurrentHashNode<InlineListNode<K, V>
 	@Override public String toString() { return "{" + key + " -> " + value + "}" ; }
 
 	@SuppressWarnings("unchecked")
-	private static final NodeFactory FACTORY = new NodeFactory() ;
+	private static final NodeFactory FACTORY = new NodeFactory();
 	
 	@SuppressWarnings("unchecked")
 	public static <K, V> NodeFactory<K, V> factory() {
-		return FACTORY ;
+		return FACTORY;
 	}
 	
 	protected static final class NodeFactory<K, V> implements HashMapNodeFactory<K, V, InlineListNode<K, V>> {
 		@Override
 		public final InlineListNode<K, V> makeNode(final int hash, final K key, final V value) {
-			return new InlineListNode<K, V>(hash, key, value) ;
+			return new InlineListNode<K, V>(hash, key, value);
 		}
 	}
 	
 	protected static final class KeyEquality<K, V> extends InlineListHashMap.KeyEquality<K, V, InlineListNode<K, V>> {
 		public KeyEquality(Equality<? super K> keyEq) {
-			super(keyEq) ;
+			super(keyEq);
 		}
 		@Override
 		public boolean prefixMatch(K cmp, InlineListNode<K, V> n) {
-			return keyEq.equates(cmp, n.key) ;
+			return keyEq.equates(cmp, n.key);
 		}
 	}
 
 	protected static final class NodeEquality<K, V> extends InlineListHashMap.NodeEquality<K, V, InlineListNode<K, V>> {
-		private static final long serialVersionUID = -8668943955126687051L ;
+		private static final long serialVersionUID = -8668943955126687051L;
 		public NodeEquality(Equality<? super K> keyEq, Equality<? super V> valEq) {
-			super(keyEq, valEq) ;
+			super(keyEq, valEq);
 		}
 		@Override
 		public boolean prefixMatch(Entry<K, V> cmp, InlineListNode<K, V> n) {
-			return keyEq.equates(cmp.getKey(), n.key) ;
+			return keyEq.equates(cmp.getKey(), n.key);
 		}
 		@Override
 		public boolean suffixMatch(Entry<K, V> cmp, InlineListNode<K, V> n) {
-			return valEq.equates(cmp.getValue(), n.value) ;
+			return valEq.equates(cmp.getValue(), n.value);
 		}
 	}
 

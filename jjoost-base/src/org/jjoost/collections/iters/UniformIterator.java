@@ -32,27 +32,27 @@ import java.util.NoSuchElementException;
  */
 public class UniformIterator<E> implements Iterator<E> {
 
-	final E repeat ;
-	private int count ;
+	final E repeat;
+	private int count;
 	
 	public UniformIterator(E repeat, int count) {
-		this.repeat = repeat ;
-		this.count = count ;
+		this.repeat = repeat;
+		this.count = count;
 	}
 	
 	public boolean hasNext() {
-		return count != 0 ;
+		return count != 0;
 	}
 
 	public E next() {
 		if (count == 0)
-			throw new NoSuchElementException() ;
-		count-- ;
-		return repeat ;
+			throw new NoSuchElementException();
+		count--;
+		return repeat;
 	}
 
 	public void remove() {
-		throw new UnsupportedOperationException() ;
+		throw new UnsupportedOperationException();
 	}
 
 	/**
@@ -60,7 +60,7 @@ public class UniformIterator<E> implements Iterator<E> {
 	 * @return
 	 */
 	public int count() {
-		return count ;
+		return count;
 	}
 	
 }

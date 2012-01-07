@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util.concurrent.waiting ;
+package org.jjoost.util.concurrent.waiting;
 
 import org.jjoost.util.Equality;
 
@@ -49,7 +49,7 @@ public final class FairCommunalSpinningWaitQueue<E> extends FairAbstractCommunal
 
 	@Override
 	protected FairAbstractCommunalWaitQueue.Node<E> newNode( Thread thread, E resource) {
-		return new Node<E>(thread, resource) ;
+		return new Node<E>(thread, resource);
 	}
 	
 }

@@ -20,9 +20,9 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util.filters ;
+package org.jjoost.util.filters;
 
-import org.jjoost.util.Filter ;
+import org.jjoost.util.Filter;
 
 /**
  * A that negates/inverts the result of the supplied filter
@@ -31,8 +31,8 @@ import org.jjoost.util.Filter ;
  */
 public class FilterNot<E> implements Filter<E> {
 
-	private static final long serialVersionUID = 5515653420277621870L ;
-	private final Filter<E> negate ;
+	private static final long serialVersionUID = 5515653420277621870L;
+	private final Filter<E> negate;
 
 	/**
 	 * Construct a new filter which negates the results of the filter provided
@@ -40,15 +40,15 @@ public class FilterNot<E> implements Filter<E> {
 	 * @param negate filter to negate
 	 */
 	public FilterNot(Filter<E> negate) {
-		this.negate = negate ;
+		this.negate = negate;
 	}
 
 	public boolean accept(E test) {
-		return !negate.accept(test) ;
+		return !negate.accept(test);
 	}
 
 	public String toString() {
-		return "is not " + negate ;
+		return "is not " + negate;
 	}
 
 	/**
@@ -58,7 +58,7 @@ public class FilterNot<E> implements Filter<E> {
 	 * @return negation of the supplied filter
 	 */
 	public static <E> FilterNot<E> get(Filter<E> negate) {
-		return new FilterNot<E>(negate) ;
+		return new FilterNot<E>(negate);
 	}
 
 }

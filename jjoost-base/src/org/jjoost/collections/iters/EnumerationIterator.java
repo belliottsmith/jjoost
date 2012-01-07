@@ -27,19 +27,19 @@ import java.util.Iterator;
 
 public class EnumerationIterator<E> implements Iterator<E> {
 
-	private final Enumeration<? extends E> enumeration ;
+	private final Enumeration<? extends E> enumeration;
 	public EnumerationIterator(Enumeration<? extends E> enumeration) {
-		this.enumeration = enumeration ;
+		this.enumeration = enumeration;
 	}
 	
 	public boolean hasNext() {
-		return enumeration.hasMoreElements() ;
+		return enumeration.hasMoreElements();
 	}
 	public E next() {
-		return enumeration.nextElement() ;
+		return enumeration.nextElement();
 	}
 	public void remove() {
-		throw new UnsupportedOperationException() ;
+		throw new UnsupportedOperationException();
 	}
 	
 }

@@ -32,6 +32,6 @@ public interface FourTuple<A, B, C, D> extends Triple<A, B, C> {
 	/**
 	 * @return the fourth value of the tuple
 	 */
-	D fourth() ;
+	D fourth();
 	
 }

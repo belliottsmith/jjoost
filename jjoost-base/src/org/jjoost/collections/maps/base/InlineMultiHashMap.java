@@ -26,11 +26,11 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 
 import org.jjoost.collections.AnySet;
-import org.jjoost.collections.MultiSet ;
+import org.jjoost.collections.MultiSet;
 import org.jjoost.collections.MultiMap;
-import org.jjoost.collections.Set ;
-import org.jjoost.collections.base.HashNode ;
-import org.jjoost.collections.base.HashStore ;
+import org.jjoost.collections.Set;
+import org.jjoost.collections.base.HashNode;
+import org.jjoost.collections.base.HashStore;
 import org.jjoost.collections.base.HashStore.Locality;
 import org.jjoost.collections.sets.base.AbstractUniqueSetAdapter;
 import org.jjoost.util.Equality;
@@ -43,128 +43,128 @@ public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> exten
 			AbstractHashMap.KeyEquality<K, V, N> keyEquality, 
 			AbstractHashMap.NodeEquality<K, V, N> entryEquality,
 			HashMapNodeFactory<K, V, N> nodeFactory, HashStore<N> table) {
-		super(rehasher, keyEquality, entryEquality, nodeFactory, table) ;
+		super(rehasher, keyEquality, entryEquality, nodeFactory, table);
 	}
 	
 	private static final long serialVersionUID = -6385620376018172675L;
 
-	private Set<Entry<K, V>> entrySet ;
-	private MultiSet<K> keySet ;
+	private Set<Entry<K, V>> entrySet;
+	private MultiSet<K> keySet;
 	
 	@Override
 	public Set<Entry<K, V>> entries() {
 		// don't care if we create multiple of these with multiple threads - eventually all but one of them will disappear and don't want to synchronize on every call
-		Set<Entry<K, V>> r = entrySet ;
+		Set<Entry<K, V>> r = entrySet;
 		if (r == null)
-			entrySet = r = new EntrySet() ;
-		return r ;
+			entrySet = r = new EntrySet();
+		return r;
 	}
 	@Override
 	public MultiSet<K> keys() {
 		// don't care if we create multiple of these with multiple threads - eventually all but one of them will disappear and don't want to synchronize on every call
-		MultiSet<K> r = keySet ;
+		MultiSet<K> r = keySet;
 		if (r == null) {
-			keySet = r = new KeySet() ;
+			keySet = r = new KeySet();
 		}
-		return r ;
+		return r;
 	}
 	
 	@Override
 	public int uniqueKeyCount() {
-		return store.uniquePrefixCount() ;
+		return store.uniquePrefixCount();
 	}
 	
 	@Override
 	public Set<V> values(K k) {
-		return new KeyValueSet(k) ;
+		return new KeyValueSet(k);
 	}
 	
 	@Override
 	public Iterable<V> apply(K v) {
-		return values(v) ;
+		return values(v);
 	}
 
 	@Override
 	public boolean add(K key, V val) {
-		final N n = nodeFactory.makeNode(hash(key), key, val) ;
-		return store.putIfAbsent(n, n, nodeEq, nodeProj()) == null ;
+		final N n = nodeFactory.makeNode(hash(key), key, val);
+		return store.putIfAbsent(n, n, nodeEq, nodeProj()) == null;
 	}
 	
 	@Override
 	public V put(K key, V val) {
-		final N n = nodeFactory.makeNode(hash(key), key, val) ;
-		return store.put(n, n, nodeEq, valProj()) ;
+		final N n = nodeFactory.makeNode(hash(key), key, val);
+		return store.put(n, n, nodeEq, valProj());
 	}
 
 	@Override
 	public V putIfAbsent(K key, V val) {
-		final N n = nodeFactory.makeNode(hash(key), key, val) ;
-		return store.putIfAbsent(n, n, nodeEq, valProj()) ;
+		final N n = nodeFactory.makeNode(hash(key), key, val);
+		return store.putIfAbsent(n, n, nodeEq, valProj());
 	}
 
 	@Override
 	public boolean permitsDuplicateKeys() {
-		return true ;
+		return true;
 	}
 	
 	@Override
 	public MultiMap<K, V> copy() {
-		return new InlineMultiHashMap<K, V, N>(rehasher, keyEq, nodeEq, nodeFactory, store.copy(nodeProj(), nodeEq)) ;
+		return new InlineMultiHashMap<K, V, N>(rehasher, keyEq, nodeEq, nodeFactory, store.copy(nodeProj(), nodeEq));
 	}
 
 	final class KeyValueSet extends AbstractKeyValueSet implements Set<V> {
 		private static final long serialVersionUID = 2741936401896784235L;
 		public KeyValueSet(K key) {
-			super(key) ;
+			super(key);
 		}
 		@Override
 		public Set<V> copy() {
-			throw new UnsupportedOperationException() ;
+			throw new UnsupportedOperationException();
 		}
 		@Override
 		public V get(V key) {
-			return first(key) ;
+			return first(key);
 		}
 		@Override
 		public int size() {
-			return totalCount() ;
+			return totalCount();
 		}
 		@Override
 		public Set<V> unique() {
-			return this ;
+			return this;
 		}
 	}
 	
 	final class KeySet extends AbstractKeySet implements MultiSet<K> {
 
 		private static final long serialVersionUID = 2741936401896784235L;
-		private UniqueKeySet unique ;
+		private UniqueKeySet unique;
 		
 		@Override
 		public MultiSet<K> copy() {
-			throw new UnsupportedOperationException() ;
+			throw new UnsupportedOperationException();
 		}
 		@Override
 		public void put(K val, int numberOfTimes) {
-			throw new UnsupportedOperationException() ;
+			throw new UnsupportedOperationException();
 		}
 		
 		@Override 
 		public Set<K> unique() {
 			if (unique == null)
-				unique = new UniqueKeySet() ;
-			return unique ;
+				unique = new UniqueKeySet();
+			return unique;
 		}
 		
 		private final class UniqueKeySet extends AbstractUniqueSetAdapter<K> {
 			private static final long serialVersionUID = 686867617922872433L;
 			@Override
 			protected AnySet<K> set() {
-				return KeySet.this ;
+				return KeySet.this;
 			}
 			@Override
 			public Iterator<K> iterator() {
-				return store.unique(keyProj(), keyEq.keyEq, Locality.ADJACENT, nodeProj(), nodeEq, keyProj()) ;
+				return store.unique(keyProj(), keyEq.keyEq, Locality.ADJACENT, nodeProj(), nodeEq, keyProj());
 			}
 		}
 	}
@@ -173,32 +173,32 @@ public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> exten
 		private static final long serialVersionUID = 2741936401896784235L;
 		@Override
 		public Entry<K, V> put(Entry<K, V> entry) {
-			final K key = entry.getKey() ;
-			final V val = entry.getValue() ;
-			final N n = nodeFactory.makeNode(hash(key), key, val) ;
-			return store.put(n, n, nodeEq, entryProj()) ;
+			final K key = entry.getKey();
+			final V val = entry.getValue();
+			final N n = nodeFactory.makeNode(hash(key), key, val);
+			return store.put(n, n, nodeEq, entryProj());
 		}
 		@Override
 		public Entry<K, V> putIfAbsent(Entry<K, V> entry) {
-			final K key = entry.getKey() ;
-			final V val = entry.getValue() ;
-			final N n = nodeFactory.makeNode(hash(key), key, val) ;
-			return store.putIfAbsent(n, n, nodeEq, entryProj()) ;
+			final K key = entry.getKey();
+			final V val = entry.getValue();
+			final N n = nodeFactory.makeNode(hash(key), key, val);
+			return store.putIfAbsent(n, n, nodeEq, entryProj());
 		}
 		@Override
 		public Entry<K, V> get(Entry<K, V> key) {
-			return first(key) ;
+			return first(key);
 		}
 		@Override
 		public int size() {
-			return totalCount() ;
+			return totalCount();
 		}
 		public Set<Entry<K, V>> copy() {
-			throw new UnsupportedOperationException() ;
+			throw new UnsupportedOperationException();
 		}
 		@Override
 		public Set<Entry<K, V>> unique() {
-			return this ;
+			return this;
 		}
 	}
 
@@ -208,23 +208,23 @@ public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> exten
 	
 
 	public static abstract class NodeEquality<K, V, N extends HashNode<N> & Entry<K, V>> extends AbstractHashMap.NodeEquality<K, V, N> {
-		private static final long serialVersionUID = -5082864991691726065L ;
+		private static final long serialVersionUID = -5082864991691726065L;
 		public NodeEquality(Equality<? super K> keyEq, Equality<? super V> valEq) {
-			super(keyEq, valEq) ;
+			super(keyEq, valEq);
 		}
 		@Override
 		public boolean isUnique() {
-			return true ;
+			return true;
 		}
 	}	
 	
 	public static abstract class KeyEquality<K, V, N> extends AbstractHashMap.KeyEquality<K, V, N> {
 		public KeyEquality(Equality<? super K> keyEq) {
-			super(keyEq) ;
+			super(keyEq);
 		}
 		@Override
 		public boolean isUnique() {
-			return false ;
+			return false;
 		}
 	}	
 

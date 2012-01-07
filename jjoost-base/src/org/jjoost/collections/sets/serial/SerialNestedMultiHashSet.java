@@ -22,16 +22,16 @@
 
 package org.jjoost.collections.sets.serial;
 
-import java.util.Arrays ;
-import java.util.Iterator ;
-import java.util.List ;
-import java.util.NoSuchElementException ;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 
-import org.jjoost.collections.base.HashNodeFactory ;
-import org.jjoost.collections.base.SerialHashStore ;
-import org.jjoost.collections.base.SerialHashStore.SerialHashNode ;
-import org.jjoost.collections.sets.base.NestedMultiHashSet ;
-import org.jjoost.util.Counters ;
+import org.jjoost.collections.base.HashNodeFactory;
+import org.jjoost.collections.base.SerialHashStore;
+import org.jjoost.collections.base.SerialHashStore.SerialHashNode;
+import org.jjoost.collections.sets.base.NestedMultiHashSet;
+import org.jjoost.util.Counters;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Rehasher;
@@ -41,18 +41,18 @@ public class SerialNestedMultiHashSet<V> extends NestedMultiHashSet<V, SerialNes
 	private static final long serialVersionUID = 1051610520557989640L;
 
 	public SerialNestedMultiHashSet() {
-		this(16, 0.75f) ;
+		this(16, 0.75f);
 	}
 	public SerialNestedMultiHashSet(int minimumInitialCapacity, float loadFactor) {
-		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object()) ;
+		this(minimumInitialCapacity, loadFactor, SerialHashStore.defaultRehasher(), Equalities.object());
 	}
 	
 	public SerialNestedMultiHashSet(Equality<? super V> keyEquality) {
-		this(SerialHashStore.defaultRehasher(), keyEquality) ;
+		this(SerialHashStore.defaultRehasher(), keyEquality);
 	}
 	
 	public SerialNestedMultiHashSet(Rehasher rehasher, Equality<? super V> keyEquality) { 
-		this(16, 0.75f, rehasher, keyEquality) ;
+		this(16, 0.75f, rehasher, keyEquality);
 	}
 	
 	public SerialNestedMultiHashSet( 
@@ -62,7 +62,7 @@ public class SerialNestedMultiHashSet<V> extends NestedMultiHashSet<V, SerialNes
 		super(Counters.newCounter(), rehasher, 
 			new ValueEquality<V, Node<V>>(keyEquality), 
 			SerialNestedMultiHashSet.<V>factory(), 
-			new SerialHashStore<Node<V>>(minimumInitialCapacity, loadFactor)) ;
+			new SerialHashStore<Node<V>>(minimumInitialCapacity, loadFactor));
 	}
 
 	// this implementation makes absolutely no concurrency guarantees
@@ -70,121 +70,121 @@ public class SerialNestedMultiHashSet<V> extends NestedMultiHashSet<V, SerialNes
 	public static final class Node<V> extends SerialHashNode<Node<V>> implements NestedMultiHashSet.INode<V, Node<V>> {
 		private static final long serialVersionUID = -5766263745864028747L;
 
-		private V[] values = (V[]) new Object[4] ;
-		private int count = 0 ;
+		private V[] values = (V[]) new Object[4];
+		private int count = 0;
 		
 		protected Node(int hash, V value) {
 			super(hash);
-			values[0] = value ;
+			values[0] = value;
 		}
 		protected Node(int hash, V[] values, int count) {
 			super(hash);
-			this.values = values ;
-			this.count = count ;
+			this.values = values;
+			this.count = count;
 		}
 		@Override public Node<V> copy() { 
-			return new Node<V>(hash, values.clone(), count) ; 
+			return new Node<V>(hash, values.clone(), count);
 		}
 		@Override
 		public int count() {
-			return count ;
+			return count;
 		}
 		@Override
 		public boolean put(V value) {
 			if (count <= 0)
-				return false ;
+				return false;
 			if (count == values.length)
-				values = Arrays.copyOf(values, values.length << 1) ;
-			values[count++] = value ;
-			return true ;
+				values = Arrays.copyOf(values, values.length << 1);
+			values[count++] = value;
+			return true;
 		}
 		@Override 
 		public boolean valid() { 
-			return count > 0 ; 
+			return count > 0;
 		}
 		@Override
 		public boolean put(V v, int c) {
 			if (count <= 0)
-				return false ;
+				return false;
 			while (count + c >= values.length)
-				values = Arrays.copyOf(values, values.length << 1) ;
+				values = Arrays.copyOf(values, values.length << 1);
 			for (int i = 0 ; i != c ; i++)
-				values[count+i] = v ;
-			count += c ;
-			return true ;
+				values[count+i] = v;
+			count += c;
+			return true;
 		}
 		
 		@Override public int remove(int target) {
-			final int newc = count - target ;
+			final int newc = count - target;
 			if (newc <= 0) {
-				final int oldc = count ;
-				count = 0 ;
-				return oldc ;
+				final int oldc = count;
+				count = 0;
+				return oldc;
 			}
-			count = newc ;
-			return target ;
+			count = newc;
+			return target;
 		}
 		
 		@Override
 		public List<V> removeAndReturn(int target) {
-			final int oldc = count ;
-			final int newc = count - target ;
+			final int oldc = count;
+			final int newc = count - target;
 			if (newc <= 0) {
-				count = 0 ;
-				return Arrays.asList(Arrays.copyOf(values, oldc)) ;
+				count = 0;
+				return Arrays.asList(Arrays.copyOf(values, oldc));
 			}
-			count = newc ;
-			return Arrays.asList(Arrays.copyOfRange(values, oldc, newc)) ;
+			count = newc;
+			return Arrays.asList(Arrays.copyOfRange(values, oldc, newc));
 		}
 		
 		@Override
 		public V getValue() {
-			return values[0] ;
+			return values[0];
 		}
 		
 		@Override
 		public boolean initialise() {
 			if (count != 0)
-				return false ;
-			count = 1 ;
-			return true ;
+				return false;
+			count = 1;
+			return true;
 		}
 		
 		@Override
 		public Iterator<V> iterator(final NestedMultiHashSet<V, Node<V>> arg) {
-			final SerialNestedMultiHashSet<V> set = (SerialNestedMultiHashSet<V>) arg ;
+			final SerialNestedMultiHashSet<V> set = (SerialNestedMultiHashSet<V>) arg;
 			return new Iterator<V>() {
-				int last = -1 ;
-				int next = 0 ;
+				int last = -1;
+				int next = 0;
 				@Override
 				public boolean hasNext() {
-					return next < count ;
+					return next < count;
 				}
 				@Override
 				public V next() {
 					if (next >= count)
-						throw new NoSuchElementException() ;
-					last = next ;
-					next += 1 ;
-					return values[last] ;
+						throw new NoSuchElementException();
+					last = next;
+					next += 1;
+					return values[last];
 				}
 				@Override
 				public void remove() {
 					if (last == -1)
-						throw new NoSuchElementException() ;
+						throw new NoSuchElementException();
 					if (count < 2) {
 						if (count == 1) {
-							set.totalCount.add(-1) ;
-							count = -1 ;
-							set.removeNode(Node.this) ;
+							set.totalCount.add(-1);
+							count = -1;
+							set.removeNode(Node.this);
 						}
 					} else {
-						final int mi = count - 1 ;
+						final int mi = count - 1;
 						for (int i = last ; i < mi ; i++)
-							values[i] = values[i+1] ;
-						last = -1 ;
-						count-- ;
-						set.totalCount.add(-1) ;
+							values[i] = values[i+1];
+						last = -1;
+						count--;
+						set.totalCount.add(-1);
 					}
 				}				
 			};
@@ -193,15 +193,15 @@ public class SerialNestedMultiHashSet<V> extends NestedMultiHashSet<V, SerialNes
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static final NodeFactory NODE_FACTORY = new NodeFactory() ;
+	private static final NodeFactory NODE_FACTORY = new NodeFactory();
 	@SuppressWarnings("unchecked")
 	private static <V> NodeFactory<V> factory() {
-		return NODE_FACTORY ;
+		return NODE_FACTORY;
 	}
 	public static final class NodeFactory<V> implements HashNodeFactory<V, Node<V>> {
 		@Override
 		public final Node<V> makeNode(final int hash, final V value) {
-			return new Node<V>(hash, value) ;
+			return new Node<V>(hash, value);
 		}
 	}
 
