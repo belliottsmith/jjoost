@@ -5,6 +5,7 @@ import javax.sql.DataSource;
 import org.jjoost.collections.AnyMap ;
 import org.jjoost.collections.Map ;
 import org.jjoost.collections.MultiMap ;
+import org.jjoost.collections.ReadMap;
 import org.jjoost.collections.maps.serial.SerialInlineMultiHashMap ;
 import org.jjoost.collections.maps.serial.SerialHashMap ;
 import org.jjoost.util.Function ;
@@ -400,7 +401,7 @@ public class Database {
         }
     }
     
-    public static <E, F> Map<E, F> getMap(Connection conn, String sql, Class<E> domain, Class<F> range) throws SQLException {
+    public static <E, F> ReadMap<E, F> getMap(Connection conn, String sql, Class<E> domain, Class<F> range) throws SQLException {
     	return getMap(conn, sql, domain, range, null) ;
     }
     /**
@@ -413,7 +414,7 @@ public class Database {
      * @return
      * @throws SQLException
      */
-    public static <E, F> Map<E, F> getMap(Connection conn, String sql, Class<E> domain, Class<F> range, TimeZone tz) throws SQLException {
+    public static <E, F> ReadMap<E, F> getMap(Connection conn, String sql, Class<E> domain, Class<F> range, TimeZone tz) throws SQLException {
     	Map<E, F> result = new SerialHashMap<E, F>() ;
     	fillMap(conn, sql, domain, range, tz, result) ;
     	return result ;
@@ -438,7 +439,7 @@ public class Database {
     	return result ;
     }
     
-    public static <E, F> Map<E, F> getMap(DataSource dataSource, String sql, Class<E> domain, Class<F> range) throws SQLException {
+    public static <E, F> ReadMap<E, F> getMap(DataSource dataSource, String sql, Class<E> domain, Class<F> range) throws SQLException {
     	return getMap(dataSource, sql, domain, range, null) ;
     }
 
@@ -452,7 +453,7 @@ public class Database {
      * @return
      * @throws SQLException
      */
-    public static <E, F> Map<E, F> getMap(DataSource dataSource, String sql, Class<E> domain, Class<F> range, TimeZone tz) throws SQLException {
+    public static <E, F> ReadMap<E, F> getMap(DataSource dataSource, String sql, Class<E> domain, Class<F> range, TimeZone tz) throws SQLException {
     	Map<E, F> result = new SerialHashMap<E, F>() ;
     	fillMap(dataSource, sql, domain, range, tz, result) ;
     	return result ;
