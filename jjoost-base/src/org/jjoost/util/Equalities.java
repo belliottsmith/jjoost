@@ -32,6 +32,25 @@ import java.util.Map.Entry;
  */
 public class Equalities {
 	
+	/**
+	 * Returns an Equality which always returns true, i.e. considers every object (and null) to be equal to every other object
+	 * 
+	 * @return everything equal <code>Equality</code>
+	 */
+	public static Equality<Object> everythingEqual() { return EVERYTHING_EQUAL ; } 
+	private static final Equality<Object> EVERYTHING_EQUAL = new EverythingEqual();
+	
+    /**
+     * Equality which always returns true, i.e. considers every object (and null) to be equal to every other object
+	 * 
+     * @author b.elliottsmith
+     */
+    public static class EverythingEqual implements Equality<Object> {
+		private static final long serialVersionUID = -6611748225612686746L;
+		public final boolean equates(Object a, Object b) { return true; }
+		public final int hash(Object k) { return 0 ; }
+    };
+    
     /**
 	 * Returns an Equality for default object equality, delegating to <code>Object.equals()</code> and
 	 * <code>Object.hashCode()</code>, but handling nulls gracefully

@@ -78,6 +78,7 @@ public class SerialHashMap<K, V> extends HashMap<K, V, SerialHashMap.Node<K, V>>
 		
 	}
 	
+	@SuppressWarnings("rawtypes")
 	private static final NodeFactory SERIAL_SCALAR_HASH_NODE_FACTORY = new NodeFactory();
 	@SuppressWarnings("unchecked")
 	public static <K, V> NodeFactory<K, V> serialNodeFactory() {

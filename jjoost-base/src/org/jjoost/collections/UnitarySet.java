@@ -29,8 +29,17 @@ package org.jjoost.collections;
  * 
  * @author b.elliottsmith
  */
-public interface UnitarySet<V> extends UnitaryReadSet<V>, AnySet<V> {
+public interface UnitarySet<V> extends UnitaryReadSet<V>, Set<V> {
 
+	/**
+	 * If a value already exists in the set, replace it with the provided value
+	 * 
+	 * @param value
+	 *            value to insert
+	 * @return set's previous value, if any
+	 */
+	public V replace(V value);
+	
 	/**
 	 * Insert the parameter into the set, removing and returning the currently value that exists in the set, if any
 	 * 
@@ -38,7 +47,7 @@ public interface UnitarySet<V> extends UnitaryReadSet<V>, AnySet<V> {
 	 *            value to insert
 	 * @return set's previous value, if any
 	 */
-	@Override public V put(V value);
+	public V putOrReplace(V value);
 	
 	/**
 	 * Returns a copy of the set. This method may or may not return a set of the same class as the one it was

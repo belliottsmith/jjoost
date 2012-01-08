@@ -32,6 +32,7 @@ import org.jjoost.collections.Set;
 import org.jjoost.collections.base.HashNode;
 import org.jjoost.collections.base.HashStore;
 import org.jjoost.collections.base.HashStore.Locality;
+import org.jjoost.collections.base.HashStore.PutAction;
 import org.jjoost.collections.sets.base.AbstractUniqueSetAdapter;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Filters;
@@ -79,13 +80,13 @@ public class InlineListHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extend
 	@Override
 	public V put(K key, V val) {
 		final N n = nodeFactory.makeNode(hash(key), key, val);
-		return store.put(false, n, n, nodeEq, valProj());
+		return store.put(PutAction.PUT, n, n, nodeEq, valProj());
 	}
 
 	@Override
 	public V putIfAbsent(K key, V val) {
 		final N n = nodeFactory.makeNode(hash(key), key, val);
-		return store.putIfAbsent(n, n, nodeEq, valProj());
+		return store.put(PutAction.IFABSENT, n, n, nodeEq, valProj());
 	}
 
 	@Override
@@ -184,6 +185,7 @@ public class InlineListHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extend
 				return store.unique(keyProj(), keyEq.keyEq, Locality.ADJACENT, nodeProj(), nodeEq, keyProj());
 			}
 		}
+
 	}
 
 	final class EntrySet extends AbstractEntrySet implements MultiSet<Entry<K, V>> {
@@ -194,14 +196,14 @@ public class InlineListHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extend
 			final K key = entry.getKey();
 			final V val = entry.getValue();
 			final N n = nodeFactory.makeNode(hash(key), key, val);
-			return store.put(false, n, n, nodeEq, entryProj());
+			return store.put(PutAction.PUT, n, n, nodeEq, entryProj());
 		}
 		@Override
 		public Entry<K, V> putIfAbsent(Entry<K, V> entry) {
 			final K key = entry.getKey();
 			final V val = entry.getValue();
 			final N n = nodeFactory.makeNode(hash(key), key, val);
-			return store.putIfAbsent(n, n, nodeEq, entryProj());
+			return store.put(PutAction.IFABSENT, n, n, nodeEq, entryProj());
 		}
 		@Override
 		public MultiSet<Entry<K, V>> copy() {

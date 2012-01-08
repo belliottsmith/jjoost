@@ -44,7 +44,7 @@ public class ConcatIterator<E> implements Iterator<E> {
         initNext();
     }
 
-    public ConcatIterator(Iterator<? extends E> ... members) {
+    public ConcatIterator(@SuppressWarnings("unchecked") Iterator<? extends E> ... members) {
         nexts = new ArrayIterator<Iterator<? extends E>>(members);
         initNext();
     }

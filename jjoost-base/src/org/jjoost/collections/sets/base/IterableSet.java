@@ -55,6 +55,7 @@ public abstract class IterableSet<V> extends AbstractSet<V> implements MultiSet<
 		public Iterator<V> iterator() {
 			return iter.iterator();
 		}
+		
 	}
 
 	public abstract Equality<? super V> equality();

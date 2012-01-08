@@ -70,15 +70,12 @@ public class SynchronizedHashStore<N extends HashNode<N>> extends SynchronizedDe
 	public synchronized boolean isEmpty() {
 		return delegate.isEmpty();
 	}
-	public synchronized <NCmp, V> V put(boolean replace, NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
-		return delegate.put(replace, find, put, eq, ret);
+	public synchronized <NCmp, V> V put(PutAction action, NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+		return delegate.put(action, find, put, eq, ret);
 	}
-	public synchronized <NCmp, V> V putIfAbsent(int hash, NCmp put, HashNodeEquality<? super NCmp, ? super N> eq,
-		HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret, boolean returnNewIfCreated) {
-		return delegate.putIfAbsent(hash, put, eq, factory, ret, returnNewIfCreated);
-	}
-	public synchronized <NCmp, V> V putIfAbsent(NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
-		return delegate.putIfAbsent(find, put, eq, ret);
+	public synchronized <NCmp, V> V put(PutAction action, int hash, NCmp put, HashNodeEquality<? super NCmp, ? super N> eq,
+		HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret) {
+		return delegate.put(action, hash, put, eq, factory, ret);
 	}
 	public synchronized <NCmp> int remove(int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {
 		return delegate.remove(hash, removeAtMost, find, eq);

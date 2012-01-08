@@ -26,6 +26,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jjoost.collections.AnySet;
+import org.jjoost.collections.ReadMap;
+import org.jjoost.collections.ReadSet;
+import org.jjoost.collections.Set;
 import org.jjoost.collections.base.SynchronizedDelegator;
 import org.jjoost.util.Equality;
 
@@ -101,8 +104,8 @@ public class SynchronizedArbitrarySet<V, S extends AnySet<V>> extends Synchroniz
 	@Override public synchronized int totalCount() {
 		return delegate.totalCount();
 	}
-	@Override public synchronized AnySet<V> unique() {
-		return delegate.unique();
+	@Override public synchronized Set<V> unique() {
+		return wrap(delegate.unique());
 	}
 	@Override public synchronized int uniqueCount() {
 		return delegate.uniqueCount();
@@ -126,6 +129,11 @@ public class SynchronizedArbitrarySet<V, S extends AnySet<V>> extends Synchroniz
 	@Override
 	public synchronized Equality<? super V> equality() {
 		return delegate.equality();
+	}
+
+	@Override
+	public synchronized ReadMap<V, Integer> asMap() {
+		return wrap(delegate.asMap());
 	}
 
 }

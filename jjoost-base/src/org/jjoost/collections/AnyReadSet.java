@@ -110,7 +110,7 @@ public interface AnyReadSet<V> extends Iterable<V>, Function<V, Boolean>, Serial
 	 * 
 	 * @return unique values
 	 */
-	public Iterable<V> unique();
+	public ReadSet<V> unique();
 	
 	/**
 	 * Returns the total number of values (including duplicates) in the set
@@ -154,6 +154,6 @@ public interface AnyReadSet<V> extends Iterable<V>, Function<V, Boolean>, Serial
 	 */
 	public AnyReadSet<V> copy();
 	
-//	public ReadMap<V, Integer> counts();
+	public ReadMap<V, Integer> asMap();
 	
 }

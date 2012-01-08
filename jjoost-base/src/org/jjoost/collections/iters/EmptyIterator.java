@@ -34,7 +34,7 @@ import java.util.NoSuchElementException;
  */
 public final class EmptyIterator<E> implements Iterator<E> {
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private static final EmptyIterator INSTANCE = new EmptyIterator();
 	@SuppressWarnings("unchecked")
 	public static <E> EmptyIterator<E> get() {

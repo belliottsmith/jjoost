@@ -33,6 +33,7 @@ import org.jjoost.collections.base.HashNodeEquality;
 import org.jjoost.collections.base.HashNodeFactory;
 import org.jjoost.collections.base.HashStore;
 import org.jjoost.collections.base.HashStore.Locality;
+import org.jjoost.collections.base.HashStore.PutAction;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Rehasher;
 import org.jjoost.util.tuples.Value;
@@ -62,13 +63,13 @@ public class InlineMultiHashSet<V, N extends HashNode<N> & Value<V>> extends Abs
 	
 	@Override
 	public V put(V val) {
-		return store.put(false, val, nodeFactory.makeNode(hash(val), val), putEq, valProj());
+		return store.put(PutAction.PUT, val, nodeFactory.makeNode(hash(val), val), putEq, valProj());
 	}
 	
 	@Override
 	public void put(V val, int count) {
 		for (int i = 0 ; i != count ; i++) {
-			store.put(false, val, nodeFactory.makeNode(hash(val), val), putEq, valProj());
+			store.put(PutAction.PUT, val, nodeFactory.makeNode(hash(val), val), putEq, valProj());
 		}
 	}
 	

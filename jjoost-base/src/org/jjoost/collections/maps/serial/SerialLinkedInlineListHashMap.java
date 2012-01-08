@@ -79,7 +79,7 @@ public class SerialLinkedInlineListHashMap<K, V> extends InlineListHashMap<K, V,
 		@Override public String toString() { return "{" + key + " -> " + value + "}" ; }
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private static final NodeFactory FACTORY = new NodeFactory();
 	@SuppressWarnings("unchecked")
 	public static <K, V> NodeFactory<K, V> factory() {

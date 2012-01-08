@@ -77,7 +77,7 @@ public class SerialInlineMultiHashMap<K, V> extends InlineMultiHashMap<K, V, Ser
 		@Override public String toString() { return "{" + key + " -> " + value + "}" ; }
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private static final NodeFactory FACTORY = new NodeFactory();
 	
 	@SuppressWarnings("unchecked")

@@ -49,7 +49,7 @@ public class ConcatIterable<E> implements Iterable<E> {
         for (Iterable<? extends E> member : members) 
         	this.members.add(member);
     }
-    public ConcatIterable(final Iterable<? extends E> ... members) {
+    public ConcatIterable(@SuppressWarnings("unchecked") final Iterable<? extends E> ... members) {
         this.members = new ArrayList<Iterable<? extends E>>();
         for (Iterable<? extends E> member : members) 
         	this.members.add(member);
@@ -61,7 +61,7 @@ public class ConcatIterable<E> implements Iterable<E> {
 	private static final <E> IteratorProjection<E> iteratorProjection() {
     	return ITERATOR_PROJECTION;
     }
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
 	private static final IteratorProjection ITERATOR_PROJECTION = new IteratorProjection();
     private static final class IteratorProjection<E> implements Function<Iterable<? extends E>, Iterator<? extends E>> {
 		private static final long serialVersionUID = 5360954401522205920L;

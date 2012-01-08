@@ -34,6 +34,7 @@ import org.jjoost.collections.base.HashNodeEquality;
 import org.jjoost.collections.base.HashNodeFactory;
 import org.jjoost.collections.base.HashStore;
 import org.jjoost.collections.base.HashStore.Locality;
+import org.jjoost.collections.base.HashStore.PutAction;
 import org.jjoost.collections.iters.EmptyIterator;
 import org.jjoost.collections.iters.UniformIterator;
 import org.jjoost.util.Counter;
@@ -109,7 +110,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public V put(V val) {
 		final int hash = hash(val);
 		while (true) {
-			final N existing = store.putIfAbsent(hash, val, valEq, nodeFactory, nodeProj(), true);
+			final N existing = store.put(PutAction.ENSUREANDGET, hash, val, valEq, nodeFactory, nodeProj());
 			if (existing.put(val))
 				break;
 		}
@@ -121,7 +122,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public void put(V val, int count) {
 		final int hash = hash(val);
 		while (true) {
-			final N existing = store.putIfAbsent(hash, val, valEq, nodeFactory, nodeProj(), true);
+			final N existing = store.put(PutAction.ENSUREANDGET, hash, val, valEq, nodeFactory, nodeProj());
 			if (existing.put(val, count))
 				break;
 		}
@@ -141,7 +142,7 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 	public V putIfAbsent(V val) {
 		final int hash = hash(val);
 		while (true) {
-			final N existing = store.putIfAbsent(hash, val, valEq, nodeFactory, nodeProj(), true);
+			final N existing = store.put(PutAction.ENSUREANDGET, hash, val, valEq, nodeFactory, nodeProj());
 			if (existing.initialise()) {				
 				totalCount.add(1);
 				return null;

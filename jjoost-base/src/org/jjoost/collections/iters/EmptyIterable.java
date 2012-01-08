@@ -33,7 +33,7 @@ import java.util.Iterator;
  */
 public final class EmptyIterable<E> implements Iterable<E> {
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private static final EmptyIterable INSTANCE = new EmptyIterable();
 	
 	@SuppressWarnings("unchecked")

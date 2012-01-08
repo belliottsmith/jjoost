@@ -37,11 +37,6 @@ public abstract class ImmutableEmptySet<V> extends AbstractSet<V> implements Any
 	public abstract AnyReadSet<V> copy();
 
 	@Override
-	public AnyReadSet<V> unique() {
-		return this;
-	}
-
-	@Override
 	public Iterator<V> iterator() {
 		return Iters.emptyIterator();
 	}

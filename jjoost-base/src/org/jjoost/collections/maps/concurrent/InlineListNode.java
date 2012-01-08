@@ -46,7 +46,7 @@ final class InlineListNode<K, V> extends ConcurrentHashNode<InlineListNode<K, V>
 	@Override public InlineListNode<K, V> copy() { return new InlineListNode<K, V>(hash, key, value) ; }
 	@Override public String toString() { return "{" + key + " -> " + value + "}" ; }
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private static final NodeFactory FACTORY = new NodeFactory();
 	
 	@SuppressWarnings("unchecked")

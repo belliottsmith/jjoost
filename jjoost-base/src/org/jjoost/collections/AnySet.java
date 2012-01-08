@@ -181,7 +181,7 @@ public interface AnySet<V> extends AnyReadSet<V> {
 	 * 
 	 * @return unique values
 	 */
-	public AnySet<V> unique();
+	public Set<V> unique();
 	
 	/**
 	 * This method attempts to minimise the resource utilisation of the set. It may be a no-op.

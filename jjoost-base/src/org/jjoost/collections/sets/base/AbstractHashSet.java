@@ -30,6 +30,7 @@ import org.jjoost.collections.base.HashNode;
 import org.jjoost.collections.base.HashNodeEquality;
 import org.jjoost.collections.base.HashNodeFactory;
 import org.jjoost.collections.base.HashStore;
+import org.jjoost.collections.base.HashStore.PutAction;
 import org.jjoost.collections.base.LockFreeHashStore.LockFreeHashNode;
 import org.jjoost.collections.base.LockFreeLinkedHashStore.LockFreeLinkedHashNode;
 import org.jjoost.collections.base.SerialHashStore.SerialHashNode;
@@ -41,6 +42,7 @@ import org.jjoost.util.Objects;
 import org.jjoost.util.Rehasher;
 import org.jjoost.util.tuples.Value;
 
+@SuppressWarnings("deprecation")
 public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> extends AbstractSet<V> implements AnySet<V> {
 
 	private static final long serialVersionUID = 3187373892419456381L;
@@ -79,7 +81,7 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> exten
 	
 	@Override
 	public V putIfAbsent(V val) {
-		return store.putIfAbsent(hash(val), val, valEq, nodeFactory, valProj(), false);
+		return store.put(PutAction.IFABSENT, hash(val), val, valEq, nodeFactory, valProj());
 	}
 	
 	@Override
@@ -109,7 +111,7 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> exten
 	public int putAll(Iterable<V> vals) {
 		int c = 0;
 		for (V val : vals) {
-			if (store.put(false, val, nodeFactory.makeNode(hash(val), val), valEq, nodeProj()) == null)
+			if (store.put(PutAction.PUT, val, nodeFactory.makeNode(hash(val), val), valEq, nodeProj()) == null)
 				c++;
 		}
 		return c;
@@ -230,6 +232,7 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> exten
 		return (SerialHashSetNodeFactory<V>) SERIAL_FACTORY;
 	}
 	public static final class SerialHashSetNodeFactory<V> implements HashNodeFactory<V, SerialHashSetNode<V>> {
+		private static final long serialVersionUID = -4613572380650059469L;
 		@Override
 		public final SerialHashSetNode<V> makeNode(final int hash, final V value) {
 			return new SerialHashSetNode<V>(hash, value);
@@ -248,13 +251,14 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> exten
 		@Override public String toString() { return Objects.toString(value) ; }
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private static final SerialLinkedHashSetNodeFactory SERIAL_LINKED_FACTORY = new SerialLinkedHashSetNodeFactory();
 	@SuppressWarnings("unchecked")
 	public static <V> SerialLinkedHashSetNodeFactory<V> serialLinkedNodeFactory() {
 		return SERIAL_LINKED_FACTORY;
 	}
 	public static final class SerialLinkedHashSetNodeFactory<V> implements HashNodeFactory<V, SerialLinkedHashSetNode<V>> {
+		private static final long serialVersionUID = 6689938098796653070L;
 		@Override
 		public final SerialLinkedHashSetNode<V> makeNode(final int hash, final V value) {
 			return new SerialLinkedHashSetNode<V>(hash, value);
@@ -273,13 +277,15 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> exten
 		@Override public String toString() { return Objects.toString(value) ; }
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private static final LockFreeHashSetNodeFactory LOCKFREE_FACTORY = new LockFreeHashSetNodeFactory();
 	@SuppressWarnings("unchecked")
 	public static <V> LockFreeHashSetNodeFactory<V> lockFreeNodeFactory() {
 		return LOCKFREE_FACTORY;
 	}
 	public static final class LockFreeHashSetNodeFactory<V> implements HashNodeFactory<V, LockFreeHashSetNode<V>> {
+		private static final long serialVersionUID = -1108755693852364279L;
+
 		@Override
 		public final LockFreeHashSetNode<V> makeNode(final int hash, final V value) {
 			return new LockFreeHashSetNode<V>(hash, value);
@@ -298,13 +304,14 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> exten
 		@Override public String toString() { return Objects.toString(value) ; }
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private static final LockFreeLinkedHashSetNodeFactory LOCKFREE_LINKED_FACTORY = new LockFreeLinkedHashSetNodeFactory();
 	@SuppressWarnings("unchecked")
 	public static <V> LockFreeLinkedHashSetNodeFactory<V> lockFreeLinkedNodeFactory() {
 		return LOCKFREE_LINKED_FACTORY;
 	}
 	public static final class LockFreeLinkedHashSetNodeFactory<V> implements HashNodeFactory<V, LockFreeLinkedHashSetNode<V>> {
+		private static final long serialVersionUID = 4736536599540508852L;
 		@Override
 		public final LockFreeLinkedHashSetNode<V> makeNode(final int hash, final V value) {
 			return new LockFreeLinkedHashSetNode<V>(hash, value);
