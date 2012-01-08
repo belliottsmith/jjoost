@@ -80,7 +80,7 @@ public abstract class FetchMatrixLookup<BaseKeyType, InputKeyType, OutputKeyType
 	     * @param clazzes
 	     * @return
 	     */
-	    public <NK> Type1<NK, NK[], NK[], IV, OV> partBy(Class<? extends NK> ... clazzes) {
+	    public <NK> Type1<NK, NK[], NK[], IV, OV> partBy(@SuppressWarnings("unchecked") Class<? extends NK> ... clazzes) {
 	    	final Type1<NK, NK[], NK[], IV, OV> r = new Type1<NK, NK[], NK[], IV, OV>(this);
 	    	r.keyTypes = clazzes;
 	    	r.mapKeys = Functions.identity();
