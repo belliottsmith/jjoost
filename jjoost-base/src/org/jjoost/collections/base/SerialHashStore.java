@@ -139,10 +139,11 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	// **************************************************
 	
 	@Override
-	public <NCmp, V> V put(boolean mustReplace, NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+	public <NCmp, V> V put(PutAction action, NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+		assert (action != PutAction.ENSUREANDGET);
 		grow();
 		
-		final boolean replace = eq.isUnique();
+		final boolean mayReplace = eq.isUnique();
 		final int hash = put.hash;
 		final int bucket = put.hash & (table.length - 1);
 		final int reverse = Integer.reverse(hash);
@@ -150,15 +151,15 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 		
    		N p = null;
     	N n = table[bucket];
-    	N replaced = null;
+    	N toReplace = null;
    		while (n != null) {
    			if (partial != (n.hash == hash && eq.prefixMatch(find, n))) {
    				if (partial) break;
    				else partial = true;
    			}
    			if (partial) {
-   				if (replace && eq.suffixMatch(find, n)) {
-   	   				replaced = n;
+   				if (mayReplace && eq.suffixMatch(find, n)) {
+   	   				toReplace = n;
    	   				break;
    				}   				
    			}
@@ -168,8 +169,14 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
    			n = n.next;
    		}
    		
-   		if (mustReplace && replaced == null) {
-   			return null;
+   		if (toReplace == null) {
+   			if (action == PutAction.REPLACE) {
+   				return null;
+   			}
+   		} else {
+   			if (action == PutAction.IFABSENT) {
+   				return ret.apply(toReplace);
+   			}
    		}
    		
    		if (p == null) { 
@@ -178,47 +185,48 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
    			p.next = put;
 		}
    		
-		if (replaced == null) {
+		if (toReplace == null) {
 			totalNodeCount++;
 			put.next = n;
 		} else {
-			removed(replaced);
-			put.next = replaced.next;
+			removed(toReplace);
+			put.next = toReplace.next;
 			// set the next pointer of the removed node to the node that replaces it, so that iterators see consistent state
-			replaced.next = put;
+			toReplace.next = put;
 		}
     	if (!partial) {
     		uniquePrefixCount++;
     	}
 
 		inserted(put);
-		if (replaced == null) {
+		if (toReplace == null) {
 			return null;
 		}
-		return ret.apply(replaced);
+		return ret.apply(toReplace);
 	}
 
 	@Override
-	public <NCmp, V> V putIfAbsent(NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+	public <NCmp, V> V put(PutAction action, final int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret) {
 		grow();
-
-		final int hash = put.hash;
-		final int bucket = put.hash & (table.length - 1);
+		
+		final boolean mayReplace = eq.isUnique();
+		final int bucket = hash & (table.length - 1);
 		final int reverse = Integer.reverse(hash);
 		boolean partial = false;
 		
    		N p = null;
     	N n = table[bucket];
+    	N toReplace = null;
    		while (n != null) {
    			if (partial != (n.hash == hash && eq.prefixMatch(find, n))) {
    				if (partial) break;
    				else partial = true;
    			}
    			if (partial) {
-   				if (eq.suffixMatch(find, n)) {
-   					reinserted(n);
-   	   				return ret.apply(n);
-   				}
+   				if (mayReplace && eq.suffixMatch(find, n)) {
+   	   				toReplace = n;
+   	   				break;
+   				}   				
    			}
 			if (HashNode.insertBefore(reverse, n)) 
     			break;
@@ -226,61 +234,58 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
    			n = n.next;
    		}
    		
-   		if (p == null) 
-   			table[bucket] = put;
-   		else p.next = put;
-		put.next = n;
-   		
-    	if (!partial)
-    		uniquePrefixCount++;
-		totalNodeCount++;
-
-		inserted(put);
-		return null;
-	}
-	
-	@Override
-	public <NCmp, V> V putIfAbsent(final int hash, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq, HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret, boolean returnNewIfCreated) {
-		grow();
-		
-		final int bucket = hash & (table.length - 1);
-		final int reverse = Integer.reverse(hash);
-		boolean partial = false;
-		
-		N p = null;
-    	N n = table[bucket];
-		while (n != null) {
-			if (partial != (n.hash == hash && eq.prefixMatch(find, n))) {
-				if (partial) break;
-				else partial = true;
-			}    			
-   			if (partial) {
-   				if (eq.suffixMatch(find, n)) {
-   					reinserted(n);
-   	   				return ret.apply(n);
-   				}
+   		N r, put;
+		switch (action) {
+		case IFABSENT:
+			if (toReplace != null) {
+				return ret.apply(toReplace);
+			}
+			put = factory.makeNode(hash, find);
+			r = null;
+			break;
+		case ENSUREANDGET:
+			if (toReplace != null) {
+				return ret.apply(toReplace);
+			}
+			put = factory.makeNode(hash, find);
+			r = put;
+			break;
+		case REPLACE:
+   			if (toReplace == null) {
+   				return null;
    			}
-			if (HashNode.insertBefore(reverse, n)) 
-    			break;
-			p = n;
-			n = n.next;
+		case PUT:
+			r = toReplace;
+			put = factory.makeNode(hash, find);
+			break;
+		default:
+			throw new IllegalStateException();
 		}
-		
-		final N put = factory.makeNode(hash, find);
-   		if (p == null) 
-   			table[bucket] = put;
-   		else p.next = put;
-   		put.next = n;
    		
-    	if (!partial)
+   		if (p == null) { 
+   			table[bucket] = put;
+   		} else {
+   			p.next = put;
+		}
+   		
+		if (toReplace == null) {
+			totalNodeCount++;
+			put.next = n;
+		} else {
+			removed(toReplace);
+			put.next = toReplace.next;
+			// set the next pointer of the removed node to the node that replaces it, so that iterators see consistent state
+			toReplace.next = put;
+		}
+    	if (!partial) {
     		uniquePrefixCount++;
-		totalNodeCount++;
+    	}
 
 		inserted(put);
-		
-		if (returnNewIfCreated)
-			return ret.apply(put);
-		return null;
+		if (r == null) {
+			return null;
+		}
+		return ret.apply(r);
 	}
 	
 	// **************************************************

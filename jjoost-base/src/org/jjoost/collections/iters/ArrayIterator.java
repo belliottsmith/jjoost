@@ -71,7 +71,7 @@ public final class ArrayIterator<E> implements Iterator<E> {
         throw new UnsupportedOperationException();
     }
 
-    public static <E> ArrayIterator<E> get(E ... vals) {
+    public static <E> ArrayIterator<E> get(@SuppressWarnings("unchecked") E ... vals) {
     	return new ArrayIterator<E>(vals);
     }
     

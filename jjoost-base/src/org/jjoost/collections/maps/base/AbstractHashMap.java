@@ -34,6 +34,7 @@ import org.jjoost.collections.MultiSet;
 import org.jjoost.collections.base.HashNode;
 import org.jjoost.collections.base.HashNodeEquality;
 import org.jjoost.collections.base.HashStore;
+import org.jjoost.collections.base.HashStore.PutAction;
 import org.jjoost.collections.iters.AbstractIterable;
 import org.jjoost.collections.maps.ImmutableMapEntry;
 import org.jjoost.collections.sets.base.AbstractSet;
@@ -332,27 +333,27 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		}
 		
 		@Override
-		public final boolean add(V val) {
+		public boolean add(V val) {
 			if (keyEq.isUnique())
 				throw new UnsupportedOperationException();
 			final N insert = nodeFactory.makeNode(hash, key, val);
-			return store.putIfAbsent(insert, insert, nodeEq, entryProj()) == null;
+			return store.put(PutAction.IFABSENT, insert, insert, nodeEq, entryProj()) == null;
 		}
 		
 		@Override
-		public final V put(V val) {
+		public V put(V val) {
 			if (keyEq.isUnique())
 				throw new UnsupportedOperationException();
 			final N insert = nodeFactory.makeNode(hash, key, val);
-			return store.put(false, insert, insert, nodeEq, valProj());
+			return store.put(PutAction.PUT, insert, insert, nodeEq, valProj());
 		}
 		
 		@Override
-		public final V putIfAbsent(V val) {
+		public V putIfAbsent(V val) {
 			if (keyEq.isUnique())
 				throw new UnsupportedOperationException();
 			final N insert = nodeFactory.makeNode(hash, key, val);
-			return store.putIfAbsent(insert, insert, nodeEq, valProj());
+			return store.put(PutAction.IFABSENT, insert, insert, nodeEq, valProj());
 		}
 		
 		@Override

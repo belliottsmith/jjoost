@@ -52,9 +52,13 @@ public interface HashStore<N> extends Serializable {
 	public void shrink();
 	public void resize(int size);
 	
-	public <F, V> V put(boolean replace, F find, N put, HashNodeEquality<? super F, ? super N> eq, Function<? super N, ? extends V> ret);
-	public <F, V> V putIfAbsent(F find, N put, HashNodeEquality<? super F, ? super N> eq, Function<? super N, ? extends V> ret);
-	public <F, V> V putIfAbsent(int hash, F put, HashNodeEquality<? super F, ? super N> eq, HashNodeFactory<? super F, N> factory, Function<? super N, ? extends V> ret, boolean returnNewIfCreated);
+	public static enum PutAction {
+		PUT, IFABSENT, REPLACE, ENSUREANDGET
+	}
+	
+	// ENSUREANDGET is not a valid action for this version of put; only for the factory version
+	public <F, V> V put(PutAction action, F find, N put, HashNodeEquality<? super F, ? super N> eq, Function<? super N, ? extends V> ret);
+	public <F, V> V put(PutAction action, int hash, F put, HashNodeEquality<? super F, ? super N> eq, HashNodeFactory<? super F, N> factory, Function<? super N, ? extends V> ret);
 	
 	public <F> boolean removeNode(Function<? super N, ? extends F> nodePrefixEqFunc, HashNodeEquality<? super F, ? super N> nodePrefixEq, N n);
 	public <F> int remove(int hash, int removeAtMost, F find, HashNodeEquality<? super F, ? super N> eq);
@@ -62,7 +66,6 @@ public interface HashStore<N> extends Serializable {
 	public <F, V> Iterable<V> removeAndReturn(int hash, int removeAtMost, F find, HashNodeEquality<? super F, ? super N> eq, Function<? super N, ? extends V> ret);
 
 	public <F> int count(int hash, F find, HashNodeEquality<? super F, ? super N> eq, int countUpTo);
-//	public <F> Iterator<Entry<F, Integer>> counts(HashNodeEquality<? super F, ? super N> eq, Function<? super N, ? extends F> r);
 	public <F, V> V first(int hash, F find, HashNodeEquality<? super F, ? super N> eq, Function<? super N, ? extends V> ret);
 	
 	public <F, V> List<V> findNow(

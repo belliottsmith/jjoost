@@ -30,6 +30,7 @@ import org.jjoost.collections.UnitarySet;
 import org.jjoost.collections.base.HashNode;
 import org.jjoost.collections.base.HashNodeFactory;
 import org.jjoost.collections.base.HashStore;
+import org.jjoost.collections.base.HashStore.PutAction;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Factory;
 import org.jjoost.util.Function;
@@ -70,23 +71,23 @@ public class HashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Abstract
 	
 	@Override
 	public boolean add(K key, V val) {
-		return store.putIfAbsent(key, nodeFactory.makeNode(hash(key), key, val), keyEq, nodeProj()) == null;
+		return store.put(PutAction.IFABSENT, key, nodeFactory.makeNode(hash(key), key, val), keyEq, nodeProj()) == null;
 	}
 	
 	@Override
 	public V put(K key, V val) {
-		return store.put(false, key, nodeFactory.makeNode(hash(key), key, val), keyEq, valProj());
+		return store.put(PutAction.PUT, key, nodeFactory.makeNode(hash(key), key, val), keyEq, valProj());
 	}
 
 	@Override
 	public V putIfAbsent(K key, V val) {
-		return store.putIfAbsent(key, nodeFactory.makeNode(hash(key), key, val), keyEq, valProj());
+		return store.put(PutAction.IFABSENT, key, nodeFactory.makeNode(hash(key), key, val), keyEq, valProj());
 	}
 
 	@Override
 	public V replace(K key, V val) {
 		N n = store.first(hash(key), key, keyEq, nodeProj());
-		if (n != null && (n = store.put(true, n, nodeFactory.makeNode(hash(key), key, val), nodeEq, nodeProj())) != null) {
+		if (n != null && (n = store.put(PutAction.REPLACE, n, nodeFactory.makeNode(hash(key), key, val), nodeEq, nodeProj())) != null) {
 			return n.getValue();
 		}
 		return null;
@@ -94,29 +95,29 @@ public class HashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Abstract
 	
 	@Override
 	public boolean replace(K key, V oldValue, V newValue) {
-		return store.put(true, nodeFactory.makeNode(hash(key), key, oldValue), nodeFactory.makeNode(hash(key), key, newValue), nodeEq, nodeProj()) != null;
+		return store.put(PutAction.PUT, nodeFactory.makeNode(hash(key), key, oldValue), nodeFactory.makeNode(hash(key), key, newValue), nodeEq, nodeProj()) != null;
 	}
 	
 	@Override
 	public V ensureAndGet(K key, final Factory<? extends V> putIfNotPresent) {
-		return store.putIfAbsent(hash(key), key, keyEq, new HashNodeFactory<K, N>() {
+		return store.put(PutAction.ENSUREANDGET, hash(key), key, keyEq, new HashNodeFactory<K, N>() {
 			private static final long serialVersionUID = 1L;
 			@Override
 			public N makeNode(int hash, K key) {
 				return nodeFactory.makeNode(hash, key, putIfNotPresent.create());
 			}
-		}, valProj(), true);
+		}, valProj());
 	}
 
 	@Override
 	public V ensureAndGet(K key, final Function<? super K, ? extends V> putIfNotPresent) {
-		return store.putIfAbsent(hash(key), key, keyEq, new HashNodeFactory<K, N>() {
+		return store.put(PutAction.ENSUREANDGET, hash(key), key, keyEq, new HashNodeFactory<K, N>() {
 			private static final long serialVersionUID = 526770033919300687L;
 			@Override
 			public N makeNode(int hash, K key) {
 				return nodeFactory.makeNode(hash, key, putIfNotPresent.apply(key));
 			}
-		}, valProj(), true);
+		}, valProj());
 	}
 
 	@Override
@@ -136,13 +137,13 @@ public class HashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Abstract
 	
 	@Override
 	public V putIfAbsent(final K key, final Function<? super K, ? extends V> putIfNotPresent) {
-		return store.putIfAbsent(hash(key), key, keyEq, new HashNodeFactory<K, N>() {
+		return store.put(PutAction.ENSUREANDGET, hash(key), key, keyEq, new HashNodeFactory<K, N>() {
 			private static final long serialVersionUID = 3624491527804791117L;
 			@Override
 			public N makeNode(int hash, K key) {
 				return nodeFactory.makeNode(hash, key, putIfNotPresent.apply(key));
 			}
-		}, valProj(), false);
+		}, valProj());
 	}
 
 	@Override
@@ -161,22 +162,66 @@ public class HashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Abstract
 	}
 	
 	final class KeyValueSet extends AbstractKeyValueSet implements UnitarySet<V> {
+		
 		private static final long serialVersionUID = 2741936401896784235L;
+		
 		public KeyValueSet(K key) {
 			super(key);
 		}
+		
 		@Override
 		public V get() {
 			return HashMap.this.first(key);
 		}
+		
 		@Override
 		public UnitarySet<V> copy() {
 			throw new UnsupportedOperationException();
 		}
+		
 		@Override
 		public UnitarySet<V> unique() {
 			return this;
 		}
+		
+		@Override
+		public final boolean add(V val) {
+			final N replaced = _put(PutAction.PUT, val);
+			if (replaced != null) {
+				return false;
+			}
+			return true;
+		}
+		
+		@Override
+		public final V put(V val) {
+			final N replaced = _put(PutAction.PUT, val);
+			if (replaced != null) {
+				return replaced.getValue();
+			}
+			return null;
+		}
+		
+		@Override
+		public final V putIfAbsent(V val) {
+			if (keyEq.isUnique())
+				throw new UnsupportedOperationException();
+			final N insert = nodeFactory.makeNode(hash, key, val);
+			return store.put(PutAction.IFABSENT, insert, insert, nodeEq, valProj());
+		}
+		
+		protected final N _put(PutAction action, V val) {
+			final N insert = nodeFactory.makeNode(hash, key, val);
+			if (store.put(action, key, insert, keyEq, nodeProj()) != null) {
+				final N replaced = store.put(action, key, insert, keyEq, nodeProj());
+				if (replaced != null) {
+					return replaced;
+				}
+				throw new IllegalStateException("This set can only contain one value at a time; to replace the value use replace() or putOrReplace()");
+			}
+			return null;
+		}
+
 	}
 	
 	final class KeySet extends AbstractKeySet implements Set<K> {

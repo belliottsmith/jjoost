@@ -26,6 +26,7 @@ import org.jjoost.collections.Set;
 import org.jjoost.collections.base.HashNode;
 import org.jjoost.collections.base.HashNodeFactory;
 import org.jjoost.collections.base.HashStore;
+import org.jjoost.collections.base.HashStore.PutAction;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Rehasher;
 import org.jjoost.util.tuples.Value;
@@ -44,12 +45,12 @@ public class HashSet<V, N extends HashNode<N> & Value<V>> extends AbstractHashSe
 	
 	@Override
 	public boolean add(V val) {
-		return store.putIfAbsent(val, nodeFactory.makeNode(hash(val), val), valEq, nodeProj()) == null;
+		return store.put(PutAction.IFABSENT, val, nodeFactory.makeNode(hash(val), val), valEq, nodeProj()) == null;
 	}
 	
 	@Override
 	public V put(V val) {
-		return store.put(false, val, nodeFactory.makeNode(hash(val), val), valEq, valProj());
+		return store.put(PutAction.PUT, val, nodeFactory.makeNode(hash(val), val), valEq, valProj());
 	}
 	
 	@Override

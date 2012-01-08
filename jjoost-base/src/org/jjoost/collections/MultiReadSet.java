@@ -52,5 +52,5 @@ public interface MultiReadSet<V> extends AnyReadSet<V> {
 	 * @return unique values
 	 */
 	public ReadSet<V> unique();
-
+	
 }

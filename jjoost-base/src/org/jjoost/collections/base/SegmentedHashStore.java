@@ -128,17 +128,13 @@ public class SegmentedHashStore<N extends HashNode<N>> implements HashStore<N> {
 		return true;
 	}
 	@Override
-	public <NCmp, V> V put(boolean replace, NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
-		return segmentFor(put.hash).put(replace, find, put, eq, ret);
+	public <NCmp, V> V put(PutAction action, NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+		return segmentFor(put.hash).put(action, find, put, eq, ret);
 	}
 	@Override
-	public <NCmp, V> V putIfAbsent(int hash, NCmp put, HashNodeEquality<? super NCmp, ? super N> eq,
-			HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret, boolean returnNewIfCreated) {
-		return segmentFor(hash).putIfAbsent(hash, put, eq, factory, ret, returnNewIfCreated);
-	}
-	@Override
-	public <NCmp, V> V putIfAbsent(NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
-		return segmentFor(put.hash).putIfAbsent(find, put, eq, ret);
+	public <NCmp, V> V put(PutAction action, int hash, NCmp put, HashNodeEquality<? super NCmp, ? super N> eq,
+			HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret) {
+		return segmentFor(hash).put(action, hash, put, eq, factory, ret);
 	}
 	@Override
 	public <NCmp> int remove(int hash, int removeAtMost, NCmp find, HashNodeEquality<? super NCmp, ? super N> eq) {

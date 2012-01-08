@@ -30,11 +30,12 @@ import java.util.List;
 import org.jjoost.collections.AnySet;
 import org.jjoost.collections.Set;
 import org.jjoost.collections.lists.UniformList;
+import org.jjoost.collections.sets.base.AbstractSet;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Iters;
 
-public class AdapterFromJDKSet<V> implements Set<V> {
+public class AdapterFromJDKSet<V> extends AbstractSet<V> implements Set<V> {
 	
 	private static final long serialVersionUID = -4114089352987855164L;
 	
@@ -207,5 +208,5 @@ public class AdapterFromJDKSet<V> implements Set<V> {
 	public void retain(AnySet<? super V> remove) {
 		set.retainAll(new AdapterToJDKSet<Object>(Object.class, (AnySet<Object>) remove));
 	}
-	
+
 }

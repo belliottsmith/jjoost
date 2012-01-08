@@ -26,6 +26,7 @@ import java.util.Iterator;
 
 import org.jjoost.collections.AnyReadSet;
 import org.jjoost.collections.AnySet;
+import org.jjoost.collections.ReadMap;
 import org.jjoost.util.Iters;
 
 public abstract class AbstractSet<V> implements AnyReadSet<V> {
@@ -70,6 +71,11 @@ public abstract class AbstractSet<V> implements AnyReadSet<V> {
 				iter.remove();
 			}
 		}
+	}
+
+	@Override
+	public final ReadMap<V, Integer> asMap() {
+		return new SetToCountMapAdapter<V>(this);
 	}
 
 }

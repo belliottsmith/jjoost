@@ -445,7 +445,7 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 		public Equality<? super K> equality() {
 			return map.keys().equality();
 		}
-
+		
 	}
 	
 	abstract class AbstractEntrySet extends AbstractSet<Entry<K, V>> implements AnySet<Entry<K, V>> {
@@ -639,7 +639,7 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private static final KeyRepeater KEY_REPEATER = new KeyRepeater();
 	@SuppressWarnings("unchecked")
 	private static final <K, V> KeyRepeater<K, V> keyRepeater() {

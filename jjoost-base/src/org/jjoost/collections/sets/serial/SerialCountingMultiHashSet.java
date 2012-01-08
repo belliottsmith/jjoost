@@ -170,13 +170,14 @@ public class SerialCountingMultiHashSet<V> extends NestedMultiHashSet<V, SerialC
 
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private static final SerialCountingListHashSetNodeFactory SERIAL_SCALAR_HASH_NODE_FACTORY = new SerialCountingListHashSetNodeFactory();
 	@SuppressWarnings("unchecked")
 	public static <V> SerialCountingListHashSetNodeFactory<V> serialNodeFactory() {
 		return SERIAL_SCALAR_HASH_NODE_FACTORY;
 	}
 	public static final class SerialCountingListHashSetNodeFactory<V> implements HashNodeFactory<V, Node<V>> {
+		private static final long serialVersionUID = -3308673571792344499L;
 		@Override
 		public final Node<V> makeNode(final int hash, final V value) {
 			return new Node<V>(hash, value, 0);

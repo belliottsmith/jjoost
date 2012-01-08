@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.jjoost.collections.AnySet;
 import org.jjoost.collections.MultiSet;
+import org.jjoost.collections.ReadMap;
 import org.jjoost.collections.Set;
 import org.jjoost.collections.UnitarySet;
 import org.jjoost.util.Equality;
@@ -685,6 +686,12 @@ public abstract class SynchronizedDelegator {
 			public void retain(AnySet<? super V> remove) {
 				synchronized(SynchronizedDelegator.this) {
 					delegate.retain(remove);
+				}
+			}
+			@Override
+			public ReadMap<V, Integer> asMap() {
+				synchronized(SynchronizedDelegator.this) {
+					return wrap(delegate.asMap());
 				}
 			}
 		};

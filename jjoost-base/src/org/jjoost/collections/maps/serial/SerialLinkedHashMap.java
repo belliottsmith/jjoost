@@ -78,7 +78,7 @@ public class SerialLinkedHashMap<K, V> extends HashMap<K, V, SerialLinkedHashMap
 		@Override public String toString() { return "{" + key + " -> " + value + "}" ; }
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private static final NodeFactory FACTORY = new NodeFactory();
 	@SuppressWarnings("unchecked")
 	public static <K, V> NodeFactory<K, V> factory() {

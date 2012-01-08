@@ -192,13 +192,14 @@ public class SerialLinkedNestedMultiHashSet<V> extends NestedMultiHashSet<V, Ser
 		
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private static final NodeFactory NODE_FACTORY = new NodeFactory();
 	@SuppressWarnings("unchecked")
 	private static <V> NodeFactory<V> factory() {
 		return NODE_FACTORY;
 	}
 	public static final class NodeFactory<V> implements HashNodeFactory<V, Node<V>> {
+		private static final long serialVersionUID = 5241348061320422416L;
 		@Override
 		public final Node<V> makeNode(final int hash, final V value) {
 			return new Node<V>(hash, value);

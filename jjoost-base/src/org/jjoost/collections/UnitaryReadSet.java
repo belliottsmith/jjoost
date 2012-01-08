@@ -29,7 +29,7 @@ package org.jjoost.collections;
  * 
  * @author b.elliottsmith
  */
-public interface UnitaryReadSet<V> extends AnyReadSet<V> {
+public interface UnitaryReadSet<V> extends ReadSet<V> {
 
 	/**
 	 * Returns the set's only value, if any
