@@ -32,7 +32,7 @@ import org.jjoost.collections.iters.ArrayIterator;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
 
-public abstract class AbstractArraySet<V> implements AnySet<V> {
+public abstract class AbstractArraySet<V> extends AbstractSet<V> implements AnySet<V> {
 
 	private static final long serialVersionUID = 6236060917384423908L;
 	protected final Equality<? super V> valEq;

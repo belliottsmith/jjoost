@@ -57,5 +57,14 @@ public class SerialLinkedHashSet<V> extends HashSet<V, AbstractHashSet.SerialLin
 			AbstractHashSet.<V>serialLinkedNodeFactory(), 
 			new SerialLinkedHashStore<SerialLinkedHashSetNode<V>>(minimumInitialCapacity, loadFactor));
 	}
-
+	
+	public V removeOldest() {
+		final SerialLinkedHashSetNode<V> n = ((SerialLinkedHashStore<SerialLinkedHashSetNode<V>>) store).oldest();
+		if (n != null) {
+			store.removeNode(valProj(), valEq, n);
+			return n.getValue();
+		}
+		return null;
+	}
+	
 }

@@ -344,7 +344,7 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 			if (keyEq.isUnique())
 				throw new UnsupportedOperationException();
 			final N insert = nodeFactory.makeNode(hash, key, val);
-			return store.put(insert, insert, nodeEq, valProj());
+			return store.put(false, insert, insert, nodeEq, valProj());
 		}
 		
 		@Override

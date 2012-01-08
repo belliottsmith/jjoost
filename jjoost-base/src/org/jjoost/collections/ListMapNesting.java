@@ -82,8 +82,7 @@ public class ListMapNesting<V> {
 
 
 	/** The Constant INLINE */
-	@SuppressWarnings("unchecked")
-	private static final ListMapNesting INLINE = new ListMapNesting(null, Type.INLINE);
+	private static final ListMapNesting<?> INLINE = new ListMapNesting<Object>(null, Type.INLINE);
 	
 	/**
 	 * Public method for retrieving the <code>ListMapNesting</code> that represents <code>INLINE</code> nesting
@@ -92,7 +91,7 @@ public class ListMapNesting<V> {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <V> ListMapNesting<V> inline() {
-		return INLINE;
+		return (ListMapNesting<V>) INLINE;
 	}
 	
 	/**

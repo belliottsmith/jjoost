@@ -61,6 +61,8 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	
 	protected void inserted(N n) {
 	}
+	protected void reinserted(N n) {
+	}
 	protected void removed(N n) {
 	}
 	
@@ -137,7 +139,7 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 	// **************************************************
 	
 	@Override
-	public <NCmp, V> V put(NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+	public <NCmp, V> V put(boolean mustReplace, NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
 		grow();
 		
 		final boolean replace = eq.isUnique();
@@ -166,9 +168,15 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
    			n = n.next;
    		}
    		
-   		if (p == null) 
+   		if (mustReplace && replaced == null) {
+   			return null;
+   		}
+   		
+   		if (p == null) { 
    			table[bucket] = put;
-   		else p.next = put;
+   		} else {
+   			p.next = put;
+		}
    		
 		if (replaced == null) {
 			totalNodeCount++;
@@ -179,12 +187,14 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 			// set the next pointer of the removed node to the node that replaces it, so that iterators see consistent state
 			replaced.next = put;
 		}
-    	if (!partial)
+    	if (!partial) {
     		uniquePrefixCount++;
+    	}
 
 		inserted(put);
-		if (replaced == null)
+		if (replaced == null) {
 			return null;
+		}
 		return ret.apply(replaced);
 	}
 
@@ -205,8 +215,10 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
    				else partial = true;
    			}
    			if (partial) {
-   				if (eq.suffixMatch(find, n))
+   				if (eq.suffixMatch(find, n)) {
+   					reinserted(n);
    	   				return ret.apply(n);
+   				}
    			}
 			if (HashNode.insertBefore(reverse, n)) 
     			break;
@@ -243,8 +255,10 @@ public class SerialHashStore<N extends SerialHashStore.SerialHashNode<N>> implem
 				else partial = true;
 			}    			
    			if (partial) {
-   				if (eq.suffixMatch(find, n))
+   				if (eq.suffixMatch(find, n)) {
+   					reinserted(n);
    	   				return ret.apply(n);
+   				}
    			}
 			if (HashNode.insertBefore(reverse, n)) 
     			break;

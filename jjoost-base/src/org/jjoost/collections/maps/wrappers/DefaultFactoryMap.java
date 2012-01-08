@@ -38,10 +38,10 @@ public class DefaultFactoryMap<K, V> implements Map<K, V> {
 
 	private static final long serialVersionUID = 7778573411318310241L;
 	private final Map<K, V> delegate;
-	private final Factory<V> defaultFactory;
+	private final Factory<? extends V> defaultFactory;
 
 	public DefaultFactoryMap(Map<K, V> delegate,
-			Factory<V> defaultFactory) {
+			Factory<? extends V> defaultFactory) {
 		super();
 		this.delegate = delegate;
 		this.defaultFactory = defaultFactory;
@@ -183,6 +183,16 @@ public class DefaultFactoryMap<K, V> implements Map<K, V> {
 	@Override
 	public V first(K key) {
 		return delegate.ensureAndGet(key, defaultFactory);
+	}
+
+	@Override
+	public boolean replace(K key, V oldValue, V newValue) {
+		return delegate.replace(key, oldValue, newValue);
+	}
+
+	@Override
+	public V replace(K key, V val) {
+		return delegate.replace(key, val);
 	}
 
 }

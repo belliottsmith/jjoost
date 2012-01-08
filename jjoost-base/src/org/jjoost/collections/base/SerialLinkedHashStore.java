@@ -86,6 +86,23 @@ public class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedH
 	}
 
 	@Override
+	protected void reinserted(N n) {
+		super.reinserted(n);
+		final N head = this.head;
+		N linkNext = n.linkNext;
+		if (linkNext != head) {
+			N linkPrev = n.linkPrev;
+			linkPrev.linkNext = linkNext;
+			linkNext.linkPrev = linkPrev;
+			N tail = head.linkPrev;
+			n.linkPrev = tail;
+			n.linkNext = head;
+			tail.linkNext = n;
+			head.linkPrev = n;
+		}
+	}
+	
+	@Override
 	protected void removed(N n) {
 		super.removed(n);
 		final N next = n.linkNext;
@@ -179,6 +196,15 @@ public class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedH
 				removeNode(nodePrefixEqFunc, nodePrefixEq, prev);
 		}
 		
+	}
+	
+	public N oldest() {
+		final N head = this.head;
+		final N next = head.next;
+		if (next != head) {
+			return next;
+		}
+		return null;
 	}
 
 }

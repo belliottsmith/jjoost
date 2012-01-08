@@ -107,6 +107,9 @@ public class SynchronizedArbitrarySet<V, S extends AnySet<V>> extends Synchroniz
 	@Override public synchronized int uniqueCount() {
 		return delegate.uniqueCount();
 	}
+	@Override public synchronized void retain(AnySet<? super V> remove) {
+		delegate.retain(remove);
+	}
 	@Override
 	public synchronized int remove(V value, int removeAtMost) {
 		return delegate.remove(value, removeAtMost);

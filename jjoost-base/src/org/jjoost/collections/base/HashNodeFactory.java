@@ -22,7 +22,9 @@
 
 package org.jjoost.collections.base;
 
-public interface HashNodeFactory<NCmp, N> {
+import java.io.Serializable;
+
+public interface HashNodeFactory<NCmp, N> extends Serializable {
 
 	public N makeNode(int hash, NCmp from);
 	

@@ -52,7 +52,7 @@ public interface HashStore<N> extends Serializable {
 	public void shrink();
 	public void resize(int size);
 	
-	public <F, V> V put(F find, N put, HashNodeEquality<? super F, ? super N> eq, Function<? super N, ? extends V> ret);
+	public <F, V> V put(boolean replace, F find, N put, HashNodeEquality<? super F, ? super N> eq, Function<? super N, ? extends V> ret);
 	public <F, V> V putIfAbsent(F find, N put, HashNodeEquality<? super F, ? super N> eq, Function<? super N, ? extends V> ret);
 	public <F, V> V putIfAbsent(int hash, F put, HashNodeEquality<? super F, ? super N> eq, HashNodeFactory<? super F, N> factory, Function<? super N, ? extends V> ret, boolean returnNewIfCreated);
 	
@@ -93,22 +93,7 @@ public interface HashStore<N> extends Serializable {
 	// helper classes for implementing unique() method
 	
 	static final class Helper {
-//		public static <N, F> Factory<Filter<N>> forUniqueness(
-//				Function<? super N, ? extends F> uniquenessEqualityProj,
-//				Equality<? super F> uniquenessEquality, 
-//				Locality duplicateLocality
-//			) {
-//			switch (duplicateLocality) {
-//			case ADJACENT: 
-//				return new UniqueSequenceFilterFactory<N, F>(uniquenessEquality, uniquenessEqualityProj);
-//			case SAME_BUCKET: 
-//				return new UniqueLocalSetFilterFactory<N, F>(uniquenessEquality, uniquenessEqualityProj);
-//			case GLOBAL: 
-//				return new UniqueGlobalSetFilterFactory<N, F>(uniquenessEquality, uniquenessEqualityProj);
-//			default:
-//				throw new IllegalStateException();
-//			}			
-//		}
+
 		public static <N extends HashNode<N>, F> Filter<N> forUniqueness(
 				Function<? super N, ? extends F> uniquenessEqualityProj,
 				Equality<? super F> uniquenessEquality, 

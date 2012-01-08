@@ -46,7 +46,7 @@ import org.jjoost.util.concurrent.CommunalThreadQueue;
 
 import sun.misc.Unsafe;
 
-@SuppressWarnings("restriction")
+@Deprecated
 public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> implements HashStore<N> {
 
 	private static final long serialVersionUID = -1578733824843315344L;
@@ -112,7 +112,7 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 	
 	
 	@Override
-	public <NCmp, V> V put(
+	public <NCmp, V> V put(boolean mustReplace,
 			NCmp find, N put, 
 			HashNodeEquality<? super NCmp, ? super N> eq, 
 			Function<? super N, ? extends V> ret) {
@@ -126,6 +126,10 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 		while (true) {
 			
 			if (node == null) {
+				
+				if (mustReplace) {
+					return null;
+				}
 				
 				// we have not encountered any prior partial or complete node matches, so simply insert the node at the end of the list
 				
@@ -183,7 +187,12 @@ public class LockFreeHashStore<N extends LockFreeHashStore.LockFreeHashNode<N>> 
 					if (partial) {
 						
 						// at this point we have previously seen at least one partial match but have encountered no complete matches
-						// so try to insert the new node here
+						// so try to insert the new node here (or terminate if replacing)
+						
+						if (mustReplace) {
+							return null;
+						}
+
 						// { prev != null }
 						put.lazySetNext(node);
 						if (prev.casNext(node, put)) {

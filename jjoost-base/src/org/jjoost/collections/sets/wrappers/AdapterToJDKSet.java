@@ -25,15 +25,15 @@ package org.jjoost.collections.sets.wrappers;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.jjoost.collections.Set;
+import org.jjoost.collections.AnySet;
 import org.jjoost.util.Iters;
 
 public class AdapterToJDKSet<V> implements java.util.Set<V> {
 
 	private final Class<V> clazz;
-	private final Set<V> set;
+	private final AnySet<V> set;
 	
-	public AdapterToJDKSet(Class<V> clazz, Set<V> set) {
+	public AdapterToJDKSet(Class<V> clazz, AnySet<V> set) {
 		super();
 		this.clazz = clazz;
 		this.set = set;
@@ -110,7 +110,7 @@ public class AdapterToJDKSet<V> implements java.util.Set<V> {
 
 	@Override
 	public int size() {
-		return set.size();
+		return set.uniqueCount();
 	}
 
 	@Override

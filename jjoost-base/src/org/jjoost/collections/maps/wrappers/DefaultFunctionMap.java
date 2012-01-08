@@ -38,10 +38,10 @@ public class DefaultFunctionMap<K, V> implements Map<K, V> {
 
 	private static final long serialVersionUID = 7778573411318310241L;
 	private final Map<K, V> delegate;
-	private final Function<K, V> defaultFunction;
+	private final Function<? super K, ? extends V> defaultFunction;
 
 	public DefaultFunctionMap(Map<K, V> delegate,
-			Function<K, V> defaultFunction) {
+			Function<? super K, ? extends V> defaultFunction) {
 		super();
 		this.delegate = delegate;
 		this.defaultFunction = defaultFunction;
@@ -183,6 +183,16 @@ public class DefaultFunctionMap<K, V> implements Map<K, V> {
 	@Override
 	public V first(K key) {
 		return delegate.ensureAndGet(key, defaultFunction);
+	}
+
+	@Override
+	public boolean replace(K key, V oldValue, V newValue) {
+		return delegate.replace(key, oldValue, newValue);
+	}
+
+	@Override
+	public V replace(K key, V val) {
+		return delegate.replace(key, val);
 	}
 	
 }

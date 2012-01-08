@@ -49,7 +49,7 @@ public class HashSet<V, N extends HashNode<N> & Value<V>> extends AbstractHashSe
 	
 	@Override
 	public V put(V val) {
-		return store.put(val, nodeFactory.makeNode(hash(val), val), valEq, valProj());
+		return store.put(false, val, nodeFactory.makeNode(hash(val), val), valEq, valProj());
 	}
 	
 	@Override

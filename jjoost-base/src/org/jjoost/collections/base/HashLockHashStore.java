@@ -9,11 +9,11 @@ import org.jjoost.collections.base.AbstractConcurrentHashStore.ConcurrentHashNod
 import org.jjoost.collections.lists.UniformList;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Function;
-import org.jjoost.util.concurrent.waiting.UnfairParkingWaitQueue;
+import org.jjoost.util.concurrent.waiting.UnfairWaitQueue;
 import org.jjoost.util.concurrent.waiting.WaitHandle;
 import org.jjoost.util.concurrent.waiting.WaitQueue;
 
-@SuppressWarnings("unchecked")
+@Deprecated
 public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends AbstractConcurrentHashStore<N, HashLockHashStore.Table<N>> {
 
 	private static final long serialVersionUID = -369208509152951474L;
@@ -57,7 +57,7 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 	// **********************************************************	
 	
 	@Override
-	public <NCmp, V> V put(
+	public <NCmp, V> V put(boolean mustReplace,
 			NCmp find, N put, 
 			HashNodeEquality<? super NCmp, ? super N> eq, 
 			Function<? super N, ? extends V> ret) {
@@ -99,6 +99,9 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 	   		}
 	   		
 			if (replaced == null) {
+				if (mustReplace) {
+					return null;
+				}
 				put.lazySetNext(n);
 				totalCounter.increment(hash);
 			} else {
@@ -604,7 +607,7 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 	
 	private static final class LockNode<N extends ConcurrentHashNode<N>> extends ConcurrentHashNode<N> {
 		private static final long serialVersionUID = 1L;
-		final WaitQueue waiting = new UnfairParkingWaitQueue();
+		final WaitQueue waiting = new UnfairWaitQueue();
 		public LockNode(int hash) {
 			super(hash);
 		}
@@ -995,7 +998,7 @@ public class HashLockHashStore<N extends ConcurrentHashNode<N>> extends Abstract
 			final WaitHandle wait = ((LockNode) lock).waitOn();
 			if (getNodeVolatileDirect(table, directIndex) != lock)
 				return;
-			wait.awaitUninterruptibly();
+			wait.waitForeverNoInterrupt();
 			if (getNodeVolatileDirect(table, directIndex) != lock)
 				return;
 		}

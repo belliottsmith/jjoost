@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jjoost.collections.AnySet;
 import org.jjoost.collections.Set;
 import org.jjoost.collections.lists.UniformList;
 import org.jjoost.util.Equalities;
@@ -199,6 +200,12 @@ public class AdapterFromJDKSet<V> implements Set<V> {
 
 	public String toString() {
 		return set.toString();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void retain(AnySet<? super V> remove) {
+		set.retainAll(new AdapterToJDKSet<Object>(Object.class, (AnySet<Object>) remove));
 	}
 	
 }
