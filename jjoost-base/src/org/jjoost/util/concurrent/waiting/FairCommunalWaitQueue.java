@@ -51,7 +51,7 @@ import org.jjoost.util.Equality;
  * 
  * @author b.elliottsmith
  */
-public abstract class FairAbstractCommunalWaitQueue<E> implements CommunalWaitQueue<E> {
+public abstract class FairCommunalWaitQueue<E> implements CommunalWaitQueue<E>, CommunalWaitSignal<E> {
 	
 	protected static abstract class Node<E> extends AbstractWaitHandle {
 		
@@ -59,6 +59,11 @@ public abstract class FairAbstractCommunalWaitQueue<E> implements CommunalWaitQu
 		
 		protected Node(Thread thread, E resource) {
 			super(thread);
+			this.resource = resource;
+		}
+		
+		protected Node(int spinNanos, Thread thread, E resource) {
+			super(spinNanos, thread);
 			this.resource = resource;
 		}
 
@@ -69,7 +74,7 @@ public abstract class FairAbstractCommunalWaitQueue<E> implements CommunalWaitQu
 		/**
 		 * Remove this link from the chain
 		 */
-		protected final void close() {
+		public final void cancel() {
 			Node<E> next;
 			while (true) {
 				next = this.next;
@@ -83,6 +88,16 @@ public abstract class FairAbstractCommunalWaitQueue<E> implements CommunalWaitQu
 			}
 		}
 		
+		@Override
+		public boolean waiting() {
+			return waiting != 0;
+		}
+
+		@Override
+		public boolean valid() {
+			return waiting != 0;
+		}
+
 		protected boolean tryWake() {
 			return waitingUpdater.compareAndSet(this, 1, 0);
 		}
@@ -93,20 +108,20 @@ public abstract class FairAbstractCommunalWaitQueue<E> implements CommunalWaitQu
 		
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private static final AtomicIntegerFieldUpdater<Node> waitingUpdater=  AtomicIntegerFieldUpdater.newUpdater(Node.class, "waiting");
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private static final AtomicReferenceFieldUpdater<Node, Node> nextUpdater = AtomicReferenceFieldUpdater.newUpdater(Node.class, Node.class, "next");
 	protected abstract Node<E> newNode(Thread thread, E resource);
 	
 	private final Node<E> head = newNode(null, null);
 	private final Equality<? super E> equality;
 
-	public FairAbstractCommunalWaitQueue() {
+	public FairCommunalWaitQueue() {
 		this(Equalities.object());
 	}
 	
-	public FairAbstractCommunalWaitQueue(Equality<? super E> equality) {
+	public FairCommunalWaitQueue(Equality<? super E> equality) {
 		this.equality = equality;
 	}
 

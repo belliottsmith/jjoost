@@ -79,7 +79,7 @@ public class InlineListHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extend
 	@Override
 	public V put(K key, V val) {
 		final N n = nodeFactory.makeNode(hash(key), key, val);
-		return store.put(n, n, nodeEq, valProj());
+		return store.put(false, n, n, nodeEq, valProj());
 	}
 
 	@Override
@@ -194,7 +194,7 @@ public class InlineListHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extend
 			final K key = entry.getKey();
 			final V val = entry.getValue();
 			final N n = nodeFactory.makeNode(hash(key), key, val);
-			return store.put(n, n, nodeEq, entryProj());
+			return store.put(false, n, n, nodeEq, entryProj());
 		}
 		@Override
 		public Entry<K, V> putIfAbsent(Entry<K, V> entry) {

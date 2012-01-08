@@ -53,8 +53,9 @@ public class Objects {
     	return a == b || ((a != null & b != null) && a.equals(b));
     }
     
-	@SuppressWarnings("unchecked")
-	private static final Comparator<Comparable> COMPARABLE_COMPARATOR = new Comparator<Comparable>() {
+	@SuppressWarnings("rawtypes")
+	private static final Comparator COMPARABLE_COMPARATOR = new Comparator<Comparable>() {
+		@SuppressWarnings("unchecked")
 		@Override
 		public int compare(Comparable o1, Comparable o2) {
 			return o1.compareTo(o2);

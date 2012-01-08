@@ -24,13 +24,14 @@ package org.jjoost.collections.maps.wrappers;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.concurrent.ConcurrentMap;
 
 import org.jjoost.collections.Map;
 import org.jjoost.collections.sets.wrappers.AdapterToJDKSet;
 import org.jjoost.util.Iters;
 import org.jjoost.util.Objects;
 
-public class AdapterToJDKMap<K, V> implements java.util.Map<K, V> {
+public class AdapterToJDKMap<K, V> implements ConcurrentMap<K, V> {
 	
 	private final Class<K> keyClazz;
 	private final Class<V> valueClazz;
@@ -198,6 +199,28 @@ public class AdapterToJDKMap<K, V> implements java.util.Map<K, V> {
 			return Iters.toArray(this, a);
 		}
 		
+	}
+
+	@Override
+	public V putIfAbsent(K key, V value) {
+		return map.put(key, value);
+	}
+
+	@Override
+	public boolean remove(Object key, Object value) {
+		return map.remove(keyClazz.cast(key), valueClazz.cast(value)) > 0;
+	}
+
+	@Override
+	public boolean replace(K key, V oldValue, V newValue) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public V replace(K key, V value) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

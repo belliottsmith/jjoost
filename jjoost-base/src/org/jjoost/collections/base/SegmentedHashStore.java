@@ -128,8 +128,8 @@ public class SegmentedHashStore<N extends HashNode<N>> implements HashStore<N> {
 		return true;
 	}
 	@Override
-	public <NCmp, V> V put(NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
-		return segmentFor(put.hash).put(find, put, eq, ret);
+	public <NCmp, V> V put(boolean replace, NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+		return segmentFor(put.hash).put(replace, find, put, eq, ret);
 	}
 	@Override
 	public <NCmp, V> V putIfAbsent(int hash, NCmp put, HashNodeEquality<? super NCmp, ? super N> eq,

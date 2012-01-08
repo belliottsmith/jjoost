@@ -74,6 +74,26 @@ public interface Map<K, V> extends ReadMap<K, V>, AnyMap<K, V> {
 	public V putIfAbsent(K key, Function<? super K, ? extends V> putIfNotPresent);
 	
 	/**
+	 * If the provided key/value pair are bound in the map, bind the key to the new value.
+	 * 
+	 * @param key the key
+	 * @param val the val
+	 * 
+	 * @return implementation dependent
+	 */
+	public boolean replace(K key, V oldValue, V newValue);
+	
+	/**
+	 * If the provided key is bound in the map, bind the key to the new value.
+	 * 
+	 * @param key the key
+	 * @param val the val
+	 * 
+	 * @return implementation dependent
+	 */
+	public V replace(K key, V val);
+	
+	/**
 	 * Equivalent to putIfAbsent(key, putIfNotPresent), except that instead of returning
 	 * the value previously associated with the key, returns the value associated with the
 	 * key as the method is exiting; i.e. if a new value is associated with the key as a

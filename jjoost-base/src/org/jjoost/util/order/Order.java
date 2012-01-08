@@ -20,18 +20,21 @@
  * THE SOFTWARE.
  */
 
-package org.jjoost.util;
+package org.jjoost.util.order;
 
+import java.lang.reflect.Array;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+
+import org.jjoost.util.Objects;
 
 /**
  * This class provides functionality on top of comparators, such as sorting, searching and range matching.
  * 
  * @author b.elliottsmith
  */
-public class Ordering<E> {
+public class Order<E> {
 
 	private final Comparator<E> cmp;
 
@@ -39,7 +42,7 @@ public class Ordering<E> {
 	 * Construct a new Ordering from the provided comparator 
 	 * @param comparator the comparator that will define the ordering
 	 */
-	public Ordering(Comparator<E> comparator) {
+	public Order(Comparator<E> comparator) {
 		super();
 		this.cmp = comparator;
 	}
@@ -501,8 +504,8 @@ public class Ordering<E> {
     	return cmp;
     }
     
-    @SuppressWarnings("unchecked")
-	private static final Ordering FOR_COMPARABLE = new Ordering(Objects.<Comparable>getComparableComparator());
+    @SuppressWarnings({"rawtypes", "unchecked"})
+	private static final Order<?> FOR_COMPARABLE = new Order<Comparable>(Objects.<Comparable>getComparableComparator());
 
 	/**
 	 * Return an Ordering over Comparable objects of the type specified by the type parameter
@@ -510,8 +513,8 @@ public class Ordering<E> {
 	 * @return an Ordering over objects of type Comparable
 	 */
 	@SuppressWarnings("unchecked")
-	public static <E extends Comparable<E>> Ordering<E> forComparable() {
-		return FOR_COMPARABLE;
+	public static <E extends Comparable<E>> Order<E> forComparable() {
+		return (Order<E>) FOR_COMPARABLE;
 	}
 	
 	/**
@@ -519,8 +522,151 @@ public class Ordering<E> {
 	 * @param cmp the Comparator to back the Ordering by
 	 * @return an Ordering for the provided Comparator
 	 */
-	public Ordering<E> from(Comparator<E> cmp) {
-		return new Ordering<E>(cmp);
+	public Order<E> from(Comparator<E> cmp) {
+		return new Order<E>(cmp);
+	}
+
+    private static final int LINEAR_INTERSECT_CUTOFF = 3;
+    
+    /**
+     * merges two sorted arrays in time proportional to the size of the result, or the logarithm of the larger input, whichever is greater
+     * 
+     * @param <E>
+     * @param m1
+     * @param m2
+     * @return
+     */
+    public E[] intersect(E[] m1, E[] m2) {
+    	return intersect(m1, 0, m1.length, m2, 0, m2.length);
+    }
+    
+	/**
+	 * merges two sorted arrays in time proportional to the size of the result, or the logarithm of the larger input, whichever is greater
+	 * 
+	 * @param <E>
+	 * @param m1
+	 * @param m2
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public E[] intersect(E[] m1, int s1, int e1, E[] m2, int s2, int e2) {
+		final int l1 = e1 - s1;
+		final int l2 = e2 - s2;
+		if ((l1 == 0) | (l2 == 0)) {
+			return (E[]) Array.newInstance(m1.getClass().getComponentType(), 0);
+		}
+		E[] r;
+		final int rc;
+		final E[][] trg = (E[][]) Array.newInstance(m1.getClass(), 1);
+		if (l1 < l2) {
+			r = m1;
+			if (l2 <= LINEAR_INTERSECT_CUTOFF) {
+				rc = linearIntersect(m1, s1, e1, m2, s2, e2, null, m1, 0, trg);			
+			} else {
+				rc = intersect(m1, s1, e1, m2, s2, e2, null, m1, 0, trg);			
+			}
+		} else {
+			r = m2;
+			if (l1 <= LINEAR_INTERSECT_CUTOFF) {
+				rc = linearIntersect(m2, s2, e2, m1, s1, e1, null, m2, 0, trg);
+			} else {
+				rc = intersect(m2, s2, e2, m1, s1, e1, null, m2, 0, trg);
+			}
+		}
+		if (trg[0] != null) {
+			r = trg[0];
+		}
+		if (rc != r.length) {
+			r = java.util.Arrays.copyOf(r, rc);
+		}
+		return r;
 	}
 	
+	// assumes arrays are dup free
+	// trg/smaller/trgout between them allow us to only allocate a new array if the result is different to the smaller of the sources (i.e. one is not a subset of the other)
+	@SuppressWarnings("unchecked")
+	public int intersect(E[] m1, int s1, int e1, E[] m2, int s2, int e2, E[] trg, E[] smaller, int count, E[][] trgout) {
+		final int mid1 = s1 + ((e1 - s1) >> 1);
+		final E mid1val = m1[mid1];
+		int e21 = floor(m2, mid1val, s2, e2);
+		final int s22 = e21 + 1;
+		if (e21 < s2 || cmp.compare(mid1val, m2[e21]) != 0) {
+			e21 = e21 + 1;
+		}
+		final int len11 = mid1 - s1;
+		final int len21 = e21 - s2;
+		if ((len11 > 0) & (len21 > 0)) {
+			if (len11 < len21) {
+				if (len21 <= LINEAR_INTERSECT_CUTOFF) {
+					count = linearIntersect(m1, s1, mid1, m2, s2, e21, trg, smaller, count, trgout);
+				} else {
+					count = intersect(m1, s1, mid1, m2, s2, e21, trg, smaller, count, trgout);
+				}
+			} else {
+				if (len11 <= LINEAR_INTERSECT_CUTOFF) {
+					count = linearIntersect(m2, s2, e21, m1, s1, mid1, trg, smaller, count, trgout);
+				} else {
+					count = intersect(m2, s2, e21, m1, s1, mid1, trg, smaller, count, trgout);
+				}
+			}
+			if (trg == null && trgout[0] != null) {
+				trg = trgout[0];
+			}
+		}
+		if (e21 != s22) {
+			if (trg != null) {
+				trg[count++] = mid1val;
+			} else if (smaller[count] == mid1val) {
+				count++;
+			} else {
+				trgout[0] = trg = (E[]) Array.newInstance(m1.getClass().getComponentType(), smaller.length);
+				System.arraycopy(smaller, 0, trg, 0, count);
+				trg[count++] = mid1val;
+			}
+		}
+		final int len12 = e1 - (mid1 + 1);
+		final int len22 = e2 - s22;
+		if ((len12 > 0) & (len22 > 0)) {
+			if (len12 < len22) {
+				if (len22 <= LINEAR_INTERSECT_CUTOFF) {
+					count = linearIntersect(m1, mid1 + 1, e1, m2, s22, e2, trg, smaller, count, trgout);
+				} else {
+					count = intersect(m1, mid1 + 1, e1, m2, s22, e2, trg, smaller, count, trgout);
+				}
+			} else {
+				if (len12 <= LINEAR_INTERSECT_CUTOFF) {
+					count = linearIntersect(m2, s22, e2, m1, mid1 + 1, e1, trg, smaller, count, trgout);
+				} else {
+					count = intersect(m2, s22, e2, m1, mid1 + 1, e1, trg, smaller, count, trgout);
+				}
+			}
+		}
+		return count;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private int linearIntersect(E[] m1, int s1, int e1, E[] m2, int s2, int e2, E[] trg, E[] smaller, int count, E[][] trgout) {
+		for (int i = s1, j = s2 ; i != e1 && j != e2 ;) {
+			final E v1 = m1[i], v2 = m2[j];
+			final int d = cmp.compare(v1, v2);
+			if (d == 0) {
+				if (trg != null) {
+					trg[count++] = v1;
+				} else if (smaller[count] == v1) {
+					count++;
+				} else {
+					trgout[0] = trg = (E[]) Array.newInstance(m1.getClass().getComponentType(), smaller.length);
+					System.arraycopy(smaller, 0, trg, 0, count);
+					trg[count++] = v1;
+				}
+				i++; j++;
+			} else if (d < 0) {
+				i++;
+			} else {
+				j++;
+			}
+		}
+		return count;
+	}
+
 }

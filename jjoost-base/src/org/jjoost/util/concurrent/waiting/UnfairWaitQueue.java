@@ -22,43 +22,55 @@
 
 package org.jjoost.util.concurrent.waiting;
 
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+import java.util.concurrent.locks.LockSupport;
+
+import org.jjoost.util.concurrent.atomic.AtomicRefUpdater;
 
 /**
  * @author b.elliottsmith
  */
-public abstract class UnfairAbstractWaitQueue implements WaitQueue {
+public final class UnfairWaitQueue implements WaitQueue, WaitSignal {
 
-	protected abstract class Node extends AbstractWaitHandle {
+	protected final class Node extends AbstractWaitHandle {
 		
 		protected final Node next;
-
-		protected Node(Thread thread, Node next) {
-			super(thread);
+		public Node(int spinNanos, Thread thread, Node next) {
+			super(spinNanos, thread);
 			this.next = next;
 		}
 		
-	}
-
-	private volatile Node head;
-	private static final AtomicReferenceFieldUpdater<UnfairAbstractWaitQueue, Node> headUpdater = AtomicReferenceFieldUpdater.newUpdater(UnfairAbstractWaitQueue.class, Node.class, "head");
-
-	abstract protected Node newNode(Thread thread, Node next);
-	
-	protected boolean stillWaiting(Node test) {
-		Node list = head;
-		while (list != null) {
-			if (test == list)
-				return true;
-			list = list.next;
+		@Override
+		public void cancel() { 
+			thread = null;
 		}
-		return false;
+		
+		@Override
+		public boolean waiting() {
+			return thread != null;
+		}
+		
+		@Override
+		public boolean valid() {
+			return thread != null;
+		}
+
 	}
+
+	private static final AtomicRefUpdater<UnfairWaitQueue, Node> headUpdater = AtomicRefUpdater.get(UnfairWaitQueue.class, Node.class, "head");
 	
+	private volatile Node head;
+	private final int spinNanos;
+	public UnfairWaitQueue() {
+		this(0);
+	}
+	public UnfairWaitQueue(int spinNanos) {
+		this.spinNanos = spinNanos;
+	}
+
 	public WaitHandle register() {
 		final Thread thread = Thread.currentThread();
 		while (true) {
-			final Node handle = newNode(thread, head);
+			final Node handle = new Node(spinNanos, thread, head);
 			if (headUpdater.compareAndSet(this, handle.next, handle))
 				return handle;
 		}
@@ -66,11 +78,18 @@ public abstract class UnfairAbstractWaitQueue implements WaitQueue {
 	
 	public void wakeAll() {
 		while (true) {
-			final Node head = this.head;
+			Node head = this.head;
 			if (head == null)
 				break;
 			if (headUpdater.compareAndSet(this, head, null)) {
-				wakeAll(head);
+				while (head != null) {
+					final Thread t = head.thread;
+					if (t != null) {
+						head.thread = null;
+						LockSupport.unpark(t);
+					}
+					head = head.next;
+				}
 				break;
 			}
 		}
@@ -82,13 +101,14 @@ public abstract class UnfairAbstractWaitQueue implements WaitQueue {
 			if (head == null)
 				break;
 			if (headUpdater.compareAndSet(this, head, head.next)) {
-				wakeFirst(head);
-				break;
+				final Thread t = head.thread;
+				if (t != null) {
+					head.thread = null;
+					LockSupport.unpark(t);
+					break;
+				}
 			}
 		}
 	}
-	
-	protected abstract void wakeAll(UnfairAbstractWaitQueue.Node list);
-	protected abstract void wakeFirst(UnfairAbstractWaitQueue.Node list);
 	
 }

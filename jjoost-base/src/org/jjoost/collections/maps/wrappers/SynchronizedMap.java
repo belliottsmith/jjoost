@@ -78,5 +78,13 @@ public class SynchronizedMap<K, V> extends SynchronizedArbitraryMap<K, V, Map<K,
 	@Override public synchronized UnitarySet<V> values(K key) {
 		return wrap(delegate.values(key));
 	}
+	@Override
+	public boolean replace(K key, V oldValue, V newValue) {
+		return delegate.replace(key, oldValue, newValue);
+	}
+	@Override
+	public V replace(K key, V val) {
+		return delegate.replace(key, val);
+	}
 
 }

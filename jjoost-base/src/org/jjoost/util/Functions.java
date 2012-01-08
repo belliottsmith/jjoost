@@ -117,7 +117,7 @@ public class Functions {
 	 *            function applied first
 	 * @return composition of f1 and f2
 	 */
-	public static <E, F, G> Function<E, G> composition(final Function<F, G> f2, final Function<E, F> f1) {
+	public static <E, F, G> Function<E, G> composition(final Function<? super F, ? extends G> f2, final Function<? super E, ? extends F> f1) {
 		return new Function<E, G>() {
 			private static final long serialVersionUID = 3725675651261795247L;
 			@Override
@@ -234,7 +234,7 @@ public class Functions {
 	public static <V, E extends Entry<?, ? extends V>> Function<E, V> getMapEntryValueProjection() {
 		return MAP_ENTRY_VALUE_PROJECTION;
 	}
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private static final MapEntryValueProjection MAP_ENTRY_VALUE_PROJECTION = new MapEntryValueProjection();
 	/**
 	 * A function that retrieves the value portion of a <code>Map.Entry</code>
@@ -255,7 +255,7 @@ public class Functions {
 	public static <K, E extends Entry<? extends K, ?>> Function<E, K> getMapEntryKeyProjection() {
 		return MAP_ENTRY_KEY_PROJECTION;
 	}
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private static final MapEntryValueProjection MAP_ENTRY_KEY_PROJECTION = new MapEntryValueProjection();
 	/**
 	 * A function that retrieves the key portion of a <code>Map.Entry</code>
@@ -276,7 +276,7 @@ public class Functions {
 	public static <V> Function<Value<V>, V> getValueContentsProjection() {
 		return ABSTRACT_VALUE_PROJECTION;
 	}
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private static final AbstractValueProjection ABSTRACT_VALUE_PROJECTION = new AbstractValueProjection();
 	/**
 	 * A function that retrieves the value from a <code>Value</code>

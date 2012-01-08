@@ -75,7 +75,7 @@ public class HashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Abstract
 	
 	@Override
 	public V put(K key, V val) {
-		return store.put(key, nodeFactory.makeNode(hash(key), key, val), keyEq, valProj());
+		return store.put(false, key, nodeFactory.makeNode(hash(key), key, val), keyEq, valProj());
 	}
 
 	@Override
@@ -83,6 +83,20 @@ public class HashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Abstract
 		return store.putIfAbsent(key, nodeFactory.makeNode(hash(key), key, val), keyEq, valProj());
 	}
 
+	@Override
+	public V replace(K key, V val) {
+		N n = store.first(hash(key), key, keyEq, nodeProj());
+		if (n != null && (n = store.put(true, n, nodeFactory.makeNode(hash(key), key, val), nodeEq, nodeProj())) != null) {
+			return n.getValue();
+		}
+		return null;
+	}
+	
+	@Override
+	public boolean replace(K key, V oldValue, V newValue) {
+		return store.put(true, nodeFactory.makeNode(hash(key), key, oldValue), nodeFactory.makeNode(hash(key), key, newValue), nodeEq, nodeProj()) != null;
+	}
+	
 	@Override
 	public V ensureAndGet(K key, final Factory<? extends V> putIfNotPresent) {
 		return store.putIfAbsent(hash(key), key, keyEq, new HashNodeFactory<K, N>() {

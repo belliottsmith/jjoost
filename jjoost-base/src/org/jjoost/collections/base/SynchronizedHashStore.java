@@ -70,8 +70,8 @@ public class SynchronizedHashStore<N extends HashNode<N>> extends SynchronizedDe
 	public synchronized boolean isEmpty() {
 		return delegate.isEmpty();
 	}
-	public synchronized <NCmp, V> V put(NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
-		return delegate.put(find, put, eq, ret);
+	public synchronized <NCmp, V> V put(boolean replace, NCmp find, N put, HashNodeEquality<? super NCmp, ? super N> eq, Function<? super N, ? extends V> ret) {
+		return delegate.put(replace, find, put, eq, ret);
 	}
 	public synchronized <NCmp, V> V putIfAbsent(int hash, NCmp put, HashNodeEquality<? super NCmp, ? super N> eq,
 		HashNodeFactory<? super NCmp, N> factory, Function<? super N, ? extends V> ret, boolean returnNewIfCreated) {

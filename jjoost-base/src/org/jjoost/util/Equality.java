@@ -51,5 +51,5 @@ public interface Equality<E> extends Serializable {
 	 * @return the hash of the parameter
 	 */
     public int hash(E o);
-
+    
 }

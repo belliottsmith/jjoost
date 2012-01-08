@@ -129,4 +129,27 @@ public class BiMapOneToOne<K, V> extends AbstractBiMap<K, V, Map<K, V>, Map<V, K
 		return map.values(key);
 	}
 
+	@Override
+	public boolean replace(K key, V oldValue, V newValue) {
+		check(key, newValue);
+		if (map.replace(key, oldValue, newValue)) {
+			partner.remove(oldValue, key);
+			partner.put(newValue, key);
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public V replace(K key, V val) {
+		check(key, val);
+		final V prevValue = map.replace(key, val);
+		if (prevValue != null) {
+			partner.remove(prevValue, key);
+			partner.put(val, key);
+			return prevValue;
+		}
+		return null;
+	}
+
 }

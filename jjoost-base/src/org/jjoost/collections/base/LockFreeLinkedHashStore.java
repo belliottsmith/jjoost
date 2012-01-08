@@ -31,7 +31,7 @@ import java.util.concurrent.locks.LockSupport;
 import org.jjoost.util.Function;
 import org.jjoost.util.Functions;
 
-@SuppressWarnings("restriction")
+@Deprecated
 public class LockFreeLinkedHashStore<N extends LockFreeLinkedHashStore.LockFreeLinkedHashNode<N>> extends LockFreeHashStore<N> {
 
 	private static final long serialVersionUID = 5364765360666482653L;
@@ -219,7 +219,7 @@ public class LockFreeLinkedHashStore<N extends LockFreeLinkedHashStore.LockFreeL
 				(N[]) new LockFreeLinkedHashNode[capacity()]);
 		while (iter.hasNext()) {
 			final N next = iter.next().copy();
-			copy.put(nodeEqualityProj.apply(next), next, nodeEquality, Functions.identity());
+			copy.put(false, nodeEqualityProj.apply(next), next, nodeEquality, Functions.identity());
 		}
 		return copy;
 	}

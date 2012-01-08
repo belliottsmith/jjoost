@@ -22,6 +22,8 @@
 
 package org.jjoost.collections.sets.base;
 
+import java.util.Iterator;
+
 import org.jjoost.collections.AnyReadSet;
 import org.jjoost.collections.AnySet;
 import org.jjoost.util.Iters;
@@ -49,7 +51,7 @@ public abstract class AbstractSet<V> implements AnyReadSet<V> {
 		if (!that.equality().equals(this.equality()))
 			return false;
 		if (permitsDuplicates()) {
-			for (V v : that) {
+			for (V v : that.unique()) {
 				if (this.count(v) != that.count(v))
 					return false;
 			}
@@ -59,6 +61,15 @@ public abstract class AbstractSet<V> implements AnyReadSet<V> {
 					return false;
 		}
 		return true;
+	}
+	
+	public void retain(AnySet<? super V> retain) {
+		final Iterator<V> iter = iterator();
+		while (iter.hasNext()) {
+			if (!retain.contains(iter.next())) {
+				iter.remove();
+			}
+		}
 	}
 
 }

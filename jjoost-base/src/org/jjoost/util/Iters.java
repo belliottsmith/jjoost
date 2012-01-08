@@ -859,7 +859,6 @@ public class Iters {
 	 *            the delimiter
 	 * @return a string representation of the argument
 	 */
-    @SuppressWarnings("unchecked")
 	public static String toString(Iterator<?> iter, String delimiter) {
     	StringBuffer buffer = new StringBuffer();
     	boolean doneFirst = false;

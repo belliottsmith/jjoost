@@ -55,7 +55,6 @@ public final class ImmutableMapEntry<K, V> implements Map.Entry<K, V> {
 		return key.hashCode();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public boolean equals(Object that) {
 		return that instanceof Entry && equals((Entry<?, ?>) that);

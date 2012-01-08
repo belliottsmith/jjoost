@@ -96,6 +96,8 @@ public interface AnySet<V> extends AnyReadSet<V> {
 	 */
 	public int remove(V value);
 	
+	public void retain(AnySet<? super V> remove);
+	
 	/**
 	 * Removes at most the prescribed number of values equal to the parameter from the set; which values are removed is implementation
 	 * specific, and may be arbitrary. Returns the number of values actually removed as a result of the action.

@@ -209,6 +209,12 @@ public abstract class SynchronizedDelegator {
 					return delegate.add(value);
 				}
 			}
+			@Override
+			public void retain(AnySet<? super V> remove) {
+				synchronized(SynchronizedDelegator.this) {
+					delegate.retain(remove);
+				}
+			}
 		};
 	}
 	
@@ -357,6 +363,12 @@ public abstract class SynchronizedDelegator {
 			public boolean add(V value) {
 				synchronized(SynchronizedDelegator.this) {
 					return delegate.add(value);
+				}
+			}
+			@Override
+			public void retain(AnySet<? super V> remove) {
+				synchronized(SynchronizedDelegator.this) {
+					delegate.retain(remove);
 				}
 			}
 		};
@@ -514,6 +526,12 @@ public abstract class SynchronizedDelegator {
 					return delegate.add(value);
 				}
 			}
+			@Override
+			public void retain(AnySet<? super V> remove) {
+				synchronized(SynchronizedDelegator.this) {
+					delegate.retain(remove);
+				}
+			}
 		};
 	}
 	
@@ -661,6 +679,12 @@ public abstract class SynchronizedDelegator {
 			public boolean add(V value) {
 				synchronized(SynchronizedDelegator.this) {
 					return delegate.add(value);
+				}
+			}
+			@Override
+			public void retain(AnySet<? super V> remove) {
+				synchronized(SynchronizedDelegator.this) {
+					delegate.retain(remove);
 				}
 			}
 		};

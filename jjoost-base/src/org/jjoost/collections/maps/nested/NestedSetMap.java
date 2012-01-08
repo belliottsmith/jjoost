@@ -34,6 +34,7 @@ import org.jjoost.collections.Map;
 import org.jjoost.collections.Set;
 import org.jjoost.collections.lists.UniformList;
 import org.jjoost.collections.maps.ImmutableMapEntry;
+import org.jjoost.collections.sets.base.AbstractSet;
 import org.jjoost.collections.sets.base.IterableSet;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
@@ -51,7 +52,7 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 	protected final Equality<? super V> valueEq;
 	private volatile int totalCount;
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private static final AtomicIntegerFieldUpdater<NestedSetMap> totalCountUpdater = AtomicIntegerFieldUpdater.newUpdater(NestedSetMap.class, "totalCount");
 	
 	protected MultiSet<K> keySet;
@@ -250,7 +251,7 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 		}
 	}
 	
-	class KeySet implements MultiSet<K> {
+	class KeySet extends AbstractSet<K> implements MultiSet<K> {
 		
 		private static final long serialVersionUID = 1461826147890179114L;
 
@@ -447,7 +448,7 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 
 	}
 	
-	abstract class AbstractEntrySet implements AnySet<Entry<K, V>> {
+	abstract class AbstractEntrySet extends AbstractSet<Entry<K, V>> implements AnySet<Entry<K, V>> {
 		
 		private static final long serialVersionUID = 4037233101289518536L;
 

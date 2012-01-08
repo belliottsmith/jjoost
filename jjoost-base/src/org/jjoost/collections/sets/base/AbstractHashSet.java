@@ -109,7 +109,7 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> exten
 	public int putAll(Iterable<V> vals) {
 		int c = 0;
 		for (V val : vals) {
-			if (store.put(val, nodeFactory.makeNode(hash(val), val), valEq, nodeProj()) == null)
+			if (store.put(false, val, nodeFactory.makeNode(hash(val), val), valEq, nodeProj()) == null)
 				c++;
 		}
 		return c;

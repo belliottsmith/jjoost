@@ -37,6 +37,7 @@ import org.jjoost.collections.iters.EmptyIterator;
 import org.jjoost.collections.iters.UniformIterator;
 import org.jjoost.collections.lists.UniformList;
 import org.jjoost.collections.maps.ImmutableMapEntry;
+import org.jjoost.collections.sets.base.AbstractSet;
 import org.jjoost.collections.sets.base.IterableSet;
 import org.jjoost.collections.sets.wrappers.AdapterFromJDKSet;
 import org.jjoost.util.Equalities;
@@ -44,13 +45,14 @@ import org.jjoost.util.Equality;
 import org.jjoost.util.Factory;
 import org.jjoost.util.Function;
 import org.jjoost.util.Iters;
+import org.jjoost.util.Objects;
 
 // TODO : this class' methods currently assume keys/values are all non null, which is an invalid assumption
 public class AdapterFromJDKMap<K, V> implements Map<K, V> {
 	
 	private static final long serialVersionUID = -5498331996410891451L;
 	
-	private final java.util.Map<K, V> map;
+	protected final java.util.Map<K, V> map;
 	private Set<Entry<K, V>> entrySet;
 	private Set<K> keySet;
 	
@@ -266,7 +268,7 @@ public class AdapterFromJDKMap<K, V> implements Map<K, V> {
 		return new KeyValueSet(key);
 	}
 	
-	private final class KeyValueSet implements UnitarySet<V> {
+	private final class KeyValueSet extends AbstractSet<V> implements UnitarySet<V> {
 		private static final long serialVersionUID = 6651319386421757315L;
 		final K key;
 		public KeyValueSet(K key) {
@@ -430,6 +432,24 @@ public class AdapterFromJDKMap<K, V> implements Map<K, V> {
 			return Equalities.object();
 		}
 		
+	}
+
+	@Override
+	public boolean replace(K key, V oldValue, V newValue) {
+		final V currentValue = map.get(key);
+		if (Objects.equalQuick(currentValue, oldValue) && (currentValue != null || map.containsKey(key))) {
+			map.put(key, newValue);
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public V replace(K key, V val) {
+		if (map.containsKey(key)) {
+			return map.put(key, val);
+		}
+		return null;
 	}
 
 }

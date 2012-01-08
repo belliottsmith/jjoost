@@ -37,11 +37,14 @@ abstract class AbstractHashNodeIterator<N, NCmp, V> implements Iterator<V> {
 			int prev = this.prevNode;
 			N[] prevs = this.prevNodes;
 			N[] nodes = this.nextNodes;
-			if (prevs == nodes)
+			if (prevs == nodes) {
 				node = prev + 1;
+			} else {
+				node = 0;
+			}
 			while (nodes != null) {
 				final int nodeCount = this.nextNodesCount;
-				while (node != nodeCount 
+				while (node < nodeCount 
 						&& (isDeleted(prevs, prev, nodes, node)
 							|| !accept(nodes[node])))
 						node++;

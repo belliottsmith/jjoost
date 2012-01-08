@@ -13,7 +13,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
-import org.jjoost.collections.maps.concurrent.HashLockHashMap;
 import org.jjoost.collections.maps.concurrent.LockFreeHashMap;
 
 public class ConcurrencySpeedTest {

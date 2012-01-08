@@ -60,7 +60,7 @@ implements AnyMap<K, V> {
 	public AnyMap<V, K> inverse() {
 		return partner();
 	}
-	private void check(K key, V val) {
+	protected void check(K key, V val) {
 		if (key == null)
 			throw new IllegalArgumentException("Key cannot be null in a BiMap");
 		if (val == null)

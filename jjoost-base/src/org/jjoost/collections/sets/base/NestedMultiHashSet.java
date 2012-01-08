@@ -46,7 +46,7 @@ import org.jjoost.util.Iters;
 import org.jjoost.util.Rehasher;
 import org.jjoost.util.tuples.Value;
 
-public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.INode<V, N>> implements MultiSet<V> {
+public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.INode<V, N>> extends AbstractSet<V> implements MultiSet<V> {
 
 	private static final long serialVersionUID = 3187373892419456381L;
 	

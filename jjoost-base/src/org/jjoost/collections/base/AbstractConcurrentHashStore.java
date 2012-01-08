@@ -30,7 +30,7 @@ import org.jjoost.util.Functions;
 import org.jjoost.util.Iters;
 import org.jjoost.util.Rehasher;
 import org.jjoost.util.Rehashers;
-import org.jjoost.util.concurrent.waiting.UnfairParkingWaitQueue;
+import org.jjoost.util.concurrent.waiting.UnfairWaitQueue;
 import org.jjoost.util.concurrent.waiting.WaitHandle;
 import org.jjoost.util.concurrent.waiting.WaitQueue;
 
@@ -284,13 +284,13 @@ public abstract class AbstractConcurrentHashStore<
 	}	
 	
 	protected static class BlockingTable<T extends Table> implements Table {
-		private final WaitQueue waiting = new UnfairParkingWaitQueue();
+		private final WaitQueue waiting = new UnfairWaitQueue();
 		protected volatile T next = null;
 		protected final void waitForNext() {
 			final WaitHandle wait = waiting.register();
 			if (next != null)
 				return;
-			wait.awaitUninterruptibly();
+			wait.waitForeverNoInterrupt();
 		}
 		public final void wake(T next) {
 			this.next = next;
@@ -318,7 +318,7 @@ public abstract class AbstractConcurrentHashStore<
 		protected final ConcurrentHashNode[] newTable;
 		protected final int oldTableMask;
 		protected final int newTableMask;
-		protected final WaitQueue waitingForCompletion = new UnfairParkingWaitQueue();
+		protected final WaitQueue waitingForCompletion = new UnfairWaitQueue();
 		protected final int capacity;
 		protected int remainingSegments;
 		
@@ -338,7 +338,7 @@ public abstract class AbstractConcurrentHashStore<
 			final WaitHandle wait = waitingForCompletion.register();
 			if (store.getTableFresh() != this)
 				return;
-			wait.awaitUninterruptibly();
+			wait.waitForeverNoInterrupt();
 		}
 		
 		@Override

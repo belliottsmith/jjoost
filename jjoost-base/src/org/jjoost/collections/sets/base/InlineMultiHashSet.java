@@ -62,13 +62,13 @@ public class InlineMultiHashSet<V, N extends HashNode<N> & Value<V>> extends Abs
 	
 	@Override
 	public V put(V val) {
-		return store.put(val, nodeFactory.makeNode(hash(val), val), putEq, valProj());
+		return store.put(false, val, nodeFactory.makeNode(hash(val), val), putEq, valProj());
 	}
 	
 	@Override
 	public void put(V val, int count) {
 		for (int i = 0 ; i != count ; i++) {
-			store.put(val, nodeFactory.makeNode(hash(val), val), putEq, valProj());
+			store.put(false, val, nodeFactory.makeNode(hash(val), val), putEq, valProj());
 		}
 	}
 	

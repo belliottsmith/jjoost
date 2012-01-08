@@ -34,7 +34,7 @@ public class AcceptAll<E> implements BothFilter<E> {
 
 	private static final long serialVersionUID = 3620521225513318797L;
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private static final AcceptAll INSTANCE = new AcceptAll();
 	
 	/**

@@ -119,7 +119,7 @@ public abstract class MapMaker<K, V> {
 	 * @return a factory of type <code>Map</code>
 	 */
 	public Factory<Map<K, V>> newMapFactory() {
-		return new ScalarMapFactory<K, V>(this);
+		return new MapFactory<K, V>(this);
 	}
 	/**
 	 * Return a new <code>Factory</code> whose create() method returns the result of <code>this.newListMap(nesting)</code>. Changes to this
@@ -167,8 +167,8 @@ public abstract class MapMaker<K, V> {
 		private HashStoreType type = HashStoreType.serial();
 		private int initialCapacity = 16;
 		private float loadFactor = 0.75f;
-		private Function<K, V> factoryFunction;
-		private Factory<V> factory;
+		private Function<? super K, ? extends V> factoryFunction;
+		private Factory<? extends V> factory;
 		/**
 		 * create a new HashMapMaker
 		 */
@@ -177,8 +177,8 @@ public abstract class MapMaker<K, V> {
 				Equality<? super K> keyEquality,
 				Equality<? super V> valEquality, HashStoreType type,
 				int initialCapacity, float loadFactor,
-				Function<K, V> factoryFunction,
-				Factory<V> factory) {
+				Function<? super K, ? extends V> factoryFunction,
+				Factory<? extends V> factory) {
 			super();
 			this.rehasher = rehasher;
 			this.keyEquality = keyEquality;
@@ -263,7 +263,7 @@ public abstract class MapMaker<K, V> {
 		 *            the factory to use to populate values against non-existent keys that are accessed via <code>get()</code>
 		 * @return <code>this</code>
 		 */
-		public HashMapMaker<K, V> defaultsTo(Factory<V> factory) { this.factory = factory ; this.factoryFunction = null ; return this ; }
+		public HashMapMaker<K, V> defaultsTo(Factory<? extends V> factory) { this.factory = factory ; this.factoryFunction = null ; return this ; }
 		/**
 		 * This options is only available for the construction of a regular <code>Map</code>. If this property is set
 		 * then any call to <code>get(k)</code> on the map where the key does not exist has the key inserted into the
@@ -274,7 +274,7 @@ public abstract class MapMaker<K, V> {
 		 *            the function to use to populate values against non-existent keys that are accessed via <code>get()</code>
 		 * @return <code>this</code>
 		 */
-		public HashMapMaker<K, V> defaultsTo(Function<K, V> function) { this.factoryFunction = function ; this.factory = null ; return this ; }
+		public HashMapMaker<K, V> defaultsTo(Function<? super K, ? extends V> function) { this.factoryFunction = function ; this.factory = null ; return this ; }
 		public Map<K, V> newMap() {
 			final Map<K, V> r;
 			switch(type.type()) {
@@ -463,10 +463,10 @@ public abstract class MapMaker<K, V> {
 		}
 	}
 	
-	private static final class ScalarMapFactory<K, V> implements Factory<Map<K, V>> {
+	private static final class MapFactory<K, V> implements Factory<Map<K, V>> {
 		private static final long serialVersionUID = 475702452749567764L;
 		private final MapMaker<K, V> maker;
-		public ScalarMapFactory(MapMaker<K, V> maker) {
+		public MapFactory(MapMaker<K, V> maker) {
 			this.maker = maker.copy();
 		}
 		@Override
