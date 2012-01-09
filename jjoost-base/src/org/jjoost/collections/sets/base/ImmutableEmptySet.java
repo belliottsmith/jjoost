@@ -29,7 +29,7 @@ import java.util.List;
 import org.jjoost.collections.AnyReadSet;
 import org.jjoost.util.Iters;
 
-public abstract class ImmutableEmptySet<V> extends AbstractSet<V> implements AnyReadSet<V> {
+public abstract class ImmutableEmptySet<V> extends AbstractReadSet<V> implements AnyReadSet<V> {
 
 	private static final long serialVersionUID = 103439040925077249L;
 

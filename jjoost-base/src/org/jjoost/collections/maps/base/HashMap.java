@@ -222,6 +222,26 @@ public class HashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Abstract
 			return null;
 		}
 
+		@Override
+		public V get(V find) {
+			return first(find);
+		}
+
+		@Override
+		public int size() {
+			return HashMap.this.contains(key) ? 1 : 0;
+		}
+
+		@Override
+		public V replace(V value) {
+			return HashMap.this.replace(key, value);
+		}
+
+		@Override
+		public V putOrReplace(V value) {
+			return HashMap.this.put(key, value);
+		}
+
 	}
 	
 	final class KeySet extends AbstractKeySet implements Set<K> {

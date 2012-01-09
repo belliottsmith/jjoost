@@ -110,7 +110,7 @@ public class Filters {
      * @param filters filters to apply
      * @return conjunction (i.e. "and") of provided filters
      */
-    public static <E> Filter<E> and(Filter<? super E> ... filters) {
+    public static <E> Filter<E> and(@SuppressWarnings("unchecked") Filter<? super E> ... filters) {
         return FilterMultiAnd.get(filters);
     }
     
@@ -141,7 +141,7 @@ public class Filters {
      * @param filters filters to apply
      * @return conjunction (i.e. "and") of provided filters
      */
-    public static <E> FilterPartialOrder<E> and(FilterPartialOrder<E> ... filters) {
+    public static <E> FilterPartialOrder<E> and(@SuppressWarnings("unchecked") FilterPartialOrder<E> ... filters) {
     	return PartialOrderMultiAnd.get(filters);
     }
     
@@ -208,7 +208,7 @@ public class Filters {
      * @param filters filters to apply
      * @return disjunction (i.e. "or") of provided filters
      */
-    public static <E> Filter<E> or(Filter<? super E> ... filters) {
+    public static <E> Filter<E> or(@SuppressWarnings("unchecked") Filter<? super E> ... filters) {
         return FilterMultiOr.get(filters);
     }
     
@@ -243,7 +243,7 @@ public class Filters {
      * @param filters filters to apply
      * @return disjunction (i.e. "or") of provided filters
 	 */
-    public static <E> FilterPartialOrder<E> or(FilterPartialOrder<E> ... filters) {
+    public static <E> FilterPartialOrder<E> or(@SuppressWarnings("unchecked") FilterPartialOrder<E> ... filters) {
         return PartialOrderMultiOr.get(filters);
     }
     

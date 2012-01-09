@@ -28,13 +28,14 @@ import java.util.List;
 
 import org.jjoost.collections.UnitaryReadSet;
 import org.jjoost.collections.lists.UniformList;
+import org.jjoost.util.Equality;
 
-public abstract class ImmutableUnitarySet<V> extends AbstractSet<V> implements UnitaryReadSet<V> {
+public abstract class ImmutableUnitarySet<V> extends AbstractReadSet<V> implements UnitaryReadSet<V> {
 
 	private static final long serialVersionUID = 924641628585159754L;
 
 	protected abstract V value();
-
+	
 	@Override
 	public V get() {
 		return value();
@@ -106,6 +107,35 @@ public abstract class ImmutableUnitarySet<V> extends AbstractSet<V> implements U
 	@Override
 	public Boolean apply(V v) {
 		return contains(v) ? Boolean.TRUE : Boolean.FALSE;
+	}
+
+	@Override
+	public V get(V find) {
+		final V value = value();
+		return equality().equates(value, find) ? value : null;
+	}
+
+	@Override
+	public int size() {
+		return 1;
+	}
+
+	@Override
+	public UnitaryReadSet<V> copy() {
+		final V value = value();
+		final Equality<? super V> equality = equality();
+		return new ImmutableUnitarySet<V>() {
+			private static final long serialVersionUID = -2093201840782302118L;
+			@Override
+			public Equality<? super V> equality() {
+				return equality;
+			}
+			@Override
+			protected V value() {
+				return value;
+			}
+			
+		};
 	}
 
 }

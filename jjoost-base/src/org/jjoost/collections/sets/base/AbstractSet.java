@@ -24,46 +24,12 @@ package org.jjoost.collections.sets.base;
 
 import java.util.Iterator;
 
-import org.jjoost.collections.AnyReadSet;
 import org.jjoost.collections.AnySet;
-import org.jjoost.collections.ReadMap;
-import org.jjoost.util.Iters;
 
-public abstract class AbstractSet<V> implements AnyReadSet<V> {
+public abstract class AbstractSet<V> extends AbstractReadSet<V> implements AnySet<V> {
 	
 	private static final long serialVersionUID = -2269362435477906614L;
 
-	@Override
-	public String toString() {
-		return "{" + Iters.toString(this, ", ") + "}";
-	}
-	
-	@SuppressWarnings("unchecked")
-	public boolean equals(Object that) {
-		return this == that || (that instanceof AnySet && equals((AnySet<V>) that));
-	}
-	
-	public boolean equals(AnySet<V> that) {
-		if (that.totalCount() != this.totalCount())
-			return false;
-		if (that.permitsDuplicates() != this.permitsDuplicates())
-			return false;
-		// retain some type safety of equals(Object) by confirming equalities are "equal" before comparing sets
-		if (!that.equality().equals(this.equality()))
-			return false;
-		if (permitsDuplicates()) {
-			for (V v : that.unique()) {
-				if (this.count(v) != that.count(v))
-					return false;
-			}
-		} else {
-			for (V v : that)
-				if (!contains(v))
-					return false;
-		}
-		return true;
-	}
-	
 	public void retain(AnySet<? super V> retain) {
 		final Iterator<V> iter = iterator();
 		while (iter.hasNext()) {
@@ -72,10 +38,11 @@ public abstract class AbstractSet<V> implements AnyReadSet<V> {
 			}
 		}
 	}
-
-	@Override
-	public final ReadMap<V, Integer> asMap() {
-		return new SetToCountMapAdapter<V>(this);
+	
+	public void put(Iterable<? extends V> put) {
+		for (V v : put) {
+			put(v);
+		}
 	}
 
 }

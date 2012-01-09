@@ -31,7 +31,6 @@ import java.util.Map.Entry;
 import org.jjoost.collections.AnyMap;
 import org.jjoost.collections.Map;
 import org.jjoost.collections.MultiSet;
-import org.jjoost.collections.ReadMap;
 import org.jjoost.collections.Set;
 import org.jjoost.collections.UnitarySet;
 import org.jjoost.collections.iters.EmptyIterator;
@@ -40,7 +39,6 @@ import org.jjoost.collections.lists.UniformList;
 import org.jjoost.collections.maps.ImmutableMapEntry;
 import org.jjoost.collections.sets.base.AbstractSet;
 import org.jjoost.collections.sets.base.IterableSet;
-import org.jjoost.collections.sets.base.SetToCountMapAdapter;
 import org.jjoost.collections.sets.wrappers.AdapterFromJDKSet;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
@@ -432,6 +430,22 @@ public class AdapterFromJDKMap<K, V> implements Map<K, V> {
 		@Override
 		public Equality<? super V> equality() {
 			return Equalities.object();
+		}
+		@Override
+		public V get(V find) {
+			return first(find);
+		}
+		@Override
+		public int size() {
+			return map.containsKey(key) ? 1 : 0;
+		}
+		@Override
+		public V replace(V value) {
+			return AdapterFromJDKMap.this.replace(key, value);
+		}
+		@Override
+		public V putOrReplace(V value) {
+			return AdapterFromJDKMap.this.put(key, value);
 		}
 		
 	}
