@@ -354,7 +354,7 @@ public class Iters {
 	 *            an var-args array of <code>Iterable</code> objects
 	 * @return the concatenation of all provided <code>Iterable</code> objects, returned in the order they appear in the array
 	 */
-	public static <E> ConcatIterable<E> concat(Iterable<E> ... a) {
+	public static <E> ConcatIterable<E> concat(@SuppressWarnings("unchecked") Iterable<E> ... a) {
     	return new ConcatIterable<E>(a);
     }
 	

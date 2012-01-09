@@ -22,25 +22,24 @@
 
 package org.jjoost.collections.sets.base;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.jjoost.collections.AnyMap;
 import org.jjoost.collections.AnyReadSet;
 import org.jjoost.collections.AnySet;
-import org.jjoost.collections.Map;
-import org.jjoost.collections.MultiSet;
 import org.jjoost.collections.ReadMap;
 import org.jjoost.collections.ReadSet;
-import org.jjoost.collections.Set;
-import org.jjoost.collections.UnitarySet;
+import org.jjoost.collections.UnitaryReadSet;
 import org.jjoost.collections.maps.ImmutableMapEntry;
-import org.jjoost.util.Factory;
-import org.jjoost.util.Function;
+import org.jjoost.util.Equalities;
+import org.jjoost.util.Equality;
+
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class SetToCountMapAdapter<V> implements ReadMap<V, Integer> {
 
+	private static final long serialVersionUID = 7089328142843569432L;
+	
 	final AnyReadSet<V> set;
 	public SetToCountMapAdapter(AnyReadSet<V> set) {
 		this.set = set;
@@ -95,7 +94,7 @@ public class SetToCountMapAdapter<V> implements ReadMap<V, Integer> {
 
 	@Override
 	public Iterable<Entry<V, Integer>> entries(V key) {
-		return Arrays.asList((Entry<V, Integer>)new ImmutableMapEntry<V, Integer>(key, set.count(key)));
+		return Arrays.asList((Entry<V, Integer>) new ImmutableMapEntry<V, Integer>(key, set.count(key)));
 	}
 
 	@Override
@@ -131,6 +130,30 @@ public class SetToCountMapAdapter<V> implements ReadMap<V, Integer> {
 	@Override
 	public ReadSet<V> keys() {
 		return set.unique();
+	}
+
+	@Override
+	public UnitaryReadSet<Integer> values(final V key) {
+		return new ImmutableUnitarySet<Integer>() {
+			private static final long serialVersionUID = -8038795621421728832L;
+			protected Integer value() {
+				return set.count(key);
+			}
+			@Override
+			public Equality<? super Integer> equality() {
+				return Equalities.object();
+			}
+		};
+	}
+
+	@Override
+	public ReadMap<V, Integer> copy() {
+		return set.copy().asMap();
+	}
+
+	@Override
+	public ReadSet<Entry<V, Integer>> entries() {
+		throw new NotImplementedException();
 	}
 
 }

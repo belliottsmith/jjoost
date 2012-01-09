@@ -21,7 +21,7 @@ public class Classes {
 		return (Class<V>) ancestors[0].iterator().next();
 	}
 	
-	public static <V> Set<Class<?>> findCommonAncestors(Class<? extends V> ... clazzes) {
+	public static <V> Set<Class<?>> findCommonAncestors(@SuppressWarnings("unchecked") Class<? extends V> ... clazzes) {
 		@SuppressWarnings("unchecked")
 		final Set<Class<?>>[] ancestors = new SerialLinkedHashSet[clazzes.length];
 		for (int i = 0 ; i != ancestors.length ; i++) {

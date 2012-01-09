@@ -23,6 +23,7 @@
 package org.jjoost.collections;
 
 import org.jjoost.collections.base.HashStoreType;
+import org.jjoost.collections.base.SynchronizedDelegator;
 import org.jjoost.collections.sets.concurrent.LockFreeCountingMultiHashSet;
 import org.jjoost.collections.sets.concurrent.LockFreeInlineMultiHashSet;
 import org.jjoost.collections.sets.concurrent.LockFreeLinkedCountingMultiHashSet;
@@ -39,8 +40,6 @@ import org.jjoost.collections.sets.serial.SerialLinkedNestedMultiHashSet;
 import org.jjoost.collections.sets.serial.SerialLinkedHashSet;
 import org.jjoost.collections.sets.serial.SerialNestedMultiHashSet;
 import org.jjoost.collections.sets.serial.SerialHashSet;
-import org.jjoost.collections.sets.wrappers.SynchronizedMultiSet;
-import org.jjoost.collections.sets.wrappers.SynchronizedSet;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Factory;
@@ -204,7 +203,7 @@ public abstract class SetMaker<V> {
 					initialCapacity, loadFactor, 
 					rehasher(), eq);
 			case SYNCHRONIZED:
-				return new SynchronizedSet<V>(
+				return SynchronizedDelegator.get(
 					new SerialHashSet<V>(
 						initialCapacity, loadFactor, 
 						rehasher(), eq));
@@ -213,7 +212,7 @@ public abstract class SetMaker<V> {
 					initialCapacity, loadFactor, 
 					rehasher(), eq);
 			case LINKED_SYNCHRONIZED:
-				return new SynchronizedSet<V>(
+				return SynchronizedDelegator.get(
 					new SerialLinkedHashSet<V>(
 						initialCapacity, loadFactor, 
 						rehasher(), eq));
@@ -238,7 +237,7 @@ public abstract class SetMaker<V> {
 						initialCapacity, loadFactor, 
 						rehasher(), eq);
 				case SYNCHRONIZED:
-					return new SynchronizedMultiSet<V>(
+					return SynchronizedDelegator.get(
 						new SerialInlineMultiHashSet<V>(
 							initialCapacity, loadFactor, 
 							rehasher(), eq));
@@ -247,7 +246,7 @@ public abstract class SetMaker<V> {
 						initialCapacity, loadFactor, 
 						rehasher(), eq);
 				case LINKED_SYNCHRONIZED:
-					return new SynchronizedMultiSet<V>(
+					return SynchronizedDelegator.get(
 						new SerialLinkedInlineMultiHashSet<V>(
 							initialCapacity, loadFactor, 
 							rehasher(), eq));
@@ -269,7 +268,7 @@ public abstract class SetMaker<V> {
 						initialCapacity, loadFactor, 
 						rehasher(), eq);
 				case SYNCHRONIZED:
-					return new SynchronizedMultiSet<V>(
+					return SynchronizedDelegator.get(
 						new SerialNestedMultiHashSet<V>(
 							initialCapacity, loadFactor, 
 							rehasher(), eq));
@@ -278,7 +277,7 @@ public abstract class SetMaker<V> {
 						initialCapacity, loadFactor, 
 						rehasher(), eq);
 				case LINKED_SYNCHRONIZED:
-					return new SynchronizedMultiSet<V>(
+					return SynchronizedDelegator.get(
 						new SerialLinkedNestedMultiHashSet<V>(
 							initialCapacity, loadFactor, 
 							rehasher(), eq));
@@ -300,7 +299,7 @@ public abstract class SetMaker<V> {
 						initialCapacity, loadFactor, 
 						rehasher(), eq);
 				case SYNCHRONIZED:
-					return new SynchronizedMultiSet<V>(
+					return SynchronizedDelegator.get(
 						new SerialCountingMultiHashSet<V>(
 							initialCapacity, loadFactor, 
 							rehasher(), eq));
@@ -309,7 +308,7 @@ public abstract class SetMaker<V> {
 						initialCapacity, loadFactor, 
 						rehasher(), eq);
 				case LINKED_SYNCHRONIZED:
-					return new SynchronizedMultiSet<V>(
+					return SynchronizedDelegator.get(
 						new SerialLinkedCountingMultiHashSet<V>(
 							initialCapacity, loadFactor, 
 							rehasher(), eq));
