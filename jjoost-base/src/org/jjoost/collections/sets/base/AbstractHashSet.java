@@ -63,10 +63,6 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>, S ext
 		return store.capacity();
 	}
 	
-	public void resize(int capacity) {
-		store.resize(capacity);
-	}
-	
 	protected final int hash(V key) {
 		return rehasher.rehash(valEq.valEq.hash(key));
 	}
@@ -134,10 +130,6 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>, S ext
 	@Override
 	public int count(V value) {
 		return store.count(hash(value), value, valEq, Integer.MAX_VALUE);
-	}
-	@Override
-	public void shrink() {
-		store.shrink();
 	}
 	@Override
 	public V first(V value) {

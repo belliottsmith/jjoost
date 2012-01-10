@@ -676,11 +676,6 @@ public class SynchronizedDelegator {
 				return delegate.totalCount();
 			}
 		}
-		@Override public void shrink() {
-			synchronized (SynchronizedDelegator.this) {
-				delegate.shrink();
-			}
-		}
 		@Override public int uniqueKeyCount() {
 			synchronized (SynchronizedDelegator.this) {
 				return delegate.uniqueKeyCount();

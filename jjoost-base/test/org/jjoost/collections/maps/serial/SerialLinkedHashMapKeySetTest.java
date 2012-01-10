@@ -8,7 +8,7 @@ import org.jjoost.util.Rehashers;
 public class SerialLinkedHashMapKeySetTest extends LinkedHashMapKeySetTest {
 
 	@Override
-	protected HashMap<String, String, ?> createMap() {
+	protected HashMap<String, String, ?, ?> createMap() {
 		return new SerialLinkedHashMap<String, String>(Rehashers.identity(), Equalities.object());
 	}
 	

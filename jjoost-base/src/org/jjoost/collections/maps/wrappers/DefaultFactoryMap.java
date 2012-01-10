@@ -68,7 +68,7 @@ public class DefaultFactoryMap<K, V> implements Map<K, V> {
 	}
 
 	public Map<K, V> copy() {
-		return delegate.copy();
+		return new DefaultFactoryMap<K, V>(delegate.copy(), defaultFactory);
 	}
 
 	public int count(K key, V val) {
@@ -154,10 +154,6 @@ public class DefaultFactoryMap<K, V> implements Map<K, V> {
 
 	public V removeAndReturnFirst(K key) {
 		return delegate.removeAndReturnFirst(key);
-	}
-
-	public void shrink() {
-		delegate.shrink();
 	}
 
 	public int size() {

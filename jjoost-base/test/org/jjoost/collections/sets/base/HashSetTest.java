@@ -97,10 +97,6 @@ public abstract class HashSetTest extends AbstractHashStoreBasedScalarCollection
 		return getSet().removeAndReturnFirst(value);
 	}
 
-	protected void shrink() {
-		getSet().shrink();
-	}
-
 	protected int size() {
 		return getSet().size();
 	}

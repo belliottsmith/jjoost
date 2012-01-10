@@ -160,11 +160,6 @@ public abstract class AbstractUniqueSetAdapter<V> extends AbstractSet<V> impleme
 	}
 
 	@Override
-	public void shrink() {
-		set().shrink();
-	}
-
-	@Override
 	public boolean contains(V value) {
 		return set().contains(value);
 	}

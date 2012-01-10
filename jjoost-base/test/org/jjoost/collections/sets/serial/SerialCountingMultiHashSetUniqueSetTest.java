@@ -18,8 +18,4 @@ public class SerialCountingMultiHashSetUniqueSetTest extends MultiHashSetUniqueS
 		return set.capacity();
 	}
 
-	protected void resize(int capacity) {
-		set.resize(capacity);
-	}
-	
 }

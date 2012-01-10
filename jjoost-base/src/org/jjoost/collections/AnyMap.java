@@ -180,11 +180,6 @@ public interface AnyMap<K, V> extends AnyReadMap<K, V> {
 	public Iterator<Entry<K, V>> clearAndReturn();
 
 	/**
-	 * Attempts to make the map use less memory, if possible.
-	 */
-	public void shrink();
-	
-	/**
 	 * Returns a copy of the map. Note that this method may not necessarily return an object of the same
 	 * class as the one it is called upon, but will return one indistinguishable from it with respect
 	 * to all method calls.

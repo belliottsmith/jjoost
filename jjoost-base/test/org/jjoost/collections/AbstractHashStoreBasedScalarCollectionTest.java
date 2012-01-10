@@ -35,8 +35,6 @@ public abstract class AbstractHashStoreBasedScalarCollectionTest extends Abstrac
 	protected abstract int totalCount();
 	protected abstract int size();
 	protected abstract int capacity();
-	protected abstract void shrink();
-	protected abstract void resize(int i);
 	protected abstract Iterator<String> iterator();
 	
 	protected void checkEmpty() {
@@ -506,52 +504,6 @@ public abstract class AbstractHashStoreBasedScalarCollectionTest extends Abstrac
 		for (String s : ss)
 			assertTrue(contains(s));
 		checkAndClear(26);
-	}
-	
-	public void testShrink() {
-		checkEmpty();
-		assertEquals(16, capacity());
-		final String[] ss = new String[] { "a", "b", "c", "d" };
-		for (String s : ss)
-			put(s);
-		shrink();
-		assertTrue(16 > capacity());
-		checkAndClear(4);
-	}
-	
-	public void testResize() {
-		checkEmpty();
-		
-		String[] ss = new String[] { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z" };
-		for (String s : ss)
-			put(s);
-		resize(8);
-		assertEquals(8, capacity());
-		for (String s : ss)
-			assertTrue(contains(s));
-		resize(32);
-		for (String s : ss)
-			assertTrue(contains(s));
-		resize(16);
-		for (String s : ss)
-			assertTrue(contains(s));
-		checkAndClear(26);
-		
-		ss = new String[] { "a", "q" };
-		for (String s : ss)
-			put(s);
-		resize(8);
-		assertEquals(8, capacity());
-		for (String s : ss)
-			assertTrue(contains(s));
-		resize(16);
-		assertEquals(16, capacity());
-		for (String s : ss)
-			assertTrue(contains(s));
-		resize(64);
-		for (String s : ss)
-			assertTrue(contains(s));
-		checkAndClear(2);
 	}
 	
 }

@@ -871,29 +871,29 @@ public abstract class AbstractSerialHashStore<N extends AbstractSerialHashStore.
 		}
 	}
 	
-	public void shrink() {
-		int size = table.length;
-		while ((int)(size * loadFactor) > uniquePrefixCount)
-			size >>= 1;
-		size <<= 1;
-		if (size <= 1)
-			size = 2;
-		if (size < table.length)
-			resize(size);
-	}
-	@SuppressWarnings("unchecked")
-	@Override
-	public void resize(int size) {
-        int capacity = 8;
-        while (capacity < size)
-        	capacity <<= 1;
-        if (capacity != table.length) {
-    		N[] oldtable = table;
-    		table = (N[]) new SerialHashNode[capacity];
-    		loadLimit = (int) (table.length * loadFactor);
-    		rehash(oldtable);
-        }
-	}
+//	public void shrink() {
+//		int size = table.length;
+//		while ((int)(size * loadFactor) > uniquePrefixCount)
+//			size >>= 1;
+//		size <<= 1;
+//		if (size <= 1)
+//			size = 2;
+//		if (size < table.length)
+//			resize(size);
+//	}
+//	@SuppressWarnings("unchecked")
+//	@Override
+//	public void resize(int size) {
+//        int capacity = 8;
+//        while (capacity < size)
+//        	capacity <<= 1;
+//        if (capacity != table.length) {
+//    		N[] oldtable = table;
+//    		table = (N[]) new SerialHashNode[capacity];
+//    		loadLimit = (int) (table.length * loadFactor);
+//    		rehash(oldtable);
+//        }
+//	}
 	
 	/**
 	 * This method makes use of the fact that both tables are a power of 2 in size. It maintains the ordering of nodes within groups where matcher.partialMatch() == 1; grows fully maintain ordering of nodes

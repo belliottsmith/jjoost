@@ -152,11 +152,6 @@ public abstract class AbstractArraySet<V> extends AbstractSet<V> implements AnyS
 	}
 
 	@Override
-	public void shrink() {
-		vals = Arrays.copyOf(vals, count < 1 ? 1 : count);
-	}
-
-	@Override
 	public boolean contains(V v) {
 		for (int i = 0 ; i != count ; i++)
 			if (valEq.equates(v, vals[i]))

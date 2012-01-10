@@ -93,10 +93,6 @@ public abstract class MultiHashSetTest extends AbstractHashStoreBasedMultiCollec
 		return getSet().removeAndReturnFirst(value);
 	}
 
-	protected void shrink() {
-		getSet().shrink();
-	}
-
 	protected int totalCount() {
 		return getSet().totalCount();
 	}

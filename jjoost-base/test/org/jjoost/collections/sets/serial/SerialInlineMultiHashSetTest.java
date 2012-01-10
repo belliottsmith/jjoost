@@ -16,10 +16,6 @@ public class SerialInlineMultiHashSetTest extends MultiHashSetTest {
 		return getSet().capacity();
 	}
 
-	protected void resize(int capacity) {
-		getSet().resize(capacity);
-	}
-	
 	@Override
 	protected boolean duplicatesGrowTable() {
 		return false;

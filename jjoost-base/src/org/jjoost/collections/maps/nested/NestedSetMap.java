@@ -234,11 +234,6 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 		return map.isEmpty();
 	}
 	
-	@Override
-	public void shrink() {
-		map.shrink();
-	}
-
 	class ValueSet extends IterableSet<V> {
 		private static final long serialVersionUID = 7253995600614012301L;
 		@Override
@@ -280,11 +275,6 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 			return NestedSetMap.this.clear();
 		}
 
-		@Override
-		public void shrink() {
-			NestedSetMap.this.shrink();
-		}
-		
 		@Override
 		public Boolean apply(K v) {
 			return contains(v) ? Boolean.TRUE : Boolean.FALSE;
@@ -475,11 +465,6 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 		@Override
 		public Iterator<Entry<K, V>> clearAndReturn() {
 			return NestedSetMap.this.clearAndReturn();
-		}
-		
-		@Override
-		public void shrink() {
-			NestedSetMap.this.shrink();
 		}
 		
 		@Override

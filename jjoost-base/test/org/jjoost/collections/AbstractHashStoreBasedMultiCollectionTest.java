@@ -34,8 +34,6 @@ public abstract class AbstractHashStoreBasedMultiCollectionTest extends Abstract
 	protected abstract int uniqueCount();
 	protected abstract int totalCount();
 	protected abstract int capacity();
-	protected abstract void shrink();
-	protected abstract void resize(int i);
 	protected abstract Iterator<String> iterator();
 	
 	protected abstract boolean duplicatesGrowTable();
@@ -483,63 +481,6 @@ public abstract class AbstractHashStoreBasedMultiCollectionTest extends Abstract
 		for (int i = 0 ; i != ss.length ; i++)
 			assertEquals(ss[i], 2, count(ss[i]));
 		checkAndClear(52);
-	}
-	
-	public void testShrink() {
-		checkEmpty();
-		assertEquals(16, capacity());
-		final String[] ss = new String[] { "a", "q" };
-		for (String s : ss) {
-			put(s);
-			put(s);
-		}
-		shrink();
-		assertTrue(16 > capacity());
-		checkAndClear(4);
-	}
-	
-	public void testResize() {
-		checkEmpty();
-		
-		String[] ss = new String[] { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z" };
-		for (String s : ss) {
-			put(s);
-			put(s);
-		}
-//		System.out.println(Iters.toString(iterator()));
-//		System.out.println(Iters.count(iterator()));
-		resize(8);
-		assertEquals(8, capacity());
-		for (int i = 0 ; i != 26 ; i++)
-			assertEquals(ss[i], 2, count(ss[i]));
-		resize(64);
-		for (int i = 0 ; i != 26 ; i++)
-			assertEquals(ss[i], 2, count(ss[i]));
-		resize(32);
-		for (int i = 0 ; i != 26 ; i++)
-			assertEquals(ss[i], 2, count(ss[i]));
-		resize(16);
-		for (int i = 0 ; i != 26 ; i++)
-			assertEquals(ss[i], 2, count(ss[i]));
-		checkAndClear(52);
-		
-		ss = new String[] { "a", "q" };
-		for (String s : ss) {
-			put(s);
-			put(s);
-		}
-		resize(8);
-		assertEquals(8, capacity());
-		for (int i = 0 ; i != 2 ; i++)
-			assertEquals(ss[i], 2, count(ss[i]));
-		resize(16);
-		assertEquals(16, capacity());
-		for (int i = 0 ; i != 2 ; i++)
-			assertEquals(ss[i], 2, count(ss[i]));
-		resize(64);
-		for (int i = 0 ; i != 2 ; i++)
-			assertEquals(ss[i], 2, count(ss[i]));
-		checkAndClear(4);
 	}
 	
 }
