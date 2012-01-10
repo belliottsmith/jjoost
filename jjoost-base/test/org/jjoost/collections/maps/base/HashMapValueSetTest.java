@@ -9,8 +9,8 @@ import org.jjoost.util.Iters;
 
 public abstract class HashMapValueSetTest extends MultiHashSetTest {
 	
-	private final HashMap<String, String, ?> map = createMap();
-	protected abstract HashMap<String, String, ?> createMap();
+	private final HashMap<String, String, ?, ?> map = createMap();
+	protected abstract HashMap<String, String, ?, ?> createMap();
 	
 	public void testPutAll_whenNotPresent() {
 	}
@@ -91,14 +91,6 @@ public abstract class HashMapValueSetTest extends MultiHashSetTest {
 	@Override
 	protected String putIfAbsent(String v) {
 		throw new UnsupportedOperationException();
-	}
-	@Override
-	protected void resize(int i) {
-		map.resize(i);
-	}
-	@Override
-	protected void shrink() {
-		map.shrink();
 	}
 
 	protected void checkAndClear(int expect) {

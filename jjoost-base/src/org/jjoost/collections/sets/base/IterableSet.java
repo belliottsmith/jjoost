@@ -140,10 +140,6 @@ public abstract class IterableSet<V> extends AbstractSet<V> implements MultiSet<
 	}
 
 	@Override
-	public void shrink() {
-	}
-
-	@Override
 	public Iterable<V> all(final V value) {
 		return Filters.apply(Filters.isEqualTo(value, equality()), this);
 	}

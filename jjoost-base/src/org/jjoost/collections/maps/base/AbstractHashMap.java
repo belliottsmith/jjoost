@@ -121,10 +121,6 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		return store.capacity();
 	}
 	
-	public void resize(int capacity) {
-		store.resize(capacity);
-	}
-	
 	protected final int hash(K key) {
 		return rehasher.rehash(keyEq.keyEq.hash(key));
 	}
@@ -174,10 +170,6 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 				return store.find(hash, key, keyEq, nodeProj(), nodeEq, entryProj());
 			}
 		};
-	}
-	@Override
-	public void shrink() {
-		store.shrink();
 	}
 	@Override
 	public V first(K key) {
@@ -258,11 +250,6 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		@Override
 		public int count(V value) {
 			return store.count(hash, entry(key, value), nodeEq, Integer.MAX_VALUE);
-		}
-		
-		@Override
-		public void shrink() {
-			AbstractHashMap.this.shrink();
 		}
 		
 		@Override
@@ -416,11 +403,6 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 			return AbstractHashMap.this.count(value);
 		}
 
-		@Override
-		public void shrink() {
-			AbstractHashMap.this.shrink();
-		}
-		
 		@Override
 		public int totalCount() {
 			return AbstractHashMap.this.totalCount();
@@ -577,11 +559,6 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 			return AbstractHashMap.this.clearAndReturn();
 		}
 
-		@Override
-		public void shrink() {
-			AbstractHashMap.this.shrink();
-		}
-		
 		@Override
 		public Boolean apply(Entry<K, V> v) {
 			return contains(v) ? Boolean.TRUE : Boolean.FALSE;

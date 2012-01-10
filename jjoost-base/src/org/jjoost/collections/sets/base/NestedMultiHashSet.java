@@ -78,10 +78,6 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 		return store.capacity();
 	}
 	
-	public void resize(int capacity) {
-		store.resize(capacity);
-	}
-	
 	final int hash(V key) {
 		return rehasher.rehash(valEq.valEq.hash(key));
 	}
@@ -286,10 +282,6 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 			if (c >= 0)
 				return c;
 		}		
-	}
-	@Override
-	public void shrink() {
-		store.shrink();
 	}
 	@Override
 	public V first(V val) {

@@ -196,9 +196,6 @@ public class AdapterFromJDKMap<K, V> implements Map<K, V> {
 		return map.remove(key);
 	}
 	@Override
-	public void shrink() {
-	}
-	@Override
 	public boolean contains(K key, V val) {
 		final V v = map.get(key);
 		return val == null ? v == null && map.containsKey(key) : v != null && v.equals(val);
@@ -346,9 +343,6 @@ public class AdapterFromJDKMap<K, V> implements Map<K, V> {
 				return val;
 			}
 			return null;
-		}
-		@Override
-		public void shrink() {
 		}
 		@Override
 		public Iterable<V> all(V value) {

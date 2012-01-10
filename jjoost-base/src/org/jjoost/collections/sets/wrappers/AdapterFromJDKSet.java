@@ -109,9 +109,6 @@ public class AdapterFromJDKSet<V> extends AbstractSet<V> implements Set<V> {
 		return set.remove(value) ? null : value;
 	}
 	@Override
-	public void shrink() {
-	}
-	@Override
 	public Iterable<V> all(V value) {
 		if (set.contains(value))
 			return new UniformList<V>(value, 1);

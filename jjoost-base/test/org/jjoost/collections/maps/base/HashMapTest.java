@@ -24,8 +24,8 @@ public abstract class HashMapTest extends AbstractHashStoreBasedScalarCollection
 //	public int count(K key, V val);
 //	public Iterable<Entry<K, V>> entries(K key);
 
-	private final HashMap<String, String, ?> map = createMap();
-	protected abstract HashMap<String, String, ?> createMap();
+	private final HashMap<String, String, ?, ?> map = createMap();
+	protected abstract HashMap<String, String, ?, ?> createMap();
 	private static final Function<String, String> function = new Function<String, String>() {
 		private static final long serialVersionUID = 8731482102834376759L;
 		@Override
@@ -136,7 +136,6 @@ public abstract class HashMapTest extends AbstractHashStoreBasedScalarCollection
 		checkAndClear(0);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void testRemoveAndReturnPair_whenNotPresent() {
 		checkEmpty();
 		checkIterableContents(Arrays.<ImmutableMapEntry<String, String>>asList(), map.removeAndReturn("a", "a"), true);
@@ -147,7 +146,6 @@ public abstract class HashMapTest extends AbstractHashStoreBasedScalarCollection
 		checkAndClear(2);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void testRemoveAndReturnPair_whenPresent() {
 		checkEmpty();
 		map.put("a", "a");
@@ -276,16 +274,6 @@ public abstract class HashMapTest extends AbstractHashStoreBasedScalarCollection
 	@Override
 	protected String removeAndReturnFirst(String v) {
 		return map.removeAndReturnFirst(v);
-	}
-
-	@Override
-	protected void resize(int i) {
-		map.resize(i);
-	}
-
-	@Override
-	protected void shrink() {
-		map.shrink();
 	}
 
 	@Override

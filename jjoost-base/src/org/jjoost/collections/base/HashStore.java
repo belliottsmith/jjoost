@@ -49,8 +49,6 @@ public interface HashStore<N, S extends HashStore<N, S>> extends Serializable {
 	public <V> Iterator<V> clearAndReturn(Function<? super N, ? extends V> f);
 	public <F> S copy(Function<? super N, ? extends F> nodeEqualityProj, HashNodeEquality<? super F, ? super N> nodeEquality);
 	public int capacity();
-	public void shrink();
-	public void resize(int size);
 	
 	public static enum PutAction {
 		PUT, IFABSENT, REPLACE, ENSUREANDGET

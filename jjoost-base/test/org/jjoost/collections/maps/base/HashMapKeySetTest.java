@@ -5,8 +5,8 @@ import org.jjoost.collections.sets.base.HashSetTest;
 
 public abstract class HashMapKeySetTest extends HashSetTest {
 	
-	private final HashMap<String, String, ?> map = createMap();
-	protected abstract HashMap<String, String, ?> createMap();
+	private final HashMap<String, String, ?, ?> map = createMap();
+	protected abstract HashMap<String, String, ?, ?> createMap();
 	
 	public void testPutAll_whenNotPresent() {
 	}
@@ -69,14 +69,6 @@ public abstract class HashMapKeySetTest extends HashSetTest {
 	@Override
 	protected String putIfAbsent(String v) {
 		return map.putIfAbsent(v, v);
-	}
-	@Override
-	protected void resize(int i) {
-		map.resize(i);
-	}
-	@Override
-	protected void shrink() {
-		map.shrink();
 	}
 
 }

@@ -133,11 +133,6 @@ implements AnyMap<K, V> {
 		return first;
 	}
 	@Override
-	public void shrink() {
-		partner().map.shrink();
-		map.shrink();
-	}
-	@Override
 	public boolean contains(K key, V val) {
 		return map.contains(key, val);
 	}

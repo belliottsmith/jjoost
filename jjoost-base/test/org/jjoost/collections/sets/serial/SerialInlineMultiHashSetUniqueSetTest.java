@@ -17,8 +17,4 @@ public class SerialInlineMultiHashSetUniqueSetTest extends MultiHashSetUniqueSet
 		return set.capacity();
 	}
 
-	protected void resize(int capacity) {
-		set.resize(capacity);
-	}
-	
 }
