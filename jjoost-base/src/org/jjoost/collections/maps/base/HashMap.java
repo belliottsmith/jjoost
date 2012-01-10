@@ -36,13 +36,13 @@ import org.jjoost.util.Factory;
 import org.jjoost.util.Function;
 import org.jjoost.util.Rehasher;
 
-public class HashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends AbstractHashMap<K, V, N> implements Map<K, V> {
+public class HashMap<K, V, N extends HashNode<N> & Entry<K, V>, S extends HashStore<N, S>> extends AbstractHashMap<K, V, N, S> implements Map<K, V> {
 
 	protected HashMap(
 			Rehasher rehasher, 
 			AbstractHashMap.KeyEquality<K, V, N> keyEquality, 
 			AbstractHashMap.NodeEquality<K, V, N> entryEquality,
-			HashMapNodeFactory<K, V, N> nodeFactory, HashStore<N> table) {
+			HashMapNodeFactory<K, V, N> nodeFactory, S table) {
 		super(rehasher, keyEquality, entryEquality, nodeFactory, table);
 	}
 	
@@ -293,7 +293,7 @@ public class HashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends Abstract
 
 	@Override
 	public Map<K, V> copy() {
-		return new HashMap<K, V, N>(rehasher, keyEq, nodeEq, nodeFactory, store.copy(nodeProj(), nodeEq));
+		return new HashMap<K, V, N, S>(rehasher, keyEq, nodeEq, nodeFactory, store.copy(nodeProj(), nodeEq));
 	}
 
 	// **********************************

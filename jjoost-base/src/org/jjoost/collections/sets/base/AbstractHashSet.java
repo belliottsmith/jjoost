@@ -33,7 +33,7 @@ import org.jjoost.collections.base.HashStore;
 import org.jjoost.collections.base.HashStore.PutAction;
 import org.jjoost.collections.base.LockFreeHashStore.LockFreeHashNode;
 import org.jjoost.collections.base.LockFreeLinkedHashStore.LockFreeLinkedHashNode;
-import org.jjoost.collections.base.SerialHashStore.SerialHashNode;
+import org.jjoost.collections.base.AbstractSerialHashStore.SerialHashNode;
 import org.jjoost.collections.base.SerialLinkedHashStore.SerialLinkedHashNode;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Function;
@@ -43,16 +43,16 @@ import org.jjoost.util.Rehasher;
 import org.jjoost.util.tuples.Value;
 
 @SuppressWarnings("deprecation")
-public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>> extends AbstractSet<V> implements AnySet<V> {
+public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>, S extends HashStore<N, S>> extends AbstractSet<V> implements AnySet<V> {
 
 	private static final long serialVersionUID = 3187373892419456381L;
 	
-	protected final HashStore<N> store;
+	protected final S store;
 	protected final Rehasher rehasher;
 	protected final HashNodeFactory<V, N> nodeFactory;
 	protected final ValueEquality<V> valEq;
 	
-	protected AbstractHashSet(Rehasher rehasher, ValueEquality<V> equality, HashNodeFactory<V, N> nodeFactory, HashStore<N> table) {
+	protected AbstractHashSet(Rehasher rehasher, ValueEquality<V> equality, HashNodeFactory<V, N> nodeFactory, S table) {
 		this.store = table;
 		this.rehasher = rehasher;
 		this.valEq = equality;

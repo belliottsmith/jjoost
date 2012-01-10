@@ -38,13 +38,13 @@ import org.jjoost.util.Equality;
 import org.jjoost.util.Filters;
 import org.jjoost.util.Rehasher;
 
-public class InlineListHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends AbstractHashMap<K, V, N> implements ListMap<K, V> {
+public class InlineListHashMap<K, V, N extends HashNode<N> & Entry<K, V>, S extends HashStore<N, S>> extends AbstractHashMap<K, V, N, S> implements ListMap<K, V> {
 
 	protected InlineListHashMap(
 			Rehasher rehasher, 
 			AbstractHashMap.KeyEquality<K, V, N> keyEquality, 
 			AbstractHashMap.NodeEquality<K, V, N> entryEquality,
-			HashMapNodeFactory<K, V, N> nodeFactory, HashStore<N> table) {
+			HashMapNodeFactory<K, V, N> nodeFactory, S table) {
 		super(rehasher, keyEquality, entryEquality, nodeFactory, table);
 	}
 	
@@ -106,7 +106,7 @@ public class InlineListHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extend
 	
 	@Override
 	public ListMap<K, V> copy() {
-		return new InlineListHashMap<K, V, N>(rehasher, keyEq, nodeEq, nodeFactory, store.copy(nodeProj(), nodeEq));
+		return new InlineListHashMap<K, V, N, S>(rehasher, keyEq, nodeEq, nodeFactory, store.copy(nodeProj(), nodeEq));
 	}
 	
 	@Override

@@ -28,7 +28,7 @@ import java.util.NoSuchElementException;
 import org.jjoost.util.Function;
 
 @SuppressWarnings("unchecked")
-public class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedHashNode<N>> extends SerialHashStore<N> {
+public final class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedHashNode<N>> extends AbstractSerialHashStore<N, SerialLinkedHashStore<N>> {
 
 	private static final long serialVersionUID = -6706178526455624676L;
 
@@ -114,7 +114,7 @@ public class SerialLinkedHashStore<N extends SerialLinkedHashStore.SerialLinkedH
 	}
 
 	@Override
-	public <NCmp> SerialHashStore<N> copy(Function<? super N, ? extends NCmp> nodeEqualityProj,
+	public <NCmp> SerialLinkedHashStore<N> copy(Function<? super N, ? extends NCmp> nodeEqualityProj,
 		HashNodeEquality<? super NCmp, ? super N> nodeEquality) {
 		final N[] tbl = (N[]) new SerialLinkedHashNode[this.table.length];
 		final int totalNodeCount = this.totalNodeCount;

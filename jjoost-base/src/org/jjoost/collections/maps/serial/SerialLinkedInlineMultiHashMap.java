@@ -33,7 +33,7 @@ import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Rehasher;
 
-public class SerialLinkedInlineMultiHashMap<K, V> extends InlineMultiHashMap<K, V, SerialLinkedInlineMultiHashMap.Node<K, V>>{
+public class SerialLinkedInlineMultiHashMap<K, V> extends InlineMultiHashMap<K, V, SerialLinkedInlineMultiHashMap.Node<K, V>, SerialLinkedHashStore<SerialLinkedInlineMultiHashMap.Node<K, V>>> {
 
 	private static final long serialVersionUID = 1051610520557989640L;
 

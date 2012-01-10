@@ -29,7 +29,7 @@ import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Rehasher;
 
-public class SerialInlineMultiHashSet<V> extends InlineMultiHashSet<V, AbstractHashSet.SerialHashSetNode<V>>{
+public class SerialInlineMultiHashSet<V> extends InlineMultiHashSet<V, AbstractHashSet.SerialHashSetNode<V>, SerialHashStore<AbstractHashSet.SerialHashSetNode<V>>> {
 
 	private static final long serialVersionUID = 1051610520557989640L;
 

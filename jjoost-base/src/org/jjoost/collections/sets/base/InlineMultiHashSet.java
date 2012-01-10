@@ -38,16 +38,16 @@ import org.jjoost.util.Equality;
 import org.jjoost.util.Rehasher;
 import org.jjoost.util.tuples.Value;
 
-public class InlineMultiHashSet<V, N extends HashNode<N> & Value<V>> extends AbstractHashSet<V, N> implements MultiSet<V> {
+public class InlineMultiHashSet<V, N extends HashNode<N> & Value<V>, S extends HashStore<N, S>> extends AbstractHashSet<V, N, S> implements MultiSet<V> {
 
 	private static final long serialVersionUID = -6385620376018172675L;
 
-	public InlineMultiHashSet(Rehasher rehasher, Equality<? super V> equality, HashNodeFactory<V, N> nodeFactory, HashStore<N> table) {
+	public InlineMultiHashSet(Rehasher rehasher, Equality<? super V> equality, HashNodeFactory<V, N> nodeFactory, S table) {
 		super(rehasher, new ValueEquality<V>(equality), nodeFactory, table);
 		this.putEq = new PutEquality<V>(equality);
 	}
 	
-	private InlineMultiHashSet(Rehasher rehasher, AbstractHashSet.ValueEquality<V> equality, HashNodeFactory<V, N> nodeFactory, PutEquality<V> putEq, HashStore<N> table) {
+	private InlineMultiHashSet(Rehasher rehasher, AbstractHashSet.ValueEquality<V> equality, HashNodeFactory<V, N> nodeFactory, PutEquality<V> putEq, S table) {
 		super(rehasher, equality, nodeFactory, table);
 		this.putEq = putEq;
 	}
@@ -75,7 +75,7 @@ public class InlineMultiHashSet<V, N extends HashNode<N> & Value<V>> extends Abs
 	
 	@Override
 	public MultiSet<V> copy() {
-		return new InlineMultiHashSet<V, N>(rehasher, valEq, nodeFactory, putEq, store.copy(valProj(), valEq));
+		return new InlineMultiHashSet<V, N, S>(rehasher, valEq, nodeFactory, putEq, store.copy(valProj(), valEq));
 	}
 
 	@Override

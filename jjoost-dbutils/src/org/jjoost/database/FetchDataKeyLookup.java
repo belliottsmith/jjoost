@@ -30,6 +30,10 @@ public abstract class FetchDataKeyLookup<BaseKeyType, RealKeyType, KeyOutput, Va
 				}
 				@Override
 				public void unused() { }
+				@Override
+				public int cols() {
+					return 1;
+				}
     		};
     	} else {
     		final Function<? super BaseKeyType[], ? extends KeyOutput> mapKeys = (Function<? super BaseKeyType[], ? extends KeyOutput>) this.mapKeys;
@@ -40,8 +44,13 @@ public abstract class FetchDataKeyLookup<BaseKeyType, RealKeyType, KeyOutput, Va
     			BaseKeyType[] last;
 				@Override
 				public KeyOutput fetch(ResultSet v) throws SQLException {
-					final BaseKeyType[] trg = reuse ? last : (BaseKeyType[]) Array.newInstance(keyType, key.length);
-					reuse = true;
+					final BaseKeyType[] trg;
+					if (reuse) {
+						trg = last;
+						reuse = false;
+					} else {
+						last = trg = (BaseKeyType[]) Array.newInstance(keyType, key.length);
+					}
 					for (int i = 0 ; i != trg.length ; i++) {
 						trg[i] = key[i].get(v);
 					}
@@ -49,7 +58,11 @@ public abstract class FetchDataKeyLookup<BaseKeyType, RealKeyType, KeyOutput, Va
 				}
 				@Override
 				public void unused() {
-					reuse = false;
+					reuse = true;
+				}
+				@Override
+				public int cols() {
+					return key.length;
 				}
     		};
     	}
@@ -57,6 +70,7 @@ public abstract class FetchDataKeyLookup<BaseKeyType, RealKeyType, KeyOutput, Va
     protected static interface KeyFetcher<K> {
     	K fetch(ResultSet rs) throws SQLException;
     	void unused();
+    	int cols();
     }
     protected abstract MapWrapper<KeyOutput, ValueOutput, M> resultMap();
     protected abstract <V2> MapWrapper<KeyOutput, V2, ?> temporaryMap();
