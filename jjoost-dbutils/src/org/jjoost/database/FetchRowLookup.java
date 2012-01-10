@@ -195,7 +195,7 @@ public abstract class FetchRowLookup<BaseKeyType, InputKeyType, OutputKeyType, I
     		final Class<InputValueType> valueType = Classes.findCommonAncestor(valueTypes);
     		final KeyFetcher<OutputKeyType> keyFetcher = keyFetcher(rs);
     		final MapWrapper<OutputKeyType, OutputValueType, M> out = resultMap();
-    		final GetFromResultSet<? extends InputValueType>[] columns = Fetch.<InputValueType>getItemGetters(timeZone, 1, valueTypes).run(rs) ;
+    		final GetFromResultSet<? extends InputValueType>[] columns = Fetch.<InputValueType>getItemGetters(timeZone, keyFetcher.cols(), valueTypes).run(rs) ;
     		while (rs.next()) {
     			final OutputKeyType key = keyFetcher.fetch(rs);
 				@SuppressWarnings("unchecked")

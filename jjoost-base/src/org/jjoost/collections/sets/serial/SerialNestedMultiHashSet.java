@@ -27,9 +27,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import org.jjoost.collections.base.AbstractSerialHashStore.SerialHashNode;
 import org.jjoost.collections.base.HashNodeFactory;
 import org.jjoost.collections.base.SerialHashStore;
-import org.jjoost.collections.base.SerialHashStore.SerialHashNode;
 import org.jjoost.collections.sets.base.NestedMultiHashSet;
 import org.jjoost.util.Counters;
 import org.jjoost.util.Equalities;

@@ -31,15 +31,15 @@ import org.jjoost.util.Equality;
 import org.jjoost.util.Rehasher;
 import org.jjoost.util.tuples.Value;
 
-public class HashSet<V, N extends HashNode<N> & Value<V>> extends AbstractHashSet<V, N> implements Set<V> {
+public class HashSet<V, N extends HashNode<N> & Value<V>, S extends HashStore<N, S>> extends AbstractHashSet<V, N, S> implements Set<V> {
 
 	private static final long serialVersionUID = -6385620376018172675L;
 
-	public HashSet(Rehasher rehasher, Equality<? super V> equality, HashNodeFactory<V, N> nodeFactory, HashStore<N> table) {
+	public HashSet(Rehasher rehasher, Equality<? super V> equality, HashNodeFactory<V, N> nodeFactory, S table) {
 		super(rehasher, new ValueEquality<V>(equality), nodeFactory, table);
 	}
 	
-	private HashSet(Rehasher rehasher, AbstractHashSet.ValueEquality<V> equality, HashNodeFactory<V, N> nodeFactory, HashStore<N> table) {
+	private HashSet(Rehasher rehasher, AbstractHashSet.ValueEquality<V> equality, HashNodeFactory<V, N> nodeFactory, S table) {
 		super(rehasher, equality, nodeFactory, table);
 	}
 	
@@ -59,8 +59,8 @@ public class HashSet<V, N extends HashNode<N> & Value<V>> extends AbstractHashSe
 	}
 
 	@Override
-	public HashSet<V, N> copy() {
-		return new HashSet<V, N>(rehasher, valEq, nodeFactory, store.copy(valProj(), valEq));
+	public HashSet<V, N, S> copy() {
+		return new HashSet<V, N, S>(rehasher, valEq, nodeFactory, store.copy(valProj(), valEq));
 	}
 
 	@Override

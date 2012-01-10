@@ -30,7 +30,9 @@ import org.jjoost.collections.AnyMap;
 import org.jjoost.collections.AnyReadMap;
 import org.jjoost.collections.AnyReadSet;
 import org.jjoost.collections.AnySet;
+import org.jjoost.collections.ListMap;
 import org.jjoost.collections.Map;
+import org.jjoost.collections.MultiMap;
 import org.jjoost.collections.MultiSet;
 import org.jjoost.collections.ReadMap;
 import org.jjoost.collections.ReadSet;
@@ -867,6 +869,12 @@ public class SynchronizedDelegator {
 		return new SynchronizedDelegator().wrap(delegate);
 	}	
 	public static <K, V> Map<K, V> get(final Map<K, V> delegate) {
+		return new SynchronizedDelegator().wrap(delegate);
+	}
+	public static <K, V> MultiMap<K, V> get(final MultiMap<K, V> delegate) {
+		return new SynchronizedDelegator().wrap(delegate);
+	}
+	public static <K, V> ListMap<K, V> get(final ListMap<K, V> delegate) {
 		return new SynchronizedDelegator().wrap(delegate);
 	}
 	

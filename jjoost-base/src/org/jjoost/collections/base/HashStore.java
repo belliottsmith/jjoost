@@ -36,7 +36,7 @@ import org.jjoost.util.Filters;
 import org.jjoost.util.Function;
 import org.jjoost.util.filters.MappedFilter;
 
-public interface HashStore<N> extends Serializable {
+public interface HashStore<N, S extends HashStore<N, S>> extends Serializable {
 
 	public static enum Locality {
 		ADJACENT, SAME_BUCKET, GLOBAL
@@ -47,7 +47,7 @@ public interface HashStore<N> extends Serializable {
 	public boolean isEmpty();
 	public int clear();
 	public <V> Iterator<V> clearAndReturn(Function<? super N, ? extends V> f);
-	public <F> HashStore<N> copy(Function<? super N, ? extends F> nodeEqualityProj, HashNodeEquality<? super F, ? super N> nodeEquality);
+	public <F> S copy(Function<? super N, ? extends F> nodeEqualityProj, HashNodeEquality<? super F, ? super N> nodeEquality);
 	public int capacity();
 	public void shrink();
 	public void resize(int size);

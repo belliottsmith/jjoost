@@ -51,14 +51,14 @@ public class NestedMultiHashSet<V, N extends HashNode<N> & NestedMultiHashSet.IN
 
 	private static final long serialVersionUID = 3187373892419456381L;
 	
-	protected final HashStore<N> store;
+	protected final HashStore<N, ?> store;
 	protected final Rehasher rehasher;
 	protected final HashNodeFactory<V, N> nodeFactory;
 	protected final ValueEquality<V, N> valEq;
 	protected final Counter totalCount;
 	private UniqueSet unique;
 	
-	protected NestedMultiHashSet(Counter counter, Rehasher rehasher, ValueEquality<V, N> equality, HashNodeFactory<V, N> nodeFactory, HashStore<N> table) {
+	protected NestedMultiHashSet(Counter counter, Rehasher rehasher, ValueEquality<V, N> equality, HashNodeFactory<V, N> nodeFactory, HashStore<N, ?> table) {
 		this.store = table;
 		this.totalCount = counter;
 		this.rehasher = rehasher;

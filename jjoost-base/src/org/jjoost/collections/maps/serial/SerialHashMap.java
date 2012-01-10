@@ -24,15 +24,15 @@ package org.jjoost.collections.maps.serial;
 
 import java.util.Map.Entry;
 
+import org.jjoost.collections.base.AbstractSerialHashStore.SerialHashNode;
 import org.jjoost.collections.base.SerialHashStore;
-import org.jjoost.collections.base.SerialHashStore.SerialHashNode;
 import org.jjoost.collections.maps.base.HashMapNodeFactory;
 import org.jjoost.collections.maps.base.HashMap;
 import org.jjoost.util.Equalities;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Rehasher;
 
-public class SerialHashMap<K, V> extends HashMap<K, V, SerialHashMap.Node<K, V>>{
+public class SerialHashMap<K, V> extends HashMap<K, V, SerialHashMap.Node<K, V>, SerialHashStore<SerialHashMap.Node<K, V>>>{
 
 	private static final long serialVersionUID = 1051610520557989640L;
 

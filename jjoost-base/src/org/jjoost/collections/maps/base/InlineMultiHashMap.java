@@ -37,13 +37,13 @@ import org.jjoost.collections.sets.base.AbstractUniqueSetAdapter;
 import org.jjoost.util.Equality;
 import org.jjoost.util.Rehasher;
 
-public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> extends AbstractHashMap<K, V, N> implements MultiMap<K, V> {
+public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>, S extends HashStore<N, S>> extends AbstractHashMap<K, V, N, S> implements MultiMap<K, V> {
 
 	protected InlineMultiHashMap(
 			Rehasher rehasher, 
 			AbstractHashMap.KeyEquality<K, V, N> keyEquality, 
 			AbstractHashMap.NodeEquality<K, V, N> entryEquality,
-			HashMapNodeFactory<K, V, N> nodeFactory, HashStore<N> table) {
+			HashMapNodeFactory<K, V, N> nodeFactory, S table) {
 		super(rehasher, keyEquality, entryEquality, nodeFactory, table);
 	}
 	
@@ -110,7 +110,7 @@ public class InlineMultiHashMap<K, V, N extends HashNode<N> & Entry<K, V>> exten
 	
 	@Override
 	public MultiMap<K, V> copy() {
-		return new InlineMultiHashMap<K, V, N>(rehasher, keyEq, nodeEq, nodeFactory, store.copy(nodeProj(), nodeEq));
+		return new InlineMultiHashMap<K, V, N, S>(rehasher, keyEq, nodeEq, nodeFactory, store.copy(nodeProj(), nodeEq));
 	}
 
 	final class KeyValueSet extends AbstractKeyValueSet implements Set<V> {

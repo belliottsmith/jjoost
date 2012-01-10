@@ -31,17 +31,17 @@ import org.jjoost.util.Factory;
 import org.jjoost.util.Function;
 import org.jjoost.util.Iters;
 
-public class SegmentedHashStore<N extends HashNode<N>> implements HashStore<N> {
+public class SegmentedHashStore<N extends HashNode<N>> implements HashStore<N, SegmentedHashStore<N>> {
 	
 	private static final long serialVersionUID = -5186207371319394054L;
 	
-	private final HashStore<N>[] segments;
+	private final HashStore<N, ?>[] segments;
 	private final int segmentShift;
 	
-	public SegmentedHashStore(int segments, Factory<HashStore<N>> factory) {
+	public SegmentedHashStore(int segments, Factory<HashStore<N, ?>> factory) {
 		this(makeSegments(segments, factory));
 	}
-	public SegmentedHashStore(HashStore<N>[] segments) {
+	public SegmentedHashStore(HashStore<N, ?>[] segments) {
 		if (Integer.bitCount(segments.length) != 1)
 			throw new IllegalArgumentException("Number of segments provided must be a power of 2");
 		this.segments = segments;
@@ -49,14 +49,14 @@ public class SegmentedHashStore<N extends HashNode<N>> implements HashStore<N> {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static <N extends HashNode<N>> HashStore<N>[] makeSegments(int segments, Factory<HashStore<N>> factory) {
-		final HashStore<N>[] r = new HashStore[segments];
+	private static <N extends HashNode<N>> HashStore<N, ?>[] makeSegments(int segments, Factory<HashStore<N, ?>> factory) {
+		final HashStore<N, ?>[] r = new HashStore[segments];
 		for (int i = 0 ; i != segments ; i++)
 			r[i] = factory.create();
 		return r;
 	}
 	
-	private final HashStore<N> segmentFor(int hash) {
+	private final HashStore<N, ?> segmentFor(int hash) {
 		return segments[hash >>> segmentShift];
 	}
 	@SuppressWarnings("unchecked")
@@ -86,7 +86,7 @@ public class SegmentedHashStore<N extends HashNode<N>> implements HashStore<N> {
 	@Override
 	public int clear() {
 		int c = 0;
-		for (HashStore<N> segment : segments)
+		for (HashStore<N, ?> segment : segments)
 			c += segment.clear();
 		return c;
 	}
@@ -99,7 +99,7 @@ public class SegmentedHashStore<N extends HashNode<N>> implements HashStore<N> {
 		return Iters.concat(Arrays.asList(iters).iterator());
 	}
 	@Override
-	public <NCmp> HashStore<N> copy(Function<? super N, ? extends NCmp> nodeEqualityProj,
+	public <NCmp> SegmentedHashStore<N> copy(Function<? super N, ? extends NCmp> nodeEqualityProj,
 		HashNodeEquality<? super NCmp, ? super N> nodeEquality) {
 		throw new UnsupportedOperationException();
 	}
@@ -122,7 +122,7 @@ public class SegmentedHashStore<N extends HashNode<N>> implements HashStore<N> {
 	}
 	@Override
 	public boolean isEmpty() {
-		for (HashStore<N> segment : segments)
+		for (HashStore<N, ?> segment : segments)
 			if (!segment.isEmpty())
 				return false;
 		return true;
@@ -161,27 +161,27 @@ public class SegmentedHashStore<N extends HashNode<N>> implements HashStore<N> {
 	}
 	@Override
 	public void shrink() {
-		for (HashStore<N> segment : segments)
+		for (HashStore<N, ?> segment : segments)
 			segment.shrink();
 	}
 	@Override
 	public int totalCount() {
 		int tc = 0;
-		for (HashStore<N> segment : segments)
+		for (HashStore<N, ?> segment : segments)
 			tc+= segment.totalCount();
 		return tc;
 	}
 	@Override
 	public int uniquePrefixCount() {
 		int c = 0;
-		for (HashStore<N> segment : segments)
+		for (HashStore<N, ?> segment : segments)
 			c+= segment.uniquePrefixCount();
 		return c;
 	}
 	@Override
 	public int capacity() {
 		int c = 0;
-		for (HashStore<N> segment : segments)
+		for (HashStore<N, ?> segment : segments)
 			c+= segment.capacity();
 		return c;
 	}

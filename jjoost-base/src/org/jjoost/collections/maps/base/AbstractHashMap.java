@@ -46,7 +46,7 @@ import org.jjoost.util.Functions;
 import org.jjoost.util.Iters;
 import org.jjoost.util.Rehasher;
 
-public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K, V>> implements AnyMap<K, V> {
+public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K, V>, S extends HashStore<N, S>> implements AnyMap<K, V> {
 
 	protected static abstract class NodeEquality<K, V, N extends HashNode<N> & Map.Entry<K, V>> implements HashNodeEquality<Entry<K, V>, N>, Equality<Entry<K, V>> {
 		private static final long serialVersionUID = -4970889935020537472L;
@@ -77,7 +77,7 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 
 	private static final long serialVersionUID = 3187373892419456381L;
 	
-	protected final HashStore<N> store;
+	protected final S store;
 	protected final Rehasher rehasher;
 	protected final KeyEquality<K, V, N> keyEq;
 	protected final NodeEquality<K, V, N> nodeEq;
@@ -89,8 +89,8 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 			KeyEquality<K, V, N> keyEquality, 
 			NodeEquality<K, V, N> entryEquality, 
 			HashMapNodeFactory<K, V, N> nodeFactory, 
-			HashStore<N> table) {
-		this.store = table;
+			S store) {
+		this.store = store;
 		this.rehasher = rehasher;
 		this.keyEq = keyEquality;
 		this.nodeEq = entryEquality;

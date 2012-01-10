@@ -190,7 +190,7 @@ public abstract class FetchMatrixLookup<BaseKeyType, InputKeyType, OutputKeyType
     	public M run(ResultSet rs) throws SQLException {
     		final KeyFetcher<OutputKeyType> keyFetcher = keyFetcher(rs);
     		final MapWrapper<OutputKeyType, OutputValueType, M> out = resultMap();
-    		final BuildColumnFromResultSet[] columns = getColumnBuilders(1, timeZone, valueTypes).run(rs) ;
+    		final BuildColumnFromResultSet[] columns = getColumnBuilders(keyFetcher.cols(), timeZone, valueTypes).run(rs) ;
     		final Function<Object[], OutputValueType> mapValues = mapValues().run(rs);
     		OutputKeyType lastKey = null ;
     		while (rs.next()) {
@@ -232,7 +232,7 @@ public abstract class FetchMatrixLookup<BaseKeyType, InputKeyType, OutputKeyType
     	public M run(ResultSet rs) throws SQLException {
     		final MapWrapper<OutputKeyType, BuildColumnFromResultSet[], ?> stage = temporaryMap();
     		final KeyFetcher<OutputKeyType> keyFetcher = keyFetcher(rs);
-    		final BuildColumnFromResultSet[] template = getColumnBuilders(1, timeZone, valueTypes).run(rs);
+    		final BuildColumnFromResultSet[] template = getColumnBuilders(keyFetcher.cols(), timeZone, valueTypes).run(rs);
     		final Function<Object[], OutputValueType> mapValues = mapValues().run(rs);
     		while (rs.next()) {
     			final OutputKeyType key = keyFetcher.fetch(rs);
