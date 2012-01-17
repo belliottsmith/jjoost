@@ -282,11 +282,6 @@ public class SynchronizedDelegator {
 				return delegate.removeAndReturnFirst(value);
 			}
 		}
-		@Override public void shrink() {
-			synchronized(SynchronizedDelegator.this) {
-				delegate.shrink();
-			}
-		}
 		@Override public Set<V> unique() {
 			synchronized(SynchronizedDelegator.this) {
 				return wrap(delegate.unique());
@@ -787,6 +782,80 @@ public class SynchronizedDelegator {
 		
 	}
 	
+	protected class SyncMultiMap<K, V> extends SyncAnyMap<K, V, MultiMap<K, V>> implements MultiMap<K, V> {
+		
+		private static final long serialVersionUID = -2945163785917823422L;
+		public SyncMultiMap(MultiMap<K, V> delegate) {
+			super(delegate);
+		}
+		
+		@Override public Set<V> values(K key) {
+			synchronized (SynchronizedDelegator.this) {
+				return wrap(delegate.values(key));
+			}
+		}
+		@Override public Set<Entry<K, V>> entries() {
+			synchronized (SynchronizedDelegator.this) {
+				return wrap(delegate.entries());
+			}
+		}
+		@Override public MultiSet<K> keys() {
+			synchronized (SynchronizedDelegator.this) {
+				return wrap(delegate.keys());
+			}
+		}
+		@Override public MultiMap<K, V> copy() {
+			synchronized (SynchronizedDelegator.this) {
+				return new SynchronizedDelegator().wrap(delegate.copy());
+			}
+		}
+
+		@Override
+		public Iterable<V> apply(K v) {
+			synchronized (SynchronizedDelegator.this) {
+				return wrap(delegate.apply(v));
+			}
+		}
+		
+	}
+	
+	protected class SyncListMap<K, V> extends SyncAnyMap<K, V, ListMap<K, V>> implements ListMap<K, V> {
+		
+		private static final long serialVersionUID = -2945163785917823422L;
+		public SyncListMap(ListMap<K, V> delegate) {
+			super(delegate);
+		}
+		
+		@Override public MultiSet<V> values(K key) {
+			synchronized (SynchronizedDelegator.this) {
+				return wrap(delegate.values(key));
+			}
+		}
+		@Override public MultiSet<Entry<K, V>> entries() {
+			synchronized (SynchronizedDelegator.this) {
+				return wrap(delegate.entries());
+			}
+		}
+		@Override public MultiSet<K> keys() {
+			synchronized (SynchronizedDelegator.this) {
+				return wrap(delegate.keys());
+			}
+		}
+		@Override public ListMap<K, V> copy() {
+			synchronized (SynchronizedDelegator.this) {
+				return new SynchronizedDelegator().wrap(delegate.copy());
+			}
+		}
+		
+		@Override
+		public Iterable<V> apply(K v) {
+			synchronized (SynchronizedDelegator.this) {
+				return wrap(delegate.apply(v));
+			}
+		}
+		
+	}
+	
 	protected <V> Iterator<V> wrap(final Iterator<V> iter) {
 		return new SyncIterator<V>(iter);
 	}	
@@ -825,6 +894,12 @@ public class SynchronizedDelegator {
 	}	
 	protected <K, V> Map<K, V> wrap(final Map<K, V> delegate) {
 		return new SyncMap<K, V>(delegate);
+	}
+	protected <K, V> MultiMap<K, V> wrap(final MultiMap<K, V> delegate) {
+		return new SyncMultiMap<K, V>(delegate);
+	}
+	protected <K, V> ListMap<K, V> wrap(final ListMap<K, V> delegate) {
+		return new SyncListMap<K, V>(delegate);
 	}
 	
 	public static <V> Iterator<V> get(final Iterator<V> delegate) {
