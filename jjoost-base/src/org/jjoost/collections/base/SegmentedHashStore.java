@@ -156,15 +156,6 @@ public class SegmentedHashStore<N extends HashNode<N>> implements HashStore<N, S
 		return segmentFor(n.hash).removeNode(nodePrefixEqFunc, nodePrefixEq, n);
 	}
 	@Override
-	public void resize(int size) {
-		throw new UnsupportedOperationException();
-	}
-	@Override
-	public void shrink() {
-		for (HashStore<N, ?> segment : segments)
-			segment.shrink();
-	}
-	@Override
 	public int totalCount() {
 		int tc = 0;
 		for (HashStore<N, ?> segment : segments)
