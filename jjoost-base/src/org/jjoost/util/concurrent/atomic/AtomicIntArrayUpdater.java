@@ -28,5 +28,42 @@ public final class AtomicIntArrayUpdater {
 	public final int getVolatile(Object trg, int i) {
 		return Unsafe.getIntVolatile(trg, offset + (i << shift));
 	}
+
+	public final int addAndGet(Object trg, int i, int val) {
+		while (true) {
+			final int cur = getVolatile(trg, i);
+			if (compareAndSet(trg, i, cur, cur + val)) {
+				return cur;
+			}
+		}
+	}
+
+	public final int decrementAndGet(Object trg, int i) {
+		while (true) {
+			final int cur = getVolatile(trg, i);
+			if (compareAndSet(trg, i, cur, cur - 1)) {
+				return cur;
+			}
+		}
+	}
 	
+	public final int setAndGetDelta(Object trg, int i, int upd) {
+		while (true) {
+			final int cur = getVolatile(trg, i);
+			if (compareAndSet(trg, i, cur, upd)) {
+				return cur - upd;
+			}
+		}
+	}
+	
+	public long incrementAndGet(Object trg, int i) {
+		while (true) {
+			final int cur = getVolatile(trg, i);
+			if (compareAndSet(trg, i, cur, cur + 1)) {
+				return cur;
+			}
+		}
+	}
+	
+
 }
