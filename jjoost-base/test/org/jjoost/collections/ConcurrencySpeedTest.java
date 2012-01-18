@@ -13,8 +13,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
-import org.jjoost.collections.maps.concurrent.LockFreeHashMap;
-
 public class ConcurrencySpeedTest {
 
 	// actual thread count is thread count * 3!
@@ -83,7 +81,8 @@ public class ConcurrencySpeedTest {
 	public static long doJjoost(ExecutorCompletionService<String> exec, final int run, final int itemCount, final int threadCount, final int bucketCount, final float loadFactor) throws InterruptedException, ExecutionException {
 		final long start = System.currentTimeMillis();
 //		final HashLockHashMap<Long, Long> map = new HashLockHashMap<Long, Long>(bucketCount, loadFactor);
-		final LockFreeHashMap<Long, Long> map = new LockFreeHashMap<Long, Long>(bucketCount, loadFactor);
+//		final LockFreeHashMap<Long, Long> map = new LockFreeHashMap<Long, Long>(bucketCount, loadFactor);
+		final Map<Long, Long> map = null;
 		final List<Future<String>> results = new ArrayList<Future<String>>();
 		final AtomicIntegerArray putLimit = new AtomicIntegerArray(threadCount);
 		for (int i = 0 ; i != threadCount ; i++) {

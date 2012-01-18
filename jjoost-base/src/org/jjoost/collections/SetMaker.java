@@ -24,14 +24,14 @@ package org.jjoost.collections;
 
 import org.jjoost.collections.base.HashStoreType;
 import org.jjoost.collections.base.SynchronizedDelegator;
-import org.jjoost.collections.sets.concurrent.LockFreeCountingMultiHashSet;
-import org.jjoost.collections.sets.concurrent.LockFreeInlineMultiHashSet;
-import org.jjoost.collections.sets.concurrent.LockFreeLinkedCountingMultiHashSet;
-import org.jjoost.collections.sets.concurrent.LockFreeLinkedInlineMultiHashSet;
-import org.jjoost.collections.sets.concurrent.LockFreeLinkedNestedMultiHashSet;
-import org.jjoost.collections.sets.concurrent.LockFreeLinkedHashSet;
-import org.jjoost.collections.sets.concurrent.LockFreeNestedMultiHashSet;
-import org.jjoost.collections.sets.concurrent.LockFreeHashSet;
+//import org.jjoost.collections.sets.concurrent.LockFreeCountingMultiHashSet;
+//import org.jjoost.collections.sets.concurrent.LockFreeInlineMultiHashSet;
+//import org.jjoost.collections.sets.concurrent.LockFreeLinkedCountingMultiHashSet;
+//import org.jjoost.collections.sets.concurrent.LockFreeLinkedInlineMultiHashSet;
+//import org.jjoost.collections.sets.concurrent.LockFreeLinkedNestedMultiHashSet;
+//import org.jjoost.collections.sets.concurrent.LockFreeLinkedHashSet;
+//import org.jjoost.collections.sets.concurrent.LockFreeNestedMultiHashSet;
+//import org.jjoost.collections.sets.concurrent.LockFreeHashSet;
 import org.jjoost.collections.sets.serial.SerialCountingMultiHashSet;
 import org.jjoost.collections.sets.serial.SerialInlineMultiHashSet;
 import org.jjoost.collections.sets.serial.SerialLinkedCountingMultiHashSet;
@@ -216,14 +216,14 @@ public abstract class SetMaker<V> {
 					new SerialLinkedHashSet<V>(
 						initialCapacity, loadFactor, 
 						rehasher(), eq));
-			case LOCK_FREE:
-				return new LockFreeHashSet<V>(
-					initialCapacity, loadFactor, 
-					rehasher(), eq);
-			case LINKED_LOCK_FREE:
-				return new LockFreeLinkedHashSet<V>(
-					initialCapacity, loadFactor, 
-					rehasher(), eq);
+//			case LOCK_FREE:
+//				return new LockFreeHashSet<V>(
+//					initialCapacity, loadFactor, 
+//					rehasher(), eq);
+//			case LINKED_LOCK_FREE:
+//				return new LockFreeLinkedHashSet<V>(
+//					initialCapacity, loadFactor, 
+//					rehasher(), eq);
 			default:
 				throw new IllegalArgumentException(type.toString());
 			}			
@@ -250,14 +250,14 @@ public abstract class SetMaker<V> {
 						new SerialLinkedInlineMultiHashSet<V>(
 							initialCapacity, loadFactor, 
 							rehasher(), eq));
-				case LOCK_FREE:
-					return new LockFreeInlineMultiHashSet<V>(
-						initialCapacity, loadFactor, 
-						rehasher(), eq);
-				case LINKED_LOCK_FREE:
-					return new LockFreeLinkedInlineMultiHashSet<V>(
-						initialCapacity, loadFactor, 
-						rehasher(), eq);
+//				case LOCK_FREE:
+//					return new LockFreeInlineMultiHashSet<V>(
+//						initialCapacity, loadFactor, 
+//						rehasher(), eq);
+//				case LINKED_LOCK_FREE:
+//					return new LockFreeLinkedInlineMultiHashSet<V>(
+//						initialCapacity, loadFactor, 
+//						rehasher(), eq);
 				default:
 					throw new IllegalArgumentException(type.toString());
 				}			
@@ -281,14 +281,14 @@ public abstract class SetMaker<V> {
 						new SerialLinkedNestedMultiHashSet<V>(
 							initialCapacity, loadFactor, 
 							rehasher(), eq));
-				case LOCK_FREE:
-					return new LockFreeNestedMultiHashSet<V>(
-						initialCapacity, loadFactor, 
-						rehasher(), eq);
-				case LINKED_LOCK_FREE:
-					return new LockFreeLinkedNestedMultiHashSet<V>(
-						initialCapacity, loadFactor, 
-						rehasher(), eq);
+//				case LOCK_FREE:
+//					return new LockFreeNestedMultiHashSet<V>(
+//						initialCapacity, loadFactor, 
+//						rehasher(), eq);
+//				case LINKED_LOCK_FREE:
+//					return new LockFreeLinkedNestedMultiHashSet<V>(
+//						initialCapacity, loadFactor, 
+//						rehasher(), eq);
 				default:
 					throw new IllegalArgumentException(type.toString());
 				}			
@@ -312,14 +312,14 @@ public abstract class SetMaker<V> {
 						new SerialLinkedCountingMultiHashSet<V>(
 							initialCapacity, loadFactor, 
 							rehasher(), eq));
-				case LOCK_FREE:
-					return new LockFreeCountingMultiHashSet<V>(
-						initialCapacity, loadFactor, 
-						rehasher(), eq);
-				case LINKED_LOCK_FREE:
-					return new LockFreeLinkedCountingMultiHashSet<V>(
-						initialCapacity, loadFactor, 
-						rehasher(), eq);
+//				case LOCK_FREE:
+//					return new LockFreeCountingMultiHashSet<V>(
+//						initialCapacity, loadFactor, 
+//						rehasher(), eq);
+//				case LINKED_LOCK_FREE:
+//					return new LockFreeLinkedCountingMultiHashSet<V>(
+//						initialCapacity, loadFactor, 
+//						rehasher(), eq);
 				default:
 					throw new IllegalArgumentException(type.toString());
 				}			
