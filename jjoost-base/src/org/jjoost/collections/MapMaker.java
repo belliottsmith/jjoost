@@ -24,18 +24,12 @@ package org.jjoost.collections;
 
 import org.jjoost.collections.base.HashStoreType;
 import org.jjoost.collections.base.SynchronizedDelegator;
-import org.jjoost.collections.maps.concurrent.LockFreeInlineListHashMap;
-import org.jjoost.collections.maps.concurrent.LockFreeInlineMultiHashMap;
-import org.jjoost.collections.maps.concurrent.LockFreeLinkedInlineListHashMap;
-import org.jjoost.collections.maps.concurrent.LockFreeLinkedInlineMultiHashMap;
-import org.jjoost.collections.maps.concurrent.LockFreeLinkedHashMap;
-import org.jjoost.collections.maps.concurrent.LockFreeHashMap;
-import org.jjoost.collections.maps.concurrent.SyncHashMap;
-import org.jjoost.collections.maps.concurrent.SyncInlineListHashMap;
-import org.jjoost.collections.maps.concurrent.SyncInlineMultiHashMap;
-import org.jjoost.collections.maps.concurrent.SyncLinkedHashMap;
-import org.jjoost.collections.maps.concurrent.SyncLinkedInlineListHashMap;
-import org.jjoost.collections.maps.concurrent.SyncLinkedInlineMultiHashMap;
+//import org.jjoost.collections.maps.concurrent.LockFreeInlineListHashMap;
+//import org.jjoost.collections.maps.concurrent.LockFreeInlineMultiHashMap;
+//import org.jjoost.collections.maps.concurrent.LockFreeLinkedInlineListHashMap;
+//import org.jjoost.collections.maps.concurrent.LockFreeLinkedInlineMultiHashMap;
+//import org.jjoost.collections.maps.concurrent.LockFreeLinkedHashMap;
+//import org.jjoost.collections.maps.concurrent.LockFreeHashMap;
 import org.jjoost.collections.maps.nested.NestedSetListMap;
 import org.jjoost.collections.maps.nested.NestedSetMultiMap;
 import org.jjoost.collections.maps.serial.SerialInlineListHashMap;
@@ -299,16 +293,16 @@ public abstract class MapMaker<K, V> {
 						initialCapacity, loadFactor,  
 						rehasher(), keyEquality, valEquality));
 				break;
-			case LOCK_FREE:
-				r = new LockFreeHashMap<K, V>(
-					initialCapacity, loadFactor,  
-					rehasher(), keyEquality, valEquality);
-				break;
-			case LINKED_LOCK_FREE:
-				r = new LockFreeLinkedHashMap<K, V>(
-					initialCapacity, loadFactor,  
-					rehasher(), keyEquality, valEquality);
-				break;
+//			case LOCK_FREE:
+//				r = new LockFreeHashMap<K, V>(
+//					initialCapacity, loadFactor,  
+//					rehasher(), keyEquality, valEquality);
+//				break;
+//			case LINKED_LOCK_FREE:
+//				r = new LockFreeLinkedHashMap<K, V>(
+//					initialCapacity, loadFactor,  
+//					rehasher(), keyEquality, valEquality);
+//				break;
 			default:
 				throw new UnsupportedOperationException();
 			}
@@ -340,14 +334,14 @@ public abstract class MapMaker<K, V> {
 					return SynchronizedDelegator.get(new SerialLinkedInlineMultiHashMap<K, V>(
 							initialCapacity, loadFactor, 
 							rehasher(), keyEquality, valEquality));
-				case LOCK_FREE:
-					return new LockFreeInlineMultiHashMap<K, V>(
-						initialCapacity, loadFactor, 
-						rehasher(), keyEquality, valEquality);
-				case LINKED_LOCK_FREE:
-					return new LockFreeLinkedInlineMultiHashMap<K, V>(
-						initialCapacity, loadFactor, 
-						rehasher(), keyEquality, valEquality);
+//				case LOCK_FREE:
+//					return new LockFreeInlineMultiHashMap<K, V>(
+//						initialCapacity, loadFactor, 
+//						rehasher(), keyEquality, valEquality);
+//				case LINKED_LOCK_FREE:
+//					return new LockFreeLinkedInlineMultiHashMap<K, V>(
+//						initialCapacity, loadFactor, 
+//						rehasher(), keyEquality, valEquality);
 				default:
 					throw new UnsupportedOperationException();
 				}			
@@ -397,14 +391,14 @@ public abstract class MapMaker<K, V> {
 					return SynchronizedDelegator.get(new SerialLinkedInlineListHashMap<K, V>(
 							initialCapacity, loadFactor, 
 							rehasher(), keyEquality, valEquality));
-				case LOCK_FREE:
-					return new LockFreeInlineListHashMap<K, V>(
-						initialCapacity, loadFactor, 
-						rehasher(),  keyEquality, valEquality);
-				case LINKED_LOCK_FREE:
-					return new LockFreeLinkedInlineListHashMap<K, V>(
-						initialCapacity, loadFactor, 
-						rehasher(),  keyEquality, valEquality);
+//				case LOCK_FREE:
+//					return new LockFreeInlineListHashMap<K, V>(
+//						initialCapacity, loadFactor, 
+//						rehasher(),  keyEquality, valEquality);
+//				case LINKED_LOCK_FREE:
+//					return new LockFreeLinkedInlineListHashMap<K, V>(
+//						initialCapacity, loadFactor, 
+//						rehasher(),  keyEquality, valEquality);
 				default:
 					throw new UnsupportedOperationException();
 				}			

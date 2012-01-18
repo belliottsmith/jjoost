@@ -31,8 +31,8 @@ import org.jjoost.collections.base.HashNodeEquality;
 import org.jjoost.collections.base.HashNodeFactory;
 import org.jjoost.collections.base.HashStore;
 import org.jjoost.collections.base.HashStore.PutAction;
-import org.jjoost.collections.base.LockFreeHashStore.LockFreeHashNode;
-import org.jjoost.collections.base.LockFreeLinkedHashStore.LockFreeLinkedHashNode;
+//import org.jjoost.collections.base.LockFreeHashStore.LockFreeHashNode;
+//import org.jjoost.collections.base.LockFreeLinkedHashStore.LockFreeLinkedHashNode;
 import org.jjoost.collections.base.AbstractSerialHashStore.SerialHashNode;
 import org.jjoost.collections.base.SerialLinkedHashStore.SerialLinkedHashNode;
 import org.jjoost.util.Equality;
@@ -257,57 +257,57 @@ public abstract class AbstractHashSet<V, N extends HashNode<N> & Value<V>, S ext
 		}
 	}
 	
-	public static final class LockFreeHashSetNode<V> extends LockFreeHashNode<LockFreeHashSetNode<V>> implements Value<V> {
-		private static final long serialVersionUID = -5766263745864028747L;
-		public LockFreeHashSetNode(int hash, V value) {
-			super(hash);
-			this.value = value;
-		}
-		private V value;
-		@Override public V getValue() { return value ; }
-		@Override public LockFreeHashSetNode<V> copy() { return new LockFreeHashSetNode<V>(hash, value) ; }
-		@Override public String toString() { return Objects.toString(value) ; }
-	}
-	
-	@SuppressWarnings("rawtypes")
-	private static final LockFreeHashSetNodeFactory LOCKFREE_FACTORY = new LockFreeHashSetNodeFactory();
-	@SuppressWarnings("unchecked")
-	public static <V> LockFreeHashSetNodeFactory<V> lockFreeNodeFactory() {
-		return LOCKFREE_FACTORY;
-	}
-	public static final class LockFreeHashSetNodeFactory<V> implements HashNodeFactory<V, LockFreeHashSetNode<V>> {
-		private static final long serialVersionUID = -1108755693852364279L;
-
-		@Override
-		public final LockFreeHashSetNode<V> makeNode(final int hash, final V value) {
-			return new LockFreeHashSetNode<V>(hash, value);
-		}
-	}
-	
-	public static final class LockFreeLinkedHashSetNode<V> extends LockFreeLinkedHashNode<LockFreeLinkedHashSetNode<V>> implements Value<V> {
-		private static final long serialVersionUID = -5766263745864028747L;
-		public LockFreeLinkedHashSetNode(int hash, V value) {
-			super(hash);
-			this.value = value;
-		}
-		private V value;
-		@Override public V getValue() { return value ; }
-		@Override public LockFreeLinkedHashSetNode<V> copy() { return new LockFreeLinkedHashSetNode<V>(hash, value) ; }
-		@Override public String toString() { return Objects.toString(value) ; }
-	}
-	
-	@SuppressWarnings("rawtypes")
-	private static final LockFreeLinkedHashSetNodeFactory LOCKFREE_LINKED_FACTORY = new LockFreeLinkedHashSetNodeFactory();
-	@SuppressWarnings("unchecked")
-	public static <V> LockFreeLinkedHashSetNodeFactory<V> lockFreeLinkedNodeFactory() {
-		return LOCKFREE_LINKED_FACTORY;
-	}
-	public static final class LockFreeLinkedHashSetNodeFactory<V> implements HashNodeFactory<V, LockFreeLinkedHashSetNode<V>> {
-		private static final long serialVersionUID = 4736536599540508852L;
-		@Override
-		public final LockFreeLinkedHashSetNode<V> makeNode(final int hash, final V value) {
-			return new LockFreeLinkedHashSetNode<V>(hash, value);
-		}
-	}
+//	public static final class LockFreeHashSetNode<V> extends LockFreeHashNode<LockFreeHashSetNode<V>> implements Value<V> {
+//		private static final long serialVersionUID = -5766263745864028747L;
+//		public LockFreeHashSetNode(int hash, V value) {
+//			super(hash);
+//			this.value = value;
+//		}
+//		private V value;
+//		@Override public V getValue() { return value ; }
+//		@Override public LockFreeHashSetNode<V> copy() { return new LockFreeHashSetNode<V>(hash, value) ; }
+//		@Override public String toString() { return Objects.toString(value) ; }
+//	}
+//	
+//	@SuppressWarnings("rawtypes")
+//	private static final LockFreeHashSetNodeFactory LOCKFREE_FACTORY = new LockFreeHashSetNodeFactory();
+//	@SuppressWarnings("unchecked")
+//	public static <V> LockFreeHashSetNodeFactory<V> lockFreeNodeFactory() {
+//		return LOCKFREE_FACTORY;
+//	}
+//	public static final class LockFreeHashSetNodeFactory<V> implements HashNodeFactory<V, LockFreeHashSetNode<V>> {
+//		private static final long serialVersionUID = -1108755693852364279L;
+//
+//		@Override
+//		public final LockFreeHashSetNode<V> makeNode(final int hash, final V value) {
+//			return new LockFreeHashSetNode<V>(hash, value);
+//		}
+//	}
+//	
+//	public static final class LockFreeLinkedHashSetNode<V> extends LockFreeLinkedHashNode<LockFreeLinkedHashSetNode<V>> implements Value<V> {
+//		private static final long serialVersionUID = -5766263745864028747L;
+//		public LockFreeLinkedHashSetNode(int hash, V value) {
+//			super(hash);
+//			this.value = value;
+//		}
+//		private V value;
+//		@Override public V getValue() { return value ; }
+//		@Override public LockFreeLinkedHashSetNode<V> copy() { return new LockFreeLinkedHashSetNode<V>(hash, value) ; }
+//		@Override public String toString() { return Objects.toString(value) ; }
+//	}
+//	
+//	@SuppressWarnings("rawtypes")
+//	private static final LockFreeLinkedHashSetNodeFactory LOCKFREE_LINKED_FACTORY = new LockFreeLinkedHashSetNodeFactory();
+//	@SuppressWarnings("unchecked")
+//	public static <V> LockFreeLinkedHashSetNodeFactory<V> lockFreeLinkedNodeFactory() {
+//		return LOCKFREE_LINKED_FACTORY;
+//	}
+//	public static final class LockFreeLinkedHashSetNodeFactory<V> implements HashNodeFactory<V, LockFreeLinkedHashSetNode<V>> {
+//		private static final long serialVersionUID = 4736536599540508852L;
+//		@Override
+//		public final LockFreeLinkedHashSetNode<V> makeNode(final int hash, final V value) {
+//			return new LockFreeLinkedHashSetNode<V>(hash, value);
+//		}
+//	}
 	
 }
