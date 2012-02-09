@@ -692,6 +692,7 @@ public abstract class AbstractSerialHashStore<N extends AbstractSerialHashStore.
 			final int numTotalBits = Integer.bitCount(table.length - 1);
 			if (numTotalBits >= 8) iter = new HashIter32Bit(8, numTotalBits);
 			else iter = new HashIter32Bit(numTotalBits, numTotalBits);
+			nextHash(null, -1);
 		}
 		
 		@Override

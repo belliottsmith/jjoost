@@ -343,7 +343,7 @@ public class Iters {
 	 * @return the concatenation of b to a (i.e. a followed by b)
 	 */
     @SuppressWarnings("unchecked")
-	public static <E> ConcatIterable<E> concat(Iterable<E> a, Iterable<E> b) {
+	public static <E> ConcatIterable<E> concat(Iterable<? extends E> a, Iterable<? extends E> b) {
     	return new ConcatIterable<E>(a, b);
     }
 
@@ -354,7 +354,7 @@ public class Iters {
 	 *            an var-args array of <code>Iterable</code> objects
 	 * @return the concatenation of all provided <code>Iterable</code> objects, returned in the order they appear in the array
 	 */
-	public static <E> ConcatIterable<E> concat(@SuppressWarnings("unchecked") Iterable<E> ... a) {
+	public static <E> ConcatIterable<E> concat(Iterable<? extends E> ... a) {
     	return new ConcatIterable<E>(a);
     }
 	

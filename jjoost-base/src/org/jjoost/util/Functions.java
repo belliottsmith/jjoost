@@ -256,7 +256,7 @@ public class Functions {
 		return MAP_ENTRY_KEY_PROJECTION;
 	}
 	@SuppressWarnings("rawtypes")
-	private static final MapEntryValueProjection MAP_ENTRY_KEY_PROJECTION = new MapEntryValueProjection();
+	private static final MapEntryKeyProjection MAP_ENTRY_KEY_PROJECTION = new MapEntryKeyProjection();
 	/**
 	 * A function that retrieves the key portion of a <code>Map.Entry</code>
 	 * 

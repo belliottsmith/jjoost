@@ -22,7 +22,9 @@
 
 package org.jjoost.collections.maps.base;
 
-public interface HashMapNodeFactory<K, V, N> {
+import java.io.Serializable;
+
+public interface HashMapNodeFactory<K, V, N> extends Serializable {
 
 	public N makeNode(int hash, K key, V value);
 

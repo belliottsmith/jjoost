@@ -68,6 +68,7 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 	}
 	
 	protected static abstract class KeyEquality<K, V, N> implements HashNodeEquality<K, N> {
+		private static final long serialVersionUID = 8275178097359756856L;
 		protected final Equality<? super K> keyEq;
 		public KeyEquality(Equality<? super K> keyEq) { this.keyEq = keyEq ; }
 		@Override 
