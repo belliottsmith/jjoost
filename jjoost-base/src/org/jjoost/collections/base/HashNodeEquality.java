@@ -22,7 +22,9 @@
 
 package org.jjoost.collections.base;
 
-public interface HashNodeEquality<NCmp, N> {
+import java.io.Serializable;
+
+public interface HashNodeEquality<NCmp, N> extends Serializable {
 
 	public boolean prefixMatch(NCmp cmp, N n);
 	public boolean suffixMatch(NCmp cmp, N n);

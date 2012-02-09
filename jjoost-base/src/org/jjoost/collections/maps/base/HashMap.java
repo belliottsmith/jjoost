@@ -312,6 +312,7 @@ public class HashMap<K, V, N extends HashNode<N> & Entry<K, V>, S extends HashSt
 	}	
 	
 	public static abstract class KeyEquality<K, V, N> extends AbstractHashMap.KeyEquality<K, V, N> {
+		private static final long serialVersionUID = -4369240329094683196L;
 		public KeyEquality(Equality<? super K> keyEq) {
 			super(keyEq);
 		}

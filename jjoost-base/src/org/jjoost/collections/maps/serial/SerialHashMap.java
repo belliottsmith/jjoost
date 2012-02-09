@@ -85,6 +85,7 @@ public class SerialHashMap<K, V> extends HashMap<K, V, SerialHashMap.Node<K, V>,
 		return SERIAL_SCALAR_HASH_NODE_FACTORY;
 	}
 	public static final class NodeFactory<K, V> implements HashMapNodeFactory<K, V, Node<K, V>> {
+		private static final long serialVersionUID = 6068801727340475781L;
 		@Override
 		public final Node<K, V> makeNode(final int hash, final K key, final V value) {
 			return new Node<K, V>(hash, key, value);
@@ -92,6 +93,7 @@ public class SerialHashMap<K, V> extends HashMap<K, V, SerialHashMap.Node<K, V>,
 	}
 
 	public static final class KeyEquality<K, V> extends HashMap.KeyEquality<K, V, Node<K, V>> {
+		private static final long serialVersionUID = -4562181163151542312L;
 		public KeyEquality(Equality<? super K> keyEq) {
 			super(keyEq);
 		}

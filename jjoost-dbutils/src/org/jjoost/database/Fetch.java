@@ -47,6 +47,9 @@ import org.jjoost.util.Iters;
 //import org.joda.time.DateTime;
 //import org.joda.time.DateTimeZone;
 //import org.joda.time.LocalDate;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.LocalDate;
 
 public abstract class Fetch<R, F extends Fetch<R, F>> {
 
@@ -711,7 +714,7 @@ public abstract class Fetch<R, F extends Fetch<R, F>> {
 		   					continue ;
 		   				}
 		   			} else {
-		   				throw e ;
+		   				_tidyAndThrow(e);
 		   			}
 		   		} catch (Throwable t) {
 		   			_tidyAndThrow(t) ;
@@ -966,7 +969,6 @@ public abstract class Fetch<R, F extends Fetch<R, F>> {
 	protected static final List<Class<?>> BOOLEANS = java.util.Arrays.asList((Class<?>)boolean.class, Boolean.class) ;
     @SuppressWarnings("unchecked")
 	protected static final List<Class<?>> PRIMITIVE_NUMBERS = java.util.Arrays.asList((Class<?>)byte.class, short.class, int.class, long.class, float.class, double.class) ;
-    @SuppressWarnings("unchecked")
 //	protected static final List<Class<?>> STRING_TYPES = java.util.Arrays.asList((Class<?>)String.class, Str.class) ;
     protected static final Set<Class<?>> STRING_TYPES = new SerialHashSet<Class<?>>() ;
     static {
@@ -988,9 +990,9 @@ public abstract class Fetch<R, F extends Fetch<R, F>> {
     	case java.sql.Types.DECIMAL:
     	case java.sql.Types.NUMERIC:
     		return PRIMITIVE_NUMBERS.contains(javaType) || Number.class.isAssignableFrom(javaType) ;    		
-//    	case java.sql.Types.DATE:
-//    	case java.sql.Types.TIMESTAMP:
-//    		return java.util.Date.class.isAssignableFrom(javaType) || org.joda.time.ReadableInstant.class.isAssignableFrom(javaType) || org.joda.time.ReadablePartial.class.isAssignableFrom(javaType) ;
+    	case java.sql.Types.DATE:
+    	case java.sql.Types.TIMESTAMP:
+    		return java.util.Date.class.isAssignableFrom(javaType) || org.joda.time.ReadableInstant.class.isAssignableFrom(javaType) || org.joda.time.ReadablePartial.class.isAssignableFrom(javaType) ;
     	case java.sql.Types.CHAR:
     	case java.sql.Types.NCHAR:
     	case java.sql.Types.NVARCHAR:
@@ -1048,10 +1050,10 @@ public abstract class Fetch<R, F extends Fetch<R, F>> {
 				return (GetFromResultSet<E>) new GetStringFromResultSet(col + 1) ;
 			} else if (clazz == java.util.Date.class) {
 				return (GetFromResultSet<E>) new GetDateFromResultSet(tz, col + 1) ;
-//			} else if (clazz == org.joda.time.LocalDate.class) {
-//				return (GetFromResultSet<E>) new GetLocalDateFromResultSet(col + 1) ;
-//			} else if (clazz == org.joda.time.DateTime.class) {
-//				return (GetFromResultSet<E>) new GetDateTimeFromResultSet(tz, col + 1) ;
+			} else if (clazz == org.joda.time.LocalDate.class) {
+				return (GetFromResultSet<E>) new GetLocalDateFromResultSet(col + 1) ;
+			} else if (clazz == org.joda.time.DateTime.class) {
+				return (GetFromResultSet<E>) new GetDateTimeFromResultSet(tz, col + 1) ;
 			} else if (clazz == java.lang.Double.class) {
 				return (GetFromResultSet<E>) new GetDoubleFromResultSet(col + 1) ;
 			} else if (clazz == java.lang.Integer.class) {
@@ -1102,10 +1104,10 @@ public abstract class Fetch<R, F extends Fetch<R, F>> {
 				return new BuildDateColumnFromResultSet(tz, col + 1) ;
 	    	} else if (clazz == java.lang.String.class) {
 				return new BuildStringColumnFromResultSet(col + 1) ;
-//			} else if (clazz == org.joda.time.LocalDate.class) {
-//				return new BuildLocalDateColumnFromResultSet(col + 1) ;
-//			} else if (clazz == org.joda.time.DateTime.class) {
-//				return new BuildDateTimeColumnFromResultSet(tz, col + 1) ;
+			} else if (clazz == org.joda.time.LocalDate.class) {
+				return new BuildLocalDateColumnFromResultSet(col + 1) ;
+			} else if (clazz == org.joda.time.DateTime.class) {
+				return new BuildDateTimeColumnFromResultSet(tz, col + 1) ;
 			} else if (clazz == java.lang.Double.class) {
 				return new BuildDoubleColumnFromResultSet(col + 1) ;
 			} else if (clazz == java.lang.Integer.class) {
@@ -1176,9 +1178,9 @@ public abstract class Fetch<R, F extends Fetch<R, F>> {
     	case java.sql.Types.DECIMAL:
     	case java.sql.Types.NUMERIC:
     		return new BuildBigDecimalColumnFromResultSet(col + 1) ;
-//    	case java.sql.Types.DATE:
-//    	case java.sql.Types.TIMESTAMP:
-//    		return new BuildDateTimeColumnFromResultSet(tz, col + 1) ;
+    	case java.sql.Types.DATE:
+    	case java.sql.Types.TIMESTAMP:
+    		return new BuildDateTimeColumnFromResultSet(tz, col + 1) ;
     	case java.sql.Types.CHAR:
     	case java.sql.Types.NCHAR:
     	case java.sql.Types.NVARCHAR:
@@ -1227,9 +1229,9 @@ public abstract class Fetch<R, F extends Fetch<R, F>> {
     	case java.sql.Types.DECIMAL:
     	case java.sql.Types.NUMERIC:
     		return new GetBigDecimalFromResultSet(col + 1) ;
-//    	case java.sql.Types.DATE:
-//    	case java.sql.Types.TIMESTAMP:
-//    		return new GetDateTimeFromResultSet(tz, col + 1) ;
+    	case java.sql.Types.DATE:
+    	case java.sql.Types.TIMESTAMP:
+    		return new GetDateTimeFromResultSet(tz, col + 1) ;
     	case java.sql.Types.CHAR:
     	case java.sql.Types.NCHAR:
     	case java.sql.Types.NVARCHAR:
@@ -1416,36 +1418,36 @@ public abstract class Fetch<R, F extends Fetch<R, F>> {
     	}
     }
     
-//    protected static class GetLocalDateFromResultSet extends GetFromResultSet<org.joda.time.LocalDate> {
-//    	final Calendar cal ;
-//    	final DateTimeZone tz ;
-//    	public GetLocalDateFromResultSet(int column) {
-//    		super(org.joda.time.LocalDate.class, column, new Intern<org.joda.time.LocalDate>()) ;
-//    		this.cal = Calendar.getInstance() ;
-//    		this.tz = DateTimeZone.forTimeZone(cal.getTimeZone()) ;
-//    	}
-//    	public final org.joda.time.LocalDate geti(ResultSet rs) throws SQLException {
-//    		final java.sql.Timestamp val = rs.getTimestamp(column, cal) ;
-//    		return val == null ? null : Joda.toLocalDate(val, tz) ;
-//    	}
-//    }
-//
-//    protected static class GetDateTimeFromResultSet extends GetFromResultSet<org.joda.time.DateTime> {
-//    	final Calendar cal ;
-//    	final DateTimeZone tz ;
-//    	public GetDateTimeFromResultSet(TimeZone tz, int column) {
-//    		super(org.joda.time.DateTime.class, column) ;
-//    		if (tz == null) {
-//    			throw new IllegalArgumentException("TimeZone cannot be null") ;
-//    		}
-//    		this.cal = Calendar.getInstance(tz) ;
-//    		this.tz = DateTimeZone.forTimeZone(tz) ;
-//    	}
-//    	public final org.joda.time.DateTime geti(ResultSet rs) throws SQLException {
-//    		final java.sql.Timestamp val = rs.getTimestamp(column, cal) ;
-//    		return val == null ? null : Joda.toDateTime(val, tz) ;
-//    	}
-//    }
+    protected static class GetLocalDateFromResultSet extends GetFromResultSet<org.joda.time.LocalDate> {
+    	final Calendar cal ;
+    	final DateTimeZone tz ;
+    	public GetLocalDateFromResultSet(int column) {
+    		super(org.joda.time.LocalDate.class, column, new Intern<LocalDate>(10000)) ;
+    		this.cal = Calendar.getInstance() ;
+    		this.tz = DateTimeZone.forTimeZone(cal.getTimeZone()) ;
+    	}
+    	public final org.joda.time.LocalDate geti(ResultSet rs) throws SQLException {
+    		final java.sql.Timestamp val = rs.getTimestamp(column, cal) ;
+    		return val == null ? null : new DateTime(val, tz).toLocalDate();
+    	}
+    }
+
+    protected static class GetDateTimeFromResultSet extends GetFromResultSet<org.joda.time.DateTime> {
+    	final Calendar cal ;
+    	final DateTimeZone tz ;
+    	public GetDateTimeFromResultSet(TimeZone tz, int column) {
+    		super(org.joda.time.DateTime.class, column) ;
+    		if (tz == null) {
+    			throw new IllegalArgumentException("TimeZone cannot be null") ;
+    		}
+    		this.cal = Calendar.getInstance(tz) ;
+    		this.tz = DateTimeZone.forTimeZone(tz) ;
+    	}
+    	public final org.joda.time.DateTime geti(ResultSet rs) throws SQLException {
+    		final java.sql.Timestamp val = rs.getTimestamp(column, cal) ;
+    		return val == null ? null : new DateTime(val, tz) ;
+    	}
+    }
 
     protected static class GetTimestampFromResultSet extends GetFromResultSet<java.sql.Timestamp> {
 		final Calendar cal ;
@@ -1599,63 +1601,63 @@ public abstract class Fetch<R, F extends Fetch<R, F>> {
 		}
 	}
 
-//	protected static final class BuildLocalDateColumnFromResultSet extends GetLocalDateFromResultSet implements BuildColumnFromResultSet {
-//		private static final long serialVersionUID = -5242654405330263281L ;
-//		LocalDate[] results ;
-//		int count ;
-//		BuildLocalDateColumnFromResultSet(int column) {
-//			super(column) ;
-//			results = new LocalDate[10] ;
-//			count = 0 ;
-//		}
-//		public final void setRowCount(int count) {
-//			results = new LocalDate[count] ;
-//		}
-//		public final void fetch(ResultSet rs) throws SQLException {
-//			if (count == results.length) results = java.util.Arrays.copyOf(results, count << 1) ;
-//			final Timestamp val = rs.getTimestamp(column, cal) ;
-//			results[count++] = val == null ? null : f.f(Joda.toLocalDate(val, tz)) ;
-//		}
-//		@Override
-//		public final Object getResult() {
-//			final Object r = java.util.Arrays.copyOf(results, count) ;
-//			count = 0 ;
-//			return r ;
-//		}
-//		@Override
-//		public BuildColumnFromResultSet newInstance() {
-//			return new BuildLocalDateColumnFromResultSet(column);
-//		}
-//	}
-//
-//	protected static final class BuildDateTimeColumnFromResultSet extends GetDateTimeFromResultSet implements BuildColumnFromResultSet {
-//		private static final long serialVersionUID = -5242654405330263281L ;
-//		DateTime[] results ;
-//		int count ;
-//		BuildDateTimeColumnFromResultSet(TimeZone tz, int column) {
-//			super(tz, column) ;
-//			results = new DateTime[10] ;
-//			count = 0 ;
-//		}
-//		public final void setRowCount(int count) {
-//			results = new DateTime[count] ;
-//		}
-//		public final void fetch(ResultSet rs) throws SQLException {
-//			if (count == results.length) results = java.util.Arrays.copyOf(results, count << 1) ;
-//			final Timestamp val = rs.getTimestamp(column, cal) ;
-//			results[count++] = val == null ? null : new DateTime(val, tz) ;
-//		}
-//		@Override
-//		public final Object getResult() {
-//			final Object r = java.util.Arrays.copyOf(results, count) ;
-//			count = 0 ;
-//			return r ;
-//		}
-//		@Override
-//		public BuildColumnFromResultSet newInstance() {
-//			return new BuildDateTimeColumnFromResultSet(cal.getTimeZone(), column);
-//		}
-//	}
+	protected static final class BuildLocalDateColumnFromResultSet extends GetLocalDateFromResultSet implements BuildColumnFromResultSet {
+		private static final long serialVersionUID = -5242654405330263281L ;
+		LocalDate[] results ;
+		int count ;
+		BuildLocalDateColumnFromResultSet(int column) {
+			super(column) ;
+			results = new LocalDate[10] ;
+			count = 0 ;
+		}
+		public final void setRowCount(int count) {
+			results = new LocalDate[count] ;
+		}
+		public final void fetch(ResultSet rs) throws SQLException {
+			if (count == results.length) results = java.util.Arrays.copyOf(results, count << 1) ;
+			final Timestamp val = rs.getTimestamp(column, cal) ;
+			results[count++] = val == null ? null : f.apply(new DateTime(val, tz).toLocalDate()) ;
+		}
+		@Override
+		public final Object getResult() {
+			final Object r = java.util.Arrays.copyOf(results, count) ;
+			count = 0 ;
+			return r ;
+		}
+		@Override
+		public BuildColumnFromResultSet newInstance() {
+			return new BuildLocalDateColumnFromResultSet(column);
+		}
+	}
+
+	protected static final class BuildDateTimeColumnFromResultSet extends GetDateTimeFromResultSet implements BuildColumnFromResultSet {
+		private static final long serialVersionUID = -5242654405330263281L ;
+		DateTime[] results ;
+		int count ;
+		BuildDateTimeColumnFromResultSet(TimeZone tz, int column) {
+			super(tz, column) ;
+			results = new DateTime[10] ;
+			count = 0 ;
+		}
+		public final void setRowCount(int count) {
+			results = new DateTime[count] ;
+		}
+		public final void fetch(ResultSet rs) throws SQLException {
+			if (count == results.length) results = java.util.Arrays.copyOf(results, count << 1) ;
+			final Timestamp val = rs.getTimestamp(column, cal) ;
+			results[count++] = val == null ? null : new DateTime(val, tz) ;
+		}
+		@Override
+		public final Object getResult() {
+			final Object r = java.util.Arrays.copyOf(results, count) ;
+			count = 0 ;
+			return r ;
+		}
+		@Override
+		public BuildColumnFromResultSet newInstance() {
+			return new BuildDateTimeColumnFromResultSet(cal.getTimeZone(), column);
+		}
+	}
 
 	protected static final class BuildSQLDateColumnFromResultSet extends GetSQLDateFromResultSet implements BuildColumnFromResultSet {
 		private static final long serialVersionUID = -5242654405330263281L ;

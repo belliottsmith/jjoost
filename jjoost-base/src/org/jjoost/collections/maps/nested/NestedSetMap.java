@@ -105,7 +105,7 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 	@Override
 	public List<V> list(K key) {
 		final S set = map.get(key);
-		return set == null ? null : Iters.toList(set);
+		return set == null ? java.util.Collections.<V>emptyList() : Iters.toList(set);
 	}
 	@Override
 	public int totalCount() {
@@ -119,6 +119,7 @@ public abstract class NestedSetMap<K, V, S extends AnySet<V>> implements AnyMap<
 	public AnySet<V> values() {
 		return new ValueSet();
 	}
+	// TODO: when empty, this should return a placeholder that creates and wraps a new set if inserted to 
 	@Override
 	public S values(K key) {
 		final S set = map.get(key);
