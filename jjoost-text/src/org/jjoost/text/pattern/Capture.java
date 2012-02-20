@@ -58,6 +58,14 @@ public final class Capture implements Serializable {
 		return -1;
 	}
 	
+	public int labelid(int[] group) {
+		return labelid(group, group.length);
+	}
+	
+	public int labelid(String group) {
+		return labelid(parse(group));
+	}
+	
 	public int labelid(int declarepos) {
 		return pos[declarepos];
 	}

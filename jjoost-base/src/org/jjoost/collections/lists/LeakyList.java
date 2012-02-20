@@ -22,12 +22,16 @@
 
 package org.jjoost.collections.lists;
 
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 
 import org.jjoost.collections.iters.ArrayIterator;
 import org.jjoost.collections.iters.ConcatIterator;
+import org.jjoost.util.Iters;
 
-public class LeakyList<E> implements Iterable<E> {
+public class LeakyList<E> implements List<E> {
 
 	private final E[] data;
 	private int lb, size;
@@ -48,11 +52,120 @@ public class LeakyList<E> implements Iterable<E> {
 		}
 	}
 
-	public void add(E value) {
+	public boolean add(E value) {
 		data[lb] = value;
 		lb = (lb + 1) % data.length;
 		if (size != data.length)
 			size++;
+		return true;
+	}
+
+	@Override
+	public int size() {
+		return size;
+	}
+
+	@Override
+	public boolean isEmpty() {
+		return size == 0;
+	}
+
+	@Override
+	public boolean contains(Object o) {
+		return Iters.contains(o, (Iterable<Object>) this);
+	}
+
+	@Override
+	public Object[] toArray() {
+		return Iters.toArray(this);
+	}
+
+	@Override
+	public <T> T[] toArray(T[] a) {
+		return Iters.toArray(this, a);
+	}
+
+	@Override
+	public boolean remove(Object o) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean containsAll(Collection<?> c) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean addAll(Collection<? extends E> c) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean addAll(int index, Collection<? extends E> c) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean removeAll(Collection<?> c) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean retainAll(Collection<?> c) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void clear() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public E get(int index) {
+		if (index >= size) {
+			throw new IndexOutOfBoundsException();
+		}
+		return data[(index + lb) % size];
+	}
+
+	@Override
+	public E set(int index, E element) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void add(int index, E element) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public E remove(int index) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public int indexOf(Object o) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public int lastIndexOf(Object o) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public ListIterator<E> listIterator() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public ListIterator<E> listIterator(int index) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public List<E> subList(int fromIndex, int toIndex) {
+		throw new UnsupportedOperationException();
 	}
 	
 }

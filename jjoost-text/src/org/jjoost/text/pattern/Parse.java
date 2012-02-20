@@ -293,7 +293,7 @@ public abstract class Parse<S> {
 						continue;
 					}
 					if (opts[i] == 0) {
-						selection.add(last);					
+						selection.add(new BuildEmpty<S>());					
 					} else {
 						selection.add(new BuildFiniteRepeat<S>(opts[i], last));					
 					}
