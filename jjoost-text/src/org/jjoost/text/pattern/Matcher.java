@@ -1,6 +1,7 @@
 package org.jjoost.text.pattern;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -52,7 +53,7 @@ public class Matcher<I, S, R> implements Serializable {
 	}
 
 	protected List<R> match(I input, Iterator<? extends S> sequence) {
-		final Captured[] captured = node.capture(capture, sequence);
+		final Captured[] captured = node.match(capture, sequence);
 		if (captured.length == 0) {
 			return Collections.emptyList();
 		}
@@ -63,37 +64,125 @@ public class Matcher<I, S, R> implements Serializable {
 		return Arrays.asList(results);
 	}
 	
-	protected List<R> findAll(I input, List<? extends S> sequence) {
-		return find(input, sequence, true);
+	protected R matchOneResult(I input, Iterator<? extends S> sequence) {
+		final List<R> matches = match(input, sequence);
+		if (matches.isEmpty()) {
+			return null;
+		}
+		return matches.get(0);
 	}
 	
-	protected List<R> findFirst(I input, List<? extends S> sequence) {
-		return find(input, sequence, false);
+	protected List<R> findAllResults(I input, List<? extends S> sequence) {
+		final List<R> r = new ArrayList<R>();
+		applyToResults(input, sequence, new org.jjoost.util.Function<R, Boolean>() {
+			private static final long serialVersionUID = 1L;
+			@Override
+			public Boolean apply(R v) {
+				r.add(v);
+				return Boolean.TRUE;
+			}
+		});
+		return r;
 	}
 	
-	protected List<R> find(I input, List<? extends S> sequence, boolean findAll) {
-		final Found found = findAll ? node.findAll(capture, sequence) : node.findFirst(capture, sequence);
+	protected boolean contains(I input, List<? extends S> sequence) {
+		return !findFirstResults(input, sequence).isEmpty();
+	}
+	
+	protected List<R> findFirstResults(I input, List<? extends S> sequence) {
+		final MatchGroup found = node.findFirst(capture, sequence);
 		if (found == null) {
 			return Collections.emptyList();
 		}
-		final R[] results = (R[]) new Object[found.captured.length];
+		final R[] results = (R[]) new Object[found.matched.length];
 		for (int i = 0 ; i != results.length ; i++) {
-			results[i] = result[found.captured[i].id].matched(input, found.captured[i]);
+			results[i] = result[found.matched[i].id].matched(input, found.matched[i]);
 		}
 		return Arrays.asList(results);
 	}
 	
-	protected void find(final I input, List<? extends S> sequence, final Function<? super R, ?> f) {
-		node.find(capture, sequence, new Function<Found, Boolean>() {
+	protected final R findFirstOneResult(I input, List<? extends S> sequence) {
+		final List<R> found = findFirstResults(input, sequence);
+		if (found.isEmpty()) {
+			return null;
+		}
+		return found.get(0);
+	}
+	
+	protected void applyToResults(final I input, List<? extends S> sequence, final Function<? super R, Boolean> f) {
+		node.find(capture, sequence, new Function<MatchGroup, Boolean>() {
 			private static final long serialVersionUID = 1L;
 			@Override
-			public Boolean apply(Found found) {
-				for (int i = 0 ; i != found.captured.length ; i++) {
-					f.apply(result[found.captured[i].id].matched(input, found.captured[i]));
+			public Boolean apply(MatchGroup found) {
+				Boolean r = null;
+				for (int i = 0 ; (r == null || r) && i != found.matched.length ; i++) {
+					r = f.apply(result[found.matched[i].id].matched(input, found.matched[i]));
 				}				
-				return null;
+				return r;
 			}
 		});
+	}
+	
+	protected void applyToMatches(final I input, List<? extends S> sequence, final Function<? super Match<R>, Boolean> f) {
+		node.find(capture, sequence, new Function<MatchGroup, Boolean>() {
+			private static final long serialVersionUID = 1L;
+			@Override
+			public Boolean apply(MatchGroup found) {
+				Boolean r = null;
+				for (int i = 0 ; (r == null || r) && i != found.matched.length ; i++) {
+					r = f.apply(new Match<R>(
+							found.start, found.end, found.matched[i], 
+							result[found.matched[i].id], 
+							result[found.matched[i].id].matched(input, found.matched[i])));
+				}
+				return r;
+			}
+		});
+	}
+	
+	protected void applyToLongestMatches(final I input, List<? extends S> sequence, final Function<? super Match<R>, Boolean> f) {
+		final class MyFunc implements Function<MatchGroup, Boolean> {
+			private static final long serialVersionUID = 1L;
+			MatchGroup last = null;
+			
+			@Override
+			public Boolean apply(MatchGroup found) {
+				if (last != null) {
+					if (last.end < found.end) {
+						if (last.start < found.start) {
+							final Boolean r = _apply(last);
+							if (r != null && !r) {
+								last = null;
+								return Boolean.FALSE;
+							}
+						}
+					} else {
+						return Boolean.TRUE;
+					}
+				}
+				last = found;
+				return Boolean.TRUE;
+			}
+			private Boolean _apply(MatchGroup found) {
+				Boolean r = null;				
+				for (int i = 0 ; (r == null || r) && i != found.matched.length ; i++) {
+					r = f.apply(new Match<R>(
+							found.start, found.end, found.matched[i], 
+							result[found.matched[i].id], 
+							result[found.matched[i].id].matched(input, found.matched[i])));
+				}
+				return r;
+			}
+		}
+		final MyFunc f2 = new MyFunc();
+		node.find(capture, sequence, f2);
+		if (f2.last != null) {
+			f2._apply(f2.last);
+		}
+	}
+	
+	protected void applyToMatchGroups(final I input, List<? extends S> sequence, final Function<? super MatchGroup, Boolean> f) {
+		node.find(capture, sequence, f);
 	}
 	
 }

@@ -1,12 +1,14 @@
 package org.jjoost.text.pattern;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.jjoost.collections.lists.LeakyList;
 import org.jjoost.text.pattern.NodeMapSplit.NodeIntersect;
 import org.jjoost.util.Function;
 
@@ -403,19 +405,8 @@ public final class Node<S> implements Serializable {
 		if (!permitOverlappingAccepts && r.accepts.size() > 1) {
 			throw new IllegalStateException("The provided patterns have overlapping acceptance states, which has been forbidden");
 		}
-//		r.routes = a.routes.append(b.routes, offset);
-		final boolean aRefersToSelf = a.next.maps(a);
-		final boolean bRefersToSelf = b.next.maps(b);
-		if (aRefersToSelf != bRefersToSelf) {
-			if (aRefersToSelf) {
-				rightRemaps.put(b, r);
-			} else {
-				leftRemaps.put(a, r);
-			}
-		} else {
-			leftRemaps.put(a, r);
-			rightRemaps.put(b, r);
-		}
+		leftRemaps.put(a, r);
+		rightRemaps.put(b, r);
 		final NodeMapSplit<S> split = a.next.split(b.next, 0);
 		final NodeIntersect<S>[] intersections = split.intersect;
 		NodeMap<S> left = split.left;
@@ -472,11 +463,11 @@ public final class Node<S> implements Serializable {
 		}
 	}
 	
-	public Captured[] capture(Capture[] capture, Iterator<? extends S> iter) {
-		return capture(capture, this, iter);
+	public Captured[] match(Capture[] capture, Iterator<? extends S> iter) {
+		return match(capture, this, iter);
 	}
 	
-	private static <S> Captured[] capture(Capture[] capture, Node<S> cur, Iterator<? extends S> iter) {
+	private static <S> Captured[] match(Capture[] capture, Node<S> cur, Iterator<? extends S> iter) {
 		final Capturing capturing = new Capturing(capture);
 		int i = 0;
 		IdSet patterns = null;
@@ -493,33 +484,36 @@ public final class Node<S> implements Serializable {
 				i++;
 			} else {
 				patterns = patterns == null ? cur.accepts : patterns.intersect(cur.accepts);
+				capturing.update(patterns, 0, i);
 				return capturing.select(patterns, i);
 			}
 		}
 	}
 	
-	private static final class FindFunc implements Function<Found, Boolean> {
+	private static final class FindFunc implements Function<MatchGroup, Boolean> {
 		private static final long serialVersionUID = 827559989469116132L;
 		final Boolean r;
-		public FindFunc(Boolean r) {
+		final List<MatchGroup> saved;
+		public FindFunc(Boolean r, List<MatchGroup> save) {
 			this.r = r;
+			this.saved = save;
 		}
-		Found last;
 		@Override
-		public Boolean apply(Found v) {
-			last = v;
+		public Boolean apply(MatchGroup v) {
+			saved.add(v);
 			return r;
 		}
 	}
 	
-	public void find(Capture[] capture, List<? extends S> list, Function<? super Found, Boolean> found) {
+	public void find(Capture[] capture, List<? extends S> list, Function<? super MatchGroup, Boolean> found) {
 		find(capture, this, list, found);
 	}
 	
-	// TODO : optimise to avoid resetting completely after each match attempt
-	// TODO : a pattern should never match a region of input multiple times?? not sure if technically cheap enough to implement
-	private static <S> void find(Capture[] capture, Node<S> head, List<? extends S> list, Function<? super Found, Boolean> found) {
+	// TODO : optimise to avoid resetting completely after each match attempt (i.e. perhaps pre-compute a lookup table of reset positions after failures)
+	private static <S> void find(Capture[] capture, Node<S> head, List<? extends S> list, Function<? super MatchGroup, Boolean> found) {
 		int o = 0;
+		// TODO: consider caching capturing for large node graphs? (in a ThreadLocal); avoids unnecessary garbage
+		// this might mean moving the Capturing allocation out to the caller? or 
 		final Capturing capturing = new Capturing(capture);
 		while (o != list.size()) {
 			capturing.reset();
@@ -529,7 +523,8 @@ public final class Node<S> implements Serializable {
 			while (true) {
 				final IdSet accept = patterns == null ? cur.accepts : patterns.intersect(cur.accepts);
 				if (!accept.isEmpty()) {
-					if (found.apply(new Found(o - 1, capturing.select(accept, i))) == Boolean.FALSE) {
+					capturing.update(patterns, o - 1, i);
+					if (found.apply(new MatchGroup(o - 1, i, capturing.select(accept, i))) == Boolean.FALSE) {
 						return;
 					}
 				}
@@ -550,24 +545,34 @@ public final class Node<S> implements Serializable {
 		}
 	}
 	
-	public Found findAll(Capture[] capture, List<? extends S> list) {
+	public List<MatchGroup> findAll(Capture[] capture, List<? extends S> list) {
 		return findAll(capture, this, list);
 	}
 	
-	private static <S> Found findAll(Capture[] capture, Node<S> head, List<? extends S> list) {
-		final FindFunc f = new FindFunc(Boolean.TRUE);
+	private static <S> List<MatchGroup> findAll(Capture[] capture, Node<S> head, List<? extends S> list) {
+		final FindFunc f = new FindFunc(Boolean.TRUE, new ArrayList<MatchGroup>());
 		find(capture, head, list, f);
-		return f.last;
+		return f.saved;
 	}
 	
-	public Found findFirst(Capture[] capture, List<? extends S> list) {
+	public MatchGroup findLast(Capture[] capture, List<? extends S> list) {
+		return findLast(capture, this, list);
+	}
+	
+	private static <S> MatchGroup findLast(Capture[] capture, Node<S> head, List<? extends S> list) {
+		final FindFunc f = new FindFunc(Boolean.TRUE, new LeakyList<MatchGroup>(1));
+		find(capture, head, list, f);
+		return f.saved.isEmpty() ? null : f.saved.get(0);
+	}
+	
+	public MatchGroup findFirst(Capture[] capture, List<? extends S> list) {
 		return findFirst(capture, this, list);
 	}
 		
-	private static <S> Found findFirst(Capture[] capture, Node<S> head, List<? extends S> list) {		
-		final FindFunc f = new FindFunc(Boolean.FALSE);
+	private static <S> MatchGroup findFirst(Capture[] capture, Node<S> head, List<? extends S> list) {		
+		final FindFunc f = new FindFunc(Boolean.FALSE, new LeakyList<MatchGroup>(1));
 		find(capture, head, list, f);
-		return f.last;
+		return f.saved.isEmpty() ? null : f.saved.get(0);
 	}
 	
 	// TODO: cycles still end up being copied - should try to prevent this!

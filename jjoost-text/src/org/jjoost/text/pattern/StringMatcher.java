@@ -3,6 +3,8 @@ package org.jjoost.text.pattern;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jjoost.collections.MultiSet;
+import org.jjoost.collections.sets.serial.SerialCountingMultiHashSet;
 import org.jjoost.text.pattern.CharScheme.Char;
 import org.jjoost.text.pattern.CharScheme.CharIterator;
 import org.jjoost.text.pattern.CharScheme.CharList;
@@ -44,16 +46,36 @@ public class StringMatcher<S extends CharSequence, R> extends Matcher<S, Char, R
 		return super.match(s, new CharIterator(s));
 	}
 	
-	public void find(S s, Function<? super R, ?> found) {
-		super.find(s, new CharList(s), found);
+	public R matchOne(S s) {
+		return super.matchOneResult(s, new CharIterator(s));
+	}
+	
+	public void applyToResults(S s, Function<? super R, Boolean> found) {
+		super.applyToResults(s, new CharList(s), found);
+	}
+	
+	public void applyToMatches(S s, Function<? super Match<R>, Boolean> found) {
+		super.applyToMatches(s, new CharList(s), found);
+	}
+	
+	public void applyToLongestMatches(S s, Function<? super Match<R>, Boolean> found) {
+		super.applyToLongestMatches(s, new CharList(s), found);
+	}
+	
+	public void applyToMatchGroups(S s, Function<? super MatchGroup, Boolean> found) {
+		super.applyToMatchGroups(s, new CharList(s), found);
 	}
 	
 	public List<R> findAll(S s) {
-		return super.findAll(s, new CharList(s));
+		return super.findAllResults(s, new CharList(s));
 	}
 	
 	public List<R> findFirst(S s) {
-		return super.findFirst(s, new CharList(s));
+		return super.findFirstResults(s, new CharList(s));
+	}
+	
+	public R findFirstOne(S s) {
+		return super.findFirstOneResult(s, new CharList(s));
 	}
 	
 	public static StringMatcher<String, Boolean> matcher(String regexp) throws ParseException {
@@ -68,8 +90,16 @@ public class StringMatcher<S extends CharSequence, R> extends Matcher<S, Char, R
 		return new StringMatcher<String, E>(regexp, action);
 	}
 	
+	public static <E> StringMatcher<String, E> matcher(String regexp, Capture capture, MatchAction<? super String, E> action) throws ParseException {
+		return new StringMatcher<String, E>(regexp, capture, action);
+	}
+	
 	public static <E> StringMatcher<String, E> matcher(String regexp, boolean ignoreCase, MatchAction<? super String, E> action) throws ParseException {
 		return new StringMatcher<String, E>(regexp, ignoreCase, action);
+	}
+	
+	public static <E> StringMatcher<String, E> matcher(String regexp, boolean ignoreCase, Capture capture, MatchAction<? super String, E> action) throws ParseException {
+		return new StringMatcher<String, E>(regexp, ignoreCase, capture, action);
 	}
 	
 	public static StringMatcher<CharSequence, Boolean> seqMatcher(String regexp) throws ParseException {
@@ -80,12 +110,73 @@ public class StringMatcher<S extends CharSequence, R> extends Matcher<S, Char, R
 		return new StringMatcher<CharSequence, Boolean>(regexp, ignoreCase, TRUE);
 	}
 	
+	public static <E> StringMatcher<CharSequence, E> seqMatcher(String regexp, boolean ignoreCase, MatchAction<? super CharSequence, E> action) throws ParseException {
+		return new StringMatcher<CharSequence, E>(regexp, ignoreCase, action);
+	}
+	
+	public static <E> StringMatcher<CharSequence, E> seqMatcher(String regexp, boolean ignoreCase, Capture capture, MatchAction<? super CharSequence, E> action) throws ParseException {
+		return new StringMatcher<CharSequence, E>(regexp, ignoreCase, capture, action);
+	}
+	
 	public static <E> StringMatcher<String, E> matchNothing() {
 		return new StringMatcher<String, E>();
 	}
 	
-	public static StringMatcher<CharSequence, Boolean> seqMatchNothing() {
-		return new StringMatcher<CharSequence, Boolean>();
+	public static <E> StringMatcher<CharSequence, E> seqMatchNothing() {
+		return new StringMatcher<CharSequence, E>();
+	}
+	
+	public String replaceAllMatches(final S input, final Function<? super String, ? extends CharSequence> replaceFunc) {
+		final StringBuilder sb = new StringBuilder();
+		class MyFunc implements Function<MatchGroup, Boolean> {
+			private static final long serialVersionUID = 1L;
+			int last = 0;
+			@Override
+			public Boolean apply(MatchGroup v) {
+				if (v.start >= last) {
+					sb.append(input.subSequence(last, v.start));
+					sb.append(replaceFunc.apply(input.subSequence(v.start, v.end).toString()));
+					last = v.end;
+				}
+				return Boolean.TRUE;
+			}
+		}
+		final MyFunc myFunc = new MyFunc();
+		applyToMatchGroups(input, myFunc);
+		sb.append(input.subSequence(myFunc.last, input.length()));
+		return sb.toString();
+	}
+	
+	public boolean containsAnyMatch(S match) {
+		@SuppressWarnings("serial")
+		class Contains implements Function<MatchGroup, Boolean> {
+			private boolean contains = false;
+			@Override
+			public Boolean apply(MatchGroup c) {
+				contains = true;
+				return Boolean.FALSE;
+			}
+		};
+		final Contains contains = new Contains();
+		applyToMatchGroups(match, new CharList(match), contains);
+		return contains.contains;
+	}
+	
+	public MultiSet<R> countMatches(S match) {
+		final MultiSet<R> r = new SerialCountingMultiHashSet<R>();
+		countMatches(match, r);
+		return r;
+	}
+	
+	public void countMatches(S match, final MultiSet<R> r) {
+		applyToResults(match, new CharList(match), new Function<R, Boolean>() {
+			private static final long serialVersionUID = 1L;
+			@Override
+			public Boolean apply(R c) {
+				r.add(c);
+				return true;
+			}
+		});
 	}
 	
 	public static <I extends CharSequence, R> StringMatcher<I, R> merge(List<StringMatcher<I, R>> matchers) {

@@ -70,13 +70,13 @@ public class StringReplacer extends StringMatcher<String, String> {
 		}
 	}
 	
-	private static final class Replace implements MatchAction<String, String> {
+	public static final class Replace implements MatchAction<String, String> {
 
 		private static final long serialVersionUID = -4495752181906436869L;
 		final Capture capture;
 		final Part[] parts;
 		
-		private Replace(String input) {
+		public Replace(String input) {
 			final List<Part> parts = new ArrayList<Part>();
 			final List<String> captures = new ArrayList<String>();
 			final char[] buf = new char[input.length()];
@@ -142,6 +142,10 @@ public class StringReplacer extends StringMatcher<String, String> {
 				b.append(parts[i].f(input, captured));
 			}
 			return b.toString();
+		}
+		
+		public Capture capture() {
+			return capture;
 		}
 		
 	}

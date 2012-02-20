@@ -122,27 +122,50 @@ public class Test extends TestCase {
 	public void testReplace() throws ParseException {
 		assertReplace("(abc)(fgh)", "[1]de[2]", "abcfgh", "abcdefgh");
 		assertReplace("(a((b)(c))).*", "([1])([1,1])([1,1,1])([1,1,2])", "abcfgh", "(abc)(bc)(b)(c)");
+		assertReplace("abcdef", "[0]g", "abcdef", "abcdefg");
 	}
 
 	public void testMerge() throws ParseException {
 		StringMatcher<String, Integer> m = matcher("ab", true, 2);
 		System.out.println(m.node);
-//		m = m.merge(matcher("ab", true, 2));
 		m = m.merge(matcher("ab", false, 3));
-//		m = m.merge(matcher("abc", false, 4));
-//		m = m.merge(matcher("abc", true, 5));
-//		assertMatches(m, "abc", 4, 5);
+		m = m.merge(matcher("abc", false, 4));
+		m = m.merge(matcher("abc", true, 5));
+		assertMatches(m, "abc", 4, 5);
 		assertMatches(m, "Ab", 2);
 		assertMatches(m, "AB", 2);
 		assertMatches(m, "aB", 2);
 		assertMatches(m, "ab", 2, 3);
-//		assertMatches(m, "AbC", 5);
+		assertMatches(m, "AbC", 5);
+		m = matcher("a*b*", true, 2);
+		m = m.merge(matcher("a*c*b*", true, 3));
+		m = m.merge(matcher("aaa*c*b*", true, 4));
+		assertMatches(m, "abc");
+		assertMatches(m, "aaAabbbBbccCcCc");
+		assertMatches(m, "acb", 3);
+		assertMatches(m, "accCccbBbbb", 3);
+		assertMatches(m, "a", 2, 3);
+		assertMatches(m, "aaaaAaa", 2, 3, 4);
+		assertMatches(m, "ab", 2, 3);
+		assertMatches(m, "abbBbbBbb", 2, 3);
+		assertMatches(m, "aaacb", 3, 4);
+		assertMatches(m, "aAaAaAcCcCcCbBBbBb", 3, 4);
+		assertMatches(m, "aaaab", 2, 3, 4);
+		assertMatches(m, "aAaAaAabBbBbb", 2, 3, 4);
+		m = matcher("(abc|def)*", true, 2);
+		m = m.merge(matcher("a(bc|def)*", true, 3));
+		m = m.merge(matcher("(abc|hij){2}", false, 4));
+		assertMatches(m, "abcdefabcabc", 2);
+		assertMatches(m, "abcabc", 2, 4);
+		assertMatches(m, "abcdef", 2, 3);
+		assertMatches(m, "abcdefbc", 3);
+		assertMatches(m, "abchij", 4);
 		StringReplacer r = new StringReplacer("([Aa])([Bb])", "[2][1]");
 		r = r.merge(new StringReplacer("([Aa]{2})([Bb])", "[1][2]"));
 		r = r.merge(new StringReplacer("(cat)(dog)", "[1]"));
 		assertEquals(Arrays.asList("aab"), r.match("aab"));		
 		assertEquals(Arrays.asList("ba"), r.match("ab"));		
-		assertEquals(Arrays.asList("cat"), r.match("catdog"));		
+		assertEquals(Arrays.asList("cat"), r.match("catdog"));
 	}
 	
 //	public void testSlow() {

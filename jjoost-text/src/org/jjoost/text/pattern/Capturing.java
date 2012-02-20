@@ -4,27 +4,25 @@ import java.util.Arrays;
 
 final class Capturing {
 
+	private int resetCounter = 0;
+	private final int[] resetCounters;
 	private final int[][] lens;
 	private final int[][][] starts;
 	private final int[][][] ends;
 	private final Capture[] defs;
 	
-	Capturing(Capture[] defs, int[][] lens, int[][][] starts, int[][][] ends) {
-		this.defs = defs;
-		this.starts = starts;
-		this.ends = ends;
-		this.lens = lens;
-	}
 	Capturing(Capture[] defs) {
 		if (defs == null) {
 			starts = null;
 			ends = null;
 			lens = null;
+			this.resetCounters = null;
 			this.defs = null;
 		} else {
 			starts = new int[defs.length][][];
 			ends = new int[defs.length][][];
 			lens = new int[defs.length][];
+			resetCounters = new int[defs.length];
 			for (int i = 0 ; i != defs.length ; i++) {
 				lens[i] = new int[defs[i].capture.length];
 				starts[i] = new int[defs[i].capture.length][];
@@ -42,86 +40,101 @@ final class Capturing {
 			int id = capture.capt[i];
 			int label = capture.capt[i + 1];
 			int labelid = label & IdCapture.LABELMASK;
+			final int[] lens = this.lens[id];
+			int[][] starts = this.starts[id];
+			int[][] ends = this.ends[id];
+			if (resetCounters[id] != resetCounter) {
+				for (int j = 0 ; j != lens.length ; j++) {
+					lens[j] = 0;
+				}
+				resetCounters[id] = resetCounter;
+			}
 			if ((label & IdCapture.END) == IdCapture.END) {
-				int len = lens[id][labelid];
-				int[] s = starts[id][labelid];
+				int len = lens[labelid];
+				int[] s = starts[labelid];
 				if (s != null) {
 					if (s.length != len && s[len] != -1) {
-						ends[id][labelid][lens[id][labelid]++] = pos + ((label & IdCapture.INCLUSIVE) == IdCapture.INCLUSIVE ? 1 : 0);
+						ends[labelid][lens[labelid]++] = pos + ((label & IdCapture.INCLUSIVE) == IdCapture.INCLUSIVE ? 1 : 0);
 					} else if (len > 0) {
-						ends[id][labelid][len - 1] = pos + ((label & IdCapture.INCLUSIVE) == IdCapture.INCLUSIVE ? 1 : 0);
+						ends[labelid][len - 1] = pos + ((label & IdCapture.INCLUSIVE) == IdCapture.INCLUSIVE ? 1 : 0);
 					}
 				}
 			} else {
-				int len = lens[id][labelid];
-				if (starts[id][labelid] == null || starts[id][labelid].length == 0) {
-					starts[id][labelid] = new int[] { -1, -1} ;
-					ends[id][labelid] = new int[2];
+				int len = lens[labelid];
+				if (starts[labelid] == null || starts[labelid].length == 0) {
+					starts[labelid] = new int[] { -1, -1};					
+					ends[labelid] = new int[2];
 				}
-				if (len == starts[id][labelid].length) {
-					starts[id][labelid] = Arrays.copyOf(starts[id][labelid], len << 1);
-					ends[id][labelid] = Arrays.copyOf(ends[id][labelid], len << 1);
-					Arrays.fill(starts[id][labelid], len, len << 1, -1);
+				if (len == starts[labelid].length) {
+					starts[labelid] = Arrays.copyOf(starts[labelid], len << 1);
+					ends[labelid] = Arrays.copyOf(ends[labelid], len << 1);
+					Arrays.fill(starts[labelid], len, len << 1, -1);
 				}
-				if (starts[id][labelid][len] < 0) {
-					starts[id][labelid][len] = pos;
+				if (starts[labelid][len] < 0) {
+					starts[labelid][len] = pos;
 				}
 			}
 		}
 	}
 
+	void update(IdSet capture, int start, int end) {
+		if (lens == null) {
+			return;
+		}
+		for (int i = 0 ; i != capture.len ; i += 1) {
+			int id = capture.ids[i];
+			final int[] lens = this.lens[id];
+			int[][] starts = this.starts[id];
+			int[][] ends = this.ends[id];
+			if (resetCounters[id] != resetCounter) {
+				for (int j = 0 ; j != lens.length ; j++) {
+					lens[j] = 0;
+				}
+				resetCounters[id] = resetCounter;
+			}
+			final Capture def = defs[id];
+			if (def != null && def.capture.length > 0 && def.capture[0].length == 1 && def.capture[0][0] == 0) {
+				if (starts[0] == null) {
+					starts[0] = new int[1];
+					ends[0] = new int[1];
+				}
+				starts[0][0] = start;
+				ends[0][0] = end;
+			}
+		}
+	}
+	
 	Captured[] select(IdSet select, int pos) {
 		final Captured[] r = new Captured[select.len];
 		for (int i = 0 ; i != r.length ; i++) {
 			if (lens == null) {
 				r[i] = new Captured(select.ids[i], null, null, null, null);
 			} else {
-				final int o = select.ids[i];
-				for (int j = 0 ; j != lens[o].length ; j++) {
-					int l = lens[o][j];
-					if (starts[o][j] != null && l < starts[o][j].length && starts[o][j][l] >= 0) {
-						ends[o][j][l] = pos;
-						lens[o][j] = l + 1;
+				final int id = select.ids[i];				
+				final int[] lens = this.lens[id];
+				int[][] starts = this.starts[id];
+				int[][] ends = this.ends[id];
+				if (resetCounters[id] != resetCounter) {
+					for (int j = 0 ; j != lens.length ; j++) {
+						lens[j] = 0;
+					}
+					resetCounters[id] = resetCounter;
+				}
+				for (int j = 0 ; j != lens.length ; j++) {
+					int l = lens[j];
+					if (starts[j] != null && l < starts[j].length && starts[j][l] >= 0) {
+						ends[j][l] = pos;
+						lens[j] = l + 1;
 					}
 				}
-				r[i] = new Captured(o, defs[o], starts[o], ends[o], lens[o]);
+				r[i] = new Captured(id, defs[id], starts, ends, lens);
 			}
 		}
 		return r;
 	}
 	
-	public Capturing copy() {
-		final int[][] lens = new int[this.lens.length][];
-		for (int i = 0 ; i != lens.length ; i++) {
-			lens[i] = this.lens[i].clone();
-		}
-		final int[][][] starts = copy(this.starts, lens);
-		final int[][][] ends = copy(this.ends, lens);
-		return new Capturing(defs, lens, starts, ends);
-	}
-	
-	private static int[][][] copy(int[][][] src1, int[][] lens1) {
-		final int[][][] trg1 = new int[src1.length][][];
-		for (int i = 0 ; i != src1.length ; i++) {
-			final int[][] src2 = src1[i];
-			final int[][] trg2 = trg1[i] = new int[src2.length][];
-			final int[] lens2 = lens1[i];
-			for (int j = 0 ; j != src2.length ; j++) {
-				trg2[j] = Arrays.copyOf(src2[j], lens2[j]);
-			}
-		}
-		return trg1;
-	}
-
 	public void reset() {
-		if (defs != null) {
-			for (int i = 0 ; i!= lens.length ; i++) {
-				final int[] lens = this.lens[i];
-				for (int j = 0 ; j != lens.length ; j++) {
-					lens[j] = 0;
-				}
-			}
-		}
+		resetCounter++;
 	}
 	
 }

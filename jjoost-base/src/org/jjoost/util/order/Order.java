@@ -526,7 +526,7 @@ public class Order<E> {
 		return new Order<E>(cmp);
 	}
 
-    private static final int LINEAR_INTERSECT_CUTOFF = 3;
+    static final int LINEAR_INTERSECT_CUTOFF = 3;
     
     /**
      * merges two sorted arrays in time proportional to the size of the result, or the logarithm of the larger input, whichever is greater

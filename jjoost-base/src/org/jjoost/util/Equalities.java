@@ -49,6 +49,7 @@ public class Equalities {
 		private static final long serialVersionUID = -6611748225612686746L;
 		public final boolean equates(Object a, Object b) { return true; }
 		public final int hash(Object k) { return 0 ; }
+		public boolean equals(Object that) { return that instanceof EverythingEqual; }
     };
     
     /**
@@ -70,6 +71,29 @@ public class Equalities {
 		private static final long serialVersionUID = -6611748225612686746L;
 		public final boolean equates(Object a, Object b) { return Objects.equalQuick(a, b) ; }
 		public final int hash(Object k) { return k == null ? 0 : k.hashCode() ; }
+		public boolean equals(Object that) { return that instanceof ObjectEquality; }
+    };
+    
+    /**
+     * Returns an Equality for default object equality, delegating to <code>Object.equals()</code> and
+     * <code>Object.hashCode()</code>, but handling nulls gracefully
+     * 
+     * @return standard object <code>Equality</code>
+     */
+    public static <E extends Enum<E>> Equality<E> enums() { return (Equality<E>) ENUM ; } 
+    private static final Equality<Enum<?>> ENUM = new EnumEquality();
+    
+    /**
+     * Standard object equality, delegating to <code>Object.equals()</code> and <code>Object.hashCode()</code>, but handling nulls
+	 * gracefully
+	 * 
+     * @author b.elliottsmith
+     */
+    public static class EnumEquality implements Equality<Enum<?>> {
+		private static final long serialVersionUID = -6611748225612686746L;
+		public final boolean equates(Enum<?> a, Enum<?> b) { return a == b ; }
+		public final int hash(Enum<?> k) { return k == null ? 0 : k.ordinal() ; }
+		public boolean equals(Object that) { return that instanceof EnumEquality; }
     };
     
     /**
@@ -91,6 +115,7 @@ public class Equalities {
     	private static final long serialVersionUID = -6611748225612686746L;
     	public final boolean equates(String a, String b) { return a.equalsIgnoreCase(b) ; }
     	public final int hash(String k) { return k.toLowerCase().hashCode() ; }
+		public boolean equals(Object that) { return that instanceof CaseInsensitiveEquality; }
     };
     
     /**
@@ -111,6 +136,7 @@ public class Equalities {
     	private static final long serialVersionUID = -6611748225612686746L;
     	public final boolean equates(Object a, Object b) { return a == b ; }
 		public final int hash(Object k) { return System.identityHashCode(k) ; }
+		public boolean equals(Object that) { return that instanceof IdentityEquality; }
     };
 
     /**
@@ -131,6 +157,7 @@ public class Equalities {
     	private static final long serialVersionUID = -6611748225612686746L;
     	public final boolean equates(byte[] a, byte[] b) { return java.util.Arrays.equals(a, b) ; }
 		public final int hash(byte[] k) { return Arrays.hashCode(k) ; }
+		public boolean equals(Object that) { return that instanceof ByteArrayEquality; }
     };
     
     /**
@@ -151,6 +178,7 @@ public class Equalities {
 		private static final long serialVersionUID = -6611748225612686746L;
 		public final boolean equates(int[] a, int[] b) { return java.util.Arrays.equals(a, b) ; }
 		public final int hash(int[] k) { return Arrays.hashCode(k) ; }
+		public boolean equals(Object that) { return that instanceof IntArrayEquality; }
     };
 
     /**
@@ -171,6 +199,7 @@ public class Equalities {
 		private static final long serialVersionUID = -6611748225612686746L;
 		public final boolean equates(long[] a, long[] b) { return java.util.Arrays.equals(a, b) ; }
 		public final int hash(long[] k) { return Arrays.hashCode(k) ; }
+		public boolean equals(Object that) { return that instanceof LongArrayEquality; }
     };
 
     /**
@@ -191,6 +220,7 @@ public class Equalities {
 		private static final long serialVersionUID = -6611748225612686746L;
 		public final boolean equates(Object[] a, Object[] b) { return java.util.Arrays.equals(a, b) ; }
 		public final int hash(Object[] k) { return Arrays.hashCode(k) ; }
+		public boolean equals(Object that) { return that instanceof ObjectArrayEquality; }
     };
     
     /**
@@ -252,6 +282,15 @@ public class Equalities {
 		 * @return the <code>Equality</code> to use to compare the value portion of an <code>Entry</code>
 		 */
 		public final Equality<? super V> getValueEquality() { return valEq ; }		
+		
+		public boolean equals(Object that) { 
+			if (that instanceof EntryEquality) {
+				return false; 
+			}
+			final EntryEquality<?, ?> that2 = (EntryEquality<?, ?>) that;
+			return this.getKeyEquality().equals(that2.getKeyEquality()) && this.getValueEquality().equals(that2.getValueEquality());
+		}
+
     };
     
 	/**
@@ -304,6 +343,15 @@ public class Equalities {
 		public boolean equates(V a, V b) {
 			return delegate.equates(a, b);
 		}
+		
+		public boolean equals(Object that) { 
+			if (that instanceof RehashingEquality) {
+				return false; 
+			}
+			final RehashingEquality<?> that2 = (RehashingEquality<?>) that;
+			return this.delegate.equals(that2.delegate) && this.rehasher.equals(that2.rehasher);
+		}
+
 	}
 
 }

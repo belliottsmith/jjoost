@@ -22,6 +22,7 @@
 
 package org.jjoost.util;
 
+import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 /**
@@ -61,8 +62,9 @@ public class Counters {
 	 * 
 	 * @author b.elliottsmith
 	 */
-	public static class ThreadSafeCounter implements Counter {
+	public static class ThreadSafeCounter implements Counter, Serializable {
 
+		private static final long serialVersionUID = -2695085385666474591L;
 		private volatile int count;
 		private static final AtomicIntegerFieldUpdater<ThreadSafeCounter> countUpdater = AtomicIntegerFieldUpdater.newUpdater(ThreadSafeCounter.class, "count");
 		
@@ -95,8 +97,9 @@ public class Counters {
 	 * 
 	 * @author b.elliottsmith
 	 */
-	public static class SerialCounter implements Counter {
+	public static class SerialCounter implements Counter, Serializable {
 
+		private static final long serialVersionUID = -2991880644595453265L;
 		private int count;
 		
 		@Override
@@ -126,7 +129,8 @@ public class Counters {
 	 * 
 	 * @author b.elliottsmith
 	 */
-	public static class DontCounter implements Counter {
+	public static class DontCounter implements Counter, Serializable {
+		private static final long serialVersionUID = 9053328850306189263L;
 		@Override
 		public boolean add(int i) {
 			return true;

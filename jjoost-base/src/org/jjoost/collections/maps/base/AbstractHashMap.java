@@ -647,5 +647,35 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		}
 		
 	}
+	
+	public String toString() {
+		return store.toString();
+	}
 
+	public boolean equals(Object tht) {
+		if (!(tht instanceof AnyMap)) {
+			return false;
+		}
+		final AnyMap<?, ?> that = (AnyMap<?, ?>) tht;
+		if (!this.keys().equality().equals(that.keys().equality())) {
+			return false;
+		}
+		if (!this.values().equality().equals(that.values().equality())) {
+			return false;
+		}
+		final Iterator<? extends Map.Entry<K, V>> a = (Iterator<? extends Entry<K, V>>) that.entries().iterator();
+		final Iterator<? extends Map.Entry<K, V>> b = this.entries().iterator();
+		while (a.hasNext() && b.hasNext()) {
+			final Entry<K, V> ae = a.next();
+			final Entry<K, V> be = b.next();
+			if (!keyEq.getKeyEquality().equates(ae.getKey(), be.getKey())) {
+				return false;
+			}
+			if (!values().equality().equates(ae.getValue(), be.getValue())) {
+				return false;
+			}
+		}
+		return a.hasNext() == b.hasNext(); 
+	}
+	
 }
