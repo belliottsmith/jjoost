@@ -1,25 +1,35 @@
 package org.jjoost.text.pattern;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.io.Serializable;
+import java.util.Random;
+
+import org.jjoost.util.Function;
 
 // this is not an arbitrary stack - it is specifically designed to follow a function call stack
 // i.e., any items x1 and x2 where x1 was pushed before x2 should be popped in reverse order, i.e. with x2 popped before x1   
-public abstract class StackMap<K, V> implements Map<K, V> {
+public abstract class StackMap<K, V> implements Function<K, V> {
 
-	private static final class Entry<K, V> {
+	private static final long serialVersionUID = 1867804375186058123L;
+
+	private static final class Entry<K, V> implements Serializable {
+		private static final long serialVersionUID = 2408050514427108514L;
 		final K key;
 		final int hash;
 		final V value;
 		final Entry<K, V> next;
 		final int gen;
+		int depth;
 		private Entry(K key, int hash, V value, Entry<K, V> next, int gen) {
 			this.key = key;
 			this.hash = hash;
 			this.value = value;
 			this.next = next;
 			this.gen = gen;
+			if (next == null) {
+				depth = 1;
+			} else {
+				depth = next.depth + 1;
+			}			
 		}
 	}
 	
@@ -57,10 +67,22 @@ public abstract class StackMap<K, V> implements Map<K, V> {
 		keyCapacity = (int) (tableSize * loadFactor);
 	}
 	
+	public static void main(String[] args) {
+		for (int r = 0 ; r != 1 << 10 ; r++) {
+			final ObjStackMap<Integer, Integer> is = new ObjStackMap<Integer, Integer>();
+			final Random rnd = new Random();
+			int c;
+			for (c = 0 ; c < 1 << 20 ; c++) {
+				is.push(rnd.nextInt(), c);
+			}
+			System.out.println(c);
+		}
+	}
+	
 	protected abstract int hash(Object key);
 	protected abstract boolean equals(Object a, Object b);
 	
-	public void push(K key, V value) {
+	public int push(K key, V value) {
 		final int hash = hash(key);
 		if (keyCount == keyCapacity) {
 			grow();
@@ -79,6 +101,7 @@ public abstract class StackMap<K, V> implements Map<K, V> {
 		if (e.next == null) {
 			keyCount += 1;
 		}
+		return e.depth;
 	}
 	
 	public V peek(Object key) {
@@ -123,7 +146,20 @@ public abstract class StackMap<K, V> implements Map<K, V> {
 			keyCount -= 1;
 		}
 	}	
-
+	
+	public void popIfNotLast(K key) {
+		final int j = index(key);
+		final Entry<K, V> e = j < table.length ? table[j] : null;
+		if (e != null) {
+			if (e.next != null) {
+				table[j] = e.next;
+			} else {
+				table[j].depth -= 1;
+			}
+		} else {
+			throw new IllegalArgumentException(key + " is not present in the map, so cannot pop any item off its stack");			
+		}
+	}	
 	
     public static int rehash(int hash) {
         hash += (hash <<  15) ^ 0xffffcd7d;
@@ -134,66 +170,10 @@ public abstract class StackMap<K, V> implements Map<K, V> {
         return hash ^ (hash >>> 16) ;
     }
 
-	@Override
-	public void clear() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean containsKey(Object key) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean containsValue(Object value) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Set<java.util.Map.Entry<K, V>> entrySet() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public V get(Object key) {
-		return peek(key);
-	}
-
-	@Override
-	public boolean isEmpty() {
-		return keyCount == 0;
-	}
-
-	@Override
-	public Set<K> keySet() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public V put(K key, V value) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void putAll(Map<? extends K, ? extends V> m) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public V remove(Object key) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public int size() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Collection<V> values() {
-		throw new UnsupportedOperationException();
-	}
-	
+    public final V apply(K k) {
+    	return peek(k);
+    }
+    
 	public V commonValue(K thisKey, StackMap<K, V> that, K thatKey) {
 		Entry<K, V> thisHead = this.head(thisKey);
 		Entry<K, V> thatHead = that.head(thatKey);

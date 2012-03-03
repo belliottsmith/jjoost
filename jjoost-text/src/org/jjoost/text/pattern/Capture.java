@@ -99,11 +99,24 @@ public final class Capture implements Serializable {
 		}
 	}
 	
-	public Capture(List<String> capture) {
+	public static Capture capture(List<String> capture) {
+		return new Capture(capture);
+	}
+	
+	public static Capture capture(String ... capture) {
+		return new Capture(capture);
+	}
+	
+	private static final Capture NOTHING = new Capture();
+	public static Capture capture() {
+		return NOTHING;
+	}
+	
+	private Capture(List<String> capture) {
 		this(parse(capture));
 	}
 	
-	public Capture(String ... capture) {
+	private Capture(String ... capture) {
 		this(parse(capture));
 	}
 	

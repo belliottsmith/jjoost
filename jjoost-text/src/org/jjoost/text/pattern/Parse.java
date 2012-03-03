@@ -39,8 +39,12 @@ public abstract class Parse<S> {
 		return c == '{' ? -1 : 2;
 	}
 	
-	private static boolean endVar(char c) {
-		return c == '}' | c == ']';
+	private static boolean endVar(char c, char c2) {
+		switch (c) {
+		case '{': return c2 == '}';
+		case '[': return c2 == ']';
+		}
+		throw new IllegalStateException();
 	}
 	
 	private static boolean isSpecial(char c) {
@@ -141,11 +145,14 @@ public abstract class Parse<S> {
 		}
 	}
 	
-	public BuildRegex<S> parse(String input) {
+	public BuildRegex<S> parse(String input) throws ParseException {
 		return parse(input, new Capture(new int[0][]));
 	}
 	
-	public BuildRegex<S> parse(String input, Capture capture) {
+	public BuildRegex<S> parse(String input, Capture capture) throws ParseException {
+		if (input.length() == 0) {
+			return new BuildEmpty<S>();
+		}
 		final Accumulator accum = new Accumulator();
 		accum.descend();
 		int i = 0;
@@ -162,7 +169,8 @@ public abstract class Parse<S> {
 					final char c2 = input.charAt(j);
 					if (escaping) {
 						escaping = false;
-					} else if (endVar(c2)) {
+					} else if (endVar(c, c2)) {
+						// TODO : correct nested parsing?
 						parseToken(varType(c), input.substring(i + 1, j), accum);
 						break;
 					} else if (c2 == '\\') {
@@ -179,26 +187,26 @@ public abstract class Parse<S> {
 			} else if (isSpecial(c)) {
 				switch (c) {
 				case '*':
-					if (input.length() > i + 1 && input.charAt(i + 1) == '!') {
-						i++;
-						accum.replaceLast(new BuildInfiniteExclusiveLimitingRepeat<S>(accum.last()));
-					} else if (input.length() > i + 1 && input.charAt(i + 1) == '^') {
-						i++;
-						accum.replaceLast(new BuildInfiniteExclusiveExtendingRepeat<S>(accum.last()));
-					} else {
+//					if (input.length() > i + 1 && input.charAt(i + 1) == '!') {
+//						i++;
+//						accum.replaceLast(new BuildInfiniteExclusiveLimitingRepeat<S>(accum.last()));
+//					} else if (input.length() > i + 1 && input.charAt(i + 1) == '^') {
+//						i++;
+//						accum.replaceLast(new BuildInfiniteExclusiveExtendingRepeat<S>(accum.last()));
+//					} else {
 						accum.replaceLast(new BuildInfiniteRepeat<S>(accum.last()));
-					}
+//					}
 					break;
 				case '+':
-					if (input.length() > i + 1 && input.charAt(i + 1) == '!') {
-						i++;
-						accum.add(new BuildInfiniteExclusiveLimitingRepeat<S>(accum.last()));
-					} else if (input.length() > i + 1 && input.charAt(i + 1) == '^') {
-						i++;
-						accum.add(new BuildInfiniteExclusiveExtendingRepeat<S>(accum.last()));
-					} else {
+//					if (input.length() > i + 1 && input.charAt(i + 1) == '!') {
+//						i++;
+//						accum.add(new BuildInfiniteExclusiveLimitingRepeat<S>(accum.last()));
+//					} else if (input.length() > i + 1 && input.charAt(i + 1) == '^') {
+//						i++;
+//						accum.add(new BuildInfiniteExclusiveExtendingRepeat<S>(accum.last()));
+//					} else {
 						accum.add(new BuildInfiniteRepeat<S>(accum.last()));
-					}
+//					}
 					break;
 				case '?':
 					accum.replaceLast(new BuildOption<S>(accum.last()));
@@ -229,11 +237,7 @@ public abstract class Parse<S> {
 	}
 	
 	public Node<S> compile(String input) throws ParseException {
-		try {
-			return compile(input, new Capture(new int[0][]));
-		} catch (Exception e) {
-			throw new ParseException("Could not parse input \"" + input + "\"", e);
-		}
+		return compile(input, new Capture(new int[0][]));
 	}
 	public Node<S> compile(String input, Capture capture) throws ParseException {
 		try {
@@ -243,62 +247,70 @@ public abstract class Parse<S> {
 		}
 	}
 
-	protected void parseToken(int type, String var, Accumulator accum) {
+	protected void parseToken(int type, String var, Accumulator accum) throws ParseException {
 		if (type == -1) {
 			// TODO: make parsing robust to bad input
-			int range = var.indexOf('-');
-			int select = var.indexOf(',');
-			if (range < 0 && select < 0) {
-				accum.replaceLast(new BuildFiniteRepeat<S>(Integer.parseInt(var), accum.last()));
+			if (var.startsWith("?")) {
+				if (accum.last() instanceof BuildInfiniteRepeat<?>) {
+					accum.replaceLast(((BuildInfiniteRepeat<S>) accum.last()).limit(Integer.parseInt(var.substring(1))));
+				} else {
+					throw new ParseException("Expect {" + var + "} to be preceded by an infinite repeat expression for it to constrain");
+				}
 			} else {
-				int i = 0;
-				int[] opts = new int[20];
-				int c = 0;
-				while (true) {
-					if (range > 0 && (select < 0 || range < select)) {
-						final int minj = Integer.parseInt(var.substring(i, range));
-						final int maxj = Integer.parseInt(var.substring(range + 1, select > 0 ? select : var.length()));
-						for (int j = minj ; j <= maxj ; j++) {
+				int range = var.indexOf('-');
+				int select = var.indexOf(',');
+				if (range < 0 && select < 0) {
+					accum.replaceLast(new BuildFiniteRepeat<S>(Integer.parseInt(var), accum.last()));
+				} else {
+					int i = 0;
+					int[] opts = new int[20];
+					int c = 0;
+					while (true) {
+						if (range > 0 && (select < 0 || range < select)) {
+							final int minj = Integer.parseInt(var.substring(i, range));
+							final int maxj = Integer.parseInt(var.substring(range + 1, select > 0 ? select : var.length()));
+							for (int j = minj ; j <= maxj ; j++) {
+								if (c == opts.length) {
+									opts = Arrays.copyOf(opts, c << 1);
+								}
+								opts[c++] = j;
+							}
+							if (select < 0) {
+								break;
+							}
+							i = select + 1;
+							select = var.indexOf(',', i);
+							range = var.indexOf('-', i);
+						} else if (select > 0) {
 							if (c == opts.length) {
 								opts = Arrays.copyOf(opts, c << 1);
 							}
-							opts[c++] = j;
-						}
-						if (select < 0) {
+							opts[c++] = Integer.parseInt(var.substring(i, select));
+							i = select + 1;
+							select = var.indexOf(',', i);
+						} else {
+							if (c == opts.length) {
+								opts = Arrays.copyOf(opts, c << 1);
+							}
+							opts[c++] = Integer.parseInt(var.substring(i));
 							break;
 						}
-						i = select + 1;
-						select = var.indexOf(',', i);
-						range = var.indexOf('-', i);
-					} else if (select > 0) {
-						if (c == opts.length) {
-							opts = Arrays.copyOf(opts, c << 1);
+					}
+					Arrays.sort(opts, 0, c);
+					final BuildRegex<S> last = accum.last();
+					final List<BuildRegex<S>> selection = new ArrayList<BuildRegex<S>>();
+					for (i = 0 ; i != c ; i++) {
+						if (i > 0 && opts[i - 1] == opts[i]) {
+							continue;
 						}
-						opts[c++] = Integer.parseInt(var.substring(i, select));
-						i = select + 1;
-						select = var.indexOf(',', i);
-					} else {
-						if (c == opts.length) {
-							opts = Arrays.copyOf(opts, c << 1);
+						if (opts[i] == 0) {
+							selection.add(new BuildEmpty<S>());					
+						} else {
+							selection.add(new BuildFiniteRepeat<S>(opts[i], last));					
 						}
-						opts[c++] = Integer.parseInt(var.substring(i));
-						break;
 					}
+					accum.replaceLast(new BuildSelect<S>(selection.toArray(new BuildRegex[0])));
 				}
-				Arrays.sort(opts, 0, c);
-				final BuildRegex<S> last = accum.last();
-				final List<BuildRegex<S>> selection = new ArrayList<BuildRegex<S>>();
-				for (i = 0 ; i != c ; i++) {
-					if (i > 0 && opts[i - 1] == opts[i]) {
-						continue;
-					}
-					if (opts[i] == 0) {
-						selection.add(new BuildEmpty<S>());					
-					} else {
-						selection.add(new BuildFiniteRepeat<S>(opts[i], last));					
-					}
-				}
-				accum.replaceLast(new BuildSelect<S>(selection.toArray(new BuildRegex[0])));
 			}
 		} else {
 			throw new IllegalStateException("Must override parseToken and implement parsing of types > 0");

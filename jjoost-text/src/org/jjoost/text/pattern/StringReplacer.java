@@ -25,16 +25,20 @@ public class StringReplacer extends StringMatcher<String, String> {
 		super(regexp, insensitive, replace.capture, replace);
 	}
 	
-	private StringReplacer(StringReplacer a, StringReplacer b) {
-		super(a, b);
+	private StringReplacer(StringReplacer a, StringReplacer b, int truncateRecusionDepth) {
+		super(a, b, truncateRecusionDepth);
 	}
 	
-	public StringReplacer merge(StringReplacer a, StringReplacer b) {
-		return new StringReplacer(a, b);
+	public StringReplacer merge(StringReplacer that) {
+		return merge(that, Integer.MAX_VALUE);
+	}
+	
+	public StringReplacer merge(StringReplacer that, int truncateRecursionDepth) {
+		return new StringReplacer(this, that, truncateRecursionDepth);
 	}
 
 	private static interface Part {
-		String f(String i, Captured captured);
+		String f(String i, Found captured);
 	}
 	
 	private static final class LiteralPart implements Part {
@@ -43,7 +47,7 @@ public class StringReplacer extends StringMatcher<String, String> {
 			this.literal = literal;
 		}
 		@Override
-		public String f(String i, Captured captured) {
+		public String f(String i, Found captured) {
 			return literal;
 		}
 		public String toString() {
@@ -57,7 +61,7 @@ public class StringReplacer extends StringMatcher<String, String> {
 			this.id = id;
 		}
 		@Override
-		public String f(String i, Captured captured) {
+		public String f(String i, Found captured) {
 			final int[] starts = captured.starts[id];
 			final int[] ends = captured.ends[id];
 			if (starts == null || starts.length == 0) {
@@ -125,7 +129,7 @@ public class StringReplacer extends StringMatcher<String, String> {
 			if (bufc != 0) {
 				parts.add(new LiteralPart(new String(buf, 0, bufc)));
 			}
-			this.capture = new Capture(captures);
+			this.capture = Capture.capture(captures);
 			int j = 0;
 			for (i = 0 ; i != parts.size() ; i++) {
 				if (parts.get(i) == null) {
@@ -136,7 +140,7 @@ public class StringReplacer extends StringMatcher<String, String> {
 		}
 
 		@Override
-		public String matched(String input, Captured captured) {
+		public String matched(String input, Found captured) {
 			final StringBuilder b = new StringBuilder();
 			for (int i = 0 ; i != parts.length ; i++) {
 				b.append(parts[i].f(input, captured));
@@ -148,10 +152,6 @@ public class StringReplacer extends StringMatcher<String, String> {
 			return capture;
 		}
 		
-	}
-	
-	public StringReplacer merge(StringReplacer alt) {
-		return new StringReplacer(this, alt);
 	}
 	
 }

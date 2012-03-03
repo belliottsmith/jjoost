@@ -27,4 +27,8 @@ class BuildInfiniteRepeat<S> extends BuildRegex<S> {
 		return expr.toString() + "*";
 	}
 	
+	BuildInfiniteExclusiveLimitingRepeat<S> limit(int extendCount) {
+		return new BuildInfiniteExclusiveLimitingRepeat<S>(expr, extendCount);
+	}
+	
 }

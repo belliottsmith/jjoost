@@ -2184,5 +2184,5 @@ public abstract class Fetch<R, F extends Fetch<R, F>> {
 			return new BuildEnumColumnFromResultSet(column, clazz);
 		}
 	}
-	
+
 }

@@ -2,12 +2,13 @@ package org.jjoost.text.pattern;
 
 class BuildInfiniteExclusiveLimitingRepeat<S> extends BuildRegex<S> {
 
-	// <= 0 indicates infinite
 	private final BuildRegex<S> expr;
+	private final int extendCount;
 	
-	public BuildInfiniteExclusiveLimitingRepeat(BuildRegex<S> expr) {
+	public BuildInfiniteExclusiveLimitingRepeat(BuildRegex<S> expr, int extendCount) {
 		super(expr.scheme);
 		this.expr = expr;
+		this.extendCount = extendCount;
 	}
 
 	@Override
@@ -21,7 +22,11 @@ class BuildInfiniteExclusiveLimitingRepeat<S> extends BuildRegex<S> {
 			}
 			tail.ref = tail.ref.capture(end);
 		}
-		return expr.mergeExclusiveLimitingLoopWithTail(tail.ref);
+		if (extendCount <= 0) { 
+			return expr.mergeExclusiveLimitingLoopWithTail(tail.ref);
+		} else {
+			return expr.mergeExclusiveLimitingLoopWithTail(tail.ref, extendCount);
+		}
 	}
 	
 }

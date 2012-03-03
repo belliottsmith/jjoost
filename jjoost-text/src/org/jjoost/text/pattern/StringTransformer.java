@@ -14,12 +14,16 @@ public class StringTransformer<E> extends StringMatcher<String, E> {
 		super(regexp, capture, new DoTransformAll<E>(transform));
 	}
 	
-	private StringTransformer(StringTransformer<E> a, StringTransformer<E> b) {
-		super(a, b);
+	private StringTransformer(StringTransformer<E> a, StringTransformer<E> b, int truncateRecursionDepth) {
+		super(a, b, truncateRecursionDepth);
 	}
 	
 	public StringTransformer<E> merge(StringTransformer<E> that) {
-		return new StringTransformer<E>(this, that);
+		return merge(that, Integer.MAX_VALUE);
+	}
+	
+	public StringTransformer<E> merge(StringTransformer<E> that, int truncateRecursionDepth) {
+		return new StringTransformer<E>(this, that, truncateRecursionDepth);
 	}
 
 	public static interface TransformAll<E> {
@@ -40,7 +44,7 @@ public class StringTransformer<E> extends StringMatcher<String, E> {
 		}
 
 		@Override
-		public E matched(String input, Captured captured) {
+		public E matched(String input, Found captured) {
 			final String[][] r = new String[captured.ends.length][];
 			for (int i = 0 ; i != r.length ; i++) {
 				final int[] starts = captured.starts[i];
@@ -69,7 +73,7 @@ public class StringTransformer<E> extends StringMatcher<String, E> {
 		}
 		
 		@Override
-		public E matched(String input, Captured captured) {
+		public E matched(String input, Found captured) {
 			final String[] r = new String[captured.ends.length];
 			for (int i = 0 ; i != r.length ; i++) {
 				final int[] starts = captured.starts[i];

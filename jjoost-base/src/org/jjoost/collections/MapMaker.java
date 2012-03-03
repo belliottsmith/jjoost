@@ -204,7 +204,11 @@ public abstract class MapMaker<K, V> {
 		 *            the key <code>Equality</code>
 		 * @return <code>this</code>
 		 */
-		public HashMapMaker<K, V> keyEq(Equality<? super K> eq) { this.keyEquality = eq ; return this ; }
+		public <K2 extends K> HashMapMaker<K2, V> keyEq(Equality<? super K2> eq) {
+			HashMapMaker<K2, V> r = (HashMapMaker<K2, V>) this;
+			r.keyEquality = eq; 
+			return r; 
+		}
 		/**
 		 * Set the equality used for value matching. This is used less commonly than the key equality, however is still
 		 * necessary. All methods that accept a value will use this <code>Equality</code> to determine equality of the value
@@ -218,7 +222,13 @@ public abstract class MapMaker<K, V> {
 		 *            the value <code>Equality</code>
 		 * @return <code>this</code>
 		 */
-		public HashMapMaker<K, V> valEq(Equality<? super V> eq) { this.valEquality = eq ; return this ; }
+		public <V2 extends V> HashMapMaker<K, V2> valEq(Equality<? super V2> eq) {
+			HashMapMaker<K, V2> r = (HashMapMaker<K, V2>) this;
+			r.factory = null;
+			r.factoryFunction = null;
+			r.valEquality = eq; 
+			return r; 
+		}
 		/**
 		 * Set the type of hash store to back the map by; this will affect performance and concurrency characteristics, primarily,
 		 * but should have no impact on the basic functionality.
@@ -258,7 +268,12 @@ public abstract class MapMaker<K, V> {
 		 *            the factory to use to populate values against non-existent keys that are accessed via <code>get()</code>
 		 * @return <code>this</code>
 		 */
-		public HashMapMaker<K, V> defaultsTo(Factory<? extends V> factory) { this.factory = factory ; this.factoryFunction = null ; return this ; }
+		public <V2 extends V> HashMapMaker<K, V2> defaultsTo(Factory<? extends V2> factory) {
+			HashMapMaker<K, V2> r = (HashMapMaker<K, V2>) this;
+			r.factory = factory; 
+			r.factoryFunction = null; 
+			return r; 
+		}
 		/**
 		 * This options is only available for the construction of a regular <code>Map</code>. If this property is set
 		 * then any call to <code>get(k)</code> on the map where the key does not exist has the key inserted into the
@@ -269,7 +284,12 @@ public abstract class MapMaker<K, V> {
 		 *            the function to use to populate values against non-existent keys that are accessed via <code>get()</code>
 		 * @return <code>this</code>
 		 */
-		public HashMapMaker<K, V> defaultsTo(Function<? super K, ? extends V> function) { this.factoryFunction = function ; this.factory = null ; return this ; }
+		public <V2 extends V> HashMapMaker<K, V2> defaultsTo(Function<? super K, ? extends V2> function) {
+			HashMapMaker<K, V2> r = (HashMapMaker<K, V2>) this;
+			r.factoryFunction = function; 
+			r.factory = null; 
+			return r; 
+		}
 		public Map<K, V> newMap() {
 			final Map<K, V> r;
 			switch(type.type()) {

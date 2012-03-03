@@ -6,14 +6,17 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
 
+import org.jjoost.collections.Map;
+import org.jjoost.collections.lists.UniformList;
+import org.jjoost.collections.maps.serial.SerialHashMap;
 import org.jjoost.text.pattern.NodeMapSplit.NodeIntersect;
+import org.jjoost.util.Function;
 
 public final class CharScheme extends NodeScheme<CharScheme.Char> {
 
-	private static final Parser PARSER = new Parser();
-	private static final Parser PARSER_INSENSITIVE = new Parser().setCaseInsensitive(true);
+//	private static final Parser PARSER = new Parser();
+//	private static final Parser PARSER_INSENSITIVE = new Parser().setCaseInsensitive(true);
 	private static final NodeMap<Char> EMPTY = new CharMapBuilder().done();
 	private static CharScheme SCHEME = new CharScheme();
 	public static CharScheme get() {
@@ -21,11 +24,11 @@ public final class CharScheme extends NodeScheme<CharScheme.Char> {
 	}
 	
 	public static Parser parser() {
-		return PARSER;
+		return new Parser();
 	}
 	
 	public static Parser parserCaseInsensitive() {
-		return PARSER_INSENSITIVE;
+		return new Parser().setCaseInsensitive(true);
 	}
 	
 	@Override
@@ -86,16 +89,16 @@ public final class CharScheme extends NodeScheme<CharScheme.Char> {
 	
 	static final class BuildCharClass extends BuildRegex<Char> {
 
-		private final CharGroup[] groups;	
+		private final CharRange[] groups;	
 		public BuildCharClass(char c) {
 			super(CharScheme.get());
-			this.groups = new CharGroup[] { new CharGroup(c, c) };
+			this.groups = new CharRange[] { new CharRange(c, c) };
 		}
 		public BuildCharClass(char start, char end) {
 			super(CharScheme.get());
-			this.groups = new CharGroup[] { new CharGroup(start, end) };
+			this.groups = new CharRange[] { new CharRange(start, end) };
 		}
-		public BuildCharClass(CharGroup[] groups) {
+		public BuildCharClass(CharRange[] groups) {
 			super(CharScheme.get());
 			this.groups = groups;
 		}
@@ -103,7 +106,7 @@ public final class CharScheme extends NodeScheme<CharScheme.Char> {
 		@Override
 		public Node<Char> toNodeGraph(NodeRef<Char> tail, IdCapture end) {
 			CharMapBuilder builder = new CharMapBuilder();
-			for (CharGroup g : groups) {
+			for (CharRange g : groups) {
 				builder.bind(g, tail.ref, IdSet.unitary(), end);
 			}
 			return new Node<Char>(builder.done());
@@ -115,7 +118,7 @@ public final class CharScheme extends NodeScheme<CharScheme.Char> {
 			}
 			final StringBuilder sb = new StringBuilder();
 			sb.append("[");
-			for (CharGroup g : groups) {
+			for (CharRange g : groups) {
 				sb.append(g.first == g.last ? Character.toString(g.first) : g.first + "-" + g.last);
 			}
 			sb.append("]");
@@ -124,6 +127,7 @@ public final class CharScheme extends NodeScheme<CharScheme.Char> {
 		
 	}
 
+	// doesn't support full UTF-16; should perhaps switch to Character? 
 	public static final class Char {
 
 		final char c;
@@ -194,8 +198,8 @@ public final class CharScheme extends NodeScheme<CharScheme.Char> {
 
 		@Override
 		public NodeMapBuilder<Char> bind(Group<Char> s, Node<Char> n, IdSet routes, IdCapture capture) {
-			if (s instanceof CharGroup) {
-				final CharGroup g = (CharGroup) s;
+			if (s instanceof CharRange) {
+				final CharRange g = (CharRange) s;
 				int i = floor(ms, g.first, c);
 				if (i > 0 && ms[i].overlaps(g)) {
 					throw new IllegalArgumentException(g + " overlaps with existing binding " + ms[i]);
@@ -233,45 +237,44 @@ public final class CharScheme extends NodeScheme<CharScheme.Char> {
 		
 	}
 
-	static final class CharMap implements NodeMap<Char>{
+	public static final class CharMap implements NodeMap<Char>{
 
 		private static final long serialVersionUID = -723788106826374001L;
 		final Maplet[] maplets;
+		final char[] fastlookup;
+//		final SpecialMaplet special;
 		private CharMap(Maplet[] maplets) {
 			this.maplets = maplets;
+			this.fastlookup = new char[maplets.length];
+			for (int i = 0 ; i != maplets.length ; i++) {
+				fastlookup[i] = maplets[i].first;
+			}
 		}
 
-		@Override
-		public IdCapture capture(Char s) {
+		public NodeMapEntry<Char> lookup(Char s) {
 			final char c = s.c;
-			int i = floor(maplets, c, maplets.length);
+			int i = floor(fastlookup, c);
 			Maplet maplet;
 			if (i >= 0 && (maplet = maplets[i]).last >= c) {
-				return maplet.capture;
-			}
-			return IdCapture.empty();
-		}
-		
-		public Node<Char> lookup(Char s) {
-			final char c = s.c;
-			int i = floor(maplets, c, maplets.length);
-			Maplet maplet;
-			if (i >= 0 && (maplet = maplets[i]).last >= c) {
-				return maplet.next;
+				return maplet;
 			}
 			return null;
 		}
 
-		@Override
-		public boolean maps(Node<Char> s) {
-			for (Maplet m : maplets) {
-				if (m.next == s) {
-					return true;
-				}
-			}
-			return false;
+		public NodeMapEntry<Char> lookupSpecial(SpecialTransition t) {
+//			switch (t) {
+//			case START:
+//			case END:
+//			}
+//			final char c = s.c;
+//			int i = floor(maplets, c, maplets.length);
+//			Maplet maplet;
+//			if (i >= 0 && (maplet = maplets[i]).last >= c) {
+//				return maplet;
+//			}
+			return null;
 		}
-
+		
 		@Override
 		public NodeMapSplit<Char> split(NodeMap<Char> that1, int offset) {
 			if (that1 instanceof CharMap) {
@@ -294,7 +297,7 @@ public final class CharScheme extends NodeScheme<CharScheme.Char> {
 						rout[rc++] = rr;
 						rr = j < rin.length ? rin[j++] : null;
 					} else {
-						final CharGroup intersect = new CharGroup(max(lr.first, rr.first), min(lr.last, rr.last));
+						final CharRange intersect = new CharRange(max(lr.first, rr.first), min(lr.last, rr.last));
 						lrout[lrc++] = new NodeIntersect<Char>(intersect, lr.next, lr.routes, lr.capture, rr.next, rr.routes.shift(offset), rr.capture.shift(offset));
 						if (lr.first < rr.first) {
 							lout[lc++] = new Maplet(lr.next, lr.routes, lr.capture, lr.first, (char)(intersect.first - 1));							
@@ -371,11 +374,11 @@ public final class CharScheme extends NodeScheme<CharScheme.Char> {
 		}
 		
 		@Override
-		public NodeMap<Char> replace(Map<Node<Char>, Node<Char>> replace, int offset) {
+		public NodeMap<Char> replace(Function<Node<Char>, Node<Char>> replace, int offset) {
 			final Maplet[] ms = maplets.clone();
 			for (int i = 0 ; i != ms.length ; i++) {
 				final Maplet m = ms[i];
-				final Node<Char> repl = replace.get(m.next);				
+				final Node<Char> repl = replace.apply(m.next);				
 				if (repl != null) {
 					ms[i] = new Maplet(repl, m.routes.shift(offset), m.capture.shift(offset), m.first, m.last);
 				} else if (offset > 0) {
@@ -410,27 +413,19 @@ public final class CharScheme extends NodeScheme<CharScheme.Char> {
 			return new CharMap(ms);
 		}
 
-		@Override
-		public IdSet routes(Char s) {
-			final char c = s.c;
-			int i = floor(maplets, c, maplets.length);
-			Maplet maplet;
-			if (i >= 0 && (maplet = maplets[i]).last >= c) {
-				return maplet.routes;
-			}
-			return IdSet.empty();
-		}
-
 	}
 	
-	private static final List<CharGroup> SPACES = Arrays.asList(new CharGroup(' ', ' '), new CharGroup('\t', '\t'), new CharGroup('\n', '\n'), new CharGroup('\r', '\r'));
+	private static final List<CharRange> SPACES = Arrays.asList(new CharRange(' ', ' '), new CharRange('\t', '\t'), new CharRange('\n', '\n'), new CharRange('\r', '\r'));
 
+	// TODO : support more comples group expressions (e.g. intersection, union and Unicode groups)
 	public static final class Parser extends Parse<Char> {
 		@Override
 		public NodeScheme<Char> scheme() {
 			return SCHEME;
 		}
+		
 		private boolean caseInsensitive;
+		private Map<String, List<CharRange>> userDefinedGroups;
 		public boolean isCaseInsensitive() {
 			return caseInsensitive;
 		}
@@ -438,13 +433,22 @@ public final class CharScheme extends NodeScheme<CharScheme.Char> {
 			caseInsensitive = on;
 			return this;
 		}
+		public Parser defineGroup(String name, String expression) {
+			return defineGroup(name, parseGroupExpression(expression));
+		}
+		public Parser defineGroup(String name, List<CharRange> group) {
+			if (userDefinedGroups == null) {
+				userDefinedGroups = new SerialHashMap<String, List<CharRange>>();
+			}
+			userDefinedGroups.put(name, clean(group, false, false));
+			return this;
+		}
 		@Override
-		protected void parseToken(int type, String var, Accumulator accum) {
+		protected void parseToken(int type, String var, Accumulator accum) throws ParseException {
 			if (type < 0) {
 				super.parseToken(type, var, accum);
 			} else {
-				boolean negate = false;
-				List<CharGroup> groups = new ArrayList<CharGroup>();
+				List<CharRange> groups;
 				switch (type) {
 				case 1:
 					if (var.length() != 1) {
@@ -454,135 +458,178 @@ public final class CharScheme extends NodeScheme<CharScheme.Char> {
 						final char c = var.charAt(1);
 						switch(c) {
 						case 's':
-							groups.addAll(SPACES);
+							groups = SPACES;
 							break;
 						default:
-							groups.add(new CharGroup(c, c));						
+							groups = new UniformList<CharRange>(new CharRange(c, c), 1);						
 						}
 					} else {
 						final char c = var.charAt(0);
 						switch (c) {
 						case '.':
-							groups.add(new CharGroup(Character.MIN_VALUE, Character.MAX_VALUE));
+							groups = new UniformList<CharRange>(new CharRange(Character.MIN_VALUE, Character.MAX_VALUE), 1);
 							break;
 						default:
-							groups.add(new CharGroup(c, c));
+							groups = new UniformList<CharRange>(new CharRange(c, c), 1);
 						}
 					}
 					break;
 				case 2:
-					negate = var.startsWith("^");
-					boolean range = false;
-					boolean escape = false;
-					for (int i = negate ? 1 : 0 ; i != var.length() ; i++) {
-						char c = var.charAt(i);
-						switch (c) {
-						case '\\':
-							escape = true;
-							break;
-						case '-':
-							if (escape) {
-								groups.add(new CharGroup(c, c));
-								escape = false;
-							} else {
-								range = true;
-							}
-							break;							
-						default:
-							escape = false;
-							if (range) {
-								if (groups.size() == 0) {
-									throw new IllegalArgumentException("range declared without start; hyphens should be preceded by at least one char in a character class declaration");
-								}
-								final CharGroup prev = groups.get(groups.size() - 1);
-								if (prev.first != prev.last) {
-									throw new IllegalArgumentException("range declared without valid start - preceded by end of another range declaration; two hyphens should be separated by at least two chars in any character class declaration");
-								}
-								if (prev.first >= c) {
-									throw new IllegalArgumentException("Illegal range [" + prev.first + "-" + c + "] declared; " + prev.first + " is greater than or equal to " + c);
-								}
-								groups.set(groups.size() - 1, new CharGroup(prev.first, c));
-								range = false;
-							} else {
-								groups.add(new CharGroup(c, c));
-							}
-						}
-					}
+					groups = parseGroupExpression(var);
 					break;
 				default:
 					throw new IllegalStateException();
 				}
-				final int a = (int) 'a', z = (int) 'z', A = (int) 'A', Z = (int) 'Z';
-				if (caseInsensitive) {						
-					for (CharGroup cg : new ArrayList<CharGroup>(groups)) {
-						if (cg.first <= z && cg.last >= a && (cg.last < A || cg.first > Z)) {
-							groups.add(new CharGroup((char) ((A - a) + Math.max(a, cg.first)), (char) ((A - a) + Math.min(z, cg.last))));
-						} else if (cg.first <= Z && cg.last >= A && (cg.last < a || cg.first > z)) {
-							groups.add(new CharGroup((char) ((a - A) + Math.max(A, cg.first)), (char) ((a - A) + Math.min(Z, cg.last))));
-						}
-					}
-				}
-				// TODO : ensure groups don't overlap
-				if (groups.size() > 1) {
-					java.util.Collections.sort(groups);
-					int i = 1;
-					CharGroup last = groups.get(0);
-					while (i < groups.size()) {
-						final CharGroup next = groups.get(i);
-						if (last.last >= next.first) {
-							groups.remove(i);
-							groups.set(i - 1, new CharGroup(last.first, next.last));
-						} else {							
-							i++;
-							last = next;
-						}
-					}
-				}
-				if (negate && !groups.isEmpty()) {
-					final List<CharGroup> r = new ArrayList<CharGroup>(groups.size() + 1);
-					CharGroup last = new CharGroup((char) 0, (char) 0);
-					for (CharGroup next : groups) {
-						if (last.last + 1 < next.first - 1) {
-							r.add(new CharGroup((char) (last.last + 1), (char) (next.first - 1)));
-						}
-						last = next;
-					}
-					if ((last.last & 0xFF) + 1 < 65535) {
-						r.add(new CharGroup((char) (last.last + 1), (char) 65535));
-					}
-					groups = r;
-				}
-				accum.add(new BuildCharClass(groups.toArray(new CharGroup[groups.size()])));
+				groups = clean(groups, false, caseInsensitive);
+				accum.add(new BuildCharClass(groups.toArray(new CharRange[groups.size()])));
 			}
 		}
+		
+		private List<CharRange> parseGroupExpression(String expression) {
+			final List<CharRange> groups = new ArrayList<CharRange>();
+			boolean negate = expression.startsWith("^");
+			boolean range = false;
+			boolean escape = false;
+			for (int i = negate ? 1 : 0 ; i != expression.length() ; i++) {
+				char c = expression.charAt(i);
+				switch (c) {
+				case '-':
+					if (escape) {
+						groups.add(new CharRange(c, c));
+						escape = false;
+					} else {
+						range = true;
+					}
+					break;
+					
+				case '\\':
+					if (!escape) {
+						escape = true;
+						break;
+					}
+				case 'g': 
+					if (escape & (c == 'g')) {
+						escape = false;
+						if (i + 1 == expression.length() || expression.charAt(i + 1) != '{') {
+							throw new IllegalArgumentException("user-defined group expression incomplete (expected { following \\g in group expression)");
+						}
+						final int start = i += 2;
+						for (; i < expression.length() && expression.charAt(i) != '}' ; i++);
+						if (i == expression.length()) {
+							throw new IllegalArgumentException("user-defined group expression incomplete (expected closing } following \\g{ in group expression)");
+						}
+						final String name = expression.substring(start, i);
+						final List<CharRange> ranges = userDefinedGroups == null ? null : userDefinedGroups.get(name);
+						if (ranges == null) {
+							throw new IllegalArgumentException("no user-defined group called " + name);
+						}
+						groups.addAll(ranges);
+						break;
+					}
+				default:
+					escape = false;
+					if (range) {
+						if (groups.size() == 0) {
+							throw new IllegalArgumentException("range declared without start; hyphens should be preceded by at least one char in a character class declaration");
+						}
+						final CharRange prev = groups.get(groups.size() - 1);
+						if (prev.first != prev.last) {
+							throw new IllegalArgumentException("range declared without valid start - preceded by end of another range declaration; two hyphens should be separated by at least two chars in any character class declaration");
+						}
+						if (prev.first >= c) {
+							throw new IllegalArgumentException("Illegal range [" + prev.first + "-" + c + "] declared; " + prev.first + " is greater than or equal to " + c);
+						}
+						groups.set(groups.size() - 1, new CharRange(prev.first, c));
+						range = false;
+					} else {
+						groups.add(new CharRange(c, c));
+					}
+				}
+			}
+			return clean(groups, negate, caseInsensitive);
+		}
+
 	}
 	
-	static class CharGroup implements Group<Char>, Comparable<CharGroup> {
+	private static List<CharRange> clean(List<CharRange> groups, boolean negate, boolean caseInsensitive) {
+		if (!negate && !caseInsensitive && groups.size() <= 1) {
+			return groups;
+		}
+		if (!(groups instanceof ArrayList)) {
+			groups = new ArrayList<CharRange>(groups);
+		}
+		final int a = (int) 'a', z = (int) 'z', A = (int) 'A', Z = (int) 'Z';
+		if (caseInsensitive) {
+			for (CharRange cg : new ArrayList<CharRange>(groups)) {
+				if (cg.first <= z && cg.last >= a && (cg.last < A || cg.first > Z)) {
+					groups.add(new CharRange((char) ((A - a) + Math.max(a, cg.first)), (char) ((A - a) + Math.min(z, cg.last))));
+				} else if (cg.first <= Z && cg.last >= A && (cg.last < a || cg.first > z)) {
+					groups.add(new CharRange((char) ((a - A) + Math.max(A, cg.first)), (char) ((a - A) + Math.min(Z, cg.last))));
+				}
+			}
+		}
+		if (groups.size() > 1) {
+			java.util.Collections.sort(groups);
+			int i = 1;
+			CharRange last = groups.get(0);
+			while (i < groups.size()) {
+				final CharRange next = groups.get(i);
+				if (last.last >= next.first) {
+					groups.remove(i);
+					groups.set(i - 1, new CharRange(last.first, next.last));
+				} else {							
+					i++;
+					last = next;
+				}
+			}
+		}
+		if (negate && !groups.isEmpty()) {
+			final List<CharRange> r = new ArrayList<CharRange>(groups.size() + 1);
+			CharRange last = new CharRange((char) 0, (char) 0);
+			for (CharRange next : groups) {
+				if (last.last + 1 < next.first - 1) {
+					r.add(new CharRange((char) (last.last + 1), (char) (next.first - 1)));
+				}
+				last = next;
+			}
+			if ((last.last & 0xFF) + 1 < 65535) {
+				r.add(new CharRange((char) (last.last + 1), (char) 65535));
+			}
+			groups = r;
+		}
+		return groups;
+	}
+	
+	public static class CharRange implements Group<Char>, Comparable<CharRange> {
 		
 		private static final long serialVersionUID = 3604041604862420489L;		
 		final char first;
 		final char last;
-		public CharGroup(char start, char end) {
+		public CharRange(char start, char end) {
 			this.first = start;
 			this.last = end;
 		}
 		@Override
-		public int compareTo(CharGroup that) {
+		public int compareTo(CharRange that) {
 			return (int) this.first - (int) that.last;
 		}
 		public String toString() {
 			if (first == last) {
-				return Character.toString(first);
+				return print(first);
 			} else {
-				return "[" + first + "-" + last + "]";
+				return "[" + print(first) + "-" + print(last) + "]";
 			}
 		}
-		boolean overlaps(CharGroup that) {
+		
+		static String print(char c) {
+			return c > 20 && c < 128 ? Character.toString(c) : Integer.toString(c);
+		}
+		boolean overlaps(CharRange that) {
 			return this.first <= that.last && this.last >= that.first;
 		}
 	}
 
-	static final class Maplet extends CharGroup implements NodeMapEntry<Char> {
+	public static final class Maplet extends CharRange implements NodeMapEntry<Char> {
 		
 		private static final long serialVersionUID = -4465551232339102662L;
 		
@@ -597,12 +644,7 @@ public final class CharScheme extends NodeScheme<CharScheme.Char> {
 		}
 		
 		@Override
-		public Group<Char> sym() {
-			return this;
-		}
-
-		@Override
-		public Node<Char> next() {
+		public Node<Char> node() {
 			return next;
 		}
 
@@ -618,7 +660,44 @@ public final class CharScheme extends NodeScheme<CharScheme.Char> {
 		
 	}
 
-    private static int floor(Maplet[] a, char find, int len) {    	 
+	static final class SpecialMaplet implements NodeMapEntry<Char> {
+		
+		private static final long serialVersionUID = -4465551232339102662L;
+		
+		private Node<Char> next ;
+		private final IdSet routes;
+		private final IdCapture capture;
+		private final SpecialTransition transition;
+		public SpecialMaplet(Node<Char> next, IdSet routes, IdCapture capture, SpecialTransition transition) {
+			this.next = next;
+			this.capture = capture;
+			this.routes = routes;
+			this.transition = transition;
+		}
+		
+		@Override
+		public Node<Char> node() {
+			return next;
+		}
+		
+		@Override
+		public IdCapture capture() {
+			return capture;
+		}
+		
+		@Override
+		public IdSet routes() {
+			return routes;
+		}
+		
+		@Override
+		public String toString() {
+			return transition.toString();
+		}
+		
+	}
+	
+    private static int floor(Maplet[] a, char find, int len) {
 
         int i = -1;
         int j = len;
@@ -646,6 +725,34 @@ public final class CharScheme extends NodeScheme<CharScheme.Char> {
 
     }
 
+    private static int floor(char[] a, char find) {    	 
+    	
+    	int i = -1;
+    	int j = a.length;
+    	
+    	// a[-1] ^= -infinity
+    	while (i < j - 1) {
+    		
+    		// { a[i] <= v ^ a[j] > v }
+    		
+    		final int m = (i + j) >>> 1;
+              char v = a[m];
+              
+              if (v <= find) {
+            	  i = m;
+              } else {
+            	  j = m;
+              }
+              
+              // { a[m] > v => a[j] > v => a[i] <= v ^ a[j] > v }
+              // { a[m] <= v => a[i] <= v => a[i] <= v ^ a[j] > v }
+              
+    	}
+    	
+    	return i ;
+    	
+    }
+    
     private static char max(char a, char b) {
     	return a > b ? a : b;
     }
