@@ -124,7 +124,7 @@ public class Equalities {
 	 * 
 	 * @return identity <code>Equality</code>
 	 */
-	public static Equality<Object> identity() { return IDENTITY ; } 
+	public static <E> Equality<E> identity() { return (Equality<E>) IDENTITY ; } 
     private static final Equality<Object> IDENTITY = new IdentityEquality();
     /**
      * an <code>Equality</code> for identity equality, i.e. like <code>IdentityHashMap</code>. Delegates to language equality (

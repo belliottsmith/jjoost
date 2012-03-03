@@ -4,6 +4,6 @@ import java.io.Serializable;
 
 public interface MatchAction<I, E> extends Serializable {
 
-	public E matched(I input, Captured captured);
+	public E matched(I input, Found captured);
 	
 }

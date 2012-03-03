@@ -71,6 +71,19 @@ public class Functions {
 		}
 		public E apply(E v) { return v == null ? replace : v ; }
 	}
+
+	private static final class Constant<E> implements Function<Object, E> {
+		private static final long serialVersionUID = 5801405085506068892L;
+		final E r;
+		private Constant(E r) {
+			this.r = r;
+		}
+		public E apply(Object v) { return r; }
+	}
+
+	public static <E> Constant<E> constant(E e) {
+		return new Constant<E>(e);
+	}
 	
 	/**
 	 * Returns the identity function, i.e. that returns its input as output
@@ -80,6 +93,17 @@ public class Functions {
 	@SuppressWarnings("unchecked")
 	public static <E> Function<E, E> identity() {
 		return (Function<E, E>) IDENTITY;
+	}
+	
+	
+	/**
+	 * Returns the identity function, i.e. that returns its input as output
+	 * @param <E> input type
+	 * @return the identity function
+	 */
+	@SuppressWarnings("unchecked")
+	public static <O, I extends O> Function<I, O> identityDowncast() {
+		return (Function<I, O>) IDENTITY;
 	}
 	
 	/**

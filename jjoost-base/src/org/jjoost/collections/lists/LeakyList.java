@@ -51,12 +51,21 @@ public class LeakyList<E> implements List<E> {
 			return new ArrayIterator<E>(data, lb, lb + size);
 		}
 	}
+	
+	// the number of additions we have performed modulo the sie of the list
+	public int offset() {
+		return (lb + size) % data.length;
+	}
 
 	public boolean add(E value) {
-		data[lb] = value;
-		lb = (lb + 1) % data.length;
-		if (size != data.length)
-			size++;
+		if (size != data.length) {
+			data[size++] = value;
+		} else if (lb == data.length) {
+			data[0] = value;
+			lb = 1;
+		} else {
+			data[lb++] = value;
+		}
 		return true;
 	}
 
@@ -125,7 +134,7 @@ public class LeakyList<E> implements List<E> {
 		if (index >= size) {
 			throw new IndexOutOfBoundsException();
 		}
-		return data[(index + lb) % size];
+		return data[(index + lb) % data.length];
 	}
 
 	@Override

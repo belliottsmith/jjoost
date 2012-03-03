@@ -565,15 +565,14 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 			return contains(v) ? Boolean.TRUE : Boolean.FALSE;
 		}
 		
-		@SuppressWarnings("unchecked")
 		@Override
 		public Iterable<Entry<K, V>> all(final Entry<K, V> entry) {
 			final int hash = hash(entry.getKey());
 			return (Iterable<Entry<K, V>>) 
-			new AbstractIterable<N>() {
+			new AbstractIterable<Entry<K, V>>() {
 				@Override
-				public Iterator<N> iterator() {
-					return store.find(hash, entry, nodeEq, nodeProj(), nodeEq, nodeProj());
+				public Iterator<Entry<K, V>> iterator() {
+					return store.find(hash, entry, nodeEq, nodeProj(), nodeEq, entryProj());
 				}
 			};
 		}
@@ -656,13 +655,14 @@ public abstract class AbstractHashMap<K, V, N extends HashNode<N> & Map.Entry<K,
 		if (!(tht instanceof AnyMap)) {
 			return false;
 		}
-		final AnyMap<?, ?> that = (AnyMap<?, ?>) tht;
-		if (!this.keys().equality().equals(that.keys().equality())) {
+		final AnyMap<?, ?> that1 = (AnyMap<?, ?>) tht;
+		if (!this.keys().equality().equals(that1.keys().equality())) {
 			return false;
 		}
-		if (!this.values().equality().equals(that.values().equality())) {
+		if (!this.values().equality().equals(that1.values().equality())) {
 			return false;
 		}
+		final AnyMap<K, V> that = (AnyMap<K, V>) that1;
 		final Iterator<? extends Map.Entry<K, V>> a = (Iterator<? extends Entry<K, V>>) that.entries().iterator();
 		final Iterator<? extends Map.Entry<K, V>> b = this.entries().iterator();
 		while (a.hasNext() && b.hasNext()) {

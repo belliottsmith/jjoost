@@ -644,7 +644,7 @@ public class Iters {
 		int i = 0;
 		while (iter.hasNext()) {
 			if (i == b.length)
-				b = Arrays.copyOf(b, b.length << 1);
+				b = Arrays.copyOf(b, Math.max(10, b.length << 1));
 			b[i] = (T) iter.next();
 			i++;
 		}

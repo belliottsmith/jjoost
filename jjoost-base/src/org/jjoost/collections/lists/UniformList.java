@@ -104,7 +104,7 @@ public class UniformList<E> implements List<E>, Serializable {
 			size++;
 			return true;
 		}
-		return false;
+		throw new IllegalArgumentException("Cannot add element " + e + " to UniformList that already contains " + element);
 	}
 
 	public void add() {

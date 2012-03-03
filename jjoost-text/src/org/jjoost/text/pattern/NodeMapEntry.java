@@ -4,8 +4,7 @@ import java.io.Serializable;
 
 public interface NodeMapEntry<S> extends Serializable {
 
-	public Group<S> sym();
-	public Node<S> next();
+	public Node<S> node();
 	public IdCapture capture();
 	public IdSet routes();
 

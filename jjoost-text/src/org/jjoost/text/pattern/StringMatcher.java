@@ -16,30 +16,46 @@ public class StringMatcher<S extends CharSequence, R> extends Matcher<S, Char, R
 
 	private static final long serialVersionUID = 7205275674097776924L;
 	
-	public StringMatcher(String regexp, MatchAction<? super S, R> action) throws ParseException {
+	public StringMatcher(String regexp, MatchAction<? super S, ? extends R> action) throws ParseException {
 		this(regexp, false, action);
 	}
-	public StringMatcher(String regexp, boolean insensitive, MatchAction<? super S, R> action) throws ParseException {
-		super((insensitive ? CharScheme.parserCaseInsensitive() : CharScheme.parser()).compile(regexp), null, action);
+	public StringMatcher(String regexp, boolean insensitive, MatchAction<? super S, ? extends R> action) throws ParseException {
+		this(regexp, (insensitive ? CharScheme.parserCaseInsensitive() : CharScheme.parser()), action);
 	}
-	
-	public StringMatcher(String regexp, Capture capture, MatchAction<? super S, R> action) throws ParseException {
+	public StringMatcher(String regexp, CharScheme.Parser parser, MatchAction<? super S, ? extends R> action) throws ParseException {
+		super(parser.compile(regexp), null, action);
+	}
+	public StringMatcher(String regexp, Capture capture, MatchAction<? super S, ? extends R> action) throws ParseException {
 		this(regexp, false, capture, action);
 	}
-	public StringMatcher(String regexp, boolean insensitive, Capture capture, MatchAction<? super S, R> action) throws ParseException {
-		super((insensitive ? CharScheme.parserCaseInsensitive() : CharScheme.parser()).compile(regexp, capture), capture, action);
+	public StringMatcher(String regexp, boolean insensitive, Capture capture, MatchAction<? super S, ? extends R> action) throws ParseException {
+		this(regexp, (insensitive ? CharScheme.parserCaseInsensitive() : CharScheme.parser()), capture, action);
+	}
+	public StringMatcher(String regexp, CharScheme.Parser parser, Capture capture, MatchAction<? super S, ? extends R> action) throws ParseException {
+		super(parser.compile(regexp, capture), capture, action);
+	}
+	protected <R0> StringMatcher(StringMatcher<S, R0> copy, Function<? super MatchAction<? super S, ? extends R0>, ? extends MatchAction<? super S, ? extends R>> map, boolean keepCaptures) {
+		super(copy, map, keepCaptures);
 	}
 	
 	private StringMatcher() {
-		super(new Node<Char>(CharScheme.get().emptyMap(), IdSet.empty(), false), null, null);
+		super(CharScheme.get());
 	}
 	
-	protected StringMatcher(StringMatcher<S, R> a, StringMatcher<S, R> b) {
-		super(a, b);
+	protected StringMatcher(StringMatcher<S, R> a, StringMatcher<S, ? extends R> b, int truncateRecursionDepth) {
+		super(a, b, truncateRecursionDepth);
 	}
 
-	public StringMatcher<S, R> merge(StringMatcher<S, R> alt) {
-		return new StringMatcher<S, R>(this, alt);
+	public StringMatcher<S, R> merge(StringMatcher<S, ? extends R> alt) {
+		return merge(alt, Integer.MAX_VALUE);
+	}
+	
+	public StringMatcher<S, R> merge(StringMatcher<S, ? extends R> alt, int truncateRecursionDepth) {
+		return new StringMatcher<S, R>(this, alt, truncateRecursionDepth);
+	}
+	
+	public <R2> StringMatcher<S, R2> replaceActions(boolean keepCaptures, Function<? super MatchAction<? super S, ? extends R>, ? extends MatchAction<? super S, ? extends R2>> map) {
+		return new StringMatcher<S, R2>(this, map, keepCaptures);
 	}
 	
 	public List<R> match(S s) {
@@ -50,20 +66,20 @@ public class StringMatcher<S extends CharSequence, R> extends Matcher<S, Char, R
 		return super.matchOneResult(s, new CharIterator(s));
 	}
 	
-	public void applyToResults(S s, Function<? super R, Boolean> found) {
+	public void applyToResults(S s, Function<? super R, FindAction> found) {
 		super.applyToResults(s, new CharList(s), found);
 	}
 	
-	public void applyToMatches(S s, Function<? super Match<R>, Boolean> found) {
+	public void applyToMatches(S s, Function<? super Match<R>, FindAction> found) {
 		super.applyToMatches(s, new CharList(s), found);
 	}
 	
-	public void applyToLongestMatches(S s, Function<? super Match<R>, Boolean> found) {
+	public void applyToLongestMatches(S s, Function<? super Match<R>, FindAction> found) {
 		super.applyToLongestMatches(s, new CharList(s), found);
 	}
 	
-	public void applyToMatchGroups(S s, Function<? super MatchGroup, Boolean> found) {
-		super.applyToMatchGroups(s, new CharList(s), found);
+	public void applyToMatchStates(S s, Function<? super FindState, FindAction> found) {
+		super.applyToMatchStates(s, new CharList(s), found);
 	}
 	
 	public List<R> findAll(S s) {
@@ -78,48 +94,44 @@ public class StringMatcher<S extends CharSequence, R> extends Matcher<S, Char, R
 		return super.findFirstOneResult(s, new CharList(s));
 	}
 	
-	public static StringMatcher<String, Boolean> matcher(String regexp) throws ParseException {
-		return new StringMatcher<String, Boolean>(regexp, TRUE);
+	public static <S extends CharSequence> StringMatcher<S, Boolean> matcher(String regexp) throws ParseException {
+		return new StringMatcher<S, Boolean>(regexp, TRUE);
 	}
 	
-	public static StringMatcher<String, Boolean> matcher(String regexp, boolean ignoreCase) throws ParseException {
-		return new StringMatcher<String, Boolean>(regexp, ignoreCase, TRUE);
+	public static <S extends CharSequence> StringMatcher<S, Boolean> matcher(String regexp, boolean ignoreCase) throws ParseException {
+		return new StringMatcher<S, Boolean>(regexp, ignoreCase, TRUE);
 	}
 	
-	public static <E> StringMatcher<String, E> matcher(String regexp, MatchAction<? super String, E> action) throws ParseException {
-		return new StringMatcher<String, E>(regexp, action);
+	public static <S extends CharSequence> StringMatcher<S, Boolean> matcher(String regexp, CharScheme.Parser parser) throws ParseException {
+		return new StringMatcher<S, Boolean>(regexp, parser, TRUE);
 	}
 	
-	public static <E> StringMatcher<String, E> matcher(String regexp, Capture capture, MatchAction<? super String, E> action) throws ParseException {
-		return new StringMatcher<String, E>(regexp, capture, action);
+	public static <S extends CharSequence, E> StringMatcher<S, E> matcher(String regexp, MatchAction<? super S, ? extends E> action) throws ParseException {
+		return new StringMatcher<S, E>(regexp, action);
 	}
 	
-	public static <E> StringMatcher<String, E> matcher(String regexp, boolean ignoreCase, MatchAction<? super String, E> action) throws ParseException {
-		return new StringMatcher<String, E>(regexp, ignoreCase, action);
+	public static <S extends CharSequence, E> StringMatcher<S, E> matcher(String regexp, Capture capture, MatchAction<? super S, ? extends E> action) throws ParseException {
+		return new StringMatcher<S, E>(regexp, capture, action);
 	}
 	
-	public static <E> StringMatcher<String, E> matcher(String regexp, boolean ignoreCase, Capture capture, MatchAction<? super String, E> action) throws ParseException {
-		return new StringMatcher<String, E>(regexp, ignoreCase, capture, action);
+	public static <S extends CharSequence, E> StringMatcher<S, E> matcher(String regexp, boolean ignoreCase, MatchAction<? super S, ? extends E> action) throws ParseException {
+		return new StringMatcher<S, E>(regexp, ignoreCase, action);
 	}
 	
-	public static StringMatcher<CharSequence, Boolean> seqMatcher(String regexp) throws ParseException {
-		return new StringMatcher<CharSequence, Boolean>(regexp, TRUE);
+	public static <S extends CharSequence, E> StringMatcher<S, E> matcher(String regexp, CharScheme.Parser parser, MatchAction<? super S, ? extends E> action) throws ParseException {
+		return new StringMatcher<S, E>(regexp, parser, action);
 	}
 	
-	public static StringMatcher<CharSequence, Boolean> seqMatcher(String regexp, boolean ignoreCase) throws ParseException {
-		return new StringMatcher<CharSequence, Boolean>(regexp, ignoreCase, TRUE);
+	public static <S extends CharSequence, E> StringMatcher<S, E> matcher(String regexp, boolean ignoreCase, Capture capture, MatchAction<? super S, ? extends E> action) throws ParseException {
+		return new StringMatcher<S, E>(regexp, ignoreCase, capture, action);
 	}
 	
-	public static <E> StringMatcher<CharSequence, E> seqMatcher(String regexp, boolean ignoreCase, MatchAction<? super CharSequence, E> action) throws ParseException {
-		return new StringMatcher<CharSequence, E>(regexp, ignoreCase, action);
+	public static <S extends CharSequence, E> StringMatcher<S, E> matcher(String regexp, CharScheme.Parser parser, Capture capture, MatchAction<? super S, ? extends E> action) throws ParseException {
+		return new StringMatcher<S, E>(regexp, parser, capture, action);
 	}
 	
-	public static <E> StringMatcher<CharSequence, E> seqMatcher(String regexp, boolean ignoreCase, Capture capture, MatchAction<? super CharSequence, E> action) throws ParseException {
-		return new StringMatcher<CharSequence, E>(regexp, ignoreCase, capture, action);
-	}
-	
-	public static <E> StringMatcher<String, E> matchNothing() {
-		return new StringMatcher<String, E>();
+	public static <S extends CharSequence, E> StringMatcher<S, E> matchNothing() {
+		return new StringMatcher<S, E>();
 	}
 	
 	public static <E> StringMatcher<CharSequence, E> seqMatchNothing() {
@@ -128,37 +140,41 @@ public class StringMatcher<S extends CharSequence, R> extends Matcher<S, Char, R
 	
 	public String replaceAllMatches(final S input, final Function<? super String, ? extends CharSequence> replaceFunc) {
 		final StringBuilder sb = new StringBuilder();
-		class MyFunc implements Function<MatchGroup, Boolean> {
+		class MyFunc implements Function<FindState, FindAction> {
 			private static final long serialVersionUID = 1L;
 			int last = 0;
 			@Override
-			public Boolean apply(MatchGroup v) {
-				if (v.start >= last) {
-					sb.append(input.subSequence(last, v.start));
-					sb.append(replaceFunc.apply(input.subSequence(v.start, v.end).toString()));
-					last = v.end;
+			public FindAction apply(FindState v) {
+				if (v.start() >= last) {
+					sb.append(input.subSequence(last, v.start()));
+					sb.append(replaceFunc.apply(input.subSequence(v.start(), v.end()).toString()));
+					last = v.end();
 				}
-				return Boolean.TRUE;
+				return FindAction.continueAll();
 			}
 		}
 		final MyFunc myFunc = new MyFunc();
-		applyToMatchGroups(input, myFunc);
+		applyToMatchStates(input, myFunc);
 		sb.append(input.subSequence(myFunc.last, input.length()));
 		return sb.toString();
 	}
 	
+	public boolean matches(S match) {
+		return super.matches(new CharIterator(match));
+	}
+	
 	public boolean containsAnyMatch(S match) {
 		@SuppressWarnings("serial")
-		class Contains implements Function<MatchGroup, Boolean> {
+		class Contains implements Function<FindState, FindAction> {
 			private boolean contains = false;
 			@Override
-			public Boolean apply(MatchGroup c) {
+			public FindAction apply(FindState c) {
 				contains = true;
-				return Boolean.FALSE;
+				return FindAction.terminate();
 			}
 		};
 		final Contains contains = new Contains();
-		applyToMatchGroups(match, new CharList(match), contains);
+		applyToMatchStates(match, new CharList(match), contains);
 		return contains.contains;
 	}
 	
@@ -169,12 +185,12 @@ public class StringMatcher<S extends CharSequence, R> extends Matcher<S, Char, R
 	}
 	
 	public void countMatches(S match, final MultiSet<R> r) {
-		applyToResults(match, new CharList(match), new Function<R, Boolean>() {
+		applyToResults(match, new CharList(match), new Function<R, FindAction>() {
 			private static final long serialVersionUID = 1L;
 			@Override
-			public Boolean apply(R c) {
+			public FindAction apply(R c) {
 				r.add(c);
-				return true;
+				return FindAction.continueAll();
 			}
 		});
 	}
@@ -207,7 +223,7 @@ public class StringMatcher<S extends CharSequence, R> extends Matcher<S, Char, R
 		}
 
 		@Override
-		public E matched(CharSequence input, Captured captured) {
+		public E matched(CharSequence input, Found captured) {
 			return val;
 		}
 		
@@ -231,7 +247,7 @@ public class StringMatcher<S extends CharSequence, R> extends Matcher<S, Char, R
 		private static final long serialVersionUID = 2277797439174840230L;
 
 		@Override
-		public Boolean matched(CharSequence input, Captured captured) {
+		public Boolean matched(CharSequence input, Found captured) {
 			return Boolean.TRUE;
 		}
 		
@@ -254,7 +270,7 @@ public class StringMatcher<S extends CharSequence, R> extends Matcher<S, Char, R
 		private static final long serialVersionUID = 2277797439174840279L;
 		
 		@Override
-		public Boolean matched(CharSequence input, Captured captured) {
+		public Boolean matched(CharSequence input, Found captured) {
 			return Boolean.FALSE;
 		}
 		
@@ -266,6 +282,23 @@ public class StringMatcher<S extends CharSequence, R> extends Matcher<S, Char, R
 			return 0;
 		}
 		
+	}
+	
+	public static <S extends CharSequence> StringMatcher<S, Boolean> opts(List<String> regexps, boolean literal) throws ParseException {
+		java.util.Collections.sort(regexps);
+		return _opts(regexps, literal);
+	}
+
+	private static <S extends CharSequence> StringMatcher<S, Boolean> _opts(List<String> regexps, boolean literal) throws ParseException {
+		if (regexps.size() < 4) {
+			StringMatcher<S, Boolean> r = matchNothing();
+			for (String exp : regexps) {
+				r = r.merge(StringMatcher.<S>matcher(literal ? Parse.escape(exp) : exp));
+			}
+			return r;
+		} else {
+			return StringMatcher.<S>_opts(regexps.subList(0, regexps.size() >> 1), literal).merge(StringMatcher.<S>_opts(regexps.subList(regexps.size() >> 1, regexps.size()), literal));
+		}
 	}
 	
 }

@@ -39,7 +39,8 @@ implements AnyMap<K, V> {
 	private static final long serialVersionUID = 2790620014005060840L;
 	
 	protected final M map;
-	protected abstract AbstractBiMap<V, K, I, M> partner();
+//	protected abstract AbstractBiMap<V, K, I, M> partner();
+	protected abstract AbstractBiMap<V, K, ?, ?> partner();
 	
 	protected AbstractBiMap(M forwards) {
 		super();

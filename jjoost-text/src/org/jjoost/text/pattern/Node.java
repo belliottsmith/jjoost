@@ -2,37 +2,37 @@ package org.jjoost.text.pattern;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
-import org.jjoost.collections.lists.LeakyList;
+import org.jjoost.collections.Map;
+import org.jjoost.collections.MapMaker;
+import org.jjoost.collections.maps.serial.SerialHashMap;
 import org.jjoost.text.pattern.NodeMapSplit.NodeIntersect;
+import org.jjoost.util.Equalities;
 import org.jjoost.util.Function;
 
+// TODO : ^ and $ matches
 // TODO : capturing is far from 100% working with infinite loops and their modifications
 // TODO : tail with self merges result in possibility of same capture group being visited multiple times
+// TODO : work on reducing unnecessary GC (esp. Found allocation; also Capture, Capturing, possibly Char)
+// TODO : ensure StackMap is used everywhere it is appropriate to do so; some functions do a lot of map copying which we should avoid. 
+//				... possibly rewrite StackMap a little to optimize memory utilization in the singleton case, at which point consider moving everything to it
 @SuppressWarnings("unchecked")
 public final class Node<S> implements Serializable {
 
 	private static final long serialVersionUID = 6329951467575507627L;
 	
-	// conceptually immutable, but mutated in order to simplify construction
+	// conceptually immutable, but mutated in order to simplify + speedup construction
 	private NodeMap<S> next;
 	private boolean inLoop;
-//	private IdSet routes;
 	private IdSet accepts;
 	
 	public boolean isEmpty() {
 		return next.isEmpty();
 	}
 	
-//	public IdSet routes() {
-//		return routes;
-//	}
-//	
 	public IdSet accepts() {
 		return accepts;
 	}
@@ -45,7 +45,6 @@ public final class Node<S> implements Serializable {
 	Node(NodeMap<S> paths, IdSet accepting, boolean inLoop) {
 		this.next = paths;
 		this.inLoop = inLoop;
-//		this.routes = routes;
 		this.accepts = accepting;
 	}
 	
@@ -166,22 +165,15 @@ public final class Node<S> implements Serializable {
 				} else if (l1.mergingWith == tail2) {
 					return new MergeResult<S>(tail1, tail2, l1.replacingWith, loop1.isSingletonStack(tail1), false);
 				} else if (l2.mergingWith == tail1) {
-					return new MergeResult<S>(tail1, tail2, l2.replacingWith, false, loop2.isSingletonStack(tail1));
+					return new MergeResult<S>(tail1, tail2, l2.replacingWith, false, loop2.isSingletonStack(tail2));
 				}
 			} 
 			final Node<S> tail1Orig = tail1;
 			final Node<S> tail2Orig = tail2;			
-//			if (l1 != null) {
-//				tail1 = mergeTailWithSelf(tail1, l1, new IdentityStackMap<Node<S>, Node<S>>(), new IdentityStackMap<Node<S>, Node<S>>()).get();
-//			} 
-//			if (l2 != null) {
-//				tail2 = mergeTailWithSelf(tail2, l2, new IdentityStackMap<Node<S>, Node<S>>(), new IdentityStackMap<Node<S>, Node<S>>()).get();
-//			}
 			Node<S> r = new Node<S>();
 			loop1.push(tail1Orig, new TailTailVal<S>(tail2Orig, r));
 			loop2.push(tail2Orig, new TailTailVal<S>(tail1Orig, r));
 			r.inLoop = true;
-//			r.routes = tail1.routes.append(tail2.routes, 0);
 			r.accepts = tail1.accepts.append(tail2.accepts, 0);
 			final NodeMapSplit<S> split = tail1.next.split(tail2.next, 0);
 			final NodeIntersect<S>[] intersect = split.intersect;
@@ -241,7 +233,7 @@ public final class Node<S> implements Serializable {
 	} 
 	
 	final Node<S> mergeLoopWithTail(Node<S> tail) {
-		return mergeLoopWithTail(this, tail, new IdentityHashMap<Node<S>, Node<S>>(8), new IdentityHashMap<Node<S>, Node<S>>(8), new IdentityHashMap<Node<S>, Node<S>>(8), new HashMap<LoopTailKey<S>, Node<S>>(8), 0);
+		return mergeLoopWithTail(this, tail, nodeMap(), nodeMap(), nodeMap(), new SerialHashMap<LoopTailKey<S>, Node<S>>(), Integer.MAX_VALUE);
 	}
 	
 	private static <S> Node<S> mergeLoopWithTail(Node<S> loop, Node<S> tail, Map<Node<S>, Node<S>> loopRepl, Map<Node<S>, Node<S>> tailRepl, Map<Node<S>, Node<S>> tailForLoop, Map<LoopTailKey<S>, Node<S>> pairRepl, int countToExclusive) {
@@ -255,7 +247,7 @@ public final class Node<S> implements Serializable {
 			if (r.accepts.isSuperset(tail.accepts)) {
 				return r;
 			}
-			pairRepl = new HashMap<LoopTailKey<S>, Node<S>>(pairRepl);
+			pairRepl = pairRepl.copy();
 		} else if ((r = loopRepl.get(loop)) != null) {
 			Node<S> prevTail = tailForLoop.get(loop);
 			if (prevTail != null) {
@@ -268,19 +260,19 @@ public final class Node<S> implements Serializable {
 			}
 		}
 		if (countToExclusive <= 0) {
-			return mergeExclusiveLimitingLoopWithTail(loop, tailKey, new IdentityHashMap<Node<S>, Node<S>>(8));
+			return mergeExclusiveLimitingLoopWithTail(loop, tailKey, Node.<S>_nodeMap());
 		}
 		r = new Node<S>();
 		pairRepl.put(key, r);
-		if (loopRepl.containsKey(loop)) {
-			loopRepl = new IdentityHashMap<Node<S>, Node<S>>(loopRepl);
-			tailForLoop = new IdentityHashMap<Node<S>, Node<S>>(tailForLoop);
+		if (loopRepl.contains(loop)) {
+			loopRepl = loopRepl.copy();
+			tailForLoop = tailForLoop.copy();
 		}
 		loopRepl.put(loop, r);
 		tailForLoop.put(loop, tail);
 		if (tailKey.inLoop) {
-			if (tailRepl.containsKey(tailKey)) {
-				tailRepl = new IdentityHashMap<Node<S>, Node<S>>(tailRepl);
+			if (tailRepl.contains(tailKey)) {
+				tailRepl = tailRepl.copy();
 			}
 			tailRepl.put(tailKey, r);
 		}
@@ -309,7 +301,7 @@ public final class Node<S> implements Serializable {
 
 	// essentially ensures the loop never overlaps its tail - effectively subtracts the start of the loop from the start of the tail
 	final Node<S> mergeExclusiveExtendingLoopWithTail(Node<S> tail) {
-		return mergeExclusiveExtendingLoopWithTail(this, tail, new IdentityHashMap<Node<S>, Node<S>>(8));
+		return mergeExclusiveExtendingLoopWithTail(this, tail, nodeMap());
 	}
 	
 	private static <S> Node<S> mergeExclusiveExtendingLoopWithTail(Node<S> loop, Node<S> tail, Map<Node<S>, Node<S>> remaps) {
@@ -343,8 +335,13 @@ public final class Node<S> implements Serializable {
 	
 	// essentially ensures the loop never overlaps its tail - effectively subtracts the start of the tail from the start of the loop
 	final Node<S> mergeExclusiveLimitingLoopWithTail(Node<S> tail) {
+		return mergeExclusiveLimitingLoopWithTail(this, tail, nodeMap());
+//		return mergeLoopWithTail(this, tail, new IdentityHashMap<Node<S>, Node<S>>(8), new IdentityHashMap<Node<S>, Node<S>>(8), new IdentityHashMap<Node<S>, Node<S>>(8), new HashMap<LoopTailKey<S>, Node<S>>(8), 3);
+	}
+	
+	final Node<S> mergeExclusiveLimitingLoopWithTail(Node<S> tail, int extendIterations) {
 //		return mergeExclusiveLimitingLoopWithTail(this, tail, new IdentityHashMap<Node<S>, Node<S>>(8));
-		return mergeLoopWithTail(this, tail, new IdentityHashMap<Node<S>, Node<S>>(8), new IdentityHashMap<Node<S>, Node<S>>(8), new IdentityHashMap<Node<S>, Node<S>>(8), new HashMap<LoopTailKey<S>, Node<S>>(8), 3);
+		return mergeLoopWithTail(this, tail, nodeMap(), nodeMap(), nodeMap(), new SerialHashMap<LoopTailKey<S>, Node<S>>(), extendIterations);
 	}
 	
 	private static <S> Node<S> mergeExclusiveLimitingLoopWithTail(Node<S> loop, Node<S> tail, Map<Node<S>, Node<S>> remaps) {
@@ -376,37 +373,57 @@ public final class Node<S> implements Serializable {
 		return r;
 	}
 	
-	public Node<S> mergeAlternatePatternWithSameCaptureAndResult(Node<S> that) {
-		return mergeAlternatePattern(this, that, true, 0, new IdentityHashMap<Node<S>, Node<S>>(8), new IdentityHashMap<Node<S>, Node<S>>(8));
-	}
-	public Node<S> mergeAlternatePattern(Node<S> that, int offset, boolean permitOverlappingAccepts) {
-		return mergeAlternatePattern(this, that, permitOverlappingAccepts, offset, new IdentityHashMap<Node<S>, Node<S>>(8), new IdentityHashMap<Node<S>, Node<S>>(8));
+//	public Node<S> mergeAlternatePattern(Node<S> that, int offset, boolean permitOverlappingAccepts) {
+//		return mergeAlternatePattern(that, offset, permitOverlappingAccepts, 4);
+//	}
+//	
+	public Node<S> mergeAlternatePattern(Node<S> that, int offset, boolean permitOverlappingAccepts, int maxRecursionDepth) {
+		return mergeAlternatePattern(this, that, permitOverlappingAccepts, offset, new IdentityStackMap<Node<S>, Node<S>>(), new IdentityStackMap<Node<S>, Node<S>>(), maxRecursionDepth).result;
 	}
 	
-	private static <S> Node<S> mergeAlternatePattern(Node<S> a, Node<S> b, boolean permitOverlappingAccepts, int offset, Map<Node<S>, Node<S>> leftRemaps, Map<Node<S>, Node<S>> rightRemaps) {
-		if (leftRemaps.containsKey(a) || rightRemaps.containsKey(b)) {
-			// TODO : is this logic definitely correct? hacked it in quickly, but not convinced
-			final Node<S> r = leftRemaps.get(a);
-			final Node<S> r2 = rightRemaps.get(b);
-			if (r != r2) {
-				if (r != null) {
-					leftRemaps = new IdentityHashMap<Node<S>, Node<S>>(leftRemaps);
-				} 
-				if (r2 != null) {
-					rightRemaps = new IdentityHashMap<Node<S>, Node<S>>(rightRemaps);
-				}
-			} else {
-				return r;
-			}
+	private static final class MergeAltPatResult<S> {
+		final Node<S> result;
+		final boolean retainLeftRoutes;
+		final boolean retainRightRoutes;
+		private MergeAltPatResult(Node<S> result, boolean retainLeftRoutes,
+				boolean retainRightRoutes) {
+			this.result = result;
+			this.retainLeftRoutes = retainLeftRoutes;
+			this.retainRightRoutes = retainRightRoutes;
 		}
-		final Node<S> r = new Node<S>();
+	}
+	private static <S> MergeAltPatResult<S> mergeAlternatePattern(Node<S> a, Node<S> b, boolean permitOverlappingAccepts, int offset, IdentityStackMap<Node<S>, Node<S>> leftRemaps, IdentityStackMap<Node<S>, Node<S>> rightRemaps, int maxRecursionDepth) {
+		Node<S> r = leftRemaps.commonValue(a, rightRemaps, b);
+		if (r != null) {
+			return new MergeAltPatResult<S>(r, true, true);
+		}
+		r = new Node<S>();
 		r.inLoop = a.inLoop | b.inLoop;
 		r.accepts = a.accepts.append(b.accepts, offset);
 		if (!permitOverlappingAccepts && r.accepts.size() > 1) {
 			throw new IllegalStateException("The provided patterns have overlapping acceptance states, which has been forbidden");
 		}
-		leftRemaps.put(a, r);
-		rightRemaps.put(b, r);
+		if (leftRemaps.push(a, r) == maxRecursionDepth) {
+			leftRemaps.pop(a);
+			Node<S> r2 = rightRemaps.peek(b);
+			if (r2 == null) {
+				r2 = b.replace(rightRemaps, offset);
+				rightRemaps.push(b, r2);
+				rightRemaps.popIfNotLast(b); // set depth correctly
+			}
+			return new MergeAltPatResult<S>(r2, false, true);
+		}
+		if (rightRemaps.push(b, r) == maxRecursionDepth) {
+			leftRemaps.pop(a);
+			rightRemaps.pop(b);
+			Node<S> r2 = leftRemaps.peek(a);
+			if (r2 == null) {
+				r2 = a.replace(leftRemaps, 0);
+				leftRemaps.push(a, r2);
+				leftRemaps.popIfNotLast(a); // set depth correctly
+			}
+			return new MergeAltPatResult<S>(r2, true, false);
+		}
 		final NodeMapSplit<S> split = a.next.split(b.next, 0);
 		final NodeIntersect<S>[] intersections = split.intersect;
 		NodeMap<S> left = split.left;
@@ -416,27 +433,38 @@ public final class Node<S> implements Serializable {
 		} else {
 			final NodeMapBuilder<S> builder = a.next.scheme().build();
 			for (final NodeIntersect<S> e : intersections) {
-				final Node<S> next = mergeAlternatePattern(e.left, e.right, permitOverlappingAccepts, offset, leftRemaps, rightRemaps);
-				final IdSet routes = e.leftRoutes.append(e.rightRoutes, offset);
-				final IdCapture capt = e.leftCapture.append(e.rightCapture, false, offset);
+				final MergeAltPatResult<S> next = mergeAlternatePattern(e.left, e.right, permitOverlappingAccepts, offset, leftRemaps, rightRemaps, maxRecursionDepth);				
+				final IdSet routes;
+				final IdCapture capt; 
+				if (next.retainLeftRoutes && next.retainRightRoutes) {
+					routes = e.leftRoutes.append(e.rightRoutes, offset);
+					capt = e.leftCapture.append(e.rightCapture, false, offset);
+				} else if (next.retainLeftRoutes) {
+					routes = e.leftRoutes;
+					capt = e.leftCapture;
+				} else {
+					routes = e.rightRoutes.shift(offset);
+					capt = e.rightCapture.shift(offset);
+				}
 				for (Group<S> s : e.symbols) {
-					builder.bind(s, next, routes, capt);
+					builder.bind(s, next.result, routes, capt);
 				}
 			}
 			r.next = a.next.scheme().merge(replace(left, leftRemaps), replace(right, rightRemaps, offset), builder.done());
 		}
-		return r;
+		leftRemaps.popIfNotLast(a);
+		rightRemaps.popIfNotLast(b);
+		return new MergeAltPatResult<S>(r, true, true);
 	}
 	
 	private Node<S> ensureAccepts(IdSet accepts) {
 		if (this.accepts.isSuperset(accepts)) {
 			return this;
 		} else {
-			final Map<Node<S>, Node<S>> remaps = new IdentityHashMap<Node<S>, Node<S>>();
+			final Map<Node<S>, Node<S>> remaps = MapMaker.<Node<S>, Node<S>>hash().initialCapacity(8).keyEq(Equalities.identity()).newMap();
 			Node<S> self = new Node<S>();
 			self.inLoop = inLoop;
 			self.accepts = this.accepts.append(accepts, 0);
-//			self.routes = routes;
 			remaps.put(this, self);
 			self.next = replace(next, remaps);
 			return replace(remaps);
@@ -446,12 +474,12 @@ public final class Node<S> implements Serializable {
 		if (!inLoop) {
 			return this;
 		}
-		return unroll(this, new IdentityHashMap<Node<S>, Boolean>(8));
+		return unroll(this, nodeMap());
 	}
 	
-	private static final <S> Node<S> unroll(Node<S> a, Map<Node<S>, Boolean> unrolled) {
-		if (a.inLoop && null == unrolled.put(a, Boolean.TRUE)) {
-			final Map<Node<S>, Node<S>> replace = new IdentityHashMap<Node<S>, Node<S>>(8);
+	private static final <S> Node<S> unroll(Node<S> a, Map<Node<S>, Node<S>> unrolled) {
+		if (a.inLoop && null == unrolled.put(a, a)) {
+			final Map<Node<S>, Node<S>> replace = MapMaker.<Node<S>, Node<S>>hash().initialCapacity(8).keyEq(Equalities.identity()).newMap();
 			for (Node<S> next : a.next) {
 				if (next.inLoop) {
 					replace.put(next, unroll(next, unrolled));
@@ -463,127 +491,15 @@ public final class Node<S> implements Serializable {
 		}
 	}
 	
-	public Captured[] match(Capture[] capture, Iterator<? extends S> iter) {
-		return match(capture, this, iter);
-	}
-	
-	private static <S> Captured[] match(Capture[] capture, Node<S> cur, Iterator<? extends S> iter) {
-		final Capturing capturing = new Capturing(capture);
-		int i = 0;
-		IdSet patterns = null;
-		while (true) {
-			if ((patterns == null || !patterns.isEmpty()) && iter.hasNext()) {
-				final S sym = iter.next();
-				final Node<S> next = cur.next.lookup(sym);
-				if (next == null) {
-					return new Captured[0];
-				}
-				capturing.update(cur.next.capture(sym), i);
-				patterns = patterns == null ? cur.next.routes(sym) : patterns.intersect(cur.next.routes(sym));
-				cur = next;
-				i++;
-			} else {
-				patterns = patterns == null ? cur.accepts : patterns.intersect(cur.accepts);
-				capturing.update(patterns, 0, i);
-				return capturing.select(patterns, i);
-			}
-		}
-	}
-	
-	private static final class FindFunc implements Function<MatchGroup, Boolean> {
-		private static final long serialVersionUID = 827559989469116132L;
-		final Boolean r;
-		final List<MatchGroup> saved;
-		public FindFunc(Boolean r, List<MatchGroup> save) {
-			this.r = r;
-			this.saved = save;
-		}
-		@Override
-		public Boolean apply(MatchGroup v) {
-			saved.add(v);
-			return r;
-		}
-	}
-	
-	public void find(Capture[] capture, List<? extends S> list, Function<? super MatchGroup, Boolean> found) {
-		find(capture, this, list, found);
-	}
-	
-	// TODO : optimise to avoid resetting completely after each match attempt (i.e. perhaps pre-compute a lookup table of reset positions after failures)
-	private static <S> void find(Capture[] capture, Node<S> head, List<? extends S> list, Function<? super MatchGroup, Boolean> found) {
-		int o = 0;
-		// TODO: consider caching capturing for large node graphs? (in a ThreadLocal); avoids unnecessary garbage
-		// this might mean moving the Capturing allocation out to the caller? or 
-		final Capturing capturing = new Capturing(capture);
-		while (o != list.size()) {
-			capturing.reset();
-			Node<S> cur = head; 
-			int i = o++;
-			IdSet patterns = null;
-			while (true) {
-				final IdSet accept = patterns == null ? cur.accepts : patterns.intersect(cur.accepts);
-				if (!accept.isEmpty()) {
-					capturing.update(patterns, o - 1, i);
-					if (found.apply(new MatchGroup(o - 1, i, capturing.select(accept, i))) == Boolean.FALSE) {
-						return;
-					}
-				}
-				if ((patterns == null || !patterns.isEmpty()) && i < list.size()) {
-					final S s = list.get(i);
-					final Node<S> next = cur.next.lookup(s);
-					if (next == null) {
-						break;
-					}
-					capturing.update(cur.next.capture(s), i);
-					patterns = i - o <= 1 ? cur.next.routes(s) : patterns.intersect(cur.next.routes(s));
-					cur = next;
-					i++;
-				} else {
-					break;
-				}
-			}
-		}
-	}
-	
-	public List<MatchGroup> findAll(Capture[] capture, List<? extends S> list) {
-		return findAll(capture, this, list);
-	}
-	
-	private static <S> List<MatchGroup> findAll(Capture[] capture, Node<S> head, List<? extends S> list) {
-		final FindFunc f = new FindFunc(Boolean.TRUE, new ArrayList<MatchGroup>());
-		find(capture, head, list, f);
-		return f.saved;
-	}
-	
-	public MatchGroup findLast(Capture[] capture, List<? extends S> list) {
-		return findLast(capture, this, list);
-	}
-	
-	private static <S> MatchGroup findLast(Capture[] capture, Node<S> head, List<? extends S> list) {
-		final FindFunc f = new FindFunc(Boolean.TRUE, new LeakyList<MatchGroup>(1));
-		find(capture, head, list, f);
-		return f.saved.isEmpty() ? null : f.saved.get(0);
-	}
-	
-	public MatchGroup findFirst(Capture[] capture, List<? extends S> list) {
-		return findFirst(capture, this, list);
-	}
-		
-	private static <S> MatchGroup findFirst(Capture[] capture, Node<S> head, List<? extends S> list) {		
-		final FindFunc f = new FindFunc(Boolean.FALSE, new LeakyList<MatchGroup>(1));
-		find(capture, head, list, f);
-		return f.saved.isEmpty() ? null : f.saved.get(0);
-	}
-	
 	// TODO: cycles still end up being copied - should try to prevent this!
-	Node<S> replace(final Map<Node<S>, Node<S>> replace, int offset) {
-		final ReplaceResult<S> r = replace(replace, new IdentityHashMap<Node<S>, Node<S>>(), 0);
+	Node<S> replace(final Function<Node<S>, Node<S>> replace, int offset) {
+		final ReplaceResult<S> r = replace(replace, new SerialHashMap<Node<S>, Node<S>>(Equalities.identity()), offset);
 		if (r.action == ReplaceAction.REPLACED_PROVIDED) {
 			return r.result;
 		}		
 		return this;
 	}
-	Node<S> replace(final Map<Node<S>, Node<S>> replace) {
+	Node<S> replace(final Function<Node<S>, Node<S>> replace) {
 		return replace(replace, 0);
 	}
 	private static enum ReplaceAction {
@@ -597,8 +513,8 @@ public final class Node<S> implements Serializable {
 			this.result = result;
 		}
 	}
-	private ReplaceResult<S> replace(final Map<Node<S>, Node<S>> replaceProvided, final Map<Node<S>, Node<S>> replaceExtra, int offset) {
-		Node<S> self = replaceProvided.get(this);
+	private ReplaceResult<S> replace(final Function<Node<S>, Node<S>> replaceProvided, final Map<Node<S>, Node<S>> replaceExtra, int offset) {
+		Node<S> self = replaceProvided.apply(this);
 		if (self != null) {			
 			return new ReplaceResult<S>(ReplaceAction.REPLACED_PROVIDED, self);
 		}
@@ -636,7 +552,7 @@ public final class Node<S> implements Serializable {
 	}
 	
 	Node<S> copy() {
-		return copy(new IdentityHashMap<Node<S>, Node<S>>());
+		return copy(nodeMap());
 	}
 	private Node<S> copy(final Map<Node<S>, Node<S>> replace) {
 		Node<S> self = replace.get(this);
@@ -656,7 +572,15 @@ public final class Node<S> implements Serializable {
 	 * @return a copy of the node graph where all routes and acceptance states have been reset to IdSet.unitary()
 	 */
 	public Node<S> resetPaths() {
-		return resetPaths(copy(), new IdentityHashMap<Node<S>, Node<S>>());
+		return resetPaths(copy(), nodeMap());
+	}
+	
+	private final Map<Node<S>, Node<S>> nodeMap() {
+		return MapMaker.<Node<S>, Node<S>>hash().initialCapacity(8).keyEq(Equalities.identity()).newMap();
+	}
+	
+	private static final <S> Map<Node<S>, Node<S>> _nodeMap() {
+		return MapMaker.<Node<S>, Node<S>>hash().initialCapacity(8).keyEq(Equalities.identity()).newMap();
 	}
 	
 	private static <S> Node<S> resetPaths(Node<S> node, Map<Node<S>, Node<S>> visited) {
@@ -666,7 +590,6 @@ public final class Node<S> implements Serializable {
 		if (!node.accepts.isEmpty()) {
 			node.accepts = IdSet.unitary();
 		}
-//		node.routes = IdSet.unitary();
 		for (Node<S> child : node.next) {
 			resetPaths(child, visited);
 		}
@@ -815,7 +738,7 @@ public final class Node<S> implements Serializable {
 //	}
 	
 	public Node<S> subtract(Node<S> intersectionWithRightOperand, int offset) {
-		final Node<S> s = subtract(this, intersectionWithRightOperand, offset, new IdentityHashMap<Node<S>, Node<S>>(), new IdentityHashMap<Node<S>, Node<S>>());
+		final Node<S> s = subtract(this, intersectionWithRightOperand, offset, nodeMap(), nodeMap());
 		if (s == null) {
 			return next.scheme().empty();
 		}
@@ -897,11 +820,11 @@ public final class Node<S> implements Serializable {
 		return loop;
 	}
 	
-	private static <S> NodeMap<S> replace(NodeMap<S> paths, Map<Node<S>, Node<S>> replace) {
+	private static <S> NodeMap<S> replace(NodeMap<S> paths, Function<Node<S>, Node<S>> replace) {
 		return replace(paths, replace, 0);
 	}
-	private static <S> NodeMap<S> replace(NodeMap<S> paths, Map<Node<S>, Node<S>> replace, int offset) {
-		final Map<Node<S>, Node<S>> replaceExtra = new IdentityHashMap<Node<S>, Node<S>>();
+	private static <S> NodeMap<S> replace(NodeMap<S> paths, Function<Node<S>, Node<S>> replace, int offset) {
+		final Map<Node<S>, Node<S>> replaceExtra = _nodeMap();
 		for (Node<S> next : paths) {
 			next.replace(replace, replaceExtra, offset);
 		}
@@ -950,8 +873,8 @@ public final class Node<S> implements Serializable {
 			} else {
 				sameLine = false;
 			}
-			builder.append(e.sym());
-			count = toString(e.next(), depth, count, builder, visited);
+			builder.append(e);
+			count = toString(e.node(), depth, count, builder, visited);
 		}
 		return count;
 	}
@@ -984,8 +907,8 @@ public final class Node<S> implements Serializable {
 				} else {
 					builder.append(", ");
 				}
-				builder.append(e.sym());
-				count = toOneLineString(e.next(), count, builder, visited);
+				builder.append(e);
+				count = toOneLineString(e.node(), count, builder, visited);
 			}
 			builder.append("}");
 		}
@@ -996,4 +919,159 @@ public final class Node<S> implements Serializable {
 		return inLoop;
 	}
 	
+	// matching methods
+
+	private static final Found[] NO_MATCH = new Found[0];
+	
+	public Found[] match(Capture[] capture, Iterator<? extends S> iter) {
+		return match(capture, this, iter);
+	}
+	
+	private static <S> Found[] match(Capture[] capture, Node<S> cur, Iterator<? extends S> iter) {
+		final Capturing capturing = new Capturing(capture);
+		int i = 0;
+		IdSet patterns = null;
+		while (true) {
+			if ((patterns == null || !patterns.isEmpty()) && iter.hasNext()) {
+				final S sym = iter.next();
+				final NodeMapEntry<S> next = cur.next.lookup(sym);
+				if (next == null) {
+					return NO_MATCH;
+				}
+				capturing.update(next.capture(), i);
+				patterns = patterns == null ? next.routes() : patterns.intersect(next.routes());
+				cur = next.node();
+				i++;
+			} else {
+				patterns = patterns == null ? cur.accepts : patterns.intersect(cur.accepts);
+				capturing.found(patterns, 0, i);
+				return capturing.get().found;
+			}
+		}
+	}
+	
+	public void find(Capture[] capture, List<? extends S> list, Function<? super FindState, FindAction> found) {
+		find(capture, this, list, found);
+	}
+	
+	// TODO : optimise to avoid resetting completely after each match attempt (i.e. perhaps pre-compute a lookup table of reset positions after failures)
+	private static <S> void find(Capture[] capture, Node<S> head, List<? extends S> list, Function<? super Capturing, FindAction> found) {
+		int o = 0;
+		// TODO: consider caching capturing for large node graphs? (in a ThreadLocal); avoids unnecessary garbage
+		// this might mean moving the Capturing allocation out to the caller?
+		final Capturing capturing = new Capturing(capture);
+//		boolean first = true;
+		FindAction act = FindAction.continueAll();
+		while (o != list.size()) {
+			capturing.reset();
+			Node<S> cur = head; 
+			int i = o++;
+			IdSet patterns = null;
+			prefix: while (true) {
+				final NodeMapEntry<S> next;
+				final IdSet accept = patterns == null ? cur.accepts : patterns.intersect(cur.accepts);
+				if (!accept.isEmpty()) {
+					capturing.found(accept, o - 1, i);
+					act = found.apply(capturing);
+					switch (act.type) {
+					case TERMINATE:
+						return;
+					case SKIP_N_CHARS_NOW:
+					case SKIP_MATCHED_CHARS_NOW:
+						break prefix;
+					}
+				}
+				if (i == list.size()) {
+					break;
+				}
+				next = cur.next.lookup(list.get(i++));
+				if (next == null) {
+					break;
+				}
+				capturing.update(next.capture(), i);
+				if (i - o <= 1) {
+					patterns = next.routes();
+				} else {
+					patterns = patterns.intersect(next.routes());
+					if (patterns.isEmpty()) {
+						break;
+					}
+				}
+				cur = next.node();
+			}
+			switch (act.type) {
+			case TERMINATE_AFTER_THIS_PREFIX:
+				return;
+			case SKIP_N_CHARS_NOW:
+			case SKIP_N_CHARS_AFTER_THIS_PREFIX:
+				o = (o - 1) + act.skipChars;
+				break;
+			case SKIP_MATCHED_CHARS_NOW:
+			case SKIP_MATCHED_CHARS_AFTER_THIS_PREFIX:
+				o = i;
+				break;
+			}
+			act = FindAction.continueAll();
+		}
+	}
+	
+	public List<Found> findAll(Capture[] capture, List<? extends S> list) {
+		return findAll(capture, this, list);
+	}
+	
+	private static <S> List<Found> findAll(Capture[] capture, Node<S> head, List<? extends S> list) {
+		final class FindFunc implements Function<FindState, FindAction> {
+			private static final long serialVersionUID = 827559989469116132L;
+			final List<Found> saved = new ArrayList<Found>();
+			@Override
+			public FindAction apply(FindState v) {
+				for (Found found : v.get().found) {
+					saved.add(found);
+				}
+				return FindAction.continueAll();
+			}
+		}
+		final FindFunc f = new FindFunc();
+		find(capture, head, list, f);
+		return f.saved;
+	}
+	
+	public FoundGroup findLast(Capture[] capture, List<? extends S> list) {
+		return findLast(capture, this, list);
+	}
+	
+	private static <S> FoundGroup findLast(Capture[] capture, Node<S> head, List<? extends S> list) {
+		final class FindFunc implements Function<FindState, FindAction> {
+			private static final long serialVersionUID = 8275599894691161422L;
+			FoundGroup last = null;
+			@Override
+			public FindAction apply(FindState v) {
+				last = v.get();
+				return FindAction.continueAll();
+			}
+		}
+		final FindFunc f = new FindFunc();
+		find(capture, head, list, f);
+		return f.last;
+	}
+	
+	public FoundGroup findFirst(Capture[] capture, List<? extends S> list) {
+		return findFirst(capture, this, list);
+	}
+		
+	private static <S> FoundGroup findFirst(Capture[] capture, Node<S> head, List<? extends S> list) {		
+		final class FindFunc implements Function<FindState, FindAction> {
+			private static final long serialVersionUID = 8275599894691161422L;
+			FoundGroup last = null;
+			@Override
+			public FindAction apply(FindState v) {
+				last = v.get();
+				return FindAction.terminate();
+			}
+		}
+		final FindFunc f = new FindFunc();
+		find(capture, head, list, f);
+		return f.last;
+	}
+
 }
