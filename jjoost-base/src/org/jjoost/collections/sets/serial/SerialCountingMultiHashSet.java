@@ -108,7 +108,7 @@ public class SerialCountingMultiHashSet<V> extends NestedMultiHashSet<V, SerialC
 		}
 
 		@Override public boolean put(V val) {
-			if (count < 0)
+			if (count < 0 || count == Integer.MAX_VALUE)
 				return false;
 			count += 1;
 			return true;
@@ -117,7 +117,7 @@ public class SerialCountingMultiHashSet<V> extends NestedMultiHashSet<V, SerialC
 		@Override public boolean put(V val, int c) {
 			if (count < 0)
 				return false;
-			count += c;
+			count = Math.min(count + c, Integer.MAX_VALUE);
 			return true;
 		}
 		

@@ -36,6 +36,15 @@ public final class Found {
 		}
 	}
 	
+	Found(int id, Capture defs, int start, int end, int[][] starts, int[][] ends) {
+		this.id = id;
+		this.start = start;
+		this.end = end;
+		this.starts = starts;
+		this.ends = ends;
+		this.defs = defs;
+	}
+	
 	public String toString() {
 		return Integer.toString(id);
 	}
@@ -81,6 +90,32 @@ public final class Found {
 	
 	public int[] firstMatch(String group) {
 		return _firstMatch(defs.labelid(group));
+	}
+
+	public Found rebase(int startOffset) {
+		return new Found(id, defs, start - startOffset, end - startOffset, rebase(starts, startOffset), rebase(ends, startOffset));
+	}
+	
+	private static int[][] rebase(int[][] arr, int startOffset) {
+		if (arr == null) {
+			return null;
+		}
+		int[][] r = null;
+		for (int i = 0 ; i != arr.length ; i++) {
+			final int[] in = arr[i];
+			if (in != null && in.length > 0) {
+				if (r == null) {
+					r = new int[arr.length][];
+				}
+				final int[] out;
+				r[i] = out = new int[in.length];
+				
+				for (int j = 0 ; j != out.length ; j++) {
+					out[j] = in[j] - startOffset;
+				}
+			}
+		}
+		return r == null ? arr : r;
 	}
 	
 }

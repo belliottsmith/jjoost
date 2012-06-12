@@ -206,7 +206,7 @@ public final class IdCapture implements Serializable {
 		for (int i = 0 ; i != len ; i +=2) {
 			if (i > 0 && capt[i] == capt[i-2]) {
 				b.append(",");
-				b.append(idCmp(capt[i + 1]));
+				b.append(capt[i + 1] & LABELMASK);
 				if ((capt[i + 1] & END) == END) {
 					b.append("*");
 				}
@@ -216,7 +216,7 @@ public final class IdCapture implements Serializable {
 				}
 				b.append(capt[i]);
 				b.append("=>(");
-				b.append(idCmp(capt[i + 1]));
+				b.append(capt[i + 1] & LABELMASK);
 				if ((capt[i + 1] & END) == END) {
 					b.append("*");
 				}

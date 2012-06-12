@@ -50,6 +50,10 @@ final class Capturing implements FindState {
 			if (resetCounters[id] != resetCounter) {
 				for (int j = 0 ; j != lens.length ; j++) {
 					lens[j] = 0;
+					final int[] start = starts[j];
+					if (start != null) {
+						start[0] = -1;
+					}
 				}
 				resetCounters[id] = resetCounter;
 			}
@@ -61,6 +65,9 @@ final class Capturing implements FindState {
 						ends[labelid][lens[labelid]++] = pos + ((label & IdCapture.INCLUSIVE) == IdCapture.INCLUSIVE ? 1 : 0);
 					} else if (len > 0) {
 						ends[labelid][len - 1] = pos + ((label & IdCapture.INCLUSIVE) == IdCapture.INCLUSIVE ? 1 : 0);
+					}
+					if (len + 1 < s.length) {
+						s[len + 1] = -1;
 					}
 				}
 			} else {

@@ -956,29 +956,32 @@ public final class Node<S> implements Serializable {
 	
 	// TODO : optimise to avoid resetting completely after each match attempt (i.e. perhaps pre-compute a lookup table of reset positions after failures)
 	private static <S> void find(Capture[] capture, Node<S> head, List<? extends S> list, Function<? super Capturing, FindAction> found) {
-		int o = 0;
+		int off = 0, nextoff = 0;
 		// TODO: consider caching capturing for large node graphs? (in a ThreadLocal); avoids unnecessary garbage
 		// this might mean moving the Capturing allocation out to the caller?
 		final Capturing capturing = new Capturing(capture);
 //		boolean first = true;
 		FindAction act = FindAction.continueAll();
-		while (o != list.size()) {
+		while (nextoff < list.size()) {
 			capturing.reset();
 			Node<S> cur = head; 
-			int i = o++;
+			int i = off = nextoff++;
 			IdSet patterns = null;
 			prefix: while (true) {
 				final NodeMapEntry<S> next;
 				final IdSet accept = patterns == null ? cur.accepts : patterns.intersect(cur.accepts);
 				if (!accept.isEmpty()) {
-					capturing.found(accept, o - 1, i);
+					capturing.found(accept, off, i);
 					act = found.apply(capturing);
 					switch (act.type) {
 					case TERMINATE:
 						return;
-					case SKIP_N_CHARS_NOW:
 					case SKIP_MATCHED_CHARS_NOW:
+						nextoff = i;
+					case SKIP_N_CHARS_NOW:
 						break prefix;
+					case SKIP_MATCHED_CHARS_AFTER_THIS_PREFIX:
+						nextoff = i;
 					}
 				}
 				if (i == list.size()) {
@@ -988,8 +991,8 @@ public final class Node<S> implements Serializable {
 				if (next == null) {
 					break;
 				}
-				capturing.update(next.capture(), i);
-				if (i - o <= 1) {
+				capturing.update(next.capture(), i - 1);
+				if (i - off <= 1) {
 					patterns = next.routes();
 				} else {
 					patterns = patterns.intersect(next.routes());
@@ -1004,11 +1007,7 @@ public final class Node<S> implements Serializable {
 				return;
 			case SKIP_N_CHARS_NOW:
 			case SKIP_N_CHARS_AFTER_THIS_PREFIX:
-				o = (o - 1) + act.skipChars;
-				break;
-			case SKIP_MATCHED_CHARS_NOW:
-			case SKIP_MATCHED_CHARS_AFTER_THIS_PREFIX:
-				o = i;
+				nextoff = off + act.skipChars;
 				break;
 			}
 			act = FindAction.continueAll();
