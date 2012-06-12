@@ -355,4 +355,9 @@ public final class IntOrder {
 		}
 		return count;
 	}
+	
+	public static void sort(int[] vals, int li, int mi) {
+		java.util.Arrays.sort(vals, li, mi);
+	}
+	
 }

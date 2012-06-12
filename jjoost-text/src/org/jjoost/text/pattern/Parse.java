@@ -321,7 +321,7 @@ public abstract class Parse<S> {
 	// TODO : use StringReplacer rather than Pattern; need to support replaceAll() rather than just match()
 	private static final Pattern ESCAPE = Pattern.compile("[\\\\^${}\\[\\]*?|+\\-]");
 	public static String escape(String input) {
-		return ESCAPE.matcher(input).replaceAll("\\\\0");
+		return ESCAPE.matcher(input).replaceAll("\\\\$0");
 	}
 
 }

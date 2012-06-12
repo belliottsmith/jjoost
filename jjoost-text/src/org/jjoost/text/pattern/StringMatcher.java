@@ -9,6 +9,8 @@ import org.jjoost.text.pattern.CharScheme.Char;
 import org.jjoost.text.pattern.CharScheme.CharIterator;
 import org.jjoost.text.pattern.CharScheme.CharList;
 import org.jjoost.text.pattern.Parse.ParseException;
+import org.jjoost.text.pattern.StringTransformer.TransformAll;
+import org.jjoost.text.pattern.StringTransformer.TransformFirst;
 import org.jjoost.util.Function;
 import org.jjoost.util.Objects;
 
@@ -36,6 +38,14 @@ public class StringMatcher<S extends CharSequence, R> extends Matcher<S, Char, R
 	}
 	protected <R0> StringMatcher(StringMatcher<S, R0> copy, Function<? super MatchAction<? super S, ? extends R0>, ? extends MatchAction<? super S, ? extends R>> map, boolean keepCaptures) {
 		super(copy, map, keepCaptures);
+	}
+	
+	public MatchAction<? super S, ? extends R> getAction(int action) {
+		return result[action];
+	}
+	
+	public int getPatternCount() {
+		return result.length;
 	}
 	
 	private StringMatcher() {
@@ -178,6 +188,21 @@ public class StringMatcher<S extends CharSequence, R> extends Matcher<S, Char, R
 		return contains.contains;
 	}
 	
+	public int countAllMatches(S match) {
+		@SuppressWarnings("serial")
+		class Count implements Function<FindState, FindAction> {
+			private int count;
+			@Override
+			public FindAction apply(FindState c) {
+				count++;
+				return FindAction.continueAll();
+			}
+		};
+		final Count contains = new Count();
+		applyToMatchStates(match, new CharList(match), contains);
+		return contains.count;
+	}
+	
 	public MultiSet<R> countMatches(S match) {
 		final MultiSet<R> r = new SerialCountingMultiHashSet<R>();
 		countMatches(match, r);
@@ -284,21 +309,84 @@ public class StringMatcher<S extends CharSequence, R> extends Matcher<S, Char, R
 		
 	}
 	
+	public static <S extends CharSequence, E> StringMatcher<S, E> opts(List<String> regexps, boolean literal, E result) throws ParseException {
+		java.util.Collections.sort(regexps);
+		return opts(regexps, literal, constAction(result));
+	}
+	
 	public static <S extends CharSequence> StringMatcher<S, Boolean> opts(List<String> regexps, boolean literal) throws ParseException {
 		java.util.Collections.sort(regexps);
-		return _opts(regexps, literal);
+		return opts(regexps, literal, trueAction());
 	}
 
-	private static <S extends CharSequence> StringMatcher<S, Boolean> _opts(List<String> regexps, boolean literal) throws ParseException {
+	public static <S extends CharSequence, E> StringMatcher<S, E> opts(List<String> regexps, boolean literal, MatchAction<CharSequence, E> result) throws ParseException {
 		if (regexps.size() < 4) {
-			StringMatcher<S, Boolean> r = matchNothing();
+			StringMatcher<S, E> r = matchNothing();
 			for (String exp : regexps) {
-				r = r.merge(StringMatcher.<S>matcher(literal ? Parse.escape(exp) : exp));
+				r = r.merge(StringMatcher.<S, E>matcher(literal ? Parse.escape(exp) : exp, result));
 			}
 			return r;
 		} else {
-			return StringMatcher.<S>_opts(regexps.subList(0, regexps.size() >> 1), literal).merge(StringMatcher.<S>_opts(regexps.subList(regexps.size() >> 1, regexps.size()), literal));
+			return StringMatcher.<S, E>opts(regexps.subList(0, regexps.size() >> 1), literal, result).merge(StringMatcher.<S, E>opts(regexps.subList(regexps.size() >> 1, regexps.size()), literal, result));
 		}
 	}
 	
+	public static String[] firstCaptures(String input, Found captured) {
+		final String[] r = new String[captured.ends.length];
+		for (int i = 0 ; i != r.length ; i++) {
+			final int[] starts = captured.starts[i];
+			final int[] ends = captured.ends[i];
+			if (starts == null || starts.length == 0) {
+				continue;
+			}
+			r[i] = input.substring(starts[0], ends[0]);
+		}
+		return r;
+	}
+	
+	public static String[][] allCaptures(String input, Found captured) {
+		final String[][] r = new String[captured.ends.length][];
+		for (int i = 0 ; i != r.length ; i++) {
+			final int[] starts = captured.starts[i];
+			final int[] ends = captured.ends[i];
+			if (starts == null || starts.length == 0) {
+				continue;
+			}
+			final String[] trg = new String[ends.length];
+			r[i] = trg;
+			for (int j = 0 ; j != trg.length ; j++) {
+				trg[j] = input.substring(starts[i], ends[i]);
+			}
+		}
+		return r;
+	}
+	public static CharSequence[] firstCaptures(CharSequence input, Found captured) {
+		final CharSequence[] r = new CharSequence[captured.ends.length];
+		for (int i = 0 ; i != r.length ; i++) {
+			final int[] starts = captured.starts[i];
+			final int[] ends = captured.ends[i];
+			if (starts == null || starts.length == 0) {
+				continue;
+			}
+			r[i] = input.subSequence(starts[0], ends[0]);
+		}
+		return r;
+	}
+	
+	public static CharSequence[][] allCaptures(CharSequence input, Found captured) {
+		final CharSequence[][] r = new CharSequence[captured.ends.length][];
+		for (int i = 0 ; i != r.length ; i++) {
+			final int[] starts = captured.starts[i];
+			final int[] ends = captured.ends[i];
+			if (starts == null || starts.length == 0) {
+				continue;
+			}
+			final CharSequence[] trg = new CharSequence[ends.length];
+			r[i] = trg;
+			for (int j = 0 ; j != trg.length ; j++) {
+				trg[j] = input.subSequence(starts[i], ends[i]);
+			}
+		}
+		return r;
+	}
 }
